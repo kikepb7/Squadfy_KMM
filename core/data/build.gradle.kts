@@ -10,15 +10,21 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
 
                 implementation(projects.core.domain)
+
+                implementation(libs.bundles.ktor.common)
             }
         }
 
         androidMain {
-            dependencies {}
+            dependencies {
+                implementation(libs.ktor.client.okhttp)
+            }
         }
 
         iosMain {
-            dependencies {}
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
         }
     }
 }
