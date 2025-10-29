@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.convention.cmp.library)
+    alias(libs.plugins.convention.cmp.feature)
 }
 
 kotlin {
@@ -12,6 +12,8 @@ kotlin {
                 implementation(projects.core.domain)
                 implementation(projects.core.designsystem)
                 implementation(projects.core.presentation)
+
+                implementation(compose.components.uiToolingPreview)
             }
         }
 
