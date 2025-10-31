@@ -45,25 +45,15 @@ fun SquadfyPasswordTextField(
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     title: String? = null,
+    supportingText: String? = null,
     isError: Boolean = false,
     enabled: Boolean = true,
-    onFocusChanged: (Boolean) -> Unit = {}
+    onFocusChanged: (Boolean) -> Unit = {},
 ) {
-    val password = state.text
-    val hasSpecial = password.any { !it.isLetterOrDigit() }
-    val hasMinLength = password.length >= 8
-    val hasUppercase = password.any { it.isUpperCase() }
-
-    val supportingConditions = listOf(
-        stringResource(Res.string.special_character) to hasSpecial,
-        stringResource(Res.string.min_length) to hasMinLength,
-        stringResource(Res.string.upper_case) to hasUppercase
-    )
-
     SquadfyTextFieldLayout(
         title = title,
         isError = isError,
-        supportingConditions = supportingConditions,
+        supportingText = supportingText,
         enabled = enabled,
         onFocusChanged = onFocusChanged,
         modifier = modifier
@@ -109,12 +99,8 @@ fun SquadfyPasswordTextField(
                     }
 
                     Icon(
-                        imageVector =
-                            if (isPasswordVisible) vectorResource(Res.drawable.eye_off_icon)
-                            else vectorResource(Res.drawable.eye_icon),
-                        contentDescription =
-                            if (isPasswordVisible) stringResource(Res.string.hide_password)
-                            else stringResource(Res.string.show_password),
+                        imageVector = if (isPasswordVisible) vectorResource(Res.drawable.eye_off_icon) else vectorResource(Res.drawable.eye_icon),
+                        contentDescription = if (isPasswordVisible) stringResource(Res.string.hide_password) else stringResource(Res.string.show_password),
                         tint = MaterialTheme.colorScheme.extended.textDisabled,
                         modifier = Modifier
                             .size(24.dp)
