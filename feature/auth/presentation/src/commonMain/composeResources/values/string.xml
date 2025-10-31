@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_to_squadfy">Welcome to Squadfy!</string>
+    <string name="username">Username</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="username_placeholder">User</string>
+    <string name="email_placeholder">example@squadfy.com</string>
+    <string name="register">Register</string>
+    <string name="login">Log In</string>
+    <string name="username_hint">Use between 3 and 20 characters for your username</string>
+    <string name="error_account_exists">An account with that email or username already exists</string>
+</resources>
