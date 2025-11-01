@@ -19,6 +19,7 @@ import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
 import com.kikepb.core.designsystem.components.textfields.SquadfyPasswordTextField
 import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
 import com.kikepb.core.designsystem.theme.SquadfyTheme
+import com.kikepb.core.presentation.util.ObserveAsEvents
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import squadfy_app.feature.auth.presentation.generated.resources.Res
@@ -34,11 +35,17 @@ import squadfy_app.feature.auth.presentation.generated.resources.welcome_to_squa
 
 @Composable
 fun RegisterRoot(
-    viewModel: RegisterViewModel = viewModel()
+    viewModel: RegisterViewModel = viewModel(),
+    onRegisterSuccess: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
     val snackbarHostState = remember { SnackbarHostState() }
+
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            is RegisterEvent.Success -> onRegisterSuccess(event.email)
+        }
+    }
 
     RegisterScreen(
         state = state,
