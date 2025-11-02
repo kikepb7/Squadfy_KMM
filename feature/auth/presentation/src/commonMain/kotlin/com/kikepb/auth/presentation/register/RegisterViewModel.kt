@@ -1,6 +1,7 @@
 package com.kikepb.auth.presentation.register
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.core.domain.util.DataError
@@ -14,6 +15,10 @@ import com.kikepb.domain.validation.EmailValidator
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -37,6 +42,7 @@ class RegisterViewModel(
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
+                observeValidationStates()
                 hasLoadedInitialData = true
             }
         }
@@ -46,6 +52,47 @@ class RegisterViewModel(
             initialValue = RegisterState()
         )
 
+    private val isUsernameValidFlow = snapshotFlow { state.value.usernameTextState.text.toString() }
+        .map { username -> username.length in 3..20 }
+        .distinctUntilChanged()
+
+    private val isEmailValidFlow = snapshotFlow { state.value.emailTextState.text.toString() }
+        .map { email -> EmailValidator.validate(email) }
+        .distinctUntilChanged()
+
+    private val isPasswordValidFlow = snapshotFlow { state.value.passwordTextState.text.toString() }
+        .map { password -> PasswordValidator.validate(password).isValidPassword }
+        .distinctUntilChanged()
+
+    private val isRegisteringFlow = state
+        .map { it.isRegistering }
+        .distinctUntilChanged()
+
+    private fun observeValidationStates() {
+        combine(
+            isEmailValidFlow,
+            isUsernameValidFlow,
+            isPasswordValidFlow,
+            isRegisteringFlow
+        ) { isEmailValid, isUsernameValid, isPasswordValid, isRegistering ->
+            val allValid = isEmailValid && isUsernameValid && isPasswordValid
+            _state.update { it.copy(
+                canRegister = !isRegistering && allValid
+            ) }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun clearAllTextFieldErrors() {
+        _state.update {
+            it.copy(
+                emailError = null,
+                usernameError = null,
+                passwordError = null,
+                registrationError = null
+            )
+        }
+    }
+
     private fun validateFormInputs(): Boolean {
         clearAllTextFieldErrors()
 
@@ -54,25 +101,23 @@ class RegisterViewModel(
         val username = currentState.usernameTextState.text.toString()
         val password = currentState.passwordTextState.text.toString()
 
-        val isEmailValid = EmailValidator.validate(email = email)
-        val passwordValidationState = PasswordValidator.validate(password = password)
+        val isEmailValid = EmailValidator.validate(email)
+        val passwordValidationState = PasswordValidator.validate(password)
         val isUsernameValid = username.length in 3..20
 
-        val usernameError = if (!isUsernameValid) UiText.Resource(RString.error_invalid_username) else null
         val emailError = if (!isEmailValid) UiText.Resource(RString.error_invalid_email) else null
+        val usernameError = if (!isUsernameValid) UiText.Resource(RString.error_invalid_username) else null
         val passwordError = if (!passwordValidationState.isValidPassword) UiText.Resource(RString.error_invalid_password) else null
 
         _state.update {
-            it.copy(usernameError = usernameError, emailError = emailError, passwordError = passwordError)
+            it.copy(
+                usernameError = usernameError,
+                emailError = emailError,
+                passwordError = passwordError
+            )
         }
 
         return isUsernameValid && isEmailValid && passwordValidationState.isValidPassword
-    }
-
-    private fun clearAllTextFieldErrors() {
-        _state.update {
-            it.copy(usernameError = null, emailError = null, passwordError = null, registrationError = null)
-        }
     }
 
     private fun register() {
