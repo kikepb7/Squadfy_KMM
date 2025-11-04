@@ -133,6 +133,7 @@ class RegisterViewModel(
             authRegisterUseCase.authRegister(username = username, email = email, password = password)
                 .onSuccess {
                     _state.update { it.copy(isRegistering = false) }
+                    eventChannel.send(RegisterEvent.Success(email = email))
                 }
                 .onFailure { error ->
                     val registrationError = when (error) {

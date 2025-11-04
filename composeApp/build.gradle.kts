@@ -18,6 +18,8 @@ kotlin {
             implementation(projects.core.designsystem)
             implementation(projects.core.presentation)
 
+            implementation(libs.jetbrains.compose.navigation)
+
             // AUTH FEATURE
             implementation(projects.feature.auth.domain)
             implementation(projects.feature.auth.presentation)
