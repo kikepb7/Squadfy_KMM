@@ -1,5 +1,6 @@
 package com.kikepb.core.data.auth
 
+import com.kikepb.core.data.auth.dto.request.EmailRequestDto
 import com.kikepb.core.data.auth.dto.request.RegisterRequestDto
 import com.kikepb.core.data.auth.provider.AuthUrlProvider
 import com.kikepb.core.data.networking.post
@@ -26,4 +27,11 @@ class KtorAuthRepositoryImpl(
             )
         )
     }
+
+    override suspend fun resendVerificationEmail(email: String): EmptyResult<DataError.Remote> =
+        httpClient.post(
+            route = "/auth/resend-verification",
+            body = EmailRequestDto(email = email)
+        )
+
 }
