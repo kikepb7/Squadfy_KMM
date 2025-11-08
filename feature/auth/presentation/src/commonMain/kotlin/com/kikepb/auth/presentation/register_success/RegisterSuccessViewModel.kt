@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 
 class RegisterSuccessViewModel(
     private val resendEmailVerificationUseCase: ResendEmailVerificationUseCase,
-    private val savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private var hasLoadedInitialData = false

@@ -3,6 +3,7 @@ package com.kikepb.core.data.auth
 import com.kikepb.core.data.auth.dto.request.EmailRequestDto
 import com.kikepb.core.data.auth.dto.request.RegisterRequestDto
 import com.kikepb.core.data.auth.provider.AuthUrlProvider
+import com.kikepb.core.data.networking.get
 import com.kikepb.core.data.networking.post
 import com.kikepb.core.domain.auth.AuthRepository
 import com.kikepb.core.domain.util.DataError
@@ -34,4 +35,9 @@ class KtorAuthRepositoryImpl(
             body = EmailRequestDto(email = email)
         )
 
+    override suspend fun verifyEmail(token: String): EmptyResult<DataError.Remote> =
+        httpClient.get(
+            route = "/auth/verify",
+            queryParams = mapOf("token" to token)
+        )
 }
