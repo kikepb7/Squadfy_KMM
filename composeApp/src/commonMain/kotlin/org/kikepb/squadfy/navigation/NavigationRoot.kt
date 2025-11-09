@@ -1,13 +1,14 @@
 package org.kikepb.squadfy.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Graph
 import com.kikepb.auth.presentation.navigation.authGraph
 
 @Composable
-fun NavigationRoot() {
+fun NavigationRoot(navController: NavHostController) {
     val navController = rememberNavController()
 
     NavHost(
