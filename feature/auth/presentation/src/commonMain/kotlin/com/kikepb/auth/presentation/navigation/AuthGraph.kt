@@ -6,8 +6,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import com.kikepb.auth.presentation.email_verification.EmailVerificationRoot
+import com.kikepb.auth.presentation.login.LoginRoot
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.EmailVerification
+import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.ForgotPassword
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Graph
+import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Login
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Register
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.RegisterSuccess
 import com.kikepb.auth.presentation.register.RegisterRoot
@@ -18,12 +21,36 @@ fun NavGraphBuilder.authGraph(
     onLoginSuccess: () -> Unit
 ) {
     navigation<Graph>(
-        startDestination = Register
+        startDestination = Login
     ) {
+        composable<Login> {
+            LoginRoot(
+                onLoginSuccess = onLoginSuccess,
+                onForgotPasswordClick = {
+                    navController.navigate(route = ForgotPassword)
+                },
+                onCreateAccountClick = {
+                    navController.navigate(route = Register) {
+                        restoreState = true
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
         composable<Register> {
             RegisterRoot(
                 onRegisterSuccess = { email ->
-                    navController.navigate(RegisterSuccess(email = email))
+                    navController.navigate(route = RegisterSuccess(email = email))
+                },
+                onLoginClick = {
+                    navController.navigate(route = Login) {
+                        popUpTo(route = Register) {
+                            inclusive = true
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             )
         }
