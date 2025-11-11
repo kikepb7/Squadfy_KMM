@@ -1,6 +1,6 @@
 package com.kikepb.domain.usecase
 
-import com.kikepb.core.domain.auth.AuthRepository
+import com.kikepb.core.domain.auth.repository.AuthRepository
 
 class AuthVerifyEmailUseCase(
     private val authRepository: AuthRepository

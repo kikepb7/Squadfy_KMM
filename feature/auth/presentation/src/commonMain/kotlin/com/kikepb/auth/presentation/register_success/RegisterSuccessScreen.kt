@@ -7,6 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kikepb.auth.presentation.register_success.RegisterSuccessAction.OnLoginClick
+import com.kikepb.auth.presentation.register_success.RegisterSuccessAction.OnResendVerificationEmailClick
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle
 import com.kikepb.core.designsystem.components.icons.SquadfySuccessIcon
@@ -19,7 +21,6 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import squadfy_app.feature.auth.presentation.generated.resources.Res
 import squadfy_app.feature.auth.presentation.generated.resources.Res.string as RString
 import squadfy_app.feature.auth.presentation.generated.resources.account_successfully_created
 import squadfy_app.feature.auth.presentation.generated.resources.login
@@ -29,7 +30,8 @@ import squadfy_app.feature.auth.presentation.generated.resources.verification_em
 
 @Composable
 fun RegisterSuccessRoot(
-    viewModel: RegisterSuccessViewModel = koinViewModel()
+    viewModel: RegisterSuccessViewModel = koinViewModel(),
+    onLoginClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -48,7 +50,13 @@ fun RegisterSuccessRoot(
 
     RegisterSuccessScreen(
         state = state,
-        onAction = viewModel::onAction,
+        onAction = { action ->
+            when (action) {
+                is OnLoginClick -> onLoginClick()
+                else -> Unit
+            }
+            viewModel.onAction(action = action)
+        },
         snackbarHostState = snackbarHostState
     )
 }
@@ -73,14 +81,14 @@ fun RegisterSuccessScreen(
                 primaryButton = {
                     SquadfyButton(
                         text = stringResource(RString.login),
-                        onClick = { onAction(RegisterSuccessAction.OnLoginClick) },
+                        onClick = { onAction(OnLoginClick) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
                 secondaryButton = {
                     SquadfyButton(
                         text = stringResource(RString.resend_verification_email),
-                        onClick = { onAction(RegisterSuccessAction.OnResendVerificationEmailClick) },
+                        onClick = { onAction(OnResendVerificationEmailClick) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !state.isResendingVerificationEmail,
                         isLoading = state.isResendingVerificationEmail,

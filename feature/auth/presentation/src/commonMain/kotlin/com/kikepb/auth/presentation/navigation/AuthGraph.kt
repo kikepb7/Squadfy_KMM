@@ -55,7 +55,16 @@ fun NavGraphBuilder.authGraph(
             )
         }
         composable<RegisterSuccess> {
-            RegisterSuccessRoot()
+            RegisterSuccessRoot(
+                onLoginClick = {
+                    navController.navigate(Login) {
+                        popUpTo<RegisterSuccess> {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
         }
         composable< EmailVerification>(
             deepLinks = listOf(
@@ -67,7 +76,24 @@ fun NavGraphBuilder.authGraph(
                 }
             )
         ) {
-            EmailVerificationRoot()
+            EmailVerificationRoot(
+                onLoginClick = {
+                    navController.navigate(Login) {
+                        popUpTo<EmailVerification> {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                },
+                onCloseClick = {
+                    navController.navigate(Login) {
+                        popUpTo<EmailVerification> {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
         }
     }
 }

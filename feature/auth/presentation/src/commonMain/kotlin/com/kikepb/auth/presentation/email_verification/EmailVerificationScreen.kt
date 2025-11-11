@@ -17,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kikepb.auth.presentation.email_verification.EmailVerificationAction.OnCloseClick
+import com.kikepb.auth.presentation.email_verification.EmailVerificationAction.OnLoginclick
 import com.kikepb.core.designsystem.components.brand.SquadfyFailureIcon
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle
@@ -40,13 +42,21 @@ import squadfy_app.feature.auth.presentation.generated.resources.verifying_accou
 
 @Composable
 fun EmailVerificationRoot(
-    viewModel: EmailVerificationViewModel = koinViewModel()
+    viewModel: EmailVerificationViewModel = koinViewModel(),
+    onLoginClick: () -> Unit,
+    onCloseClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     EmailVerificationScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = { action ->
+            when (action) {
+                OnCloseClick -> onCloseClick()
+                OnLoginclick -> onLoginClick()
+            }
+            viewModel.onAction(action = action)
+        }
     )
 }
 
@@ -73,7 +83,7 @@ fun EmailVerificationScreen(
                         SquadfyButton(
                             text = stringResource(Res.string.login),
                             onClick = {
-                                onAction(EmailVerificationAction.OnLoginclick)
+                                onAction(OnLoginclick)
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -95,7 +105,7 @@ fun EmailVerificationScreen(
                         SquadfyButton(
                             text = stringResource(Res.string.close),
                             onClick = {
-                                onAction(EmailVerificationAction.OnCloseClick)
+                                onAction(OnCloseClick)
                             },
                             modifier = Modifier.fillMaxWidth(),
                             style = SquadfyButtonStyle.SECONDARY

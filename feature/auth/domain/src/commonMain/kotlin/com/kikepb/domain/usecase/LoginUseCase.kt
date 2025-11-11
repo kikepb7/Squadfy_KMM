@@ -2,9 +2,9 @@ package com.kikepb.domain.usecase
 
 import com.kikepb.core.domain.auth.repository.AuthRepository
 
-class ResendEmailVerificationUseCase(
+class LoginUseCase(
     private val authRepository: AuthRepository
 ) {
-    suspend operator fun invoke(email: String) =
-        authRepository.resendVerificationEmail(email)
+    suspend fun login(email: String, password: String) =
+        authRepository.login(email = email, password = password)
 }
