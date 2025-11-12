@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
@@ -28,7 +29,8 @@ import squadfy_app.feature.auth.presentation.generated.resources.error_email_not
 import squadfy_app.feature.auth.presentation.generated.resources.error_invalid_credentials
 
 class LoginViewModel(
-    private val loginUseCase: LoginUseCase
+    private val loginUseCase: LoginUseCase,
+    private val sessionStorage: SessionStorage
 ) : ViewModel() {
 
     private var hasLoadedInitialData = false
@@ -71,6 +73,8 @@ class LoginViewModel(
 
             loginUseCase.login(email = email, password = password)
                 .onSuccess { authInfoModel ->
+                    sessionStorage.set(info = authInfoModel)
+
                     _state.update { it.copy(isLoggingIn = false) }
                     eventChannel.send(LoginEvent.Success)
                 }

@@ -22,3 +22,21 @@ fun UserSerializableDto.toDomain(): UserModel {
         profilePictureUrl = profilePictureUrl
     )
 }
+
+fun UserModel.toDto(): UserSerializableDto {
+    return UserSerializableDto(
+        id = id,
+        email = email,
+        username = username,
+        hasVerifiedEmail = hasVerifiedEmail,
+        profilePictureUrl = profilePictureUrl
+    )
+}
+
+fun AuthInfoModel.toDto(): AuthInfoSerializableDto {
+    return AuthInfoSerializableDto(
+        accessToken = accessToken,
+        refreshToken = refreshToken,
+        user = user.toDto()
+    )
+}
