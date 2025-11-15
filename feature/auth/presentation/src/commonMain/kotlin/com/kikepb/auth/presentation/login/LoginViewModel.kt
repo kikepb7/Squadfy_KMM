@@ -99,7 +99,7 @@ class LoginViewModel(
             _state.update { it.copy(
                 canLogin = !isRegistering && isEmailValid && isPasswordNotBlank
             ) }
-        }.launchIn(viewModelScope)
+        }.launchIn(scope = viewModelScope)
     }
 
     fun onAction(action: LoginAction) {

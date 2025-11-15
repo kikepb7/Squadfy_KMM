@@ -1,6 +1,7 @@
 package com.kikepb.auth.presentation.di
 
 import com.kikepb.auth.presentation.email_verification.EmailVerificationViewModel
+import com.kikepb.auth.presentation.forgot_password.ForgotPasswordViewModel
 import com.kikepb.auth.presentation.login.LoginViewModel
 import com.kikepb.auth.presentation.register.RegisterViewModel
 import com.kikepb.auth.presentation.register_success.RegisterSuccessViewModel
@@ -12,4 +13,5 @@ val authPresentationModule = module {
     viewModelOf(::RegisterSuccessViewModel)
     viewModelOf(::EmailVerificationViewModel)
     viewModelOf(::LoginViewModel)
+    viewModelOf(::ForgotPasswordViewModel)
 }

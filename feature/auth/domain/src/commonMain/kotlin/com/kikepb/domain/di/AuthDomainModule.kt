@@ -2,6 +2,7 @@ package com.kikepb.domain.di
 
 import com.kikepb.domain.usecase.AuthRegisterUseCase
 import com.kikepb.domain.usecase.AuthVerifyEmailUseCase
+import com.kikepb.domain.usecase.ForgotPasswordUseCase
 import com.kikepb.domain.usecase.LoginUseCase
 import com.kikepb.domain.usecase.ResendEmailVerificationUseCase
 import org.koin.core.module.dsl.singleOf
@@ -12,4 +13,5 @@ val authDomainModule = module {
     singleOf(::AuthVerifyEmailUseCase)
     singleOf(::ResendEmailVerificationUseCase)
     singleOf(::LoginUseCase)
+    singleOf(::ForgotPasswordUseCase)
 }

@@ -62,7 +62,7 @@ class MainViewModel(
 
                 previousRefreshToken = authInfo?.refreshToken
             }
-            .launchIn(viewModelScope)
+            .launchIn(scope = viewModelScope)
     }
 }
 

@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import com.kikepb.auth.presentation.email_verification.EmailVerificationRoot
+import com.kikepb.auth.presentation.forgot_password.ForgotPasswordRoot
 import com.kikepb.auth.presentation.login.LoginRoot
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.EmailVerification
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.ForgotPassword
@@ -94,6 +95,9 @@ fun NavGraphBuilder.authGraph(
                     }
                 }
             )
+        }
+        composable< ForgotPassword> {
+            ForgotPasswordRoot()
         }
     }
 }

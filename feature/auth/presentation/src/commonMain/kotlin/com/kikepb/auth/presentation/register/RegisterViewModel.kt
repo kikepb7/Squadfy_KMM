@@ -79,7 +79,7 @@ class RegisterViewModel(
             _state.update { it.copy(
                 canRegister = !isRegistering && allValid
             ) }
-        }.launchIn(viewModelScope)
+        }.launchIn(scope = viewModelScope)
     }
 
     private fun clearAllTextFieldErrors() {

@@ -10,4 +10,5 @@ interface AuthRepository {
     suspend fun register(username: String, email: String, password: String): EmptyResult<DataError.Remote>
     suspend fun resendVerificationEmail(email: String): EmptyResult<DataError.Remote>
     suspend fun verifyEmail(token: String): EmptyResult<DataError.Remote>
+    suspend fun forgotPassword(email: String): EmptyResult<DataError.Remote>
 }
