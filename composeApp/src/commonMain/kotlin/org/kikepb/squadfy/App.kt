@@ -6,6 +6,7 @@ import androidx.navigation.compose.rememberNavController
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Graph
 import com.kikepb.chat.presentation.chat_list.ChatListRoute
 import com.kikepb.core.designsystem.theme.SquadfyTheme
+import com.kikepb.core.presentation.util.ObserveAsEvents
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.kikepb.squadfy.navigation.DeepLinkListener
 import org.kikepb.squadfy.navigation.NavigationRoot
@@ -24,6 +25,18 @@ fun App(
 
     LaunchedEffect(key1 = state.isCheckingAuth) {
         if (!state.isCheckingAuth) onAuthenticationChecked()
+    }
+
+    ObserveAsEvents(flow = viewModel.events) { event ->
+        when (event) {
+            is MainEvent.OnSessionExpired -> {
+                navController.navigate(route = Graph) {
+                    popUpTo(Graph) {
+                        inclusive = false
+                    }
+                }
+            }
+        }
     }
 
     SquadfyTheme {
