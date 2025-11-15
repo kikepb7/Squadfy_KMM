@@ -11,12 +11,12 @@ import com.kikepb.chat.presentation.chat_list.ChatListRoute
 import com.kikepb.chat.presentation.chat_list.ChatListScreenRoot
 
 @Composable
-fun NavigationRoot(navController: NavHostController) {
+fun NavigationRoot(navController: NavHostController, startDestination: Any) {
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = Graph
+        startDestination = startDestination
     ) {
         authGraph(
             navController = navController,

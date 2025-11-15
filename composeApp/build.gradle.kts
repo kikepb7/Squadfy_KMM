@@ -21,6 +21,7 @@ kotlin {
             implementation(projects.core.presentation)
 
             implementation(libs.jetbrains.compose.navigation)
+            implementation(libs.bundles.koin.common)
 
             // AUTH FEATURE
             implementation(projects.feature.auth.domain)
