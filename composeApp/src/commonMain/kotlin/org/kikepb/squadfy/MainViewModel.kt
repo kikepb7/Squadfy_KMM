@@ -54,10 +54,11 @@ class MainViewModel(
                 val currentRefreshToken = authInfo?.refreshToken
                 val isSessionExpired = previousRefreshToken != null && currentRefreshToken == null
 
-                if (isSessionExpired) sessionStorage.set(info = null)
-                _state.update { it.copy(isLoggedIn = false) }
-
-                eventChannel.send(OnSessionExpired)
+                if (isSessionExpired) {
+                    sessionStorage.set(info = null)
+                    _state.update { it.copy(isLoggedIn = false) }
+                    eventChannel.send(OnSessionExpired)
+                }
 
                 previousRefreshToken = authInfo?.refreshToken
             }
