@@ -18,7 +18,7 @@ val coreDataModule = module {
     includes(platformCoreDataModule)
     single<SquadfyLogger> { KermitLogger }
     single {
-        HttpClientFactory(get()).create(get())
+        HttpClientFactory(get(), get()).create(get())
     }
     singleOf(::KtorAuthRepositoryImpl) bind AuthRepository::class
     singleOf(::DataStoreSessionStorage) bind SessionStorage::class
