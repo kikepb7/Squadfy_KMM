@@ -16,6 +16,7 @@ import com.kikepb.auth.presentation.reset_password.ResetPasswordAction.OnToggleP
 import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveFormLayout
+import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
 import com.kikepb.core.designsystem.components.textfields.SquadfyPasswordTextField
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
@@ -46,44 +47,46 @@ fun ResetPasswordScreen(
     state: ResetPasswordState,
     onAction: (ResetPasswordAction) -> Unit
 ) {
-    SquadfyAdaptiveFormLayout(
-        headerText = stringResource(RString.set_new_password),
-        errorText = state.errorText?.asString(),
-        logo = {
-            SquadfyBrandLogo()
-        }
-    ) {
-        SquadfyPasswordTextField(
-            state = state.passwordTextState,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = stringResource(RString.password),
-            title = stringResource(RString.password),
-            supportingText = stringResource(RString.password_hint),
-            isPasswordVisible = state.isPasswordVisible,
-            onToggleVisibilityClick = {
-                onAction(OnTogglePasswordVisibilityClick)
+    SquadfySnackbarScaffold {
+        SquadfyAdaptiveFormLayout(
+            headerText = stringResource(RString.set_new_password),
+            errorText = state.errorText?.asString(),
+            logo = {
+                SquadfyBrandLogo()
             }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        SquadfyButton(
-            text = stringResource(RString.submit),
-            onClick = {
-                onAction(OnSubmitClick)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !state.isLoading && state.canSubmit,
-            isLoading = state.isLoading
-        )
-
-        if (state.isResetSuccessful) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = stringResource(RString.reset_password_successfully),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.extended.success,
+        ) {
+            SquadfyPasswordTextField(
+                state = state.passwordTextState,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+                placeholder = stringResource(RString.password),
+                title = stringResource(RString.password),
+                supportingText = stringResource(RString.password_hint),
+                isPasswordVisible = state.isPasswordVisible,
+                onToggleVisibilityClick = {
+                    onAction(OnTogglePasswordVisibilityClick)
+                }
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            SquadfyButton(
+                text = stringResource(RString.submit),
+                onClick = {
+                    onAction(OnSubmitClick)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !state.isLoading && state.canSubmit,
+                isLoading = state.isLoading
+            )
+
+            if (state.isResetSuccessful) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(RString.reset_password_successfully),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.extended.success,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }

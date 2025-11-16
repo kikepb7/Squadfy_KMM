@@ -34,6 +34,7 @@ import com.kikepb.core.presentation.util.DeviceConfiguration.MOBILE_LANDSCAPE
 import com.kikepb.core.presentation.util.DeviceConfiguration.MOBILE_PORTRAIT
 import com.kikepb.core.presentation.util.DeviceConfiguration.TABLET_LANDSCAPE
 import com.kikepb.core.presentation.util.DeviceConfiguration.TABLET_PORTRAIT
+import com.kikepb.core.presentation.util.clearFocusOnTap
 import com.kikepb.core.presentation.util.currentDeviceConfiguration
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -54,6 +55,7 @@ fun SquadfyAdaptiveFormLayout(
         MOBILE_PORTRAIT -> {
             SquadfySurface(
                 modifier = modifier
+                    .clearFocusOnTap()
                     .consumeWindowInsets(WindowInsets.navigationBars)
                     .consumeWindowInsets(WindowInsets.displayCutout),
                 header = {

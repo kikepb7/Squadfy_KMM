@@ -18,6 +18,7 @@ import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveFormLayout
+import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
 import com.kikepb.core.designsystem.components.textfields.SquadfyPasswordTextField
 import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
 import com.kikepb.core.designsystem.theme.SquadfyTheme
@@ -67,63 +68,65 @@ fun LoginScreen(
     state: LoginState,
     onAction: (LoginAction) -> Unit
 ) {
-    SquadfyAdaptiveFormLayout(
-        headerText = stringResource(Res.string.welcome_back),
-        errorText = state.error?.asString(),
-        logo = {
-            SquadfyBrandLogo()
-        },
-        modifier = Modifier.fillMaxSize()
-    ) {
-        SquadfyTextField(
-            state = state.emailTextFieldState,
-            placeholder = stringResource(Res.string.email_placeholder),
-            keyboardType = KeyboardType.Email,
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            title = stringResource(Res.string.email)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        SquadfyPasswordTextField(
-            state = state.passwordTextFieldState,
-            placeholder = stringResource(Res.string.password),
-            isPasswordVisible = state.isPasswordVisible,
-            onToggleVisibilityClick = {
-                onAction(LoginAction.OnTogglePasswordVisibility)
+    SquadfySnackbarScaffold {
+        SquadfyAdaptiveFormLayout(
+            headerText = stringResource(Res.string.welcome_back),
+            errorText = state.error?.asString(),
+            logo = {
+                SquadfyBrandLogo()
             },
-            modifier = Modifier.fillMaxWidth(),
-            title = stringResource(Res.string.password)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(Res.string.forgot_password),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier
-                .align(Alignment.End)
-                .clickable {
-                    onAction(LoginAction.OnForgotPasswordClick)
-                }
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        SquadfyButton(
-            text = stringResource(Res.string.login),
-            onClick = {
-                onAction(LoginAction.OnLoginClick)
-            },
-            enabled = state.canLogin,
-            isLoading = state.isLoggingIn,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        SquadfyButton(
-            text = stringResource(Res.string.create_account),
-            onClick = {
-                onAction(LoginAction.OnSignUpClick)
-            },
-            style = SquadfyButtonStyle.SECONDARY,
-            modifier = Modifier.fillMaxWidth()
-        )
+            modifier = Modifier.fillMaxSize()
+        ) {
+            SquadfyTextField(
+                state = state.emailTextFieldState,
+                placeholder = stringResource(Res.string.email_placeholder),
+                keyboardType = KeyboardType.Email,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                title = stringResource(Res.string.email)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            SquadfyPasswordTextField(
+                state = state.passwordTextFieldState,
+                placeholder = stringResource(Res.string.password),
+                isPasswordVisible = state.isPasswordVisible,
+                onToggleVisibilityClick = {
+                    onAction(LoginAction.OnTogglePasswordVisibility)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                title = stringResource(Res.string.password)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(Res.string.forgot_password),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .clickable {
+                        onAction(LoginAction.OnForgotPasswordClick)
+                    }
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            SquadfyButton(
+                text = stringResource(Res.string.login),
+                onClick = {
+                    onAction(LoginAction.OnLoginClick)
+                },
+                enabled = state.canLogin,
+                isLoading = state.isLoggingIn,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            SquadfyButton(
+                text = stringResource(Res.string.create_account),
+                onClick = {
+                    onAction(LoginAction.OnSignUpClick)
+                },
+                style = SquadfyButtonStyle.SECONDARY,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 

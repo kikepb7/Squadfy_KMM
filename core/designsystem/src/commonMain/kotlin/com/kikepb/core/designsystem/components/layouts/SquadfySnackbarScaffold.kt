@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SquadfySnackbarScaffold(
-    snackbarHostState: SnackbarHostState,
+    snackbarHostState: SnackbarHostState? = null,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
@@ -27,10 +27,12 @@ fun SquadfySnackbarScaffold(
             .union(WindowInsets.ime),
         snackbarHost = {4779
 
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            snackbarHostState?.let {
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+            }
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {

@@ -26,6 +26,7 @@ import com.kikepb.core.designsystem.components.icons.SquadfySuccessIcon
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveResultLayout
 import com.kikepb.core.designsystem.components.layouts.SquadfySimpleResultLayout
 import com.kikepb.core.designsystem.components.layouts.SquadfySimpleSuccessLayout
+import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
@@ -65,53 +66,55 @@ fun EmailVerificationScreen(
     state: EmailVerificationState,
     onAction: (EmailVerificationAction) -> Unit
 ) {
-    SquadfyAdaptiveResultLayout {
-        when {
-            state.isVerifying -> {
-                VerifyingContent(
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            state.isVerified -> {
-                SquadfySimpleSuccessLayout(
-                    title = stringResource(Res.string.email_verified_successfully),
-                    description = stringResource(Res.string.email_verified_successfully_desc),
-                    icon = {
-                        SquadfySuccessIcon()
-                    },
-                    primaryButton = {
-                        SquadfyButton(
-                            text = stringResource(Res.string.login),
-                            onClick = {
-                                onAction(OnLoginclick)
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                )
-            }
-            else -> {
-                SquadfySimpleResultLayout(
-                    title = stringResource(Res.string.email_verified_failed),
-                    description = stringResource(Res.string.email_verified_failed_desc),
-                    icon = {
-                        Spacer(modifier = Modifier.height(32.dp))
-                    SquadfyFailureIcon(
-                        modifier = Modifier.size(80.dp)
+    SquadfySnackbarScaffold {
+        SquadfyAdaptiveResultLayout {
+            when {
+                state.isVerifying -> {
+                    VerifyingContent(
+                        modifier = Modifier.fillMaxWidth()
                     )
-                        Spacer(modifier = Modifier.height(32.dp))
-                    },
-                    primaryButton = {
-                        SquadfyButton(
-                            text = stringResource(Res.string.close),
-                            onClick = {
-                                onAction(OnCloseClick)
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            style = SquadfyButtonStyle.SECONDARY
-                        )
-                    }
-                )
+                }
+                state.isVerified -> {
+                    SquadfySimpleSuccessLayout(
+                        title = stringResource(Res.string.email_verified_successfully),
+                        description = stringResource(Res.string.email_verified_successfully_desc),
+                        icon = {
+                            SquadfySuccessIcon()
+                        },
+                        primaryButton = {
+                            SquadfyButton(
+                                text = stringResource(Res.string.login),
+                                onClick = {
+                                    onAction(OnLoginclick)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    )
+                }
+                else -> {
+                    SquadfySimpleResultLayout(
+                        title = stringResource(Res.string.email_verified_failed),
+                        description = stringResource(Res.string.email_verified_failed_desc),
+                        icon = {
+                            Spacer(modifier = Modifier.height(32.dp))
+                            SquadfyFailureIcon(
+                                modifier = Modifier.size(80.dp)
+                            )
+                            Spacer(modifier = Modifier.height(32.dp))
+                        },
+                        primaryButton = {
+                            SquadfyButton(
+                                text = stringResource(Res.string.close),
+                                onClick = {
+                                    onAction(OnCloseClick)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                style = SquadfyButtonStyle.SECONDARY
+                            )
+                        }
+                    )
+                }
             }
         }
     }

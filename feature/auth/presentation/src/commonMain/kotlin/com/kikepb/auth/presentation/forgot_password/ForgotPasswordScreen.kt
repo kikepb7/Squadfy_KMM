@@ -16,6 +16,7 @@ import com.kikepb.auth.presentation.forgot_password.ForgotPasswordAction.OnSubmi
 import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveFormLayout
+import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
 import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
@@ -46,43 +47,45 @@ fun ForgotPasswordScreen(
     state: ForgotPasswordState,
     onAction: (ForgotPasswordAction) -> Unit
 ) {
-    SquadfyAdaptiveFormLayout(
-        headerText = stringResource(RString.forgot_password),
-        errorText = state.errorText?.asString(),
-        logo = {
-            SquadfyBrandLogo()
-        }
-    ) {
-        SquadfyTextField(
-            state = state.emailTextFieldState,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = stringResource(RString.email_placeholder),
-            title = stringResource(RString.email),
-            isError = state.errorText != null,
-            supportingText = state.errorText?.asString(),
-            keyboardType = KeyboardType.Email,
-            singleLine = true
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        SquadfyButton(
-            text = stringResource(RString.submit),
-            onClick = {
-                onAction(OnSubmitClick)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !state.isLoading && state.canSubmit,
-            isLoading = state.isLoading
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (state.isEmailSentSuccessfully) {
-            Text(
-                text = stringResource(RString.forgot_password_email_sent_successfully),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.extended.success,
+    SquadfySnackbarScaffold {
+        SquadfyAdaptiveFormLayout(
+            headerText = stringResource(RString.forgot_password),
+            errorText = state.errorText?.asString(),
+            logo = {
+                SquadfyBrandLogo()
+            }
+        ) {
+            SquadfyTextField(
+                state = state.emailTextFieldState,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+                placeholder = stringResource(RString.email_placeholder),
+                title = stringResource(RString.email),
+                isError = state.errorText != null,
+                supportingText = state.errorText?.asString(),
+                keyboardType = KeyboardType.Email,
+                singleLine = true
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            SquadfyButton(
+                text = stringResource(RString.submit),
+                onClick = {
+                    onAction(OnSubmitClick)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !state.isLoading && state.canSubmit,
+                isLoading = state.isLoading
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (state.isEmailSentSuccessfully) {
+                Text(
+                    text = stringResource(RString.forgot_password_email_sent_successfully),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.extended.success,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
