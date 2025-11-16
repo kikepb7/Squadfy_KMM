@@ -5,7 +5,12 @@ import com.kikepb.core.data.auth.dto.request.EmailRequestDto
 import com.kikepb.core.data.auth.dto.request.LoginRequestDto
 import com.kikepb.core.data.auth.dto.request.RegisterRequestDto
 import com.kikepb.core.data.auth.dto.request.ResetPasswordRequestDto
-import com.kikepb.core.data.auth.provider.AuthUrlProvider
+import com.kikepb.core.data.auth.provider.AuthRoutes.FORGOT_PASSWORD_ROUTE
+import com.kikepb.core.data.auth.provider.AuthRoutes.LOGIN_ROUTE
+import com.kikepb.core.data.auth.provider.AuthRoutes.REGISTER_ROUTE
+import com.kikepb.core.data.auth.provider.AuthRoutes.RESEND_VERIFICATION_ROUTE
+import com.kikepb.core.data.auth.provider.AuthRoutes.RESET_PASSWORD_ROUTE
+import com.kikepb.core.data.auth.provider.AuthRoutes.VERIFY_EMAIL_ROUTE
 import com.kikepb.core.data.mappers.toDomain
 import com.kikepb.core.data.networking.get
 import com.kikepb.core.data.networking.post
@@ -26,7 +31,7 @@ class KtorAuthRepositoryImpl(
         password: String
     ): Result<AuthInfoModel, DataError.Remote> =
         httpClient.post<LoginRequestDto, AuthInfoSerializableDto>(
-            route = "/auth/login",
+            route = LOGIN_ROUTE,
             body = LoginRequestDto(
                 email = email,
                 password = password
@@ -41,7 +46,7 @@ class KtorAuthRepositoryImpl(
         password: String
     ): EmptyResult<DataError.Remote> {
         return httpClient.post(
-            route = AuthUrlProvider.REGISTER_URL,
+            route = REGISTER_ROUTE,
             body = RegisterRequestDto(
                 username = username,
                 email = email,
@@ -52,25 +57,25 @@ class KtorAuthRepositoryImpl(
 
     override suspend fun resendVerificationEmail(email: String): EmptyResult<DataError.Remote> =
         httpClient.post(
-            route = "/auth/resend-verification",
+            route = RESEND_VERIFICATION_ROUTE,
             body = EmailRequestDto(email = email)
         )
 
     override suspend fun verifyEmail(token: String): EmptyResult<DataError.Remote> =
         httpClient.get(
-            route = "/auth/verify",
+            route = VERIFY_EMAIL_ROUTE,
             queryParams = mapOf("token" to token)
         )
 
     override suspend fun forgotPassword(email: String): EmptyResult<DataError.Remote> =
         httpClient.post<EmailRequestDto, Unit>(
-            route = "/auth/forgot-password",
+            route = FORGOT_PASSWORD_ROUTE,
             body = EmailRequestDto(email = email)
         )
 
     override suspend fun resetPassword(newPassword: String, token: String): EmptyResult<DataError.Remote> =
         httpClient.post(
-            route = "/auth/reset-password",
+            route = RESET_PASSWORD_ROUTE,
             body = ResetPasswordRequestDto(newPassword = newPassword, token = token)
         )
 }
