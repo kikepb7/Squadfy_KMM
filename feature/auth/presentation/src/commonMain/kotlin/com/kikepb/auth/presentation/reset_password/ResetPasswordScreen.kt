@@ -22,7 +22,7 @@ import com.kikepb.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import squadfy_app.feature.auth.presentation.generated.resources.Res
+import squadfy_app.feature.auth.presentation.generated.resources.Res.string as RString
 import squadfy_app.feature.auth.presentation.generated.resources.password
 import squadfy_app.feature.auth.presentation.generated.resources.password_hint
 import squadfy_app.feature.auth.presentation.generated.resources.reset_password_successfully
@@ -47,7 +47,7 @@ fun ResetPasswordScreen(
     onAction: (ResetPasswordAction) -> Unit
 ) {
     SquadfyAdaptiveFormLayout(
-        headerText = stringResource(Res.string.set_new_password),
+        headerText = stringResource(RString.set_new_password),
         errorText = state.errorText?.asString(),
         logo = {
             SquadfyBrandLogo()
@@ -56,9 +56,9 @@ fun ResetPasswordScreen(
         SquadfyPasswordTextField(
             state = state.passwordTextState,
             modifier = Modifier.fillMaxWidth(),
-            placeholder = stringResource(Res.string.password),
-            title = stringResource(Res.string.password),
-            supportingText = stringResource(Res.string.password_hint),
+            placeholder = stringResource(RString.password),
+            title = stringResource(RString.password),
+            supportingText = stringResource(RString.password_hint),
             isPasswordVisible = state.isPasswordVisible,
             onToggleVisibilityClick = {
                 onAction(OnTogglePasswordVisibilityClick)
@@ -66,7 +66,7 @@ fun ResetPasswordScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         SquadfyButton(
-            text = stringResource(Res.string.submit),
+            text = stringResource(RString.submit),
             onClick = {
                 onAction(OnSubmitClick)
             },
@@ -78,7 +78,7 @@ fun ResetPasswordScreen(
         if (state.isResetSuccessful) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = stringResource(Res.string.reset_password_successfully),
+                text = stringResource(RString.reset_password_successfully),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.extended.success,
                 modifier = Modifier.fillMaxWidth(),

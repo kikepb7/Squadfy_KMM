@@ -32,6 +32,8 @@
     <string name="error_invalid_password">Password must be at least 9 characters and include one digit and more uppercase letter</string>
     <string name="error_invalid_credentials">The email or password is incorrect</string>
     <string name="error_email_not_verified">Unable to login because your email isn't verified</string>
+    <string name="error_same_password">The new password can't be equal to the old one</string>
+    <string name="error_reset_password_token_invalid">It seems like the reset password link is not valid or has expired. Please, request a new email</string>
     <string name="forgot_password_email_sent_successfully">We've successfully sent you an email with a link to reset your password</string>
     <string name="reset_password_successfully">Your password has successfully been changed. You can now log in with your new password</string>
 </resources>
