@@ -10,6 +10,9 @@ kotlin {
 
                 implementation(libs.kotlin.stdlib)
 
+                implementation(libs.coil.compose)
+                implementation(libs.coil.network.ktor)
+
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
             }
