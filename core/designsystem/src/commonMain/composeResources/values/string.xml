@@ -5,4 +5,5 @@
     <string name="special_character">Caracteres especiales</string>
     <string name="min_length">Longitud mínima</string>
     <string name="upper_case">Letra mayúscula</string>
+    <string name="dismiss_dialog">Dismiss dialog</string>
 </resources>
