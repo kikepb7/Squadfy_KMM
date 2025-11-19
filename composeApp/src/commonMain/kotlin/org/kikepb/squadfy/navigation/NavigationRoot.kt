@@ -9,6 +9,7 @@ import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Graph
 import com.kikepb.auth.presentation.navigation.authGraph
 import com.kikepb.chat.presentation.chat_list.ChatListRoute
 import com.kikepb.chat.presentation.chat_list.ChatListScreenRoot
+import com.kikepb.chat.presentation.navigation.ChatGraphRoutes
 
 @Composable
 fun NavigationRoot(navController: NavHostController, startDestination: Any) {
@@ -21,7 +22,7 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
         authGraph(
             navController = navController,
             onLoginSuccess = {
-                navController.navigate(ChatListRoute) {
+                navController.navigate(route = ChatGraphRoutes.Graph) {
                     popUpTo(Graph) {
                         inclusive = true
                     }
