@@ -1,3 +1,5 @@
+@file:OptIn(FlowPreview::class)
+
 package com.kikepb.chat.presentation.create_chat
 
 import androidx.compose.animation.AnimatedVisibility
@@ -22,6 +24,7 @@ import com.kikepb.chat.presentation.components.ChatParticipantSearchTextSection
 import com.kikepb.chat.presentation.components.ChatParticipantsSelectionSection
 import com.kikepb.chat.presentation.components.ManageChatButtonSection
 import com.kikepb.chat.presentation.components.ManageChatHeaderRow
+import com.kikepb.chat.presentation.create_chat.CreateChatAction.OnDismissDialog
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle
 import com.kikepb.core.designsystem.components.dialogs.SquadfyAdaptiveDialogSheetLayout
@@ -30,6 +33,7 @@ import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.presentation.util.DeviceConfiguration
 import com.kikepb.core.presentation.util.clearFocusOnTap
 import com.kikepb.core.presentation.util.currentDeviceConfiguration
+import kotlinx.coroutines.FlowPreview
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -39,18 +43,24 @@ import squadfy_app.feature.chat.presentation.generated.resources.Res.string as R
 
 @Composable
 fun CreateChatRoot(
+    onDismiss: () -> Unit,
     viewModel: CreateChatViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     SquadfyAdaptiveDialogSheetLayout(
-        onDismiss = {
-            viewModel.onAction(CreateChatAction.OnDismissDialog)
-        }
+        onDismiss = onDismiss
     ) {
         CreateChatScreen(
             state = state,
-            onAction = viewModel::onAction
+            onAction = { action ->
+                when (action) {
+                    OnDismissDialog -> onDismiss()
+                    else -> Unit
+                }
+
+                viewModel.onAction(action = action)
+            }
         )
     }
 }
@@ -84,7 +94,7 @@ fun CreateChatScreen(
                 ManageChatHeaderRow(
                     title = stringResource(RString.create_chat),
                     onCloseClick = {
-                        onAction(CreateChatAction.OnDismissDialog)
+                        onAction(OnDismissDialog)
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -97,7 +107,7 @@ fun CreateChatScreen(
                 onAction(CreateChatAction.OnAddClick)
             },
             isSearchEnabled = state.canAddParticipant,
-            isLoading = state.isAddingParticipant,
+            isLoading = state.isSearching,
             modifier = Modifier
                 .fillMaxWidth(),
             error = state.searchError,
@@ -128,7 +138,7 @@ fun CreateChatScreen(
                 SquadfyButton(
                     text = stringResource(RString.cancel),
                     onClick = {
-                        onAction(CreateChatAction.OnDismissDialog)
+                        onAction(OnDismissDialog)
                     },
                     style = SquadfyButtonStyle.SECONDARY
                 )

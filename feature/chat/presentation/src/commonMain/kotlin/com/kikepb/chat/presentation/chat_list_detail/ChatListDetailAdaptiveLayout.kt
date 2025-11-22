@@ -25,12 +25,15 @@ import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnChatClick
+import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnDismissCurrentDialog
 import com.kikepb.chat.presentation.create_chat.CreateChatRoot
 import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.presentation.util.DialogSheetScopedViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(FlowPreview::class)
 @Composable
 fun ChatListDetailAdaptiveLayout(
     chatListDetailViewModel: ChatListDetailViewModel = koinViewModel()
@@ -92,6 +95,10 @@ fun ChatListDetailAdaptiveLayout(
     DialogSheetScopedViewModel(
         visible = sharedState.dialogState is DialogState.CreateChat
     ) {
-        CreateChatRoot()
+        CreateChatRoot(
+            onDismiss = {
+                chatListDetailViewModel.onAction(action = OnDismissCurrentDialog)
+            }
+        )
     }
 }

@@ -10,6 +10,9 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val authDomainModule = module {
+//    single<SafeFlowUseCaseDelegate> { SafeFlowUseCaseDelegate.Default(get() ) }
+//    singleOf(::GlobalErrorManager)
+
     singleOf(::AuthRegisterUseCase)
     singleOf(::AuthVerifyEmailUseCase)
     singleOf(::ResendEmailVerificationUseCase)

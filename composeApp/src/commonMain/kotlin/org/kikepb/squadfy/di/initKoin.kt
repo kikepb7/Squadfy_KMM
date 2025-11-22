@@ -1,6 +1,8 @@
 package org.kikepb.squadfy.di
 
 import com.kikepb.auth.presentation.di.authPresentationModule
+import com.kikepb.chat.data.di.chatDataModule
+import com.kikepb.chat.domain.di.chatDomainModule
 import com.kikepb.chat.presentation.di.chatPresentationModule
 import com.kikepb.core.data.di.coreDataModule
 import com.kikepb.core.presentation.di.corePresentationModule
@@ -16,6 +18,8 @@ fun initKoin(config: KoinAppDeclaration? = null) {
             authPresentationModule,
             authDomainModule,
             appModule,
+            chatDataModule,
+            chatDomainModule,
             chatPresentationModule,
             corePresentationModule
         )
