@@ -20,17 +20,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kikepb.chat.domain.models.ChatModel
 import com.kikepb.chat.presentation.components.ChatParticipantSearchTextSection
 import com.kikepb.chat.presentation.components.ChatParticipantsSelectionSection
 import com.kikepb.chat.presentation.components.ManageChatButtonSection
 import com.kikepb.chat.presentation.components.ManageChatHeaderRow
 import com.kikepb.chat.presentation.create_chat.CreateChatAction.OnDismissDialog
+import com.kikepb.chat.presentation.create_chat.CreateChatEvent.OnChatCreated
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle
 import com.kikepb.core.designsystem.components.dialogs.SquadfyAdaptiveDialogSheetLayout
 import com.kikepb.core.designsystem.components.divider.SquadfyHorizontalDivider
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.presentation.util.DeviceConfiguration
+import com.kikepb.core.presentation.util.ObserveAsEvents
 import com.kikepb.core.presentation.util.clearFocusOnTap
 import com.kikepb.core.presentation.util.currentDeviceConfiguration
 import kotlinx.coroutines.FlowPreview
@@ -44,9 +47,16 @@ import squadfy_app.feature.chat.presentation.generated.resources.Res.string as R
 @Composable
 fun CreateChatRoot(
     onDismiss: () -> Unit,
+    onChatCreated: (ChatModel) -> Unit,
     viewModel: CreateChatViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    ObserveAsEvents(flow = viewModel.events) { event ->
+        when (event) {
+            is OnChatCreated -> onChatCreated(event.chat)
+        }
+    }
 
     SquadfyAdaptiveDialogSheetLayout(
         onDismiss = onDismiss
@@ -143,6 +153,7 @@ fun CreateChatScreen(
                     style = SquadfyButtonStyle.SECONDARY
                 )
             },
+            error = state.createChatError?.asString(),
             modifier = Modifier.fillMaxWidth()
         )
     }

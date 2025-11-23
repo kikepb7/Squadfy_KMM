@@ -5,6 +5,8 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kikepb.chat.domain.models.ChatModel
+import com.kikepb.chat.domain.usecases.CreateChatUseCase
 import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
 import com.kikepb.chat.presentation.create_chat.model.ChatParticipantUiModel
 import com.kikepb.chat.presentation.mappers.toUi
@@ -14,12 +16,14 @@ import com.kikepb.core.domain.util.onSuccess
 import com.kikepb.core.presentation.mapper.toUiText
 import com.kikepb.core.presentation.util.UiText
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -27,14 +31,13 @@ import squadfy_app.feature.chat.presentation.generated.resources.Res.string as R
 import squadfy_app.feature.chat.presentation.generated.resources.error_participant_not_found
 import kotlin.time.Duration.Companion.seconds
 
-@FlowPreview
+@OptIn(FlowPreview::class)
 class CreateChatViewModel(
-    private val getChatParticipantUseCase: GetChatParticipantUseCase
+    private val getChatParticipantUseCase: GetChatParticipantUseCase,
+    private val createChatUseCase: CreateChatUseCase
 ) : ViewModel() {
 
     private var hasLoadedInitialData = false
-
-
     private val _state = MutableStateFlow(CreateChatState())
     private val searchFlow = snapshotFlow { _state.value.queryTextState.text.toString() }
         .debounce(timeout = 1.seconds)
@@ -53,6 +56,8 @@ class CreateChatViewModel(
             started = SharingStarted.WhileSubscribed(5_000L),
             initialValue = CreateChatState()
         )
+    private val eventChannel = Channel<CreateChatEvent>()
+    val events = eventChannel.receiveAsFlow()
 
 
     private fun CreateChatViewModel.performSearch(query: String) {
@@ -113,11 +118,33 @@ class CreateChatViewModel(
         }
     }
 
+    private fun createChat() {
+        val userIds = state.value.selectedChatParticipants.map { it.id }
+
+        if (userIds.isEmpty()) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isCreatingChat = true, canAddParticipant = false) }
+
+            createChatUseCase.createChat(otherUserIds = userIds)
+                .onSuccess { chat ->
+                    _state.update { it.copy(isCreatingChat = false) }
+                    eventChannel.send(element = CreateChatEvent.OnChatCreated(chat = chat))
+                }
+                .onFailure { error ->
+                    _state.update { it.copy(
+                        createChatError = error.toUiText(),
+                        canAddParticipant = it.currentSearchResult != null && !it.isSearching
+                    ) }
+                }
+        }
+    }
+
     fun onAction(action: CreateChatAction) {
         when (action) {
             CreateChatAction.OnAddClick -> addParticipant()
-            CreateChatAction.OnCreateChatClick -> { }
-            CreateChatAction.OnDismissDialog -> Unit
+            CreateChatAction.OnCreateChatClick -> createChat()
+            else -> Unit
         }
     }
 }
@@ -129,8 +156,13 @@ data class CreateChatState(
     val canAddParticipant: Boolean = false,
     val currentSearchResult: ChatParticipantUiModel? = null,
     val searchError: UiText? = null,
-    val isCreatingChat: Boolean = false
+    val isCreatingChat: Boolean = false,
+    val createChatError: UiText? = null
 )
+
+sealed interface CreateChatEvent {
+    data class OnChatCreated(val chat: ChatModel) : CreateChatEvent
+}
 
 sealed interface CreateChatAction {
     data object OnAddClick: CreateChatAction
