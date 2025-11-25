@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
+    <string name="app_name">Squadfy</string>
     <string name="hide_password">Hide password</string>
     <string name="show_password">Show password</string>
     <string name="special_character">Caracteres especiales</string>
