@@ -8,8 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.kikepb.chat.domain.models.ChatModel
 import com.kikepb.chat.domain.usecases.CreateChatUseCase
 import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
-import com.kikepb.chat.presentation.create_chat.model.ChatParticipantUiModel
 import com.kikepb.chat.presentation.mappers.toUi
+import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
@@ -151,10 +151,10 @@ class CreateChatViewModel(
 
 data class CreateChatState(
     val queryTextState: TextFieldState = TextFieldState(),
-    val selectedChatParticipants: List<ChatParticipantUiModel> = emptyList(),
+    val selectedChatParticipants: List<ChatParticipantModelUi> = emptyList(),
     val isSearching: Boolean = false,
     val canAddParticipant: Boolean = false,
-    val currentSearchResult: ChatParticipantUiModel? = null,
+    val currentSearchResult: ChatParticipantModelUi? = null,
     val searchError: UiText? = null,
     val isCreatingChat: Boolean = false,
     val createChatError: UiText? = null

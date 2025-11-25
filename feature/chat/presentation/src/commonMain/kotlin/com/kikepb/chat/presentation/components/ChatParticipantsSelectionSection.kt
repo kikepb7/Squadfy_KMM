@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.kikepb.chat.presentation.create_chat.model.ChatParticipantUiModel
+import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
 import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.designsystem.theme.titleXSmall
@@ -29,9 +29,9 @@ import com.kikepb.core.presentation.util.currentDeviceConfiguration
 
 @Composable
 fun ColumnScope.ChatParticipantsSelectionSection(
-    selectedParticipants: List<ChatParticipantUiModel>,
+    selectedParticipants: List<ChatParticipantModelUi>,
     modifier: Modifier = Modifier,
-    searchResult: ChatParticipantUiModel? = null
+    searchResult: ChatParticipantModelUi? = null
 ) {
     val deviceConfiguration = currentDeviceConfiguration()
     val rootHeightModifier = when(deviceConfiguration) {
@@ -75,7 +75,7 @@ fun ColumnScope.ChatParticipantsSelectionSection(
 
 @Composable
 fun ChatParticipantListItem(
-    participantUi: ChatParticipantUiModel,
+    participantUi: ChatParticipantModelUi,
     modifier: Modifier = Modifier
 ) {
     Row(

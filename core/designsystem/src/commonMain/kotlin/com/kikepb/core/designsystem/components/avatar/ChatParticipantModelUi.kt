@@ -1,6 +1,6 @@
-package com.kikepb.chat.presentation.create_chat.model
+package com.kikepb.core.designsystem.components.avatar
 
-data class ChatParticipantUiModel(
+data class ChatParticipantModelUi(
     val id: String,
     val username: String,
     val initials: String,

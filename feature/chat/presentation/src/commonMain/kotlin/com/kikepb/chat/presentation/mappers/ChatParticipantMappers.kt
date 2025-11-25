@@ -1,10 +1,10 @@
 package com.kikepb.chat.presentation.mappers
 
 import com.kikepb.chat.domain.models.ChatParticipantModel
-import com.kikepb.chat.presentation.create_chat.model.ChatParticipantUiModel
+import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 
-fun ChatParticipantModel.toUi(): ChatParticipantUiModel =
-    ChatParticipantUiModel(
+fun ChatParticipantModel.toUi(): ChatParticipantModelUi =
+    ChatParticipantModelUi(
         id = userId,
         username = username,
         initials = initials,

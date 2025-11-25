@@ -11,7 +11,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun SquadfyStackedAvatars(
-    avatars: List<AvatarUiModel>,
+    avatars: List<ChatParticipantModelUi>,
     modifier: Modifier = Modifier,
     size: AvatarSize = AvatarSize.SMALL,
     maxVisible: Int = 2,
@@ -51,22 +51,22 @@ private fun SquadfyStackedAvatarsPreview() {
     SquadfyTheme {
         SquadfyStackedAvatars(
             avatars = listOf(
-                AvatarUiModel(
+                ChatParticipantModelUi(
                     id = "1",
                     username = "Enrique",
                     initials = "EN",
                 ),
-                AvatarUiModel(
+                ChatParticipantModelUi(
                     id = "2",
                     username = "Carmen",
                     initials = "Ca",
                 ),
-                AvatarUiModel(
+                ChatParticipantModelUi(
                     id = "3",
                     username = "Ana",
                     initials = "AN",
                 ),
-                AvatarUiModel(
+                ChatParticipantModelUi(
                     id = "4",
                     username = "Julio",
                     initials = "JU",
