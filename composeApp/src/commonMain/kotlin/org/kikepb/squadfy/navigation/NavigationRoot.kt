@@ -5,11 +5,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Graph
+import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.authGraph
-import com.kikepb.chat.presentation.chat_list.ChatListRoute
-import com.kikepb.chat.presentation.chat_list.ChatListScreenRoot
 import com.kikepb.chat.presentation.navigation.ChatGraphRoutes
+import com.kikepb.chat.presentation.navigation.chatGraph
 
 @Composable
 fun NavigationRoot(navController: NavHostController, startDestination: Any) {
@@ -22,15 +21,15 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
         authGraph(
             navController = navController,
             onLoginSuccess = {
-                navController.navigate(route = ChatGraphRoutes.Graph) {
-                    popUpTo(Graph) {
+                navController.navigate(route = ChatGraphRoutes.ChatGraph) {
+                    popUpTo(AuthGraph) {
                         inclusive = true
                     }
                 }
             }
         )
-        composable<ChatListRoute> {
-            ChatListScreenRoot()
-        }
+        chatGraph(
+            navController = navController
+        )
     }
 }

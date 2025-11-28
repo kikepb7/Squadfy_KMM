@@ -37,7 +37,7 @@ import squadfy_app.core.designsystem.generated.resources.Res.drawable as DesignS
 
 @Composable
 fun ChatListHeader(
-    localParticipant: ChatParticipantModelUi,
+    localParticipant: ChatParticipantModelUi?,
     isUserMenuOpen: Boolean,
     onUserAvatarClick: () -> Unit,
     onDismissMenu: () -> Unit,
@@ -78,7 +78,7 @@ fun ChatListHeader(
 
 @Composable
 fun ProfileAvatarSection(
-    localParticipant: ChatParticipantModelUi,
+    localParticipant: ChatParticipantModelUi?,
     isMenuOpen: Boolean,
     onClick: () -> Unit,
     onDismissMenu: () -> Unit,
@@ -89,11 +89,13 @@ fun ProfileAvatarSection(
     Box(
         modifier = modifier
     ) {
-        SquadfyAvatarPhoto(
-            displayText = localParticipant.initials,
-            imageUrl = localParticipant.imageUrl,
-            onClick = onClick
-        )
+        if (localParticipant != null) {
+            SquadfyAvatarPhoto(
+                displayText = localParticipant.initials,
+                imageUrl = localParticipant.imageUrl,
+                onClick = onClick
+            )
+        }
 
         DropdownMenu(
             expanded = isMenuOpen,

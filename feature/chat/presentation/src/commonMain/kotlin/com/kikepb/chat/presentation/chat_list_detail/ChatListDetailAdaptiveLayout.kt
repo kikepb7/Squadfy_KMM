@@ -3,21 +3,14 @@
 package com.kikepb.chat.presentation.chat_list_detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
-import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole.Detail
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,25 +19,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kikepb.chat.presentation.chat_list.ChatListRoot
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnChatClick
+import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnCreateChatClick
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnDismissCurrentDialog
+import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnProfileSettingsClick
 import com.kikepb.chat.presentation.create_chat.CreateChatRoot
-import com.kikepb.core.designsystem.components.buttons.SquadfyFloatingActionButton
 import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.presentation.util.DialogSheetScopedViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
-import squadfy_app.feature.chat.presentation.generated.resources.create_chat
 
 @OptIn(FlowPreview::class)
 @Composable
 fun ChatListDetailAdaptiveLayout(
-    chatListDetailViewModel: ChatListDetailViewModel = koinViewModel()
+    chatListDetailViewModel: ChatListDetailViewModel = koinViewModel(),
+    onLogout: () -> Unit
 ) {
     val sharedState by chatListDetailViewModel.state.collectAsStateWithLifecycle()
     val scaffoldDirective = createNoSpacingPaneScaffoldDirective()
@@ -65,42 +57,15 @@ fun ChatListDetailAdaptiveLayout(
         modifier = Modifier.background(color = MaterialTheme.colorScheme.extended.surfaceLower),
         listPane = {
             AnimatedPane {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    floatingActionButton = {
-                        SquadfyFloatingActionButton(
-                            onClick = {
-                                chatListDetailViewModel.onAction(action = ChatListDetailAction.OnCreateChatClick)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = stringResource(RString.create_chat)
-                            )
-                        }
-                    }
-                ) { innerPadding ->
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = innerPadding
-                    ) {
-                        items(count = 100) { chatIndex ->
-                            Text(
-                                text = "Chat $chatIndex",
-                                modifier = Modifier
-                                    .clickable {
-                                        chatListDetailViewModel.onAction(action = OnChatClick(chatId = chatIndex.toString()))
-                                        scope.launch {
-                                            scaffoldNavigator.navigateTo(
-                                                ListDetailPaneScaffoldRole.Detail
-                                            )
-                                        }
-                                    }
-                                    .padding(all = 16.dp)
-                            )
-                        }
-                    }
-                }
+                ChatListRoot(
+                    onChatClick = {
+                        chatListDetailViewModel.onAction(action = OnChatClick(chatId = it.id))
+                        scope.launch { scaffoldNavigator.navigateTo(Detail) }
+                    },
+                    onConfirmLogoutClick = { onLogout() },
+                    onCreateChatClick = { chatListDetailViewModel.onAction(action = OnCreateChatClick) },
+                    onProfileSettingsClick = { chatListDetailViewModel.onAction(action = OnProfileSettingsClick) }
+                )
             }
         },
         detailPane = {
@@ -125,7 +90,7 @@ fun ChatListDetailAdaptiveLayout(
                 chatListDetailViewModel.onAction(action = OnDismissCurrentDialog)
                 chatListDetailViewModel.onAction(action = OnChatClick(chatId = chat.id))
                 scope.launch {
-                    scaffoldNavigator.navigateTo(pane = ListDetailPaneScaffoldRole.Detail)
+                    scaffoldNavigator.navigateTo(pane = Detail)
                 }
             },
             onDismiss = {

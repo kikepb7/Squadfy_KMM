@@ -10,7 +10,7 @@ import com.kikepb.auth.presentation.forgot_password.ForgotPasswordRoot
 import com.kikepb.auth.presentation.login.LoginRoot
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.EmailVerification
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.ForgotPassword
-import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Graph
+import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Login
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Register
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.RegisterSuccess
@@ -23,7 +23,7 @@ fun NavGraphBuilder.authGraph(
     navController: NavController,
     onLoginSuccess: () -> Unit
 ) {
-    navigation<Graph>(
+    navigation<AuthGraph>(
         startDestination = Login
     ) {
         composable<Login> {

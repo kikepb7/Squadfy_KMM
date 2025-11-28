@@ -6,12 +6,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAdaptiveLayout
 import com.kikepb.chat.presentation.navigation.ChatGraphRoutes.ChatListDetailRoute
-import com.kikepb.chat.presentation.navigation.ChatGraphRoutes.Graph
+import com.kikepb.chat.presentation.navigation.ChatGraphRoutes.ChatGraph
 import kotlinx.serialization.Serializable
 
 sealed interface ChatGraphRoutes {
     @Serializable
-    data object Graph : ChatGraphRoutes
+    data object ChatGraph : ChatGraphRoutes
 
     @Serializable
     data object ChatListDetailRoute: ChatGraphRoutes
@@ -20,11 +20,15 @@ sealed interface ChatGraphRoutes {
 fun NavGraphBuilder.chatGraph(
     navController: NavController
 ) {
-    navigation<Graph>(
+    navigation<ChatGraph>(
         startDestination = ChatListDetailRoute
     ) {
         composable<ChatListDetailRoute> {
-            ChatListDetailAdaptiveLayout()
+            ChatListDetailAdaptiveLayout(
+                onLogout = {
+                    // TODO --> Implement logout navigation
+                }
+            )
         }
     }
 }

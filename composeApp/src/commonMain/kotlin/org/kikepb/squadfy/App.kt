@@ -3,8 +3,8 @@ package org.kikepb.squadfy
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
-import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Graph
-import com.kikepb.chat.presentation.chat_list.ChatListRoute
+import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
+import com.kikepb.chat.presentation.navigation.ChatGraphRoutes.ChatGraph
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.presentation.util.ObserveAsEvents
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -30,8 +30,8 @@ fun App(
     ObserveAsEvents(flow = viewModel.events) { event ->
         when (event) {
             is MainEvent.OnSessionExpired -> {
-                navController.navigate(route = Graph) {
-                    popUpTo(Graph) {
+                navController.navigate(route = AuthGraph) {
+                    popUpTo(AuthGraph) {
                         inclusive = false
                     }
                 }
@@ -43,7 +43,7 @@ fun App(
         if (!state.isCheckingAuth) {
             NavigationRoot(
                 navController = navController,
-                startDestination = if (state.isLoggedIn) ChatListRoute else Graph
+                startDestination = if (state.isLoggedIn) ChatGraph else AuthGraph
             )
         }
     }
