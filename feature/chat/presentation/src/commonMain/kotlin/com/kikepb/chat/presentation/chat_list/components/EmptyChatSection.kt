@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kikepb.core.designsystem.theme.extended
-import com.kikepb.core.presentation.util.DeviceConfiguration
+import com.kikepb.core.presentation.util.DeviceConfiguration.MOBILE_LANDSCAPE
 import com.kikepb.core.presentation.util.currentDeviceConfiguration
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -37,7 +37,7 @@ fun EmptyChatSection(modifier: Modifier = Modifier) {
             painter = painterResource(RDrawable.empty_chat),
             contentDescription = stringResource(RString.no_messages),
             modifier = Modifier.size(
-                if(configuration == DeviceConfiguration.MOBILE_LANDSCAPE) 125.dp else 200.dp
+                if(configuration == MOBILE_LANDSCAPE) 125.dp else 200.dp
             )
         )
         Spacer(modifier = Modifier.height(4.dp))
