@@ -18,13 +18,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
+import com.kikepb.chat.presentation.model.MessageModelUi
 import com.kikepb.core.designsystem.components.chat.SquadfyChatBubble
 import com.kikepb.core.designsystem.components.chat.TrianglePosition
 import com.kikepb.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
-import squadfy_app.core.designsystem.generated.resources.reload_icon
-import squadfy_app.feature.chat.presentation.generated.resources.Res
+import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
+import squadfy_app.feature.chat.presentation.generated.resources.Res.drawable as RDrawable
+import squadfy_app.feature.chat.presentation.generated.resources.delete_for_everyone
+import squadfy_app.feature.chat.presentation.generated.resources.reload_icon
+import squadfy_app.feature.chat.presentation.generated.resources.retry
 import squadfy_app.feature.chat.presentation.generated.resources.you
 
 @Composable
@@ -46,7 +50,7 @@ fun LocalUserMessage(
         ) {
             SquadfyChatBubble(
                 messageContent = message.content,
-                sender = stringResource(Res.string.you),
+                sender = stringResource(RString.you),
                 formattedDateTime = message.formattedSentTime.asString(),
                 trianglePosition = TrianglePosition.RIGHT,
                 messageStatus = {
@@ -72,7 +76,7 @@ fun LocalUserMessage(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = stringResource(Res.string.delete_for_everyone),
+                            text = stringResource(RString.delete_for_everyone),
                             color = MaterialTheme.colorScheme.extended.destructiveHover,
                             fontWeight = FontWeight.Medium
                         )
@@ -90,8 +94,8 @@ fun LocalUserMessage(
                 onClick = onRetryClick
             ) {
                 Icon(
-                    imageVector = vectorResource(Res.drawable.reload_icon),
-                    contentDescription = stringResource(Res.string.retry),
+                    imageVector = vectorResource(RDrawable.reload_icon),
+                    contentDescription = stringResource(RString.retry),
                     tint = MaterialTheme.colorScheme.error
                 )
             }
