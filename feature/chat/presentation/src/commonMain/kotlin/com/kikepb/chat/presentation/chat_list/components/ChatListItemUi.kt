@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.SpanStyle
@@ -25,17 +23,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.kikepb.chat.domain.models.ChatMessageModel
+import com.kikepb.chat.presentation.components.ChatItemHeaderRow
 import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
-import com.kikepb.core.designsystem.components.avatar.SquadfyStackedAvatars
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
-import com.kikepb.core.designsystem.theme.titleXSmall
-import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import squadfy_app.feature.chat.presentation.generated.resources.Res
-import squadfy_app.feature.chat.presentation.generated.resources.group_chat
-import squadfy_app.feature.chat.presentation.generated.resources.you
 import kotlin.time.Clock
 
 @Composable
@@ -60,43 +53,11 @@ fun ChatListItemUi(
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                SquadfyStackedAvatars(avatars = chat.otherParticipants)
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        text = if (!isGroupChat) chat.otherParticipants.first().username
-                        else stringResource(Res.string.group_chat),
-                        style = MaterialTheme.typography.titleXSmall,
-                        color = MaterialTheme.colorScheme.extended.textPrimary,
-                        overflow = TextOverflow.Ellipsis,
-                        maxLines = 1,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    if (isGroupChat) {
-                        val you = stringResource(Res.string.you)
-                        val formattedUsernames = remember(chat.otherParticipants) {
-                            "$you, " + chat.otherParticipants.joinToString {
-                                it.username
-                            }
-                        }
-                        Text(
-                            text = formattedUsernames,
-                            color = MaterialTheme.colorScheme.extended.textPlaceholder,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.fillMaxWidth(),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-            }
+            ChatItemHeaderRow(
+                chat = chat,
+                isGroupChat = isGroupChat,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             if (chat.lastMessage != null) {
                 val previewMessage = buildAnnotatedString {
