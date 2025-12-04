@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.chat.presentation.chat_list.components.ChatListHeader
 import com.kikepb.chat.presentation.chat_list.components.ChatListItemUi
-import com.kikepb.chat.presentation.chat_list.components.EmptyChatSection
+import com.kikepb.chat.presentation.components.EmptyListSection
 import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.core.designsystem.components.buttons.SquadfyFloatingActionButton
 import com.kikepb.core.designsystem.components.dialogs.SquadfyDestructiveConfirmationDialog
@@ -42,6 +42,8 @@ import squadfy_app.feature.chat.presentation.generated.resources.create_chat
 import squadfy_app.feature.chat.presentation.generated.resources.do_you_want_to_logout
 import squadfy_app.feature.chat.presentation.generated.resources.do_you_want_to_logout_desc
 import squadfy_app.feature.chat.presentation.generated.resources.logout
+import squadfy_app.feature.chat.presentation.generated.resources.no_chats
+import squadfy_app.feature.chat.presentation.generated.resources.no_chats_subtitle
 import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
 
 @Composable
@@ -116,7 +118,9 @@ fun ChatListScreen(
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
                 state.chats.isEmpty() -> {
-                    EmptyChatSection(
+                    EmptyListSection(
+                        title = stringResource(RString.no_chats),
+                        description = stringResource(RString.no_chats_subtitle),
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()

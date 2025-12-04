@@ -1,4 +1,4 @@
-package com.kikepb.chat.presentation.chat_list.components
+package com.kikepb.chat.presentation.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -16,15 +16,15 @@ import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.presentation.util.DeviceConfiguration.MOBILE_LANDSCAPE
 import com.kikepb.core.presentation.util.currentDeviceConfiguration
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import squadfy_app.feature.chat.presentation.generated.resources.empty_chat
-import squadfy_app.feature.chat.presentation.generated.resources.no_messages
-import squadfy_app.feature.chat.presentation.generated.resources.no_messages_subtitle
 import squadfy_app.feature.chat.presentation.generated.resources.Res.drawable as RDrawable
-import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
 
 @Composable
-fun EmptyChatSection(modifier: Modifier = Modifier) {
+fun EmptyListSection(
+    title: String,
+    description: String,
+    modifier: Modifier = Modifier
+) {
 
     val configuration = currentDeviceConfiguration()
 
@@ -35,19 +35,19 @@ fun EmptyChatSection(modifier: Modifier = Modifier) {
     ) {
         Image(
             painter = painterResource(RDrawable.empty_chat),
-            contentDescription = stringResource(RString.no_messages),
+            contentDescription = title,
             modifier = Modifier.size(
                 if(configuration == MOBILE_LANDSCAPE) 125.dp else 200.dp
             )
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = stringResource(RString.no_messages),
+            text = title,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.extended.textPrimary
         )
         Text(
-            text = stringResource(RString.no_messages_subtitle),
+            text = description,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.extended.textSecondary
         )

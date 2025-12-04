@@ -4,24 +4,24 @@ import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
 import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 import com.kikepb.core.presentation.util.UiText
 
-sealed interface MessageModelUi {
+sealed class MessageModelUi(open val id: String) {
     data class LocalUserMessage(
-        val id: String,
+        override val id: String,
         val content: String,
         val deliveryStatus: ChatMessageDeliveryStatus,
         val isMenuOpen: Boolean,
         val formattedSentTime: UiText
-    ): MessageModelUi
+    ): MessageModelUi(id = id)
 
     data class OtherUserMessage(
-        val id: String,
+        override val id: String,
         val content: String,
         val formattedSentTime: UiText,
         val sender: ChatParticipantModelUi
-    ): MessageModelUi
+    ): MessageModelUi(id = id)
 
     data class DateSeparator(
-        val id: String,
+        override val id: String,
         val date: UiText,
-    ): MessageModelUi
+    ): MessageModelUi(id = id)
 }
