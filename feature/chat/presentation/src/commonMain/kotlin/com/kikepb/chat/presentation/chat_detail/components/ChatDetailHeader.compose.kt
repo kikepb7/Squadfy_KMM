@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -43,7 +44,7 @@ import kotlin.time.Clock
 
 @Composable
 fun ChatDetailHeader(
-    chatUi: ChatModelUi,
+    chatUi: ChatModelUi?,
     isDetailPresent: Boolean,
     isChatOptionsDropDownOpen: Boolean,
     onChatOptionsClick: () -> Unit,
@@ -53,8 +54,6 @@ fun ChatDetailHeader(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isGroupChat = chatUi.otherParticipants.size > 1
-
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -77,15 +76,19 @@ fun ChatDetailHeader(
             }
         }
 
-        ChatItemHeaderRow(
-            chat = chatUi,
-            isGroupChat = isGroupChat,
-            modifier = Modifier
-                .weight(1f)
-                .clickable {
-                    onManageChatClick()
-                }
-        )
+        chatUi?.let {
+            val isGroupChat = chatUi.otherParticipants.size > 1
+
+            ChatItemHeaderRow(
+                chat = chatUi,
+                isGroupChat = isGroupChat,
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        onManageChatClick()
+                    }
+            )
+        } ?: Spacer(modifier = Modifier.weight(1f))
 
         Box {
             SquadfyIconButton(

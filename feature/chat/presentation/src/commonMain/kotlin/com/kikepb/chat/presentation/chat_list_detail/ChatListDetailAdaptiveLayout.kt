@@ -3,23 +3,24 @@
 package com.kikepb.chat.presentation.chat_list_detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole.Detail
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole.List
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue.Companion.Expanded
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue.Companion.Hidden
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kikepb.chat.presentation.chat_detail.ChatDetailRoot
 import com.kikepb.chat.presentation.chat_list.ChatListRoot
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnChatClick
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnCreateChatClick
@@ -44,6 +45,12 @@ fun ChatListDetailAdaptiveLayout(
         scaffoldDirective = scaffoldDirective
     )
     val scope = rememberCoroutineScope()
+    val detailPane = scaffoldNavigator.scaffoldValue[Detail]
+    LaunchedEffect(key1 = detailPane, key2 = sharedState.selectedChatId) {
+        if (detailPane == Hidden && sharedState.selectedChatId != null) {
+            chatListDetailViewModel.onAction(action = OnChatClick(chatId = null))
+        }
+    }
 
     BackHandler(enabled = scaffoldNavigator.canNavigateBack()) {
         scope.launch {
@@ -70,14 +77,17 @@ fun ChatListDetailAdaptiveLayout(
         },
         detailPane = {
             AnimatedPane {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    sharedState.selectedChatId?.let {
-                        Text(text = it)
+                val listPane = scaffoldNavigator.scaffoldValue[List]
+
+                ChatDetailRoot(
+                    chatId = sharedState.selectedChatId,
+                    isDetailPresent = detailPane == Expanded && listPane == Expanded,
+                    onBack = {
+                        scope.launch {
+                            if (scaffoldNavigator.canNavigateBack()) scaffoldNavigator.navigateBack()
+                        }
                     }
-                }
+                )
             }
         }
     )

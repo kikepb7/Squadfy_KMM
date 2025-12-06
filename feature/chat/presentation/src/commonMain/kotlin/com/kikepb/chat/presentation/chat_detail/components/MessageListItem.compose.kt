@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kikepb.chat.presentation.model.MessageModelUi
 import com.kikepb.chat.presentation.provider.MessageListItemProvider
+import com.kikepb.chat.presentation.util.getChatBubbleColorForUser
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -46,7 +47,10 @@ fun MessageListItem(
                 )
             }
             is MessageModelUi.OtherUserMessage -> {
-                OtherUserMessage(message = messageUi)
+                OtherUserMessage(
+                    message = messageUi,
+                    color = getChatBubbleColorForUser(userId = messageUi.sender.id)
+                )
             }
         }
     }
