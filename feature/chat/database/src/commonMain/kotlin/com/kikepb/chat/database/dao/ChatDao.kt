@@ -6,6 +6,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import com.kikepb.chat.database.entities.ChatEntity
 import com.kikepb.chat.database.entities.ChatInfoEntity
+import com.kikepb.chat.database.entities.ChatParticipantCrossRef
 import com.kikepb.chat.database.entities.ChatParticipantEntity
 import com.kikepb.chat.database.entities.ChatWithParticipants
 import kotlinx.coroutines.flow.Flow
@@ -55,4 +56,52 @@ interface ChatDao {
 
     @Upsert
     suspend fun upsertChats(chats: List<ChatEntity>)
+
+    @Transaction
+    suspend fun upsertChatWithParticipantsAndCrossRefs(
+        chat: ChatEntity,
+        participants: List<ChatParticipantEntity>,
+        participantDao: ChatParticipantDao,
+        crossRefDao: ChatParticipantsCrossRefDao
+    ) {
+        val crossRefs = participants.map { participant ->
+            ChatParticipantCrossRef(
+                chatId = chat.chatId,
+                userId = participant.userId,
+                isActive = true
+            )
+        }
+
+        upsertChat(chat = chat)
+        participantDao.upsertParticipants(participants = participants)
+        crossRefDao.upsertCrossRefs(crossRef = crossRefs)
+        crossRefDao.syncChatParticipants(chatId = chat.chatId, participants = participants)
+    }
+
+    @Transaction
+    suspend fun upsertChatsWithParticipantsAndCrossRefs(
+        chats: List<ChatWithParticipants>,
+        participantDao: ChatParticipantDao,
+        crossRefDao: ChatParticipantsCrossRefDao
+    ) {
+        val allParticipants = chats.flatMap { it.participants }
+        val allCrossRefs = chats.flatMap { chatWithParticipants ->
+            chatWithParticipants.participants.map { participant ->
+                ChatParticipantCrossRef(
+                    chatId = chatWithParticipants.chat.chatId,
+                    userId = participant.userId,
+                    isActive = true
+                )
+            }
+        }
+
+        upsertChats(chats = chats.map { it.chat })
+
+        participantDao.upsertParticipants(participants = allParticipants)
+        crossRefDao.upsertCrossRefs(crossRef = allCrossRefs)
+
+        chats.forEach { chat ->
+            crossRefDao.syncChatParticipants(chatId = chat.chat.chatId, participants = chat.participants)
+        }
+    }
 }
