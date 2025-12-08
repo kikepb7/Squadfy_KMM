@@ -3,6 +3,7 @@ package com.kikepb.chat.database.entities
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.Companion.CASCADE
+import androidx.room.Index
 
 @Entity(
     primaryKeys = ["chatId", "userId"],
@@ -19,6 +20,10 @@ import androidx.room.ForeignKey.Companion.CASCADE
             childColumns = ["userId"],
             onDelete = CASCADE
         )
+    ],
+    indices = [
+        Index(value = ["chatId"]),
+        Index(value = ["userId"]),
     ]
 )
 data class ChatParticipantCrossRef(

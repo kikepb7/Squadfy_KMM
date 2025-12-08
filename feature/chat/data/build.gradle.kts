@@ -20,7 +20,9 @@ kotlin {
         }
 
         androidMain {
-            dependencies {}
+            dependencies {
+                implementation(libs.koin.android)
+            }
         }
 
         iosMain {
