@@ -1,8 +1,8 @@
 [versions]
 # Build tools
-agp = "8.11.2"
-composeBom = "2025.07.00"
-kotlin = "2.2.20"
+agp = "8.13.1"
+composeBom = "2025.12.00"
+kotlin = "2.2.21"
 ksp = "2.2.0-2.0.2"
 google-services = "4.4.3"
 
@@ -14,9 +14,13 @@ compose-hot-reload = "1.0.0-beta04"
 compose-multiplatform = "1.9.0-beta01"
 # Maintain compose multiplatform version aligned with navigation, cache error could happen
 compose-lifecycle = "2.9.1"
+compose-lifecycle-nav3 = "2.10.0-alpha05"
 navigation-compose = "2.9.0-beta04"
 jetbrains-core-bundle = "1.0.1"
 material-icons = "1.7.3"
+
+# Nav3 Compose Multiplatform
+cmpNavigation3 = "1.0.0-alpha05"
 
 # AndroidX
 androidx-activity = "1.10.1"
@@ -91,6 +95,12 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 # Compose
 jetbrains-compose-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "compose-multiplatform" }
 jetbrains-compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+
+# Nav3 Compose
+jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "cmpNavigation3" }
+jetbrains-lifecycle-viewmodel-nav3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
+#jetbrains-navigation3-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "compose-lifecycle-nav3"}
+
 
 # Koin
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
