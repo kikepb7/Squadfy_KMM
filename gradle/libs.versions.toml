@@ -26,6 +26,7 @@ cmpNavigation3 = "1.0.0-alpha05"
 androidx-activity = "1.10.1"
 androidx-core = "1.16.0"
 androidx-lifecycle = "2.9.0"
+androidx-lifecycle-nav3 = "2.10.0-alpha05"
 androidx-test-ext = "1.2.1"
 androidx-runner = "1.6.2"
 androidx-test-core = "1.7.0"
@@ -98,7 +99,7 @@ jetbrains-compose-navigation = { module = "org.jetbrains.androidx.navigation:nav
 
 # Nav3 Compose
 jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "cmpNavigation3" }
-jetbrains-lifecycle-viewmodel-nav3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
+jetbrains-lifecycle-viewmodel-nav3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle-nav3" }
 #jetbrains-navigation3-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "compose-lifecycle-nav3"}
 
 

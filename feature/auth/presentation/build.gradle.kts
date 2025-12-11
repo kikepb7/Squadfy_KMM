@@ -17,6 +17,9 @@ kotlin {
 
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
+
+                implementation(libs.jetbrains.navigation3.ui)
+                implementation(libs.jetbrains.lifecycle.viewmodel.nav3)
             }
         }
 

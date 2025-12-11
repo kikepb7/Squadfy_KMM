@@ -13,6 +13,9 @@ kotlin {
                 implementation(libs.material3.adaptive)
 
                 implementation(compose.components.resources)
+
+                implementation(libs.jetbrains.navigation3.ui)
+                implementation(libs.jetbrains.lifecycle.viewmodel.nav3)
             }
         }
 
