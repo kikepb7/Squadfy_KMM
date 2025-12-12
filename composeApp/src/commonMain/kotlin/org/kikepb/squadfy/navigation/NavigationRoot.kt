@@ -1,35 +1,67 @@
 package org.kikepb.squadfy.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
+import androidx.savedstate.serialization.SavedStateConfiguration
+import com.kikepb.auth.presentation.navigation.AuthGraphNavigation
+import com.kikepb.auth.presentation.navigation.AuthGraphRoutes
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Graph
-import com.kikepb.auth.presentation.navigation.authGraph
-import com.kikepb.chat.presentation.chat_list.ChatListRoute
-import com.kikepb.chat.presentation.chat_list.ChatListScreenRoot
+import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Login
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 
 @Composable
-fun NavigationRoot(navController: NavHostController, startDestination: Any) {
-    val navController = rememberNavController()
+fun NavigationRoot(modifier: Modifier = Modifier) {
+    val navigationState = rememberNavigationState(
+        startRoute = Graph,
+        topLevelRoutes = setOf(Graph)
+    )
+    val navigator = remember { Navigator(state = navigationState) }
 
-    NavHost(
-        navController = navController,
-        startDestination = startDestination
-    ) {
-        authGraph(
-            navController = navController,
-            onLoginSuccess = {
-                navController.navigate(ChatListRoute) {
-                    popUpTo(Graph) {
-                        inclusive = true
-                    }
+    val appEntryProvider = entryProvider {
+        entry<AuthGraphRoutes.Graph> { key ->
+            AuthGraphNavigation(
+                onLoginSuccess = {
+                    navigator.navigate(route = Login)
                 }
-            }
-        )
-        composable<ChatListRoute> {
-            ChatListScreenRoot()
+            )
         }
     }
+
+
+    val rootBackStack = rememberNavBackStack(
+        configuration = SavedStateConfiguration {
+            serializersModule = SerializersModule {
+                polymorphic(NavKey::class) {
+                    subclass(Graph::class, Graph.serializer())
+                }
+            }
+        },
+        Graph
+    )
+
+    NavDisplay(
+        modifier = modifier,
+        backStack = rootBackStack,
+        onBack = { navigator.goBack() },
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator()
+        ),
+        entryProvider = entryProvider {
+            entry<Graph> {
+                AuthGraphNavigation(
+                    onLoginSuccess = {
+                        rootBackStack.remove(element = Graph)
+                        rootBackStack.add(Login)
+                    }
+                )
+            }
+        }
+    )
 }

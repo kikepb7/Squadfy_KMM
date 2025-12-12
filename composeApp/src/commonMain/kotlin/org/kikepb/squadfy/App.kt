@@ -41,10 +41,11 @@ fun App(
 
     SquadfyTheme {
         if (!state.isCheckingAuth) {
-            NavigationRoot(
+            /*NavigationRoot(
                 navController = navController,
                 startDestination = if (state.isLoggedIn) ChatListRoute else Graph
-            )
+            )*/
+            NavigationRoot()
         }
     }
 }
