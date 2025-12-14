@@ -2,22 +2,44 @@ package com.kikepb.chat.presentation.chat_list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kikepb.chat.domain.usecases.FetchChatsUseCase
+import com.kikepb.chat.domain.usecases.GetChatsUseCase
+import com.kikepb.chat.presentation.mappers.toUi
 import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
+import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.presentation.util.UiText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class ChatListViewModel : ViewModel() {
+class ChatListViewModel(
+    private val getChatsUseCase: GetChatsUseCase,
+    private val fetchChatsUseCase: FetchChatsUseCase,
+    private val sessionStorage: SessionStorage
+) : ViewModel() {
 
     private var hasLoadedInitialData = false
 
     private val _state = MutableStateFlow(ChatListState())
-    val state = _state
+    val state = combine(
+        _state,
+        getChatsUseCase.getChats(),
+        sessionStorage.observeAuthInfo()
+    ) { currentState, chats, authInfo ->
+        if (authInfo == null) return@combine ChatListState()
+
+        currentState.copy(
+            chats = chats.map { it.toUi(localParticipantId = authInfo.user.id) },
+            localParticipant = authInfo.user.toUi()
+        )
+    }
         .onStart {
             if (!hasLoadedInitialData) {
+                loadChats()
                 hasLoadedInitialData = true
             }
         }
@@ -26,6 +48,12 @@ class ChatListViewModel : ViewModel() {
             started = SharingStarted.WhileSubscribed(5_000L),
             initialValue = ChatListState()
         )
+
+    private fun loadChats() {
+        viewModelScope.launch {
+            fetchChatsUseCase.fetchChats()
+        }
+    }
 
     fun onAction(action: ChatListAction) {
         when (action) {

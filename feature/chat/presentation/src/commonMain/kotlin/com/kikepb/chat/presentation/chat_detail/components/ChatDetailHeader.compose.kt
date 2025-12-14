@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
 import com.kikepb.chat.domain.models.ChatMessageModel
 import com.kikepb.chat.presentation.components.ChatHeader
 import com.kikepb.chat.presentation.components.ChatItemHeaderRow
@@ -57,9 +58,7 @@ fun ChatDetailHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surface
-            ),
+            .background(color = MaterialTheme.colorScheme.surface),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -158,7 +157,8 @@ fun ChatDetailHeaderPreview() {
                             content = "This is a last chat message that was sent by Enrique " +
                                     "and goes over multiple lines to showcase the ellipsis",
                             createdAt = Clock.System.now(),
-                            senderId = "1"
+                            senderId = "1",
+                            deliveryStatus = ChatMessageDeliveryStatus.SENT
                         ),
                         lastMessageSenderUsername = "Enrique"
                     ),

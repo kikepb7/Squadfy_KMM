@@ -4,6 +4,6 @@ import com.kikepb.chat.domain.models.ChatParticipantModel
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.Result
 
-interface ChatParticipantRepository {
+interface ChatParticipantService {
     suspend fun searchParticipant(query: String): Result<ChatParticipantModel, DataError.Remote>
 }

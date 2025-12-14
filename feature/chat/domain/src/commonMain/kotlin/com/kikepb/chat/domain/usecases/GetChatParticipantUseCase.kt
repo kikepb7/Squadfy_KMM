@@ -1,10 +1,10 @@
 package com.kikepb.chat.domain.usecases
 
-import com.kikepb.chat.domain.repository.ChatParticipantRepository
+import com.kikepb.chat.domain.repository.ChatParticipantService
 
 class GetChatParticipantUseCase(
-    private val chatParticipantRepository: ChatParticipantRepository
+    private val chatParticipantService: ChatParticipantService
 ) {
     suspend operator fun invoke(query: String) =
-        chatParticipantRepository.searchParticipant(query)
+        chatParticipantService.searchParticipant(query)
 }

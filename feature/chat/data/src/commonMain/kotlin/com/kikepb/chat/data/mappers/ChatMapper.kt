@@ -1,6 +1,8 @@
 package com.kikepb.chat.data.mappers
 
 import com.kikepb.chat.data.dto.ChatDTO
+import com.kikepb.chat.database.entities.ChatEntity
+import com.kikepb.chat.database.entities.ChatWithParticipants
 import com.kikepb.chat.domain.models.ChatModel
 import kotlin.time.Instant
 
@@ -10,4 +12,18 @@ fun ChatDTO.toDomain(): ChatModel =
         participants = participants.map { it.toDomain() },
         lastActivityAt = Instant.parse(input = lastActivityAt),
         lastMessage = lastMessage?.toDomain()
+    )
+
+fun ChatWithParticipants.toDomain(): ChatModel =
+    ChatModel(
+        id = chat.chatId,
+        participants = participants.map { it.toDomain() },
+        lastActivityAt = Instant.fromEpochMilliseconds(epochMilliseconds = chat.lastActivityAt),
+        lastMessage = lastMessage?.toDomain()
+    )
+
+fun ChatModel.toEntity(): ChatEntity =
+    ChatEntity(
+        chatId = id,
+        lastActivityAt = lastActivityAt.toEpochMilliseconds()
     )

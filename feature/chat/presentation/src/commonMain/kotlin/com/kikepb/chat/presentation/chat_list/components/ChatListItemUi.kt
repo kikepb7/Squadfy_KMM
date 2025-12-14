@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
 import com.kikepb.chat.domain.models.ChatMessageModel
 import com.kikepb.chat.presentation.components.ChatItemHeaderRow
 import com.kikepb.chat.presentation.model.ChatModelUi
@@ -67,7 +68,7 @@ fun ChatListItemUi(
                             color = MaterialTheme.colorScheme.extended.textSecondary,
                         )
                     ) {
-                        append(chat.lastMessageSenderUsername + ":")
+                        append(chat.lastMessageSenderUsername + ": ")
                     }
                     append(chat.lastMessage.content)
                 }
@@ -122,7 +123,8 @@ fun ChatListItemUiPreview() {
                     content = "This is a last chat message that was sent by Enrique " +
                             "and goes over multiple lines to showcase the ellipsis",
                     createdAt = Clock.System.now(),
-                    senderId = "1"
+                    senderId = "1",
+                    deliveryStatus = ChatMessageDeliveryStatus.SENT
                 ),
                 lastMessageSenderUsername = "Enrique"
             )
