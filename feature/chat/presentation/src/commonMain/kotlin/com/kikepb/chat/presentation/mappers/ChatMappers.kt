@@ -16,3 +16,4 @@ fun ChatModel.toUi(localParticipantId: String): ChatModelUi {
             ?.username
     )
 }
+

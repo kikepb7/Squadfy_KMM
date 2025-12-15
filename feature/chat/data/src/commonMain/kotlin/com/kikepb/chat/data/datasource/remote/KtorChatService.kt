@@ -26,4 +26,9 @@ class KtorChatService(private val httpClient: HttpClient) : ChatService {
         ).map { chatDto ->
             chatDto.map { it.toDomain() }
         }
+
+    override suspend fun getChatById(chatId: String): Result<ChatModel, DataError.Remote> =
+        httpClient.get<ChatDTO>(
+            route = "/chat/$chatId"
+        ).map { it.toDomain() }
 }

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
@@ -46,7 +45,7 @@ fun MessageBox(
 
     SquadfyMultiLineTextField(
         state = messageTextFieldState,
-        modifier = modifier.padding(4.dp),
+        modifier = modifier,
         placeholder = stringResource(RString.send_a_message),
         enabled = isTextInputEnabled,
         keyboardOptions = KeyboardOptions(

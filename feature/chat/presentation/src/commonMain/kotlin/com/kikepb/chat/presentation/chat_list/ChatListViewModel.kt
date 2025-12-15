@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ChatListViewModel(
@@ -57,6 +58,9 @@ class ChatListViewModel(
 
     fun onAction(action: ChatListAction) {
         when (action) {
+            is ChatListAction.OnChatClick -> {
+                _state.update { it.copy(selectedChatId = action.chat.id) }
+            }
             else -> Unit
         }
     }

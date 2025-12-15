@@ -1,10 +1,9 @@
 package com.kikepb.chat.domain.usecases
 
-import com.kikepb.chat.domain.repository.ChatService
+import com.kikepb.chat.domain.repository.ChatRepository
 
-class CreateChatUseCase(
-    private val chatService: ChatService
+class CreateChatUseCase(private val chatRepository: ChatRepository
 ) {
     suspend fun createChat(otherUserIds: List<String>) =
-        chatService.createChat(otherUserIds = otherUserIds)
+        chatRepository.createChat(otherUserIds = otherUserIds)
 }

@@ -6,8 +6,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.chat.domain.models.ChatModel
-import com.kikepb.chat.domain.usecases.CreateChatUseCase
 import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
+import com.kikepb.chat.domain.usecases.CreateChatUseCase
 import com.kikepb.chat.presentation.mappers.toUi
 import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 import com.kikepb.core.domain.util.DataError
@@ -34,7 +34,7 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(FlowPreview::class)
 class CreateChatViewModel(
     private val getChatParticipantUseCase: GetChatParticipantUseCase,
-    private val createChatUseCase: CreateChatUseCase
+    private val createChatUseCase: CreateChatUseCase,
 ) : ViewModel() {
 
     private var hasLoadedInitialData = false

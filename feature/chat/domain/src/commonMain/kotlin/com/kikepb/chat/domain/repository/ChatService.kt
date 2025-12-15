@@ -7,4 +7,5 @@ import com.kikepb.core.domain.util.Result
 interface ChatService {
     suspend fun createChat(otherUserIds: List<String>): Result<ChatModel, DataError.Remote>
     suspend fun getChats(): Result<List<ChatModel>, DataError.Remote>
+    suspend fun getChatById(chatId: String): Result<ChatModel, DataError.Remote>
 }

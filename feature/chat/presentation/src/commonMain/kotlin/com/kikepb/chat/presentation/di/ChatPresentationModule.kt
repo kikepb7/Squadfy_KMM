@@ -1,5 +1,6 @@
 package com.kikepb.chat.presentation.di
 
+import com.kikepb.chat.presentation.chat_detail.ChatDetailViewModel
 import com.kikepb.chat.presentation.chat_list.ChatListViewModel
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailViewModel
 import com.kikepb.chat.presentation.create_chat.CreateChatViewModel
@@ -8,6 +9,7 @@ import org.koin.dsl.module
 
 val chatPresentationModule = module {
     viewModelOf(::ChatListDetailViewModel)
+    viewModelOf(::ChatDetailViewModel)
     viewModelOf(::CreateChatViewModel)
     viewModelOf(::ChatListViewModel)
 }
