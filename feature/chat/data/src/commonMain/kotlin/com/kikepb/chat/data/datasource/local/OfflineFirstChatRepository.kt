@@ -4,6 +4,8 @@ import com.kikepb.chat.data.mappers.toDomain
 import com.kikepb.chat.data.mappers.toEntity
 import com.kikepb.chat.data.mappers.toLastMessageView
 import com.kikepb.chat.database.SquadfyChatDatabase
+import com.kikepb.chat.database.entities.ChatInfoEntity
+import com.kikepb.chat.database.entities.ChatParticipantEntity
 import com.kikepb.chat.database.entities.ChatWithParticipants
 import com.kikepb.chat.domain.models.ChatInfoModel
 import com.kikepb.chat.domain.models.ChatModel
@@ -14,9 +16,13 @@ import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.asEmptyResult
 import com.kikepb.core.domain.util.onSuccess
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.supervisorScope
 
 class OfflineFirstChatRepository(
     private val chatService: ChatService,
@@ -24,14 +30,34 @@ class OfflineFirstChatRepository(
 ): ChatRepository {
 
     override fun getChats(): Flow<List<ChatModel>> =
-        db.chatDao.getChatsWithActiveParticipants()
-            .map { chatWithParticipantsList ->
-                chatWithParticipantsList.map { it.toDomain() }
+        db.chatDao.getChatsWithParticipants()
+            .map { allChatsWithParticipants ->
+                supervisorScope {
+                    allChatsWithParticipants.map { chatWithParticipants ->
+                        async {
+                            ChatWithParticipants(
+                                chat = chatWithParticipants.chat,
+                                participants = chatWithParticipants.participants
+                                    .onlyActive(chatId = chatWithParticipants.chat.chatId),
+                                lastMessage = chatWithParticipants.lastMessage
+                            )
+                        }
+                    }
+                        .awaitAll()
+                        .map { it.toDomain() }
+                }
             }
 
     override fun getChatInfoById(chatId: String): Flow<ChatInfoModel> =
         db.chatDao.getChatInfoById(chatId = chatId)
             .filterNotNull()
+            .map { chatInfo ->
+                ChatInfoEntity(
+                    chat = chatInfo.chat,
+                    participants = chatInfo.participants.onlyActive(chatId = chatInfo.chat.chatId),
+                    messagesWithSenders = chatInfo.messagesWithSenders
+                )
+            }
             .map { it.toDomain() }
 
     override suspend fun fetchChats(): Result<List<ChatModel>, DataError.Remote> =
@@ -82,4 +108,12 @@ class OfflineFirstChatRepository(
             .onSuccess {
                 db.chatDao.deleteChatById(chatId = chatId)
             }
+
+    private suspend fun List<ChatParticipantEntity>.onlyActive(chatId: String): List<ChatParticipantEntity> {
+        val activeParticipants = db.chatDao.getActiveParticipantsByChatId(chatId = chatId)
+            .first()
+            .map { it.userId }
+
+        return this.filter { it.userId in activeParticipants }
+    }
 }
