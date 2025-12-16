@@ -19,9 +19,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -34,6 +37,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
 import com.kikepb.chat.domain.models.ChatMessageModel
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSelectChat
+import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnChatLeft
+import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnError
 import com.kikepb.chat.presentation.chat_detail.components.ChatDetailHeader
 import com.kikepb.chat.presentation.chat_detail.components.MessageBox
 import com.kikepb.chat.presentation.chat_detail.components.MessageList
@@ -43,6 +48,7 @@ import com.kikepb.chat.presentation.model.MessageModelUi
 import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
+import com.kikepb.core.presentation.util.ObserveAsEvents
 import com.kikepb.core.presentation.util.UiText
 import com.kikepb.core.presentation.util.clearFocusOnTap
 import com.kikepb.core.presentation.util.currentDeviceConfiguration
@@ -60,6 +66,14 @@ fun ChatDetailRoot(
     viewModel: ChatDetailViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackBarState= remember { SnackbarHostState() }
+
+    ObserveAsEvents(flow = viewModel.events) { event ->
+        when (event) {
+            OnChatLeft -> onBack()
+            is OnError -> snackBarState.showSnackbar(event.error.asStringAsync())
+        }
+    }
 
     LaunchedEffect(key1 = chatId) {
         viewModel.onAction(action = OnSelectChat(chatId = chatId))
@@ -73,6 +87,7 @@ fun ChatDetailRoot(
     ChatDetailScreen(
         state = state,
         isDetailPresent = isDetailPresent,
+        snackBarState = snackBarState,
         onAction = viewModel::onAction
     )
 }
@@ -81,6 +96,7 @@ fun ChatDetailRoot(
 fun ChatDetailScreen(
     state: ChatDetailState,
     isDetailPresent: Boolean,
+    snackBarState: SnackbarHostState,
     onAction: (ChatDetailAction) -> Unit,
 ) {
     val configuration = currentDeviceConfiguration()
@@ -91,7 +107,8 @@ fun ChatDetailScreen(
         contentWindowInsets = WindowInsets.safeDrawing,
         containerColor =
             if (!configuration.isWideScreen) MaterialTheme.colorScheme.surface
-            else MaterialTheme.colorScheme.extended.surfaceLower
+            else MaterialTheme.colorScheme.extended.surfaceLower,
+        snackbarHost = { SnackbarHost(hostState = snackBarState) }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -218,6 +235,7 @@ private fun ChatDetailEmptyPreview() {
         ChatDetailScreen(
             state = ChatDetailState(),
             isDetailPresent = false,
+            snackBarState = remember { SnackbarHostState() },
             onAction = {}
         )
     }
@@ -287,6 +305,7 @@ private fun ChatDetailMessagesPreview() {
                 }
             ),
             isDetailPresent = true,
+            snackBarState = remember { SnackbarHostState() },
             onAction = {}
         )
     }

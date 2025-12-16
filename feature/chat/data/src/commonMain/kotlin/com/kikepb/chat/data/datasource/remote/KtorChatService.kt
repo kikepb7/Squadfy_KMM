@@ -5,10 +5,13 @@ import com.kikepb.chat.data.dto.request.CreateChatRequestDTO
 import com.kikepb.chat.data.mappers.toDomain
 import com.kikepb.chat.domain.models.ChatModel
 import com.kikepb.chat.domain.repository.ChatService
+import com.kikepb.core.data.networking.delete
 import com.kikepb.core.data.networking.get
 import com.kikepb.core.data.networking.post
 import com.kikepb.core.domain.util.DataError
+import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
+import com.kikepb.core.domain.util.asEmptyResult
 import com.kikepb.core.domain.util.map
 import io.ktor.client.HttpClient
 
@@ -31,4 +34,9 @@ class KtorChatService(private val httpClient: HttpClient) : ChatService {
         httpClient.get<ChatDTO>(
             route = "/chat/$chatId"
         ).map { it.toDomain() }
+
+    override suspend fun leaveChat(chatId: String): EmptyResult<DataError.Remote> =
+        httpClient.delete<Unit>(
+            route = "/chat/$chatId/leave"
+        ).asEmptyResult()
 }

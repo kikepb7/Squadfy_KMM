@@ -76,4 +76,10 @@ class OfflineFirstChatRepository(
                     crossRefDao = db.chatParticipantsCrossRefDao
                 )
             }
+
+    override suspend fun leaveChat(chatId: String): EmptyResult<DataError.Remote> =
+        chatService.leaveChat(chatId = chatId)
+            .onSuccess {
+                db.chatDao.deleteChatById(chatId = chatId)
+            }
 }
