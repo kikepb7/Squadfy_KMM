@@ -27,6 +27,7 @@ import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnCrea
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnDismissCurrentDialog
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnProfileSettingsClick
 import com.kikepb.chat.presentation.create_chat.CreateChatRoot
+import com.kikepb.chat.presentation.manage_chat.ManageChatRoot
 import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.presentation.util.DialogSheetScopedViewModel
 import kotlinx.coroutines.FlowPreview
@@ -82,6 +83,9 @@ fun ChatListDetailAdaptiveLayout(
                 ChatDetailRoot(
                     chatId = sharedState.selectedChatId,
                     isDetailPresent = detailPane == Expanded && listPane == Expanded,
+                    onChatMembersClick = {
+                        chatListDetailViewModel.onAction(action = ChatListDetailAction.OnManageChatClick)
+                    },
                     onBack = {
                         scope.launch {
                             if (scaffoldNavigator.canNavigateBack()) scaffoldNavigator.navigateBack()
@@ -92,9 +96,7 @@ fun ChatListDetailAdaptiveLayout(
         }
     )
 
-    DialogSheetScopedViewModel(
-        visible = sharedState.dialogState is DialogState.CreateChat
-    ) {
+    DialogSheetScopedViewModel(visible = sharedState.dialogState is DialogState.CreateChat) {
         CreateChatRoot(
             onChatCreated = { chat ->
                 chatListDetailViewModel.onAction(action = OnDismissCurrentDialog)
@@ -106,6 +108,13 @@ fun ChatListDetailAdaptiveLayout(
             onDismiss = {
                 chatListDetailViewModel.onAction(action = OnDismissCurrentDialog)
             }
+        )
+    }
+
+    DialogSheetScopedViewModel(visible = sharedState.dialogState is DialogState.ManageChat) {
+        ManageChatRoot(
+            onMembersAdded = { chatListDetailViewModel.onAction(action = OnDismissCurrentDialog) },
+            onDismiss = { chatListDetailViewModel.onAction(action = OnDismissCurrentDialog) }
         )
     }
 }

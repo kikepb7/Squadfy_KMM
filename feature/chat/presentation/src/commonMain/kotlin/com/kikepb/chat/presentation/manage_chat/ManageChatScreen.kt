@@ -1,42 +1,36 @@
-@file:OptIn(FlowPreview::class)
-
-package com.kikepb.chat.presentation.create_chat
+package com.kikepb.chat.presentation.manage_chat
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kikepb.chat.domain.models.ChatModel
 import com.kikepb.chat.presentation.components.manage_chat.ManageChatScreen
 import com.kikepb.chat.presentation.create_chat.ManageChatAction.OnDismissDialog
-import com.kikepb.chat.presentation.create_chat.CreateChatEvent.OnChatCreated
 import com.kikepb.core.designsystem.components.dialogs.SquadfyAdaptiveDialogSheetLayout
-import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.presentation.util.ObserveAsEvents
-import kotlinx.coroutines.FlowPreview
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import squadfy_app.feature.chat.presentation.generated.resources.create_chat
+import squadfy_app.feature.chat.presentation.generated.resources.chat_members
 import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
+import squadfy_app.feature.chat.presentation.generated.resources.save
 
 @Composable
-fun CreateChatRoot(
+fun ManageChatRoot(
     onDismiss: () -> Unit,
-    onChatCreated: (ChatModel) -> Unit,
-    viewModel: CreateChatViewModel = koinViewModel()
+    onMembersAdded: () -> Unit,
+    viewModel: ManageChatViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     ObserveAsEvents(flow = viewModel.events) { event ->
         when (event) {
-            is OnChatCreated -> onChatCreated(event.chat)
+            is ManageChatEvent.OnMembersAdded -> onMembersAdded()
         }
     }
 
     SquadfyAdaptiveDialogSheetLayout(onDismiss = onDismiss) {
         ManageChatScreen(
-            headerText = stringResource(RString.create_chat),
-            primaryButtonText = stringResource(RString.create_chat),
+            headerText = stringResource(RString.chat_members),
+            primaryButtonText = stringResource(RString.save),
             state = state,
             onAction = { action ->
                 when (action) {
@@ -46,19 +40,6 @@ fun CreateChatRoot(
 
                 viewModel.onAction(action = action)
             }
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun CreateChatPreview() {
-    SquadfyTheme {
-        ManageChatScreen(
-            headerText = "Create Chat",
-            primaryButtonText = "Create Chat",
-            state = ManageChatState(),
-            onAction = {}
         )
     }
 }

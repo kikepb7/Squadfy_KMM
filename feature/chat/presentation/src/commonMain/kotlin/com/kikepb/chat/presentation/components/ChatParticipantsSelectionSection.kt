@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
+import com.kikepb.core.designsystem.components.divider.SquadfyHorizontalDivider
 import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.designsystem.theme.titleXSmall
 import com.kikepb.core.presentation.util.DeviceConfiguration.DESKTOP
@@ -29,6 +30,7 @@ import com.kikepb.core.presentation.util.currentDeviceConfiguration
 
 @Composable
 fun ColumnScope.ChatParticipantsSelectionSection(
+    existingParticipants: List<ChatParticipantModelUi>,
     selectedParticipants: List<ChatParticipantModelUi>,
     modifier: Modifier = Modifier,
     searchResult: ChatParticipantModelUi? = null
@@ -49,6 +51,18 @@ fun ColumnScope.ChatParticipantsSelectionSection(
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
         ) {
+            items(
+                items = existingParticipants,
+                key = { "existing_${it.id}" }
+            ) { participant ->
+                ChatParticipantListItem(
+                    participantUi = participant,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            if (existingParticipants.isNotEmpty()) item { SquadfyHorizontalDivider() }
+
             searchResult?.let {
                 item {
                     ChatParticipantListItem(

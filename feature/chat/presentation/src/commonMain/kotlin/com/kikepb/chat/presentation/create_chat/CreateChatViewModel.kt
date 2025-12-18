@@ -38,7 +38,7 @@ class CreateChatViewModel(
 ) : ViewModel() {
 
     private var hasLoadedInitialData = false
-    private val _state = MutableStateFlow(CreateChatState())
+    private val _state = MutableStateFlow(ManageChatState())
     private val searchFlow = snapshotFlow { _state.value.queryTextState.text.toString() }
         .debounce(timeout = 1.seconds)
         .onEach { query ->
@@ -54,7 +54,7 @@ class CreateChatViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000L),
-            initialValue = CreateChatState()
+            initialValue = ManageChatState()
         )
     private val eventChannel = Channel<CreateChatEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -140,17 +140,18 @@ class CreateChatViewModel(
         }
     }
 
-    fun onAction(action: CreateChatAction) {
+    fun onAction(action: ManageChatAction) {
         when (action) {
-            CreateChatAction.OnAddClick -> addParticipant()
-            CreateChatAction.OnCreateChatClick -> createChat()
+            ManageChatAction.OnAddClick -> addParticipant()
+            ManageChatAction.OnPrimaryActionClick -> createChat()
             else -> Unit
         }
     }
 }
 
-data class CreateChatState(
+data class ManageChatState(
     val queryTextState: TextFieldState = TextFieldState(),
+    val existingChatParticipants: List<ChatParticipantModelUi> = emptyList(),
     val selectedChatParticipants: List<ChatParticipantModelUi> = emptyList(),
     val isSearching: Boolean = false,
     val canAddParticipant: Boolean = false,
@@ -164,8 +165,8 @@ sealed interface CreateChatEvent {
     data class OnChatCreated(val chat: ChatModel) : CreateChatEvent
 }
 
-sealed interface CreateChatAction {
-    data object OnAddClick: CreateChatAction
-    data object OnDismissDialog: CreateChatAction
-    data object OnCreateChatClick: CreateChatAction
+sealed interface ManageChatAction {
+    data object OnAddClick: ManageChatAction
+    data object OnDismissDialog: ManageChatAction
+    data object OnPrimaryActionClick: ManageChatAction
 }
