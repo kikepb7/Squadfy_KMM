@@ -9,6 +9,7 @@ import com.kikepb.chat.database.entities.ChatParticipantEntity
 import com.kikepb.chat.database.entities.ChatWithParticipants
 import com.kikepb.chat.domain.models.ChatInfoModel
 import com.kikepb.chat.domain.models.ChatModel
+import com.kikepb.chat.domain.models.ChatParticipantModel
 import com.kikepb.chat.domain.repository.ChatRepository
 import com.kikepb.chat.domain.repository.ChatService
 import com.kikepb.core.domain.util.DataError
@@ -59,6 +60,12 @@ class OfflineFirstChatRepository(
                 )
             }
             .map { it.toDomain() }
+
+    override fun getActiveParticipantsByChatId(chatId: String): Flow<List<ChatParticipantModel>> =
+        db.chatDao.getActiveParticipantsByChatId(chatId = chatId)
+            .map { participants ->
+                participants.map { it.toDomain() }
+            }
 
     override suspend fun fetchChats(): Result<List<ChatModel>, DataError.Remote> =
         chatService
@@ -116,4 +123,18 @@ class OfflineFirstChatRepository(
 
         return this.filter { it.userId in activeParticipants }
     }
+
+    override suspend fun addParticipantsToChat(
+        chatId: String,
+        userIds: List<String>
+    ): Result<ChatModel, DataError.Remote> =
+        chatService.addParticipantsToChat(chatId = chatId, userIds = userIds)
+            .onSuccess { chat ->
+                db.chatDao.upsertChatWithParticipantsAndCrossRefs(
+                    chat = chat.toEntity(),
+                    participants = chat.participants.map { it.toEntity() },
+                    participantDao = db.chatParticipantDao,
+                    crossRefDao = db.chatParticipantsCrossRefDao
+                )
+            }
 }

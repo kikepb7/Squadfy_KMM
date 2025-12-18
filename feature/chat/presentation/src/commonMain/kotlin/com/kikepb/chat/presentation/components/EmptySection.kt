@@ -20,7 +20,7 @@ import squadfy_app.feature.chat.presentation.generated.resources.empty_chat
 import squadfy_app.feature.chat.presentation.generated.resources.Res.drawable as RDrawable
 
 @Composable
-fun EmptyListSection(
+fun EmptySection(
     title: String,
     description: String,
     modifier: Modifier = Modifier

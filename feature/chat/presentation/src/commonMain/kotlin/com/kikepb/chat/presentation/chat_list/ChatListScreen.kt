@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.chat.presentation.chat_list.components.ChatListHeader
 import com.kikepb.chat.presentation.chat_list.components.ChatListItemUi
-import com.kikepb.chat.presentation.components.EmptyListSection
+import com.kikepb.chat.presentation.components.EmptySection
 import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.core.designsystem.components.buttons.SquadfyFloatingActionButton
 import com.kikepb.core.designsystem.components.dialogs.SquadfyDestructiveConfirmationDialog
@@ -118,7 +118,7 @@ fun ChatListScreen(
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
                 state.chats.isEmpty() -> {
-                    EmptyListSection(
+                    EmptySection(
                         title = stringResource(RString.no_chats),
                         description = stringResource(RString.no_chats_subtitle),
                         modifier = Modifier

@@ -124,16 +124,16 @@ class CreateChatViewModel(
         if (userIds.isEmpty()) return
 
         viewModelScope.launch {
-            _state.update { it.copy(isCreatingChat = true, canAddParticipant = false) }
+            _state.update { it.copy(isSubmitting = true, canAddParticipant = false) }
 
             createChatUseCase.createChat(otherUserIds = userIds)
                 .onSuccess { chat ->
-                    _state.update { it.copy(isCreatingChat = false) }
+                    _state.update { it.copy(isSubmitting = false) }
                     eventChannel.send(element = CreateChatEvent.OnChatCreated(chat = chat))
                 }
                 .onFailure { error ->
                     _state.update { it.copy(
-                        createChatError = error.toUiText(),
+                        submitError = error.toUiText(),
                         canAddParticipant = it.currentSearchResult != null && !it.isSearching
                     ) }
                 }
@@ -157,8 +157,8 @@ data class ManageChatState(
     val canAddParticipant: Boolean = false,
     val currentSearchResult: ChatParticipantModelUi? = null,
     val searchError: UiText? = null,
-    val isCreatingChat: Boolean = false,
-    val createChatError: UiText? = null
+    val isSubmitting: Boolean = false,
+    val submitError: UiText? = null
 )
 
 sealed interface CreateChatEvent {
@@ -169,4 +169,8 @@ sealed interface ManageChatAction {
     data object OnAddClick: ManageChatAction
     data object OnDismissDialog: ManageChatAction
     data object OnPrimaryActionClick: ManageChatAction
+
+    sealed interface ChatParticipants: ManageChatAction {
+        data class OnSelectChat(val chatId: String?): ManageChatAction
+    }
 }

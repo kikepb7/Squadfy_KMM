@@ -63,9 +63,7 @@ fun ChatDetailHeader(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (!isDetailPresent) {
-            SquadfyIconButton(
-                onClick = onBackClick
-            ) {
+            SquadfyIconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = vectorResource(DesignSystemDrawable.arrow_left_icon),
                     contentDescription = stringResource(RString.go_back),
@@ -90,9 +88,7 @@ fun ChatDetailHeader(
         } ?: Spacer(modifier = Modifier.weight(1f))
 
         Box {
-            SquadfyIconButton(
-                onClick = onChatOptionsClick
-            ) {
+            SquadfyIconButton(onClick = onChatOptionsClick) {
                 Icon(
                     imageVector = vectorResource(DesignSystemDrawable.dots_icon),
                     contentDescription = stringResource(RString.open_chat_options_menu),

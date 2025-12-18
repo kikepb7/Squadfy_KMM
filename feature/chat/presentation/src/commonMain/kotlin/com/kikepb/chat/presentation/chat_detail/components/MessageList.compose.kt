@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.kikepb.chat.presentation.components.EmptyListSection
+import com.kikepb.chat.presentation.components.EmptySection
 import com.kikepb.chat.presentation.model.MessageModelUi
 import org.jetbrains.compose.resources.stringResource
 import squadfy_app.feature.chat.presentation.generated.resources.no_messages
@@ -34,7 +34,7 @@ fun MessageList(
             modifier = modifier.padding(vertical = 32.dp),
             contentAlignment = Alignment.Center
         ) {
-            EmptyListSection(
+            EmptySection(
                 title = stringResource(RString.no_messages),
                 description = stringResource(RString.no_messages_subtitle),
             )

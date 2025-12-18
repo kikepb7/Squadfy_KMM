@@ -113,6 +113,7 @@ fun ChatListDetailAdaptiveLayout(
 
     DialogSheetScopedViewModel(visible = sharedState.dialogState is DialogState.ManageChat) {
         ManageChatRoot(
+            chatId = sharedState.selectedChatId,
             onMembersAdded = { chatListDetailViewModel.onAction(action = OnDismissCurrentDialog) },
             onDismiss = { chatListDetailViewModel.onAction(action = OnDismissCurrentDialog) }
         )

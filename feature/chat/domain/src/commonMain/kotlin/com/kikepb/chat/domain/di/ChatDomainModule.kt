@@ -1,8 +1,10 @@
 package com.kikepb.chat.domain.di
 
+import com.kikepb.chat.domain.usecases.AddParticipantsToChatUseCase
 import com.kikepb.chat.domain.usecases.CreateChatUseCase
 import com.kikepb.chat.domain.usecases.FetchChatByIdUseCase
 import com.kikepb.chat.domain.usecases.FetchChatsUseCase
+import com.kikepb.chat.domain.usecases.GetActiveParticipantsByChatIdUseCase
 import com.kikepb.chat.domain.usecases.GetChatInfoByIdUseCase
 import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
 import com.kikepb.chat.domain.usecases.GetChatsUseCase
@@ -18,4 +20,6 @@ val chatDomainModule = module {
     singleOf(::FetchChatsUseCase)
     singleOf(::FetchChatByIdUseCase)
     singleOf(::LeaveChatUseCase)
+    singleOf(::AddParticipantsToChatUseCase)
+    singleOf(::GetActiveParticipantsByChatIdUseCase)
 }

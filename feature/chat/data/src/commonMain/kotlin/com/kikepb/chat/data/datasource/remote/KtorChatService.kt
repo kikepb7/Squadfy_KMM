@@ -2,6 +2,7 @@ package com.kikepb.chat.data.datasource.remote
 
 import com.kikepb.chat.data.dto.ChatDTO
 import com.kikepb.chat.data.dto.request.CreateChatRequestDTO
+import com.kikepb.chat.data.dto.request.ParticipantsRequestDTO
 import com.kikepb.chat.data.mappers.toDomain
 import com.kikepb.chat.domain.models.ChatModel
 import com.kikepb.chat.domain.repository.ChatService
@@ -39,4 +40,13 @@ class KtorChatService(private val httpClient: HttpClient) : ChatService {
         httpClient.delete<Unit>(
             route = "/chat/$chatId/leave"
         ).asEmptyResult()
+
+    override suspend fun addParticipantsToChat(
+        chatId: String,
+        userIds: List<String>
+    ): Result<ChatModel, DataError.Remote> =
+        httpClient.post<ParticipantsRequestDTO, ChatDTO>(
+            route = "/chat/$chatId/add",
+            body = ParticipantsRequestDTO(userIds = userIds)
+        ).map { it.toDomain() }
 }

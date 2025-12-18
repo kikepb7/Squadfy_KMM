@@ -10,4 +10,5 @@ interface ChatService {
     suspend fun getChats(): Result<List<ChatModel>, DataError.Remote>
     suspend fun getChatById(chatId: String): Result<ChatModel, DataError.Remote>
     suspend fun leaveChat(chatId: String): EmptyResult<DataError.Remote>
+    suspend fun addParticipantsToChat(chatId: String, userIds: List<String>): Result<ChatModel, DataError.Remote>
 }
