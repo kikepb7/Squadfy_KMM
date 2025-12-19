@@ -35,6 +35,4 @@ abstract class SquadfyChatDatabase: RoomDatabase() {
     companion object {
         const val DB_NAME = "squadfy.db"
     }
-
-
 }
