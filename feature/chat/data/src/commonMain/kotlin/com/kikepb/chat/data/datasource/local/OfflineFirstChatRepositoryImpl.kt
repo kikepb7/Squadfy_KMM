@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.supervisorScope
 
-class OfflineFirstChatRepository(
+class OfflineFirstChatRepositoryImpl(
     private val chatService: ChatService,
     private val db: SquadfyChatDatabase
 ): ChatRepository {

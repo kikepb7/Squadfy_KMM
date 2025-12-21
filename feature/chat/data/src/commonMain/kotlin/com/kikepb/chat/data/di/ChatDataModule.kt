@@ -1,7 +1,7 @@
 package com.kikepb.chat.data.di
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import com.kikepb.chat.data.datasource.local.OfflineFirstChatRepository
+import com.kikepb.chat.data.datasource.local.OfflineFirstChatRepositoryImpl
 import com.kikepb.chat.data.datasource.remote.KtorChatParticipantService
 import com.kikepb.chat.data.datasource.remote.KtorChatService
 import com.kikepb.chat.database.DatabaseFactory
@@ -17,7 +17,7 @@ val chatDataModule = module {
 
     singleOf(::KtorChatParticipantService) bind KtorChatParticipantService::class
     singleOf(::KtorChatService) bind KtorChatService::class
-    singleOf(::OfflineFirstChatRepository) bind ChatRepository::class
+    singleOf(::OfflineFirstChatRepositoryImpl) bind ChatRepository::class
     single {
         get<DatabaseFactory>()
             .create()

@@ -1,6 +1,7 @@
 package com.kikepb.chat.data.mappers
 
 import com.kikepb.chat.data.dto.ChatMessageDTO
+import com.kikepb.chat.data.dto.websocket.OutgoingWebSocketDTO
 import com.kikepb.chat.database.entities.ChatMessageEntity
 import com.kikepb.chat.database.view.LastMessageView
 import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
@@ -55,4 +56,11 @@ fun ChatMessageModel.toLastMessageView(): LastMessageView =
         content = content,
         timestamp = createdAt.toEpochMilliseconds(),
         deliveryStatus = deliveryStatus.name
+    )
+
+fun ChatMessageModel.toNewMessage(): OutgoingWebSocketDTO.NewMessage =
+    OutgoingWebSocketDTO.NewMessage(
+        messageId = id,
+        chatId = chatId,
+        content = content
     )

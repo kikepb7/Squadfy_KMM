@@ -200,7 +200,7 @@ class KtorWebSocketConnector(
                         else -> Unit
                     }
                 }
-        } ?: throw Exception(message = "Failed to establish WebSocket connection")
+        } ?: throw Exception("Failed to establish WebSocket connection")
 
         awaitClose {
             launch(context = NonCancellable) {
