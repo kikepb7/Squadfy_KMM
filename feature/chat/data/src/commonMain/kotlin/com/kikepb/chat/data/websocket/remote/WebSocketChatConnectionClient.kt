@@ -118,7 +118,7 @@ class WebSocketChatConnectionClient(
         database.chatParticipantDao.updateProfilePictureUrl(userId = message.userId, newUrl = message.newUrl)
 
         val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
-        if (authInfo != null) sessionStorage.set(
+        if (authInfo != null && authInfo.user.id == message.userId) sessionStorage.set(
             info = authInfo.copy(
                 user = authInfo.user.copy(profilePictureUrl = message.newUrl)
             )
