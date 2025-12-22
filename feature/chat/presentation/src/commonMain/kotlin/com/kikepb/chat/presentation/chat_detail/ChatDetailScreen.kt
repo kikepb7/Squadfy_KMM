@@ -39,6 +39,7 @@ import com.kikepb.chat.domain.models.ChatMessageModel
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSelectChat
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnChatLeft
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnError
+import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnNewMessage
 import com.kikepb.chat.presentation.chat_detail.components.ChatDetailHeader
 import com.kikepb.chat.presentation.chat_detail.components.MessageBox
 import com.kikepb.chat.presentation.chat_detail.components.MessageList
@@ -77,6 +78,7 @@ fun ChatDetailRoot(
     ObserveAsEvents(flow = viewModel.events) { event ->
         when (event) {
             OnChatLeft -> onBack()
+            OnNewMessage -> {}
             is OnError -> snackBarState.showSnackbar(event.error.asStringAsync())
         }
     }

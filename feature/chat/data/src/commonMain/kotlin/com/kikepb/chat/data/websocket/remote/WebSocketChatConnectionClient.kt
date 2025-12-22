@@ -21,7 +21,7 @@ import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus.FAILED
 import com.kikepb.chat.domain.models.ChatMessageModel
 import com.kikepb.chat.domain.repository.ChatConnectionClient
 import com.kikepb.chat.domain.repository.ChatRepository
-import com.kikepb.chat.domain.repository.MessageRepository
+import com.kikepb.chat.domain.repository.message.MessageRepository
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.onFailure

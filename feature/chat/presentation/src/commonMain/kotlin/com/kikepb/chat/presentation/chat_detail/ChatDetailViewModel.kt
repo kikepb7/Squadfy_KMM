@@ -7,14 +7,19 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.chat.domain.models.ConnectionStateModel
+import com.kikepb.chat.domain.models.ConnectionStateModel.CONNECTED
 import com.kikepb.chat.domain.models.ConnectionStateModel.DISCONNECTED
+import com.kikepb.chat.domain.repository.ChatConnectionClient
 import com.kikepb.chat.domain.usecases.FetchChatByIdUseCase
 import com.kikepb.chat.domain.usecases.GetChatInfoByIdUseCase
 import com.kikepb.chat.domain.usecases.LeaveChatUseCase
+import com.kikepb.chat.domain.usecases.message.FetchMessagesUseCase
+import com.kikepb.chat.domain.usecases.message.GetMessagesForChatUseCase
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnChatOptionsClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnDismissChatOptions
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSelectChat
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnError
+import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnNewMessage
 import com.kikepb.chat.presentation.mappers.toUi
 import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.chat.presentation.model.MessageModelUi
@@ -29,8 +34,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -41,6 +50,9 @@ class ChatDetailViewModel(
     private val fetchChatByIdUseCase: FetchChatByIdUseCase,
     private val getChatInfoByIdUseCase: GetChatInfoByIdUseCase,
     private val leaveChatUseCase: LeaveChatUseCase,
+    private val fetchMessagesUseCase: FetchMessagesUseCase,
+    private val getMessagesForChatUseCase: GetMessagesForChatUseCase,
+    private val chatConnectionClient: ChatConnectionClient,
     private val sessionStorage: SessionStorage
 ) : ViewModel() {
 
@@ -71,7 +83,8 @@ class ChatDetailViewModel(
         }
         .onStart {
             if (!hasLoadedInitialData) {
-
+                observeConnectionState()
+                observeChatMessages()
                 hasLoadedInitialData = true
             }
         }
@@ -117,6 +130,52 @@ class ChatDetailViewModel(
         }
     }
 
+    private fun observeConnectionState() {
+        chatConnectionClient
+            .connectionState
+            .onEach { connectionState ->
+                if (connectionState == CONNECTED) {
+                    _chatId.value?.let {
+                        fetchMessagesUseCase.fetchMessages(chatId = it, before = null)
+                    }
+                }
+
+                _state.update { it.copy(connectionState = connectionState) }
+            }.launchIn(scope = viewModelScope)
+    }
+
+    private fun observeChatMessages() {
+        val currentMessages = state
+            .map { it.messages }
+            .distinctUntilChanged()
+
+        val newMessages = _chatId.flatMapLatest { chatId ->
+                if (chatId != null) getMessagesForChatUseCase.getMessagesForChat(chatId = chatId)
+                else emptyFlow()
+        }
+            .combine(sessionStorage.observeAuthInfo()) { messages, authInfo ->
+                if (authInfo == null) return@combine messages
+
+                _state.update { it.copy(messages = messages.map { messageWithSender ->
+                    messageWithSender.toUi(localUserId = authInfo.user.id) })
+                }
+                messages
+            }
+
+        val isNearBottom = state.map { it.isNearBottom }.distinctUntilChanged()
+
+        combine(
+            flow = currentMessages,
+            flow2 = newMessages,
+            flow3 = isNearBottom
+        ) { currentMessages, newMessages, isNearBottom ->
+            val lastNewId = newMessages.lastOrNull()?.message?.id
+            val lastCurrentId = currentMessages.lastOrNull()?.id
+
+            if (lastNewId != lastCurrentId && isNearBottom) eventChannel.send(OnNewMessage)
+        }.launchIn(scope = viewModelScope)
+    }
+
     fun onAction(action: ChatDetailAction) {
         when (action) {
             is OnSelectChat -> switchChat(chatId = action.chatId)
@@ -146,6 +205,7 @@ data class ChatDetailState(
 
 sealed interface ChatDetailEvent {
     data object OnChatLeft: ChatDetailEvent
+    data object OnNewMessage: ChatDetailEvent
     data class OnError(val error: UiText): ChatDetailEvent
 }
 

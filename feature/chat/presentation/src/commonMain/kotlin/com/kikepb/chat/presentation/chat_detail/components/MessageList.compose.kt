@@ -49,7 +49,6 @@ fun MessageList(
         ) {
             items(
                 items = messages,
-                key = { it.id }
             ) { message ->
                 MessageListItem(
                     messageUi = message,

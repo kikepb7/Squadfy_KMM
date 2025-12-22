@@ -9,6 +9,8 @@ import com.kikepb.chat.domain.usecases.GetChatInfoByIdUseCase
 import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
 import com.kikepb.chat.domain.usecases.GetChatsUseCase
 import com.kikepb.chat.domain.usecases.LeaveChatUseCase
+import com.kikepb.chat.domain.usecases.message.FetchMessagesUseCase
+import com.kikepb.chat.domain.usecases.message.GetMessagesForChatUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -22,4 +24,6 @@ val chatDomainModule = module {
     singleOf(::LeaveChatUseCase)
     singleOf(::AddParticipantsToChatUseCase)
     singleOf(::GetActiveParticipantsByChatIdUseCase)
+    singleOf(::FetchMessagesUseCase)
+    singleOf(::GetMessagesForChatUseCase)
 }

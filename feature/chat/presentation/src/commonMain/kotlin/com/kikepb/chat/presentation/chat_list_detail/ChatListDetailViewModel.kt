@@ -1,6 +1,8 @@
 package com.kikepb.chat.presentation.chat_list_detail
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.kikepb.chat.domain.repository.ChatConnectionClient
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnChatClick
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnCreateChatClick
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnDismissCurrentDialog
@@ -10,13 +12,30 @@ import com.kikepb.chat.presentation.chat_list_detail.DialogState.CreateChat
 import com.kikepb.chat.presentation.chat_list_detail.DialogState.Hidden
 import com.kikepb.chat.presentation.chat_list_detail.DialogState.Profile
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-class ChatListDetailViewModel : ViewModel() {
+class ChatListDetailViewModel(
+    private val connectionClient: ChatConnectionClient
+) : ViewModel() {
 
+    private var hasLoadedInitialData = false
     private val _state = MutableStateFlow(value = ChatListDetailState())
-    val state = _state.asStateFlow()
+    val state = _state
+        .onStart {
+            if (!hasLoadedInitialData) {
+                connectionClient.chatMessages.launchIn(scope = viewModelScope)
+                hasLoadedInitialData = true
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000L),
+            initialValue = ChatListDetailState()
+        )
 
     fun onAction(action: ChatListDetailAction) {
         when (action) {
