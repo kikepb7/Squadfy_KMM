@@ -22,7 +22,7 @@ import androidx.compose.ui.backhandler.BackHandler
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.chat.presentation.chat_detail.ChatDetailRoot
 import com.kikepb.chat.presentation.chat_list.ChatListRoot
-import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnChatClick
+import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnSelectChat
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnCreateChatClick
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnDismissCurrentDialog
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnProfileSettingsClick
@@ -49,13 +49,14 @@ fun ChatListDetailAdaptiveLayout(
     val detailPane = scaffoldNavigator.scaffoldValue[Detail]
     LaunchedEffect(key1 = detailPane, key2 = sharedState.selectedChatId) {
         if (detailPane == Hidden && sharedState.selectedChatId != null) {
-            chatListDetailViewModel.onAction(action = OnChatClick(chatId = null))
+            chatListDetailViewModel.onAction(action = OnSelectChat(chatId = null))
         }
     }
 
     BackHandler(enabled = scaffoldNavigator.canNavigateBack()) {
         scope.launch {
             scaffoldNavigator.navigateBack()
+            chatListDetailViewModel.onAction(action = OnSelectChat(chatId = null))
         }
     }
 
@@ -66,8 +67,9 @@ fun ChatListDetailAdaptiveLayout(
         listPane = {
             AnimatedPane {
                 ChatListRoot(
+                    selectedChatId = sharedState.selectedChatId,
                     onChatClick = {
-                        chatListDetailViewModel.onAction(action = OnChatClick(chatId = it.id))
+                        chatListDetailViewModel.onAction(action = OnSelectChat(chatId = it))
                         scope.launch { scaffoldNavigator.navigateTo(Detail) }
                     },
                     onConfirmLogoutClick = { onLogout() },
@@ -100,7 +102,7 @@ fun ChatListDetailAdaptiveLayout(
         CreateChatRoot(
             onChatCreated = { chat ->
                 chatListDetailViewModel.onAction(action = OnDismissCurrentDialog)
-                chatListDetailViewModel.onAction(action = OnChatClick(chatId = chat.id))
+                chatListDetailViewModel.onAction(action = OnSelectChat(chatId = chat.id))
                 scope.launch {
                     scaffoldNavigator.navigateTo(pane = Detail)
                 }

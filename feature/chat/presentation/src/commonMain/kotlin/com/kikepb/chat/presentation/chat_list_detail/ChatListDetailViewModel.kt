@@ -3,7 +3,7 @@ package com.kikepb.chat.presentation.chat_list_detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.chat.domain.repository.ChatConnectionClient
-import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnChatClick
+import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnSelectChat
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnCreateChatClick
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnDismissCurrentDialog
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnManageChatClick
@@ -39,7 +39,7 @@ class ChatListDetailViewModel(
 
     fun onAction(action: ChatListDetailAction) {
         when (action) {
-            is OnChatClick -> {
+            is OnSelectChat -> {
                 _state.update { it.copy(selectedChatId = action.chatId) }
             }
             OnCreateChatClick -> {
@@ -75,7 +75,7 @@ sealed interface DialogState {
 }
 
 sealed interface ChatListDetailAction {
-    data class OnChatClick(val chatId: String?): ChatListDetailAction
+    data class OnSelectChat(val chatId: String?): ChatListDetailAction
     data object OnProfileSettingsClick: ChatListDetailAction
     data object OnCreateChatClick: ChatListDetailAction
     data object OnManageChatClick: ChatListDetailAction

@@ -58,8 +58,8 @@ class ChatListViewModel(
 
     fun onAction(action: ChatListAction) {
         when (action) {
-            is ChatListAction.OnChatClick -> {
-                _state.update { it.copy(selectedChatId = action.chat.id) }
+            is ChatListAction.OnSelectChat -> {
+                _state.update { it.copy(selectedChatId = action.chatId) }
             }
             else -> Unit
         }
@@ -84,5 +84,5 @@ sealed interface ChatListAction {
     data object OnDismissLogoutDialog: ChatListAction
     data object OnCreateChatClick: ChatListAction
     data object OnProfileSettingsClick: ChatListAction
-    data class OnChatClick(val chat: ChatModelUi): ChatListAction
+    data class OnSelectChat(val chatId: String?): ChatListAction
 }

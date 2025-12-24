@@ -39,14 +39,11 @@ fun LocalUserMessage(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Bottom,
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
     ) {
-        Box(
-            modifier = Modifier.weight(1f)
-        ) {
+        Box {
             SquadfyChatBubble(
                 messageContent = message.content,
                 sender = stringResource(RString.you),

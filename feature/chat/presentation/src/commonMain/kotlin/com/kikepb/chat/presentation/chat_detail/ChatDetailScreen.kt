@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -54,6 +55,8 @@ import com.kikepb.core.presentation.util.ObserveAsEvents
 import com.kikepb.core.presentation.util.UiText
 import com.kikepb.core.presentation.util.clearFocusOnTap
 import com.kikepb.core.presentation.util.currentDeviceConfiguration
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -74,6 +77,7 @@ fun ChatDetailRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackBarState= remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     ObserveAsEvents(flow = viewModel.events) { event ->
         when (event) {
@@ -88,7 +92,14 @@ fun ChatDetailRoot(
     }
 
     BackHandler(enabled = !isDetailPresent) {
-        viewModel.onAction(action = OnSelectChat(chatId = null))
+        scope.launch {
+            /*
+            Add artificial delay to prevent detail back animation from showing
+            an unselected chat the moment we go back
+            */
+            delay(timeMillis = 300)
+            viewModel.onAction(action = OnSelectChat(chatId = null))
+        }
         onBack()
     }
 

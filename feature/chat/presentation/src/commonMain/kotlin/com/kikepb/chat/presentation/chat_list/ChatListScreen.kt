@@ -19,16 +19,20 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kikepb.chat.presentation.chat_list.ChatListAction.OnConfirmLogout
+import com.kikepb.chat.presentation.chat_list.ChatListAction.OnCreateChatClick
+import com.kikepb.chat.presentation.chat_list.ChatListAction.OnProfileSettingsClick
+import com.kikepb.chat.presentation.chat_list.ChatListAction.OnSelectChat
 import com.kikepb.chat.presentation.chat_list.components.ChatListHeader
 import com.kikepb.chat.presentation.chat_list.components.ChatListItemUi
 import com.kikepb.chat.presentation.components.EmptySection
-import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.core.designsystem.components.buttons.SquadfyFloatingActionButton
 import com.kikepb.core.designsystem.components.dialogs.SquadfyDestructiveConfirmationDialog
 import com.kikepb.core.designsystem.components.divider.SquadfyHorizontalDivider
@@ -48,24 +52,28 @@ import squadfy_app.feature.chat.presentation.generated.resources.Res.string as R
 
 @Composable
 fun ChatListRoot(
-    onChatClick: (ChatModelUi) -> Unit,
+    selectedChatId: String?,
+    onChatClick: (String?) -> Unit,
     onConfirmLogoutClick: () -> Unit,
     onCreateChatClick: () -> Unit,
     onProfileSettingsClick: () -> Unit,
     viewModel: ChatListViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
     val snackBarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(key1 = selectedChatId) {
+        viewModel.onAction(action = OnSelectChat(chatId = selectedChatId))
+    }
 
     ChatListScreen(
         state = state,
         onAction = { action ->
             when(action) {
-                is ChatListAction.OnChatClick -> onChatClick(action.chat)
-                ChatListAction.OnConfirmLogout -> onConfirmLogoutClick()
-                ChatListAction.OnCreateChatClick -> onCreateChatClick()
-                ChatListAction.OnProfileSettingsClick -> onProfileSettingsClick()
+                is OnSelectChat -> onChatClick(action.chatId)
+                OnConfirmLogout -> onConfirmLogoutClick()
+                OnCreateChatClick -> onCreateChatClick()
+                OnProfileSettingsClick -> onProfileSettingsClick()
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -88,7 +96,7 @@ fun ChatListScreen(
         floatingActionButton = {
             SquadfyFloatingActionButton(
                 onClick = {
-                    onAction(ChatListAction.OnCreateChatClick)
+                    onAction(OnCreateChatClick)
                 }
             ) {
                 Icon(
@@ -111,7 +119,7 @@ fun ChatListScreen(
                 onUserAvatarClick = { onAction(ChatListAction.OnUserAvatarClick) },
                 onLogoutClick = { onAction(ChatListAction.OnLogoutClick) },
                 onDismissMenu = { onAction(ChatListAction.OnDismissUserMenu) },
-                onProfileSettingsClick = { onAction(ChatListAction.OnProfileSettingsClick) }
+                onProfileSettingsClick = { onAction(OnProfileSettingsClick) }
             )
             when {
                 state.isLoading -> {
@@ -143,7 +151,7 @@ fun ChatListScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        onAction(ChatListAction.OnChatClick(chatUi))
+                                        onAction(OnSelectChat(chatUi.id))
                                     }
                             )
                             SquadfyHorizontalDivider()
@@ -167,7 +175,7 @@ fun ChatListScreen(
                 onAction(ChatListAction.OnDismissLogoutDialog)
             },
             onConfirmClick = {
-                onAction(ChatListAction.OnConfirmLogout)
+                onAction(OnConfirmLogout)
             },
         )
     }

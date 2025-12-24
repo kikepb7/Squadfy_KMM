@@ -1,5 +1,7 @@
 package com.kikepb.chat.presentation.chat_detail.components
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -14,11 +16,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.kikepb.chat.domain.models.ConnectionStateModel
+import com.kikepb.chat.domain.models.ConnectionStateModel.CONNECTED
 import com.kikepb.chat.presentation.mappers.toUiText
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.textfields.SquadfyMultiLineTextField
@@ -41,11 +47,17 @@ fun MessageBox(
     onSendClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isConnected = connectionState == ConnectionStateModel.CONNECTED
+    val isConnected = connectionState == CONNECTED
+    val focusRequester = remember { FocusRequester() }
 
     SquadfyMultiLineTextField(
         state = messageTextFieldState,
-        modifier = modifier,
+        modifier = modifier
+            .focusRequester(focusRequester)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { focusRequester.requestFocus() },
         placeholder = stringResource(RString.send_a_message),
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Send
@@ -93,7 +105,7 @@ fun MessageBoxPreview() {
             MessageBox(
                 messageTextFieldState = rememberTextFieldState(),
                 isSendButtonEnabled = true,
-                connectionState = ConnectionStateModel.CONNECTED,
+                connectionState = CONNECTED,
                 onSendClick = {},
                 modifier = Modifier.fillMaxWidth()
             )
