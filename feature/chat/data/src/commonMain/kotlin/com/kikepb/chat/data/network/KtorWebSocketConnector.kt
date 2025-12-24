@@ -6,9 +6,6 @@ import com.kikepb.chat.data.dto.websocket.WebSocketMessageDTO
 import com.kikepb.chat.data.lifecycle.AppLifecycleObserver
 import com.kikepb.chat.data.utils.CAPACITY
 import com.kikepb.chat.data.utils.STOP_TIMEOUT_MILLIS
-import com.kikepb.chat.domain.error.ConnectionErrorModel
-import com.kikepb.chat.domain.error.ConnectionErrorModel.MESSAGE_SEND_FAILED
-import com.kikepb.chat.domain.error.ConnectionErrorModel.NOT_CONNECTED
 import com.kikepb.chat.domain.models.ConnectionStateModel.CONNECTED
 import com.kikepb.chat.domain.models.ConnectionStateModel.CONNECTING
 import com.kikepb.chat.domain.models.ConnectionStateModel.DISCONNECTED
@@ -16,6 +13,9 @@ import com.kikepb.chat.domain.models.ConnectionStateModel.ERROR_NETWORK
 import com.kikepb.core.data.networking.UrlConstants.BASE_URL_WS
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.logger.SquadfyLogger
+import com.kikepb.core.domain.util.DataError
+import com.kikepb.core.domain.util.DataError.ConnectionModel.MESSAGE_SEND_FAILED
+import com.kikepb.core.domain.util.DataError.ConnectionModel.NOT_CONNECTED
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
 import com.kikepb.feature.chat.data.BuildKonfig.API_KEY
@@ -212,7 +212,7 @@ class KtorWebSocketConnector(
         }
     }
 
-    suspend fun sendMessage(message: String): EmptyResult<ConnectionErrorModel> {
+    suspend fun sendMessage(message: String): EmptyResult<DataError.ConnectionModel> {
         val connectionState = connectionState.value
         if (currentSession == null || connectionState != CONNECTED) Result.Failure(error = NOT_CONNECTED)
 

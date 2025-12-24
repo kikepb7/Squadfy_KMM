@@ -193,7 +193,7 @@ fun ChatDetailScreen(
                         AnimatedVisibility(visible = !configuration.isWideScreen) {
                             MessageBox(
                                 messageTextFieldState = state.messageTextFieldState,
-                                isTextInputEnabled = state.canSendMessage,
+                                isSendButtonEnabled = state.canSendMessage,
                                 connectionState = state.connectionState,
                                 onSendClick = { onAction(ChatDetailAction.OnSendMessageClick) },
                                 modifier = Modifier
@@ -212,7 +212,7 @@ fun ChatDetailScreen(
                     DynamicRoundedCornerColumn(isCornersRounded = configuration.isWideScreen) {
                         MessageBox(
                             messageTextFieldState = state.messageTextFieldState,
-                            isTextInputEnabled = state.canSendMessage,
+                            isSendButtonEnabled = state.canSendMessage,
                             connectionState = state.connectionState,
                             onSendClick = { onAction(ChatDetailAction.OnSendMessageClick) },
                             modifier = Modifier

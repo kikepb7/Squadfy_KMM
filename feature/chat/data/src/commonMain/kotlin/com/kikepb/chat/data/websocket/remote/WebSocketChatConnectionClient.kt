@@ -12,19 +12,12 @@ import com.kikepb.chat.data.dto.websocket.IncomingWebSocketType.PROFILE_PICTURE_
 import com.kikepb.chat.data.dto.websocket.WebSocketMessageDTO
 import com.kikepb.chat.data.mappers.toDomain
 import com.kikepb.chat.data.mappers.toEntity
-import com.kikepb.chat.data.mappers.toNewMessage
 import com.kikepb.chat.data.network.KtorWebSocketConnector
 import com.kikepb.chat.data.utils.STOP_TIMEOUT_MILLIS
 import com.kikepb.chat.database.SquadfyChatDatabase
-import com.kikepb.chat.domain.error.ConnectionErrorModel
-import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus.FAILED
-import com.kikepb.chat.domain.models.ChatMessageModel
 import com.kikepb.chat.domain.repository.ChatConnectionClient
 import com.kikepb.chat.domain.repository.ChatRepository
-import com.kikepb.chat.domain.repository.message.MessageRepository
 import com.kikepb.core.domain.auth.repository.SessionStorage
-import com.kikepb.core.domain.util.EmptyResult
-import com.kikepb.core.domain.util.onFailure
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterIsInstance
@@ -37,7 +30,6 @@ import kotlinx.serialization.json.Json
 class WebSocketChatConnectionClient(
     private val webSocketConnector: KtorWebSocketConnector,
     private val chatRepository: ChatRepository,
-    private val messageRepository: MessageRepository,
     private val database: SquadfyChatDatabase,
     private val sessionStorage: SessionStorage,
     private val json: Json,
@@ -58,21 +50,6 @@ class WebSocketChatConnectionClient(
         )
 
     override val connectionState = webSocketConnector.connectionState
-
-    override suspend fun sendChatMessage(message: ChatMessageModel): EmptyResult<ConnectionErrorModel> {
-        val outgoingDto = message.toNewMessage()
-        val webSocketMessage = WebSocketMessageDTO(
-            type = outgoingDto.type.name,
-            payload = json.encodeToString(value = outgoingDto)
-        )
-        val rawJsonPayload = json.encodeToString(value = webSocketMessage)
-
-        return webSocketConnector
-            .sendMessage(message = rawJsonPayload)
-            .onFailure { error ->
-                messageRepository.updateMessageDeliveryStatus(messageId = message.id, status = FAILED)
-            }
-    }
 
     private fun parseIncomingMessage(message: WebSocketMessageDTO): IncomingWebSocketDTO? =
         when (message.type) {

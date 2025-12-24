@@ -36,7 +36,7 @@ import squadfy_app.feature.chat.presentation.generated.resources.send_a_message
 @Composable
 fun MessageBox(
     messageTextFieldState: TextFieldState,
-    isTextInputEnabled: Boolean,
+    isSendButtonEnabled: Boolean,
     connectionState: ConnectionStateModel,
     onSendClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -47,7 +47,6 @@ fun MessageBox(
         state = messageTextFieldState,
         modifier = modifier,
         placeholder = stringResource(RString.send_a_message),
-        enabled = isTextInputEnabled,
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Send
         ),
@@ -75,7 +74,7 @@ fun MessageBox(
             SquadfyButton(
                 text = stringResource(RString.send),
                 onClick = onSendClick,
-                enabled = isConnected && isTextInputEnabled
+                enabled = isConnected && isSendButtonEnabled
             )
         }
     )
@@ -93,7 +92,7 @@ fun MessageBoxPreview() {
         ) {
             MessageBox(
                 messageTextFieldState = rememberTextFieldState(),
-                isTextInputEnabled = true,
+                isSendButtonEnabled = true,
                 connectionState = ConnectionStateModel.CONNECTED,
                 onSendClick = {},
                 modifier = Modifier.fillMaxWidth()

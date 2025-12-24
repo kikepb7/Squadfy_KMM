@@ -15,6 +15,7 @@ import squadfy_app.core.presentation.generated.resources.error_serialization
 import squadfy_app.core.presentation.generated.resources.error_server
 import squadfy_app.core.presentation.generated.resources.error_service_unavailable
 import squadfy_app.core.presentation.generated.resources.error_too_many_requests
+import squadfy_app.core.presentation.generated.resources.error_unable_to_send_message
 import squadfy_app.core.presentation.generated.resources.error_unauthorized
 import squadfy_app.core.presentation.generated.resources.error_unknown
 
@@ -36,6 +37,8 @@ fun DataError.toUiText(): UiText {
         DataError.Remote.SERVICE_UNAVAILABLE -> RString.error_service_unavailable
         DataError.Remote.SERIALIZATION -> RString.error_serialization
         DataError.Remote.UNKNOWN -> RString.error_unknown
+        DataError.ConnectionModel.MESSAGE_SEND_FAILED -> RString.error_no_internet
+        DataError.ConnectionModel.NOT_CONNECTED -> RString.error_unable_to_send_message
     }
 
     return UiText.Resource(id = resource)

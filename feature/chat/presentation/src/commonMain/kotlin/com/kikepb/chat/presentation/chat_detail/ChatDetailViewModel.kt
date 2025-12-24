@@ -1,23 +1,35 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalCoroutinesApi::class, ExperimentalUuidApi::class)
 
 package com.kikepb.chat.presentation.chat_detail
 
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.chat.domain.models.ConnectionStateModel
 import com.kikepb.chat.domain.models.ConnectionStateModel.CONNECTED
 import com.kikepb.chat.domain.models.ConnectionStateModel.DISCONNECTED
+import com.kikepb.chat.domain.models.OutgoingNewMessageModel
 import com.kikepb.chat.domain.repository.ChatConnectionClient
 import com.kikepb.chat.domain.usecases.FetchChatByIdUseCase
 import com.kikepb.chat.domain.usecases.GetChatInfoByIdUseCase
 import com.kikepb.chat.domain.usecases.LeaveChatUseCase
 import com.kikepb.chat.domain.usecases.message.FetchMessagesUseCase
 import com.kikepb.chat.domain.usecases.message.GetMessagesForChatUseCase
+import com.kikepb.chat.domain.usecases.message.SendMessageUseCase
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnBackClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnChatMembersClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnChatOptionsClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnDeleteMessageClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnDismissChatOptions
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnDismissMessageMenu
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnLeaveChatClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnMessageLongClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnRetryClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnScrollToTop
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSelectChat
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSendMessageClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnError
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnNewMessage
 import com.kikepb.chat.presentation.mappers.toUi
@@ -45,6 +57,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class ChatDetailViewModel(
     private val fetchChatByIdUseCase: FetchChatByIdUseCase,
@@ -52,6 +66,7 @@ class ChatDetailViewModel(
     private val leaveChatUseCase: LeaveChatUseCase,
     private val fetchMessagesUseCase: FetchMessagesUseCase,
     private val getMessagesForChatUseCase: GetMessagesForChatUseCase,
+    private val sendMessageUseCase: SendMessageUseCase,
     private val chatConnectionClient: ChatConnectionClient,
     private val sessionStorage: SessionStorage
 ) : ViewModel() {
@@ -66,6 +81,11 @@ class ChatDetailViewModel(
         }
 
     private val _state = MutableStateFlow(ChatDetailState())
+    private val canSendMessage = snapshotFlow { _state.value.messageTextFieldState.text.toString() }
+        .map { it.isBlank() }
+        .combine(chatConnectionClient.connectionState) { isMessageBlank, connectionState ->
+            !isMessageBlank && connectionState == CONNECTED
+        }
     private val stateWithMessages = combine(
         _state,
         chatInfoFlow,
@@ -85,6 +105,7 @@ class ChatDetailViewModel(
             if (!hasLoadedInitialData) {
                 observeConnectionState()
                 observeChatMessages()
+                observeCanSendMessage()
                 hasLoadedInitialData = true
             }
         }
@@ -176,13 +197,47 @@ class ChatDetailViewModel(
         }.launchIn(scope = viewModelScope)
     }
 
+    private fun sendMessage() {
+        val currentChatId = _chatId.value
+        val content = state.value.messageTextFieldState.text.toString().trim()
+        if (content.isBlank() || currentChatId == null) return
+
+        viewModelScope.launch {
+            val message = OutgoingNewMessageModel(
+                chatId = currentChatId,
+                messageId = Uuid.random().toString(),
+                content = content
+            )
+
+            sendMessageUseCase.sendMessage(message = message)
+                .onSuccess { state.value.messageTextFieldState.clearText() }
+                .onFailure { error ->
+                    eventChannel.send(element = OnError(error = error.toUiText()))
+
+                }
+        }
+    }
+
+    private fun observeCanSendMessage() {
+        canSendMessage.onEach { canSendMessage ->
+            _state.update { it.copy(canSendMessage = canSendMessage) }
+        }.launchIn(scope = viewModelScope)
+    }
+
     fun onAction(action: ChatDetailAction) {
         when (action) {
             is OnSelectChat -> switchChat(chatId = action.chatId)
+            OnBackClick -> {}
+            OnChatMembersClick -> {}
             OnChatOptionsClick -> onChatOptionsClick()
+            is OnDeleteMessageClick -> {}
             OnDismissChatOptions -> onDismissChatOptions()
-            ChatDetailAction.OnLeaveChatClick -> onLeaveChatClick()
-            else -> Unit
+            OnDismissMessageMenu -> {}
+            OnLeaveChatClick -> onLeaveChatClick()
+            is OnMessageLongClick -> {}
+            is OnRetryClick -> {}
+            OnScrollToTop -> {}
+            OnSendMessageClick -> sendMessage()
         }
     }
 }

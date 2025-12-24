@@ -14,32 +14,34 @@ enum class IncomingWebSocketType {
 }
 
 @Serializable
-sealed class IncomingWebSocketDTO(
-    val type: IncomingWebSocketType
-) {
+sealed interface IncomingWebSocketDTO {
     @Serializable
     data class NewMessageDTO(
         val id: String,
         val chatId: String,
         val content: String,
         val senderId: String,
-        val createdAt: String
-    ): IncomingWebSocketDTO(type = NEW_MESSAGE)
+        val createdAt: String,
+        val type: IncomingWebSocketType = NEW_MESSAGE
+    ): IncomingWebSocketDTO
 
     @Serializable
     data class MessageDeletedDTO(
         val messageId: String,
-        val chatId: String
-    ): IncomingWebSocketDTO(type = MESSAGE_DELETED)
+        val chatId: String,
+        val type: IncomingWebSocketType = MESSAGE_DELETED
+    ): IncomingWebSocketDTO
 
     @Serializable
     data class ProfilePictureUpdatedDTO(
         val userId: String,
-        val newUrl: String?
-    ): IncomingWebSocketDTO(type = PROFILE_PICTURE_UPDATED)
+        val newUrl: String?,
+        val type: IncomingWebSocketType = PROFILE_PICTURE_UPDATED
+    ): IncomingWebSocketDTO
 
     @Serializable
     data class ChatParticipantChangedDTO(
-        val chatId: String
-    ): IncomingWebSocketDTO(type = CHAT_PARTICIPANTS_CHANGED)
+        val chatId: String,
+        val type: IncomingWebSocketType = CHAT_PARTICIPANTS_CHANGED
+    ): IncomingWebSocketDTO
 }

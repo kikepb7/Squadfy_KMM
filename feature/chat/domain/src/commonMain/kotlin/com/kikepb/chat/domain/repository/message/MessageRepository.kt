@@ -3,6 +3,7 @@ package com.kikepb.chat.domain.repository.message
 import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
 import com.kikepb.chat.domain.models.ChatMessageModel
 import com.kikepb.chat.domain.models.MessageWithSenderModel
+import com.kikepb.chat.domain.models.OutgoingNewMessageModel
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
@@ -18,6 +19,8 @@ interface MessageRepository {
         chatId: String,
         before: String? = null
     ): Result<List<ChatMessageModel>, DataError>
+
+    suspend fun sendMessage(message: OutgoingNewMessageModel): EmptyResult<DataError>
 
     fun getMessagesForChat(chatId: String): Flow<List<MessageWithSenderModel>>
 }

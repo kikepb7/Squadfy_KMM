@@ -7,6 +7,8 @@ import com.kikepb.chat.database.entities.ChatMessageEntity
 import com.kikepb.chat.database.view.LastMessageView
 import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
 import com.kikepb.chat.domain.models.ChatMessageModel
+import com.kikepb.chat.domain.models.OutgoingNewMessageModel
+import kotlin.time.Clock
 import kotlin.time.Instant
 
 fun ChatMessageDTO.toDomain(): ChatMessageModel =
@@ -73,4 +75,24 @@ fun IncomingWebSocketDTO.NewMessageDTO.toEntity(): ChatMessageEntity =
         content = content,
         timestamp = Instant.parse(createdAt).toEpochMilliseconds(),
         deliveryStatus = ChatMessageDeliveryStatus.SENT.name
+    )
+
+fun OutgoingNewMessageModel.toWebSocketDto(): OutgoingWebSocketDTO.NewMessage =
+    OutgoingWebSocketDTO.NewMessage(
+        chatId = chatId,
+        messageId = messageId,
+        content = content
+    )
+
+fun OutgoingWebSocketDTO.NewMessage.toEntity(
+    senderId: String,
+    deliveryStatus: ChatMessageDeliveryStatus
+): ChatMessageEntity =
+    ChatMessageEntity(
+        messageId = messageId,
+        chatId = chatId,
+        content = content,
+        senderId = senderId,
+        deliveryStatus = deliveryStatus.name,
+        timestamp = Clock.System.now().toEpochMilliseconds()
     )
