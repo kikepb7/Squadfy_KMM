@@ -17,6 +17,7 @@ import com.kikepb.chat.domain.usecases.GetChatInfoByIdUseCase
 import com.kikepb.chat.domain.usecases.LeaveChatUseCase
 import com.kikepb.chat.domain.usecases.message.FetchMessagesUseCase
 import com.kikepb.chat.domain.usecases.message.GetMessagesForChatUseCase
+import com.kikepb.chat.domain.usecases.message.RetryMessageUseCase
 import com.kikepb.chat.domain.usecases.message.SendMessageUseCase
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnBackClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnChatMembersClick
@@ -67,6 +68,7 @@ class ChatDetailViewModel(
     private val fetchMessagesUseCase: FetchMessagesUseCase,
     private val getMessagesForChatUseCase: GetMessagesForChatUseCase,
     private val sendMessageUseCase: SendMessageUseCase,
+    private val retryMessageUseCase: RetryMessageUseCase,
     private val chatConnectionClient: ChatConnectionClient,
     private val sessionStorage: SessionStorage
 ) : ViewModel() {
@@ -94,7 +96,8 @@ class ChatDetailViewModel(
         if (authInfo == null) return@combine ChatDetailState()
 
         currentState.copy(
-            chatUi = chatInfo.chat.toUi(localParticipantId = authInfo.user.id)
+            chatUi = chatInfo.chat.toUi(localParticipantId = authInfo.user.id),
+            messages = chatInfo.messages.map { it.toUi(localUserId = authInfo.user.id) }
         )
     }
     val state = _chatId
@@ -174,14 +177,6 @@ class ChatDetailViewModel(
                 if (chatId != null) getMessagesForChatUseCase.getMessagesForChat(chatId = chatId)
                 else emptyFlow()
         }
-            .combine(sessionStorage.observeAuthInfo()) { messages, authInfo ->
-                if (authInfo == null) return@combine messages
-
-                _state.update { it.copy(messages = messages.map { messageWithSender ->
-                    messageWithSender.toUi(localUserId = authInfo.user.id) })
-                }
-                messages
-            }
 
         val isNearBottom = state.map { it.isNearBottom }.distinctUntilChanged()
 
@@ -224,6 +219,15 @@ class ChatDetailViewModel(
         }.launchIn(scope = viewModelScope)
     }
 
+    private fun retryMessage(message: LocalUserMessage) {
+        viewModelScope.launch {
+            retryMessageUseCase.retryMessage(messageId = message.id)
+                .onFailure { error ->
+                    eventChannel.send(element = OnError(error = error.toUiText()))
+                }
+        }
+    }
+
     fun onAction(action: ChatDetailAction) {
         when (action) {
             is OnSelectChat -> switchChat(chatId = action.chatId)
@@ -235,7 +239,7 @@ class ChatDetailViewModel(
             OnDismissMessageMenu -> {}
             OnLeaveChatClick -> onLeaveChatClick()
             is OnMessageLongClick -> {}
-            is OnRetryClick -> {}
+            is OnRetryClick -> retryMessage(message = action.message)
             OnScrollToTop -> {}
             OnSendMessageClick -> sendMessage()
         }

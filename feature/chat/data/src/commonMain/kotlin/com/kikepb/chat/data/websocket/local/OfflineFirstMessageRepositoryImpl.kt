@@ -11,6 +11,7 @@ import com.kikepb.chat.data.utils.PAGE_SIZE
 import com.kikepb.chat.database.SquadfyChatDatabase
 import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
 import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus.FAILED
+import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus.SENDING
 import com.kikepb.chat.domain.models.ChatMessageModel
 import com.kikepb.chat.domain.models.MessageWithSenderModel
 import com.kikepb.chat.domain.models.OutgoingNewMessageModel
@@ -75,7 +76,7 @@ class OfflineFirstMessageRepositoryImpl(
             val localUser = sessionStorage.observeAuthInfo().first()?.user ?: return Result.Failure(error = NOT_FOUND)
             val messageEntity = dto.toEntity(
                 senderId = localUser.id,
-                deliveryStatus = ChatMessageDeliveryStatus.SENDING
+                deliveryStatus = SENDING
             )
 
             database.chatMessageDao.upsertMessage(message = messageEntity)
@@ -83,7 +84,41 @@ class OfflineFirstMessageRepositoryImpl(
             webSocketConnector.sendMessage(message = dto.toJsonPayload())
                 .onFailure { error ->
                     applicationScope.launch {
-                        database.chatMessageDao.upsertMessage(message = dto.toEntity(senderId = localUser.id, deliveryStatus = FAILED))
+                        database.chatMessageDao.updateDeliveryStatus(
+                            messageId = messageEntity.messageId,
+                            timestamp = Clock.System.now().toEpochMilliseconds(),
+                            status = FAILED.name
+                        )
+                    }.join()
+                }
+        }
+
+    override suspend fun retryMessage(messageId: String): EmptyResult<DataError> =
+        safeDatabaseUpdate {
+            val message = database.chatMessageDao.getMessageById(messageId = messageId)
+                ?: return Result.Failure(error = NOT_FOUND)
+
+            database.chatMessageDao.updateDeliveryStatus(
+                messageId = messageId,
+                timestamp = Clock.System.now().toEpochMilliseconds(),
+                status = SENDING.name
+            )
+
+            val outgoingNewMessage = OutgoingWebSocketDTO.NewMessage(
+                chatId = message.chatId,
+                messageId = messageId,
+                content = message.content
+            )
+
+            return webSocketConnector
+                .sendMessage(message = outgoingNewMessage.toJsonPayload())
+                .onFailure {
+                    applicationScope.launch {
+                        database.chatMessageDao.updateDeliveryStatus(
+                            messageId = messageId,
+                            timestamp = Clock.System.now().toEpochMilliseconds(),
+                            status = FAILED.name
+                        )
                     }.join()
                 }
         }
