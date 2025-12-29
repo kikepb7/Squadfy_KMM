@@ -9,6 +9,7 @@ import com.kikepb.chat.domain.usecases.GetChatInfoByIdUseCase
 import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
 import com.kikepb.chat.domain.usecases.GetChatsUseCase
 import com.kikepb.chat.domain.usecases.LeaveChatUseCase
+import com.kikepb.chat.domain.usecases.message.DeleteMessageUseCase
 import com.kikepb.chat.domain.usecases.message.FetchMessagesUseCase
 import com.kikepb.chat.domain.usecases.message.GetMessagesForChatUseCase
 import com.kikepb.chat.domain.usecases.message.RetryMessageUseCase
@@ -30,4 +31,5 @@ val chatDomainModule = module {
     singleOf(::GetMessagesForChatUseCase)
     singleOf(::SendMessageUseCase)
     singleOf(::RetryMessageUseCase)
+    singleOf(::DeleteMessageUseCase)
 }

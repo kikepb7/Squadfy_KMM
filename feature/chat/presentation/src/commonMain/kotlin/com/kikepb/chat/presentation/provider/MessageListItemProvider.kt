@@ -12,14 +12,12 @@ class MessageListItemProvider  : PreviewParameterProvider<MessageModelUi> {
             id = "1",
             content = "Hello world, this is a preview message that spans multiple lines",
             deliveryStatus = ChatMessageDeliveryStatus.SENT,
-            isMenuOpen = true,
             formattedSentTime = UiText.DynamicString("Friday 2:20pm")
         ),
         MessageModelUi.LocalUserMessage(
             id = "2",
             content = "Hello world, this is a preview message that spans multiple lines",
             deliveryStatus = ChatMessageDeliveryStatus.FAILED,
-            isMenuOpen = false,
             formattedSentTime = UiText.DynamicString("Friday 2:20pm")
         ),
         MessageModelUi.OtherUserMessage(

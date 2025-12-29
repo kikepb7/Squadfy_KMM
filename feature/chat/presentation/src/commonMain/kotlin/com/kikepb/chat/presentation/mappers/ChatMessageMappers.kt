@@ -12,7 +12,6 @@ fun MessageWithSenderModel.toUi(localUserId: String, ): MessageModelUi {
             id = message.id,
             content = message.content,
             deliveryStatus =  message.deliveryStatus,
-            isMenuOpen = false,
             formattedSentTime = DateUtils.formatMessageTime(instant = message.createdAt)
         )
     } else {

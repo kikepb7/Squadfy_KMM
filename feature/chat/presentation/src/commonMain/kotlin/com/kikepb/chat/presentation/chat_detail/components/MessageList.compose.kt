@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kikepb.chat.presentation.components.EmptySection
 import com.kikepb.chat.presentation.model.MessageModelUi
+import com.kikepb.chat.presentation.model.MessageModelUi.LocalUserMessage
 import org.jetbrains.compose.resources.stringResource
 import squadfy_app.feature.chat.presentation.generated.resources.no_messages
 import squadfy_app.feature.chat.presentation.generated.resources.no_messages_subtitle
@@ -22,11 +23,12 @@ import squadfy_app.feature.chat.presentation.generated.resources.Res.string as R
 @Composable
 fun MessageList(
     messages: List<MessageModelUi>,
+    messageWithOpenMenu: LocalUserMessage?,
     listState: LazyListState,
-    onMessageLongClick: (MessageModelUi.LocalUserMessage) -> Unit,
-    onMessageRetryClick: (MessageModelUi.LocalUserMessage) -> Unit,
+    onMessageLongClick: (LocalUserMessage) -> Unit,
+    onMessageRetryClick: (LocalUserMessage) -> Unit,
     onDismissMessageMenu: () -> Unit,
-    onDeleteMessageClick: (MessageModelUi.LocalUserMessage) -> Unit,
+    onDeleteMessageClick: (LocalUserMessage) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (messages.isEmpty()) {
@@ -49,9 +51,11 @@ fun MessageList(
         ) {
             items(
                 items = messages,
+                key = { it.id }
             ) { message ->
                 MessageListItem(
                     messageUi = message,
+                    messageWithOpenMenu = messageWithOpenMenu,
                     onMessageLongClick = onMessageLongClick,
                     onDismissMessageMenu = onDismissMessageMenu,
                     onDeleteClick = onDeleteMessageClick,

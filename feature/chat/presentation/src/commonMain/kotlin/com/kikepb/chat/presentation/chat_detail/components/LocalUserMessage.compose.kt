@@ -14,7 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
-import com.kikepb.chat.presentation.model.MessageModelUi
+import com.kikepb.chat.presentation.model.MessageModelUi.LocalUserMessage
 import com.kikepb.core.designsystem.components.chat.SquadfyChatBubble
 import com.kikepb.core.designsystem.components.chat.TrianglePosition
 import com.kikepb.core.designsystem.components.dropdown.SquadfyDropDownItemModel
@@ -31,7 +31,8 @@ import squadfy_app.feature.chat.presentation.generated.resources.you
 
 @Composable
 fun LocalUserMessage(
-    message: MessageModelUi.LocalUserMessage,
+    message: LocalUserMessage,
+    messageWithOpenMenu: LocalUserMessage?,
     onMessageLongClick: () -> Unit,
     onDismissMessageMenu: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -60,7 +61,7 @@ fun LocalUserMessage(
             )
 
             SquadfyDropDownMenu(
-                isOpen = message.isMenuOpen,
+                isOpen = messageWithOpenMenu?.id == message.id,
                 onDismiss = onDismissMessageMenu,
                 items = listOf(
                     SquadfyDropDownItemModel(

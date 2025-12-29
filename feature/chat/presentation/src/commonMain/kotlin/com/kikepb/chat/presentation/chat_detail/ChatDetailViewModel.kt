@@ -15,6 +15,7 @@ import com.kikepb.chat.domain.repository.ChatConnectionClient
 import com.kikepb.chat.domain.usecases.FetchChatByIdUseCase
 import com.kikepb.chat.domain.usecases.GetChatInfoByIdUseCase
 import com.kikepb.chat.domain.usecases.LeaveChatUseCase
+import com.kikepb.chat.domain.usecases.message.DeleteMessageUseCase
 import com.kikepb.chat.domain.usecases.message.FetchMessagesUseCase
 import com.kikepb.chat.domain.usecases.message.GetMessagesForChatUseCase
 import com.kikepb.chat.domain.usecases.message.RetryMessageUseCase
@@ -69,6 +70,7 @@ class ChatDetailViewModel(
     private val getMessagesForChatUseCase: GetMessagesForChatUseCase,
     private val sendMessageUseCase: SendMessageUseCase,
     private val retryMessageUseCase: RetryMessageUseCase,
+    private val deleteMessageUseCase: DeleteMessageUseCase,
     private val chatConnectionClient: ChatConnectionClient,
     private val sessionStorage: SessionStorage
 ) : ViewModel() {
@@ -228,17 +230,30 @@ class ChatDetailViewModel(
         }
     }
 
+    private fun deleteMessage(message: LocalUserMessage) {
+        viewModelScope.launch {
+            deleteMessageUseCase.deleteMessage(messageId = message.id)
+                .onFailure { error ->
+                    eventChannel.send(element = OnError(error = error.toUiText()))
+                }
+        }
+    }
+    private fun onDismissMessageMenu() = _state.update { it.copy(messageWithOpenMenu = null) }
+
+    private fun onMessageLongClick(message: LocalUserMessage) = _state.update { it.copy(messageWithOpenMenu = message) }
+
+
     fun onAction(action: ChatDetailAction) {
         when (action) {
             is OnSelectChat -> switchChat(chatId = action.chatId)
             OnBackClick -> {}
             OnChatMembersClick -> {}
             OnChatOptionsClick -> onChatOptionsClick()
-            is OnDeleteMessageClick -> {}
+            is OnDeleteMessageClick -> deleteMessage(message = action.message)
             OnDismissChatOptions -> onDismissChatOptions()
-            OnDismissMessageMenu -> {}
+            OnDismissMessageMenu -> onDismissMessageMenu()
             OnLeaveChatClick -> onLeaveChatClick()
-            is OnMessageLongClick -> {}
+            is OnMessageLongClick -> onMessageLongClick(message = action.message)
             is OnRetryClick -> retryMessage(message = action.message)
             OnScrollToTop -> {}
             OnSendMessageClick -> sendMessage()
@@ -256,6 +271,7 @@ data class ChatDetailState(
     val isPaginationLoading: Boolean = false,
     val paginationError: UiText? = null,
     val endReached: Boolean = false,
+    val messageWithOpenMenu: LocalUserMessage? = null,
     val bannerState: BannerState = BannerState(),
     val isChatOptionsOpen: Boolean = false,
     val isNearBottom: Boolean = false,

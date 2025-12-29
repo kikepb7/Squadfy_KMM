@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kikepb.chat.presentation.model.MessageModelUi
+import com.kikepb.chat.presentation.model.MessageModelUi.LocalUserMessage
 import com.kikepb.chat.presentation.provider.MessageListItemProvider
 import com.kikepb.chat.presentation.util.getChatBubbleColorForUser
 import com.kikepb.core.designsystem.theme.SquadfyTheme
@@ -23,10 +24,11 @@ import org.jetbrains.compose.ui.tooling.preview.PreviewParameter
 @Composable
 fun MessageListItem(
     messageUi: MessageModelUi,
-    onMessageLongClick: (MessageModelUi.LocalUserMessage) -> Unit,
+    messageWithOpenMenu: LocalUserMessage?,
+    onMessageLongClick: (LocalUserMessage) -> Unit,
     onDismissMessageMenu: () -> Unit,
-    onDeleteClick: (MessageModelUi.LocalUserMessage) -> Unit,
-    onRetryClick: (MessageModelUi.LocalUserMessage) -> Unit,
+    onDeleteClick: (LocalUserMessage) -> Unit,
+    onRetryClick: (LocalUserMessage) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier) {
@@ -37,9 +39,10 @@ fun MessageListItem(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            is MessageModelUi.LocalUserMessage -> {
+            is LocalUserMessage -> {
                 LocalUserMessage(
                     message = messageUi,
+                    messageWithOpenMenu = messageWithOpenMenu,
                     onMessageLongClick = { onMessageLongClick(messageUi) },
                     onDismissMessageMenu = onDismissMessageMenu,
                     onDeleteClick = { onDeleteClick(messageUi) },
@@ -82,12 +85,13 @@ fun MessageListItemCombinedPreview(@PreviewParameter(MessageListItemProvider::cl
     SquadfyTheme {
         MessageListItem(
             messageUi = messageUi,
+            messageWithOpenMenu = null,
             onRetryClick = {},
             onMessageLongClick = {},
             onDismissMessageMenu = {},
             onDeleteClick = {},
             modifier = when(messageUi) {
-                is MessageModelUi.LocalUserMessage -> Modifier
+                is LocalUserMessage -> Modifier
                     .fillMaxWidth()
                     .height(200.dp)
                 else -> Modifier.fillMaxWidth()
