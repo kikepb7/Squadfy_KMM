@@ -7,6 +7,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kikepb.chat.domain.models.ChatMessageModel
 import com.kikepb.chat.domain.models.ConnectionStateModel
 import com.kikepb.chat.domain.models.ConnectionStateModel.CONNECTED
 import com.kikepb.chat.domain.models.ConnectionStateModel.DISCONNECTED
@@ -39,6 +40,8 @@ import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.chat.presentation.model.MessageModelUi
 import com.kikepb.chat.presentation.model.MessageModelUi.LocalUserMessage
 import com.kikepb.core.domain.auth.repository.SessionStorage
+import com.kikepb.core.domain.util.DataErrorException
+import com.kikepb.core.domain.util.Paginator
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
 import com.kikepb.core.presentation.mapper.toUiText
@@ -79,7 +82,11 @@ class ChatDetailViewModel(
     val events = eventChannel.receiveAsFlow()
     private val _chatId = MutableStateFlow<String?>(value = null)
     private var hasLoadedInitialData = false
+    private var currentPaginator: Paginator<String?, ChatMessageModel>? = null
     private val chatInfoFlow = _chatId
+        .onEach { chatId ->
+            if (chatId != null) setUpPaginatorForChat(chatId = chatId) else currentPaginator = null
+        }
         .flatMapLatest { chatId ->
             if (chatId != null) getChatInfoByIdUseCase.getChatInfoById(chatId = chatId) else emptyFlow()
         }
@@ -238,10 +245,39 @@ class ChatDetailViewModel(
                 }
         }
     }
+
     private fun onDismissMessageMenu() = _state.update { it.copy(messageWithOpenMenu = null) }
 
     private fun onMessageLongClick(message: LocalUserMessage) = _state.update { it.copy(messageWithOpenMenu = message) }
 
+    private fun setUpPaginatorForChat(chatId: String) {
+        currentPaginator = Paginator(
+            initialKey = null,
+            onLoadUpdated = { isLoading ->
+                _state.update { it.copy(isPaginationLoading = isLoading) }
+            },
+            onRequest = { beforeTimestamp ->
+                fetchMessagesUseCase.fetchMessages(chatId = chatId, before = beforeTimestamp)
+            },
+            getNextKey = { messages ->
+                messages.minOfOrNull { it.createdAt }?.toString()
+            },
+            onError = { throwable ->
+                if (throwable is DataErrorException) {
+                    eventChannel.send(element = OnError(error = throwable.error.toUiText()))
+                }
+            },
+            onSuccess = { messages, _ ->
+                _state.update { it.copy(endReached = messages.isEmpty()) }
+            }
+        )
+
+        _state.update { it.copy(endReached = false, isPaginationLoading = false) }
+
+        viewModelScope.launch {
+            currentPaginator?.loadNextItems()
+        }
+    }
 
     fun onAction(action: ChatDetailAction) {
         when (action) {
