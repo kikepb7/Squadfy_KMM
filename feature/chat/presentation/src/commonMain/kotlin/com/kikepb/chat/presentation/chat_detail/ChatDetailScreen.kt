@@ -37,7 +37,19 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
 import com.kikepb.chat.domain.models.ChatMessageModel
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnBackClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnChatMembersClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnChatOptionsClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnDeleteMessageClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnDismissChatOptions
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnDismissMessageMenu
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnLeaveChatClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnMessageLongClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnRetryClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnRetryPaginationClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnScrollToTop
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSelectChat
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSendMessageClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnChatLeft
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnError
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnNewMessage
@@ -46,8 +58,10 @@ import com.kikepb.chat.presentation.chat_detail.components.MessageBox
 import com.kikepb.chat.presentation.chat_detail.components.MessageList
 import com.kikepb.chat.presentation.components.ChatHeader
 import com.kikepb.chat.presentation.components.EmptySection
+import com.kikepb.chat.presentation.components.PaginationScrollListener
 import com.kikepb.chat.presentation.model.ChatModelUi
-import com.kikepb.chat.presentation.model.MessageModelUi
+import com.kikepb.chat.presentation.model.MessageModelUi.LocalUserMessage
+import com.kikepb.chat.presentation.model.MessageModelUi.OtherUserMessage
 import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
@@ -109,7 +123,7 @@ fun ChatDetailRoot(
         snackBarState = snackBarState,
         onAction = { action ->
             when (action) {
-                is ChatDetailAction.OnChatMembersClick -> onChatMembersClick()
+                is OnChatMembersClick -> onChatMembersClick()
                 else -> Unit
             }
             viewModel.onAction(action = action)
@@ -126,6 +140,17 @@ fun ChatDetailScreen(
 ) {
     val configuration = currentDeviceConfiguration()
     val messageListState = rememberLazyListState()
+    val realMessageItemCount = remember(key1 = state.messages) {
+        state.messages.filter { it is LocalUserMessage || it is OtherUserMessage }.size
+    }
+
+    PaginationScrollListener(
+        lazyListState = messageListState,
+        itemCount = realMessageItemCount,
+        isPaginationLoading = state.isPaginationLoading,
+        isEndReached = state.endReached,
+        onNearTop = { onAction(OnScrollToTop) }
+    )
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -162,21 +187,11 @@ fun ChatDetailScreen(
                                 chatUi = state.chatUi,
                                 isDetailPresent = isDetailPresent,
                                 isChatOptionsDropDownOpen = state.isChatOptionsOpen,
-                                onChatOptionsClick = {
-                                    onAction(ChatDetailAction.OnChatOptionsClick)
-                                },
-                                onDismissChatOptions = {
-                                    onAction(ChatDetailAction.OnDismissChatOptions)
-                                },
-                                onManageChatClick = {
-                                    onAction(ChatDetailAction.OnChatMembersClick)
-                                },
-                                onLeaveChatClick = {
-                                    onAction(ChatDetailAction.OnLeaveChatClick)
-                                },
-                                onBackClick = {
-                                    onAction(ChatDetailAction.OnBackClick)
-                                },
+                                onChatOptionsClick = { onAction(OnChatOptionsClick) },
+                                onDismissChatOptions = { onAction(OnDismissChatOptions) },
+                                onManageChatClick = { onAction(OnChatMembersClick) },
+                                onLeaveChatClick = { onAction(OnLeaveChatClick) },
+                                onBackClick = { onAction(OnBackClick) },
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
@@ -185,17 +200,22 @@ fun ChatDetailScreen(
                             messages = state.messages,
                             messageWithOpenMenu = state.messageWithOpenMenu,
                             listState = messageListState,
+                            isPaginationLoading = state.isPaginationLoading,
+                            paginationError = state.paginationError?.asString(),
                             onMessageLongClick = { message ->
-                                onAction(ChatDetailAction.OnMessageLongClick(message))
+                                onAction(OnMessageLongClick(message))
                             },
                             onMessageRetryClick = { message ->
-                                onAction(ChatDetailAction.OnRetryClick(message))
+                                onAction(OnRetryClick(message))
                             },
                             onDismissMessageMenu = {
-                                onAction(ChatDetailAction.OnDismissMessageMenu)
+                                onAction(OnDismissMessageMenu)
                             },
                             onDeleteMessageClick = { message ->
-                                onAction(ChatDetailAction.OnDeleteMessageClick(message))
+                                onAction(OnDeleteMessageClick(message))
+                            },
+                            onRetryPaginationClick = {
+                                onAction(OnRetryPaginationClick)
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -207,7 +227,7 @@ fun ChatDetailScreen(
                                 messageTextFieldState = state.messageTextFieldState,
                                 isSendButtonEnabled = state.canSendMessage,
                                 connectionState = state.connectionState,
-                                onSendClick = { onAction(ChatDetailAction.OnSendMessageClick) },
+                                onSendClick = { onAction(OnSendMessageClick) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 8.dp, horizontal = 16.dp)
@@ -226,7 +246,7 @@ fun ChatDetailScreen(
                             messageTextFieldState = state.messageTextFieldState,
                             isSendButtonEnabled = state.canSendMessage,
                             connectionState = state.connectionState,
-                            onSendClick = { onAction(ChatDetailAction.OnSendMessageClick) },
+                            onSendClick = { onAction(OnSendMessageClick) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(all = 8.dp)
@@ -315,14 +335,14 @@ private fun ChatDetailMessagesPreview() {
                 ),
                 messages = (1..20).map {
                     if(it % 2 == 0) {
-                        MessageModelUi.LocalUserMessage(
+                        LocalUserMessage(
                             id = Uuid.random().toString(),
                             content = "Hello world!",
                             deliveryStatus = ChatMessageDeliveryStatus.SENT,
                             formattedSentTime = UiText.DynamicString("Friday, Aug 20")
                         )
                     } else {
-                        MessageModelUi.OtherUserMessage(
+                        OtherUserMessage(
                             id = Uuid.random().toString(),
                             content = "Hello world!",
                             sender = ChatParticipantModelUi(

@@ -4,6 +4,10 @@ import com.kikepb.chat.domain.models.MessageWithSenderModel
 import com.kikepb.chat.presentation.model.MessageModelUi
 import com.kikepb.chat.presentation.util.DateUtils
 
+fun List<MessageWithSenderModel>.toUiList(localUserId: String): List<MessageModelUi> =
+    this.sortedByDescending { it.message.createdAt }
+        .map { it.toUi(localUserId = localUserId) }
+
 fun MessageWithSenderModel.toUi(localUserId: String, ): MessageModelUi {
     val isFromLocalUser = this.sender.userId == localUserId
 

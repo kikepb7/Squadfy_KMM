@@ -36,6 +36,7 @@ import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSendMessageCl
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnError
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnNewMessage
 import com.kikepb.chat.presentation.mappers.toUi
+import com.kikepb.chat.presentation.mappers.toUiList
 import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.chat.presentation.model.MessageModelUi
 import com.kikepb.chat.presentation.model.MessageModelUi.LocalUserMessage
@@ -106,7 +107,7 @@ class ChatDetailViewModel(
 
         currentState.copy(
             chatUi = chatInfo.chat.toUi(localParticipantId = authInfo.user.id),
-            messages = chatInfo.messages.map { it.toUi(localUserId = authInfo.user.id) }
+            messages = chatInfo.messages.toUiList(localUserId = authInfo.user.id)
         )
     }
     val state = _chatId
@@ -167,11 +168,7 @@ class ChatDetailViewModel(
         chatConnectionClient
             .connectionState
             .onEach { connectionState ->
-                if (connectionState == CONNECTED) {
-                    _chatId.value?.let {
-                        fetchMessagesUseCase.fetchMessages(chatId = it, before = null)
-                    }
-                }
+                if (connectionState == CONNECTED) currentPaginator?.loadNextItems()
 
                 _state.update { it.copy(connectionState = connectionState) }
             }.launchIn(scope = viewModelScope)
@@ -250,6 +247,12 @@ class ChatDetailViewModel(
 
     private fun onMessageLongClick(message: LocalUserMessage) = _state.update { it.copy(messageWithOpenMenu = message) }
 
+    private fun onScrollToTop() = loadNextItems()
+
+    private fun onRetryPaginationClick() = loadNextItems()
+
+    private fun loadNextItems() = viewModelScope.launch { currentPaginator?.loadNextItems() }
+
     private fun setUpPaginatorForChat(chatId: String) {
         currentPaginator = Paginator(
             initialKey = null,
@@ -263,20 +266,14 @@ class ChatDetailViewModel(
                 messages.minOfOrNull { it.createdAt }?.toString()
             },
             onError = { throwable ->
-                if (throwable is DataErrorException) {
-                    eventChannel.send(element = OnError(error = throwable.error.toUiText()))
-                }
+                if (throwable is DataErrorException) _state.update { it.copy(paginationError = throwable.error.toUiText()) }
             },
             onSuccess = { messages, _ ->
-                _state.update { it.copy(endReached = messages.isEmpty()) }
+                _state.update { it.copy(endReached = messages.isEmpty(), paginationError = null) }
             }
         )
 
         _state.update { it.copy(endReached = false, isPaginationLoading = false) }
-
-        viewModelScope.launch {
-            currentPaginator?.loadNextItems()
-        }
     }
 
     fun onAction(action: ChatDetailAction) {
@@ -291,8 +288,9 @@ class ChatDetailViewModel(
             OnLeaveChatClick -> onLeaveChatClick()
             is OnMessageLongClick -> onMessageLongClick(message = action.message)
             is OnRetryClick -> retryMessage(message = action.message)
-            OnScrollToTop -> {}
+            OnScrollToTop -> onScrollToTop()
             OnSendMessageClick -> sendMessage()
+            ChatDetailAction.OnRetryPaginationClick -> onRetryPaginationClick()
         }
     }
 }
@@ -338,4 +336,5 @@ sealed interface ChatDetailAction {
     data object OnChatMembersClick: ChatDetailAction
     data object OnLeaveChatClick: ChatDetailAction
     data object OnDismissChatOptions: ChatDetailAction
+    data object OnRetryPaginationClick: ChatDetailAction
 }
