@@ -37,6 +37,7 @@ import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnError
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnNewMessage
 import com.kikepb.chat.presentation.mappers.toUi
 import com.kikepb.chat.presentation.mappers.toUiList
+import com.kikepb.chat.presentation.model.BannerState
 import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.chat.presentation.model.MessageModelUi
 import com.kikepb.chat.presentation.model.MessageModelUi.LocalUserMessage
@@ -79,11 +80,12 @@ class ChatDetailViewModel(
     private val sessionStorage: SessionStorage
 ) : ViewModel() {
 
+    private var currentPaginator: Paginator<String?, ChatMessageModel>? = null
+    private var hasLoadedInitialData = false
     private val eventChannel = Channel<ChatDetailEvent>()
     val events = eventChannel.receiveAsFlow()
+
     private val _chatId = MutableStateFlow<String?>(value = null)
-    private var hasLoadedInitialData = false
-    private var currentPaginator: Paginator<String?, ChatMessageModel>? = null
     private val chatInfoFlow = _chatId
         .onEach { chatId ->
             if (chatId != null) setUpPaginatorForChat(chatId = chatId) else currentPaginator = null
@@ -91,25 +93,7 @@ class ChatDetailViewModel(
         .flatMapLatest { chatId ->
             if (chatId != null) getChatInfoByIdUseCase.getChatInfoById(chatId = chatId) else emptyFlow()
         }
-
     private val _state = MutableStateFlow(ChatDetailState())
-    private val canSendMessage = snapshotFlow { _state.value.messageTextFieldState.text.toString() }
-        .map { it.isBlank() }
-        .combine(chatConnectionClient.connectionState) { isMessageBlank, connectionState ->
-            !isMessageBlank && connectionState == CONNECTED
-        }
-    private val stateWithMessages = combine(
-        _state,
-        chatInfoFlow,
-        sessionStorage.observeAuthInfo()
-    ) { currentState, chatInfo, authInfo ->
-        if (authInfo == null) return@combine ChatDetailState()
-
-        currentState.copy(
-            chatUi = chatInfo.chat.toUi(localParticipantId = authInfo.user.id),
-            messages = chatInfo.messages.toUiList(localUserId = authInfo.user.id)
-        )
-    }
     val state = _chatId
         .flatMapLatest { chatId ->
             if (chatId != null) stateWithMessages else _state
@@ -127,6 +111,23 @@ class ChatDetailViewModel(
             started = SharingStarted.WhileSubscribed(5_000L),
             initialValue = ChatDetailState()
         )
+    private val canSendMessage = snapshotFlow { _state.value.messageTextFieldState.text.toString() }
+        .map { it.isBlank() }
+        .combine(chatConnectionClient.connectionState) { isMessageBlank, connectionState ->
+            !isMessageBlank && connectionState == CONNECTED
+        }
+    private val stateWithMessages = combine(
+        _state,
+        chatInfoFlow,
+        sessionStorage.observeAuthInfo()
+    ) { currentState, chatInfo, authInfo ->
+        if (authInfo == null) return@combine ChatDetailState()
+
+        currentState.copy(
+            chatUi = chatInfo.chat.toUi(localParticipantId = authInfo.user.id),
+            messages = chatInfo.messages.toUiList(localUserId = authInfo.user.id)
+        )
+    }
 
     private fun switchChat(chatId: String?) {
         _chatId.update { chatId }
@@ -135,14 +136,6 @@ class ChatDetailViewModel(
                 fetchChatByIdUseCase.fetchChatById(chatId = chatId)
             }
         }
-    }
-
-    private fun onChatOptionsClick() {
-        _state.update { it.copy(isChatOptionsOpen = true) }
-    }
-
-    private fun onDismissChatOptions() {
-        _state.update { it.copy(isChatOptionsOpen = false) }
     }
 
     private fun onLeaveChatClick() {
@@ -243,6 +236,10 @@ class ChatDetailViewModel(
         }
     }
 
+    private fun onChatOptionsClick() =_state.update { it.copy(isChatOptionsOpen = true) }
+
+    private fun onDismissChatOptions() = _state.update { it.copy(isChatOptionsOpen = false) }
+
     private fun onDismissMessageMenu() = _state.update { it.copy(messageWithOpenMenu = null) }
 
     private fun onMessageLongClick(message: LocalUserMessage) = _state.update { it.copy(messageWithOpenMenu = message) }
@@ -317,11 +314,6 @@ sealed interface ChatDetailEvent {
     data object OnNewMessage: ChatDetailEvent
     data class OnError(val error: UiText): ChatDetailEvent
 }
-
-data class BannerState(
-    val formattedDate: UiText? = null,
-    val isVisible: Boolean = false
-)
 
 sealed interface ChatDetailAction {
     data object OnSendMessageClick: ChatDetailAction

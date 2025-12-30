@@ -2,11 +2,22 @@ package com.kikepb.chat.presentation.mappers
 
 import com.kikepb.chat.domain.models.MessageWithSenderModel
 import com.kikepb.chat.presentation.model.MessageModelUi
+import com.kikepb.chat.presentation.model.MessageModelUi.DateSeparator
 import com.kikepb.chat.presentation.util.DateUtils
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 fun List<MessageWithSenderModel>.toUiList(localUserId: String): List<MessageModelUi> =
     this.sortedByDescending { it.message.createdAt }
-        .map { it.toUi(localUserId = localUserId) }
+        .groupBy {
+            it.message.createdAt.toLocalDateTime(timeZone = TimeZone.currentSystemDefault()).date
+        }
+        .flatMap { (date, messages) ->
+            messages.map { it.toUi(localUserId = localUserId) } + DateSeparator(
+                id = date.toString(),
+                date = DateUtils.formatDateSeparator(date = date)
+            )
+        }
 
 fun MessageWithSenderModel.toUi(localUserId: String, ): MessageModelUi {
     val isFromLocalUser = this.sender.userId == localUserId
