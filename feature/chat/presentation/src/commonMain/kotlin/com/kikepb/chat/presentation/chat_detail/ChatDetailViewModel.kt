@@ -21,15 +21,17 @@ import com.kikepb.chat.domain.usecases.message.FetchMessagesUseCase
 import com.kikepb.chat.domain.usecases.message.GetMessagesForChatUseCase
 import com.kikepb.chat.domain.usecases.message.RetryMessageUseCase
 import com.kikepb.chat.domain.usecases.message.SendMessageUseCase
-import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnBackClick
-import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnChatMembersClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnChatOptionsClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnDeleteMessageClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnDismissChatOptions
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnDismissMessageMenu
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnFirstVisibleIndexChanged
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnHideBanner
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnLeaveChatClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnMessageLongClick
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnRetryClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnRetryPaginationClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnTopVisibleIndexChanged
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnScrollToTop
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSelectChat
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSendMessageClick
@@ -40,7 +42,9 @@ import com.kikepb.chat.presentation.mappers.toUiList
 import com.kikepb.chat.presentation.model.BannerState
 import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.chat.presentation.model.MessageModelUi
+import com.kikepb.chat.presentation.model.MessageModelUi.DateSeparator
 import com.kikepb.chat.presentation.model.MessageModelUi.LocalUserMessage
+import com.kikepb.chat.presentation.model.MessageModelUi.OtherUserMessage
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.util.DataErrorException
 import com.kikepb.core.domain.util.Paginator
@@ -64,6 +68,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
+import squadfy_app.feature.chat.presentation.generated.resources.today
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -149,7 +155,13 @@ class ChatDetailViewModel(
                     _state.value.messageTextFieldState.clearText()
 
                     _chatId.update { null }
-                    _state.update { it.copy(chatUi = null, messages = emptyList(), bannerState = BannerState()) }
+                    _state.update {
+                        it.copy(
+                            chatUi = null,
+                            messages = emptyList(),
+                            bannerState = BannerState()
+                        )
+                    }
                 }
                 .onFailure { error ->
                     eventChannel.send(OnError(error.toUiText()))
@@ -173,8 +185,8 @@ class ChatDetailViewModel(
             .distinctUntilChanged()
 
         val newMessages = _chatId.flatMapLatest { chatId ->
-                if (chatId != null) getMessagesForChatUseCase.getMessagesForChat(chatId = chatId)
-                else emptyFlow()
+            if (chatId != null) getMessagesForChatUseCase.getMessagesForChat(chatId = chatId)
+            else emptyFlow()
         }
 
         val isNearBottom = state.map { it.isNearBottom }.distinctUntilChanged()
@@ -184,10 +196,16 @@ class ChatDetailViewModel(
             flow2 = newMessages,
             flow3 = isNearBottom
         ) { currentMessages, newMessages, isNearBottom ->
-            val lastNewId = newMessages.lastOrNull()?.message?.id
-            val lastCurrentId = currentMessages.lastOrNull()?.id
+            val newestMessageId = newMessages.firstOrNull()?.message?.id
+            val currentNewestId = currentMessages
+                .asSequence()
+                .filterNot { it is LocalUserMessage || it is OtherUserMessage }
+                .firstOrNull()
+                ?.id
 
-            if (lastNewId != lastCurrentId && isNearBottom) eventChannel.send(OnNewMessage)
+            if (newestMessageId != null && newestMessageId != currentNewestId && isNearBottom) eventChannel.send(
+                element = OnNewMessage
+            )
         }.launchIn(scope = viewModelScope)
     }
 
@@ -236,17 +254,48 @@ class ChatDetailViewModel(
         }
     }
 
-    private fun onChatOptionsClick() =_state.update { it.copy(isChatOptionsOpen = true) }
+    private fun onChatOptionsClick() = _state.update { it.copy(isChatOptionsOpen = true) }
 
     private fun onDismissChatOptions() = _state.update { it.copy(isChatOptionsOpen = false) }
 
     private fun onDismissMessageMenu() = _state.update { it.copy(messageWithOpenMenu = null) }
 
-    private fun onMessageLongClick(message: LocalUserMessage) = _state.update { it.copy(messageWithOpenMenu = message) }
+    private fun onMessageLongClick(message: LocalUserMessage) =
+        _state.update { it.copy(messageWithOpenMenu = message) }
 
     private fun onScrollToTop() = loadNextItems()
 
     private fun onRetryPaginationClick() = loadNextItems()
+
+    private fun onHideBanner() =
+        _state.update { it.copy(bannerState = it.bannerState.copy(isVisible = false)) }
+
+    private fun updateNearBottom(firstVisibleIndex: Int) = _state.update { it.copy(isNearBottom = firstVisibleIndex <= 3) }
+
+    private fun updateBanner(topVisibleIndex: Int) {
+        val visibleDate = calculateBannerDateFromIndex(messages = state.value.messages, index = topVisibleIndex)
+
+        _state.update { it.copy(bannerState = BannerState(formattedDate = visibleDate, isVisible = visibleDate != null)) }
+    }
+
+    private fun calculateBannerDateFromIndex(messages: List<MessageModelUi>, index: Int): UiText? {
+        if (messages.isEmpty() || index < 0 || index >= messages.size) return null
+
+        val nearestDateSeparator = (index until messages.size)
+            .asSequence()
+            .mapNotNull { index ->
+                val item = messages.getOrNull(index)
+                if (item is DateSeparator) item.date else null
+            }
+            .firstOrNull()
+
+        return when (nearestDateSeparator) {
+            is UiText.Resource -> {
+                if (nearestDateSeparator.id == RString.today) null else nearestDateSeparator
+            }
+            else -> nearestDateSeparator
+        }
+    }
 
     private fun loadNextItems() = viewModelScope.launch { currentPaginator?.loadNextItems() }
 
@@ -276,8 +325,6 @@ class ChatDetailViewModel(
     fun onAction(action: ChatDetailAction) {
         when (action) {
             is OnSelectChat -> switchChat(chatId = action.chatId)
-            OnBackClick -> {}
-            OnChatMembersClick -> {}
             OnChatOptionsClick -> onChatOptionsClick()
             is OnDeleteMessageClick -> deleteMessage(message = action.message)
             OnDismissChatOptions -> onDismissChatOptions()
@@ -287,7 +334,11 @@ class ChatDetailViewModel(
             is OnRetryClick -> retryMessage(message = action.message)
             OnScrollToTop -> onScrollToTop()
             OnSendMessageClick -> sendMessage()
-            ChatDetailAction.OnRetryPaginationClick -> onRetryPaginationClick()
+            OnRetryPaginationClick -> onRetryPaginationClick()
+            OnHideBanner -> onHideBanner()
+            is OnFirstVisibleIndexChanged -> updateNearBottom(firstVisibleIndex = action.index)
+            is OnTopVisibleIndexChanged -> updateBanner(topVisibleIndex = action.topVisibleIndex)
+            else -> Unit
         }
     }
 }
@@ -329,4 +380,7 @@ sealed interface ChatDetailAction {
     data object OnLeaveChatClick: ChatDetailAction
     data object OnDismissChatOptions: ChatDetailAction
     data object OnRetryPaginationClick: ChatDetailAction
+    data object OnHideBanner: ChatDetailAction
+    data class OnFirstVisibleIndexChanged(val index: Int): ChatDetailAction
+    data class OnTopVisibleIndexChanged(val topVisibleIndex: Int): ChatDetailAction
 }
