@@ -11,9 +11,9 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
 import squadfy_app.feature.chat.presentation.generated.resources.today
-import squadfy_app.feature.chat.presentation.generated.resources.today_value
+import squadfy_app.feature.chat.presentation.generated.resources.today_parameter
 import squadfy_app.feature.chat.presentation.generated.resources.yesterday
-import squadfy_app.feature.chat.presentation.generated.resources.yesterday_value
+import squadfy_app.feature.chat.presentation.generated.resources.yesterday_parameter
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -46,8 +46,8 @@ object DateUtils {
         )
 
         return when (messageDateTime.date) {
-            todayDate -> UiText.Resource(id = RString.today_value, args = arrayOf(formattedTime))
-            yesterdayDate -> UiText.Resource(id = RString.yesterday_value, args = arrayOf(formattedTime))
+            todayDate -> UiText.Resource(id = RString.today_parameter, args = arrayOf(formattedTime))
+            yesterdayDate -> UiText.Resource(id = RString.yesterday_parameter, args = arrayOf(formattedTime))
             else -> UiText.DynamicString(value = formattedDateTime)
         }
     }
