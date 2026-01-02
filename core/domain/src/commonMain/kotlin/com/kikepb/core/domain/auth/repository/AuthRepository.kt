@@ -12,4 +12,5 @@ interface AuthRepository {
     suspend fun verifyEmail(token: String): EmptyResult<DataError.Remote>
     suspend fun forgotPassword(email: String): EmptyResult<DataError.Remote>
     suspend fun resetPassword(newPassword: String, token: String): EmptyResult<DataError.Remote>
+    suspend fun changePassword(currentPassword: String, newPassword: String): EmptyResult<DataError.Remote>
 }

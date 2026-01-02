@@ -14,6 +14,7 @@ import com.kikepb.chat.domain.usecases.message.FetchMessagesUseCase
 import com.kikepb.chat.domain.usecases.message.GetMessagesForChatUseCase
 import com.kikepb.chat.domain.usecases.message.RetryMessageUseCase
 import com.kikepb.chat.domain.usecases.message.SendMessageUseCase
+import com.kikepb.chat.domain.usecases.profile.ChangePasswordUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -32,4 +33,5 @@ val chatDomainModule = module {
     singleOf(::SendMessageUseCase)
     singleOf(::RetryMessageUseCase)
     singleOf(::DeleteMessageUseCase)
+    singleOf(::ChangePasswordUseCase)
 }

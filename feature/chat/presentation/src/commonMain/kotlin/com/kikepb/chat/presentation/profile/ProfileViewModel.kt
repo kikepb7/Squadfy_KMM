@@ -1,15 +1,38 @@
 package com.kikepb.chat.presentation.profile
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kikepb.chat.domain.usecases.profile.ChangePasswordUseCase
+import com.kikepb.chat.presentation.profile.ProfileAction.OnChangePasswordClick
+import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleCurrentPasswordVisibility
+import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleNewPasswordVisibility
+import com.kikepb.core.domain.util.DataError.Remote.CONFLICT
+import com.kikepb.core.domain.util.DataError.Remote.UNAUTHORIZED
+import com.kikepb.core.domain.util.onFailure
+import com.kikepb.core.domain.util.onSuccess
+import com.kikepb.core.domain.validation.PasswordValidator
+import com.kikepb.core.presentation.mapper.toUiText
 import com.kikepb.core.presentation.util.UiText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
+import squadfy_app.feature.chat.presentation.generated.resources.error_current_password_equal_to_new_one
+import squadfy_app.feature.chat.presentation.generated.resources.error_current_password_incorrect
 
-class ProfileViewModel: ViewModel() {
+class ProfileViewModel(
+    private val changePasswordUseCase: ChangePasswordUseCase
+): ViewModel() {
 
     private var hasLoadedInitialData = false
 
@@ -17,6 +40,7 @@ class ProfileViewModel: ViewModel() {
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
+                observeCanChangePassword()
                 hasLoadedInitialData = true
             }
         }
@@ -26,8 +50,68 @@ class ProfileViewModel: ViewModel() {
             initialValue = ProfileState()
         )
 
+    private fun onToggleCurrentPasswordVisibility() = _state.update { it.copy(isCurrentPasswordVisible = !it.isCurrentPasswordVisible) }
+
+    private fun onToggleNewPasswordVisibility() = _state.update { it.copy(isNewPasswordVisible = !it.isNewPasswordVisible) }
+
+    private fun changePassword() {
+        if (!state.value.canChangePassword && state.value.isChangingPassword) return
+
+        _state.update { it.copy(isChangingPassword = true, isPasswordChangeSuccessful = false) }
+
+        viewModelScope.launch {
+            val currentPassword = state.value.currentPasswordTextState.text.toString()
+            val newPassword = state.value.newPasswordTextState.text.toString()
+
+            changePasswordUseCase.changePassword(currentPassword = currentPassword, newPassword = newPassword)
+                .onSuccess {
+                    state.value.currentPasswordTextState.clearText()
+                    state.value.newPasswordTextState.clearText()
+
+                    _state.update { it.copy(
+                        isChangingPassword = false,
+                        newPasswordError = null,
+                        isNewPasswordVisible = false,
+                        isCurrentPasswordVisible = false,
+                        isPasswordChangeSuccessful = true
+                    ) }
+                }
+                .onFailure { error ->
+                    val errorMessage = when (error) {
+                        UNAUTHORIZED -> UiText.Resource(RString.error_current_password_incorrect)
+                        CONFLICT -> UiText.Resource(RString.error_current_password_equal_to_new_one)
+                        else -> error.toUiText()
+                    }
+
+                    _state.update { it.copy(newPasswordError = errorMessage, isChangingPassword = false) }
+                }
+        }
+    }
+
+    private fun observeCanChangePassword() {
+        val isCurrentPasswordValidFlow = snapshotFlow {
+            state.value.currentPasswordTextState.text.toString()
+        }.map { it.isNotBlank() }.distinctUntilChanged()
+
+        val isNewPasswordValidFlow = snapshotFlow {
+            state.value.newPasswordTextState.text.toString()
+        }.map {
+            PasswordValidator.validate(password = it).isValidPassword
+        }.distinctUntilChanged()
+
+        combine(
+            isCurrentPasswordValidFlow,
+            isNewPasswordValidFlow
+        ) { isCurrentValid, isNewValid ->
+            _state.update { it.copy(canChangePassword = isCurrentValid && isNewValid) }
+        }.launchIn(scope = viewModelScope)
+    }
+
     fun onAction(action: ProfileAction) {
         when (action) {
+            is OnChangePasswordClick -> changePassword()
+            is OnToggleCurrentPasswordVisibility -> onToggleCurrentPasswordVisibility()
+            is OnToggleNewPasswordVisibility -> onToggleNewPasswordVisibility()
             else -> Unit
         }
     }
@@ -47,9 +131,9 @@ data class ProfileState(
     val isCurrentPasswordVisible: Boolean = false,
     val isNewPasswordVisible: Boolean = false,
     val isChangingPassword: Boolean = false,
-    val currentPasswordError: UiText? = null,
     val newPasswordError: UiText? = null,
     val canChangePassword: Boolean = false,
+    val isPasswordChangeSuccessful: Boolean = false
 )
 
 sealed interface ProfileAction {

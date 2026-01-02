@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.chat.presentation.profile.ProfileAction.OnChangePasswordClick
@@ -45,6 +46,7 @@ import com.kikepb.core.designsystem.components.divider.SquadfyHorizontalDivider
 import com.kikepb.core.designsystem.components.textfields.SquadfyPasswordTextField
 import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
 import com.kikepb.core.designsystem.theme.SquadfyTheme
+import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.presentation.util.DeviceConfiguration.MOBILE_LANDSCAPE
 import com.kikepb.core.presentation.util.DeviceConfiguration.MOBILE_PORTRAIT
 import com.kikepb.core.presentation.util.clearFocusOnTap
@@ -53,7 +55,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import squadfy_app.feature.chat.presentation.generated.resources.Res
 import squadfy_app.feature.chat.presentation.generated.resources.cancel
 import squadfy_app.feature.chat.presentation.generated.resources.contact_squadfy_support_change_email
 import squadfy_app.feature.chat.presentation.generated.resources.current_password
@@ -63,6 +64,7 @@ import squadfy_app.feature.chat.presentation.generated.resources.delete_profile_
 import squadfy_app.feature.chat.presentation.generated.resources.email
 import squadfy_app.feature.chat.presentation.generated.resources.new_password
 import squadfy_app.feature.chat.presentation.generated.resources.password
+import squadfy_app.feature.chat.presentation.generated.resources.password_change_successful
 import squadfy_app.feature.chat.presentation.generated.resources.password_hint
 import squadfy_app.feature.chat.presentation.generated.resources.profile_image
 import squadfy_app.feature.chat.presentation.generated.resources.save
@@ -134,7 +136,7 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.spacedBy(space = 12.dp)
                 ) {
                     SquadfyButton(
-                        text = stringResource(resource = Res.string.upload_image),
+                        text = stringResource(resource = RString.upload_image),
                         onClick = { onAction(OnUploadPictureClick) },
                         style = SECONDARY,
                         enabled = !state.isUploadingImage && !state.isDeletingImage,
@@ -142,12 +144,12 @@ fun ProfileScreen(
                         leadingIcon = {
                             Icon(
                                 imageVector = vectorResource(resource = RDrawable.upload_icon),
-                                contentDescription = stringResource(resource = Res.string.upload_image)
+                                contentDescription = stringResource(resource = RString.upload_image)
                             )
                         }
                     )
                     SquadfyButton(
-                        text = stringResource(resource = Res.string.delete),
+                        text = stringResource(resource = RString.delete),
                         onClick = { onAction(OnDeletePictureClick) },
                         style = DESTRUCTIVE_SECONDARY,
                         enabled = !state.isUploadingImage && !state.isDeletingImage && state.profilePictureUrl != null,
@@ -155,7 +157,7 @@ fun ProfileScreen(
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(resource = Res.string.delete)
+                                contentDescription = stringResource(resource = RString.delete)
                             )
                         }
                     )
@@ -189,8 +191,7 @@ fun ProfileScreen(
                 isPasswordVisible = state.isCurrentPasswordVisible,
                 onToggleVisibilityClick = { onAction(OnToggleCurrentPasswordVisibility) },
                 placeholder = stringResource(resource = RString.current_password),
-                isError = state.currentPasswordError != null,
-                supportingText = state.currentPasswordError?.asString()
+                isError = state.newPasswordError != null,
             )
             SquadfyPasswordTextField(
                 state = state.newPasswordTextState,
@@ -200,6 +201,17 @@ fun ProfileScreen(
                 isError = state.newPasswordError != null,
                 supportingText = state.newPasswordError?.asString() ?: stringResource(resource = RString.password_hint)
             )
+
+            if (state.isPasswordChangeSuccessful) {
+                Text(
+                    text = stringResource(RString.password_change_successful),
+                    color = MaterialTheme.colorScheme.extended.success,
+                    style = MaterialTheme.typography.labelSmall,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(space = 16.dp, Alignment.End)

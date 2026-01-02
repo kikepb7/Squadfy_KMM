@@ -3,7 +3,7 @@ package com.kikepb.core.data.auth.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserSerializableDto(
+data class UserSerializableDTO(
     val id: String,
     val email: String,
     val username: String,

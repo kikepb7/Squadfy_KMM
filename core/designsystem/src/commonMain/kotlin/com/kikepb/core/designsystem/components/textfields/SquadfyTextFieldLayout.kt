@@ -65,7 +65,7 @@ fun SquadfyTextFieldLayout(
         .padding(12.dp)
 
     Column(modifier = modifier) {
-        if(title != null) {
+        if (title != null) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelSmall,
