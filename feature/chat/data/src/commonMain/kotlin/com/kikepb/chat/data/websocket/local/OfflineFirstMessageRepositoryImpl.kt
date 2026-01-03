@@ -1,6 +1,6 @@
 package com.kikepb.chat.data.websocket.local
 
-import com.kikepb.chat.data.datasource.remote.KtorChatMessageService
+import com.kikepb.chat.data.datasource.remote.message.KtorChatMessageService
 import com.kikepb.chat.data.dto.websocket.OutgoingWebSocketDTO
 import com.kikepb.chat.data.dto.websocket.WebSocketMessageDTO
 import com.kikepb.chat.data.mappers.toDomain

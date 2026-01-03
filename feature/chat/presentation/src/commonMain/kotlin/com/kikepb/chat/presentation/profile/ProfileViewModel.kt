@@ -5,10 +5,12 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kikepb.chat.domain.usecases.participant.FetchLocalParticipantUseCase
 import com.kikepb.chat.domain.usecases.profile.ChangePasswordUseCase
 import com.kikepb.chat.presentation.profile.ProfileAction.OnChangePasswordClick
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleCurrentPasswordVisibility
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleNewPasswordVisibility
+import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.util.DataError.Remote.CONFLICT
 import com.kikepb.core.domain.util.DataError.Remote.UNAUTHORIZED
 import com.kikepb.core.domain.util.onFailure
@@ -31,16 +33,30 @@ import squadfy_app.feature.chat.presentation.generated.resources.error_current_p
 import squadfy_app.feature.chat.presentation.generated.resources.error_current_password_incorrect
 
 class ProfileViewModel(
-    private val changePasswordUseCase: ChangePasswordUseCase
+    private val changePasswordUseCase: ChangePasswordUseCase,
+    private val fetchLocalParticipantUseCase: FetchLocalParticipantUseCase,
+    private val sessionStorage: SessionStorage
 ): ViewModel() {
 
     private var hasLoadedInitialData = false
 
     private val _state = MutableStateFlow(ProfileState())
-    val state = _state
+    val state = combine(
+        _state,
+        sessionStorage.observeAuthInfo()
+    ) { currentState, authInfo ->
+        if (authInfo != null) {
+            currentState.copy(
+                username = authInfo.user.username,
+                emailTextState = TextFieldState(initialText = authInfo.user.email),
+                profilePictureUrl = authInfo.user.profilePictureUrl
+            )
+        } else currentState
+    }
         .onStart {
             if (!hasLoadedInitialData) {
                 observeCanChangePassword()
+                fetchLocalParticipantDetails()
                 hasLoadedInitialData = true
             }
         }
@@ -49,6 +65,12 @@ class ProfileViewModel(
             started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
             initialValue = ProfileState()
         )
+
+    private fun fetchLocalParticipantDetails() =
+        viewModelScope.launch {
+            fetchLocalParticipantUseCase.fetchLocalParticipant()
+        }
+
 
     private fun onToggleCurrentPasswordVisibility() = _state.update { it.copy(isCurrentPasswordVisible = !it.isCurrentPasswordVisible) }
 

@@ -1,6 +1,6 @@
 package com.kikepb.chat.domain.usecases
 
-import com.kikepb.chat.domain.repository.ChatParticipantService
+import com.kikepb.chat.domain.repository.participant.ChatParticipantService
 
 class GetChatParticipantUseCase(
     private val chatParticipantService: ChatParticipantService

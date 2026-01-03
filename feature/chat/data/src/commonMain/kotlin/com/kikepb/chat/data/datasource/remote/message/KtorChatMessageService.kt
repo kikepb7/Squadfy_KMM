@@ -1,4 +1,4 @@
-package com.kikepb.chat.data.datasource.remote
+package com.kikepb.chat.data.datasource.remote.message
 
 import com.kikepb.chat.data.dto.ChatMessageDTO
 import com.kikepb.chat.data.mappers.toDomain
