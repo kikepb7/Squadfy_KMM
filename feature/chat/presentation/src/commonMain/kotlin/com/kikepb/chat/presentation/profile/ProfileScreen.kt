@@ -30,11 +30,13 @@ import com.kikepb.chat.presentation.profile.ProfileAction.OnConfirmDeleteClick
 import com.kikepb.chat.presentation.profile.ProfileAction.OnDeletePictureClick
 import com.kikepb.chat.presentation.profile.ProfileAction.OnDismiss
 import com.kikepb.chat.presentation.profile.ProfileAction.OnDismissDeleteConfirmationDialogClick
+import com.kikepb.chat.presentation.profile.ProfileAction.OnPictureSelected
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleCurrentPasswordVisibility
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleNewPasswordVisibility
 import com.kikepb.chat.presentation.profile.ProfileAction.OnUploadPictureClick
 import com.kikepb.chat.presentation.profile.components.ProfileHeaderSection
 import com.kikepb.chat.presentation.profile.components.ProfileSectionLayout
+import com.kikepb.chat.presentation.profile.mediapicker.rememberImagePickerLauncher
 import com.kikepb.core.designsystem.components.avatar.AvatarSize.LARGE
 import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
@@ -79,6 +81,9 @@ fun ProfileRoot(
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val imagePickerLauncher = rememberImagePickerLauncher { pickedImageData ->
+        viewModel.onAction(action = OnPictureSelected(bytes = pickedImageData.bytes, mimeType = pickedImageData.mimeType))
+    }
 
     SquadfyAdaptiveDialogSheetLayout(onDismiss = onDismiss) {
         ProfileScreen(
@@ -86,6 +91,7 @@ fun ProfileRoot(
             onAction = { action ->
                 when (action) {
                     is OnDismiss -> onDismiss()
+                    is OnUploadPictureClick -> { imagePickerLauncher.launch() }
                     else -> Unit
                 }
                 viewModel.onAction(action = action)
