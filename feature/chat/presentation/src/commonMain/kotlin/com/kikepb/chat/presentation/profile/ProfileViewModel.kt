@@ -112,11 +112,11 @@ class ProfileViewModel(
 
     private fun observeCanChangePassword() {
         val isCurrentPasswordValidFlow = snapshotFlow {
-            state.value.currentPasswordTextState.text.toString()
+            _state.value.currentPasswordTextState.text.toString()
         }.map { it.isNotBlank() }.distinctUntilChanged()
 
         val isNewPasswordValidFlow = snapshotFlow {
-            state.value.newPasswordTextState.text.toString()
+            _state.value.newPasswordTextState.text.toString()
         }.map {
             PasswordValidator.validate(password = it).isValidPassword
         }.distinctUntilChanged()
