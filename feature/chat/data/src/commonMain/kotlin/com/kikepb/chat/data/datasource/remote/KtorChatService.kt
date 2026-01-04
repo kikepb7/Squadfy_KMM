@@ -5,7 +5,7 @@ import com.kikepb.chat.data.dto.request.CreateChatRequestDTO
 import com.kikepb.chat.data.dto.request.ParticipantsRequestDTO
 import com.kikepb.chat.data.mappers.toDomain
 import com.kikepb.chat.domain.models.ChatModel
-import com.kikepb.chat.domain.repository.ChatService
+import com.kikepb.chat.domain.repository.chat.ChatService
 import com.kikepb.core.data.networking.delete
 import com.kikepb.core.data.networking.get
 import com.kikepb.core.data.networking.post

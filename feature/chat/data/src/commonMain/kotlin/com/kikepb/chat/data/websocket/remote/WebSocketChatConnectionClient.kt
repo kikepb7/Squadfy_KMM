@@ -15,8 +15,8 @@ import com.kikepb.chat.data.mappers.toEntity
 import com.kikepb.chat.data.network.KtorWebSocketConnector
 import com.kikepb.chat.data.utils.STOP_TIMEOUT_MILLIS
 import com.kikepb.chat.database.SquadfyChatDatabase
-import com.kikepb.chat.domain.repository.ChatConnectionClient
-import com.kikepb.chat.domain.repository.ChatRepository
+import com.kikepb.chat.domain.repository.chat.ChatConnectionClient
+import com.kikepb.chat.domain.repository.chat.ChatRepository
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted

@@ -11,8 +11,8 @@ import com.kikepb.chat.data.network.KtorWebSocketConnector
 import com.kikepb.chat.data.websocket.local.OfflineFirstMessageRepositoryImpl
 import com.kikepb.chat.data.websocket.remote.WebSocketChatConnectionClient
 import com.kikepb.chat.database.DatabaseFactory
-import com.kikepb.chat.domain.repository.ChatConnectionClient
-import com.kikepb.chat.domain.repository.ChatRepository
+import com.kikepb.chat.domain.repository.chat.ChatConnectionClient
+import com.kikepb.chat.domain.repository.chat.ChatRepository
 import com.kikepb.chat.domain.repository.message.ChatMessageService
 import com.kikepb.chat.domain.repository.message.MessageRepository
 import com.kikepb.chat.domain.repository.participant.ChatParticipantRepository

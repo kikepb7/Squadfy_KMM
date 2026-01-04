@@ -7,7 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.chat.domain.usecases.participant.FetchLocalParticipantUseCase
 import com.kikepb.chat.domain.usecases.profile.ChangePasswordUseCase
+import com.kikepb.chat.domain.usecases.profile.UploadProfilePictureUseCase
 import com.kikepb.chat.presentation.profile.ProfileAction.OnChangePasswordClick
+import com.kikepb.chat.presentation.profile.ProfileAction.OnPictureSelected
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleCurrentPasswordVisibility
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleNewPasswordVisibility
 import com.kikepb.core.domain.auth.repository.SessionStorage
@@ -31,10 +33,12 @@ import kotlinx.coroutines.launch
 import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
 import squadfy_app.feature.chat.presentation.generated.resources.error_current_password_equal_to_new_one
 import squadfy_app.feature.chat.presentation.generated.resources.error_current_password_incorrect
+import squadfy_app.feature.chat.presentation.generated.resources.error_invalid_file_type
 
 class ProfileViewModel(
     private val changePasswordUseCase: ChangePasswordUseCase,
     private val fetchLocalParticipantUseCase: FetchLocalParticipantUseCase,
+    private val uploadProfilePictureUseCase: UploadProfilePictureUseCase,
     private val sessionStorage: SessionStorage
 ): ViewModel() {
 
@@ -129,11 +133,32 @@ class ProfileViewModel(
         }.launchIn(scope = viewModelScope)
     }
 
+    private fun uploadProfilePicture(bytes: ByteArray, mimeType: String?) {
+        if (state.value.isUploadingImage) return
+
+        if (mimeType == null) {
+            _state.update { it.copy(imageError = UiText.Resource(RString.error_invalid_file_type)) }
+            return
+        }
+        _state.update { it.copy(isUploadingImage = true, imageError = null) }
+
+        viewModelScope.launch {
+            uploadProfilePictureUseCase.uploadProfilePicture(imageBytes = bytes, mimeType = mimeType)
+                .onSuccess {
+                    _state.update { it.copy(isUploadingImage = false) }
+                }
+                .onFailure { error ->
+                    _state.update { it.copy(isUploadingImage = false, imageError = error.toUiText()) }
+                }
+        }
+    }
+
     fun onAction(action: ProfileAction) {
         when (action) {
             is OnChangePasswordClick -> changePassword()
             is OnToggleCurrentPasswordVisibility -> onToggleCurrentPasswordVisibility()
             is OnToggleNewPasswordVisibility -> onToggleNewPasswordVisibility()
+            is OnPictureSelected -> uploadProfilePicture(bytes = action.bytes, mimeType = action.mimeType)
             else -> Unit
         }
     }

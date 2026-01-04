@@ -1,4 +1,4 @@
-package com.kikepb.chat.domain.repository
+package com.kikepb.chat.domain.repository.chat
 
 import com.kikepb.chat.domain.models.ChatInfoModel
 import com.kikepb.chat.domain.models.ChatModel

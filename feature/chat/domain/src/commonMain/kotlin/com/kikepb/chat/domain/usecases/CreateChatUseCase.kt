@@ -1,6 +1,6 @@
 package com.kikepb.chat.domain.usecases
 
-import com.kikepb.chat.domain.repository.ChatRepository
+import com.kikepb.chat.domain.repository.chat.ChatRepository
 
 class CreateChatUseCase(private val chatRepository: ChatRepository
 ) {

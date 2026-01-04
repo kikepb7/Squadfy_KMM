@@ -1,6 +1,6 @@
 package com.kikepb.chat.domain.usecases
 
-import com.kikepb.chat.domain.repository.ChatRepository
+import com.kikepb.chat.domain.repository.chat.ChatRepository
 
 class AddParticipantsToChatUseCase(private val chatRepository: ChatRepository) {
     suspend fun addParticipantsToChat(chatId: String, userIds: List<String>) =

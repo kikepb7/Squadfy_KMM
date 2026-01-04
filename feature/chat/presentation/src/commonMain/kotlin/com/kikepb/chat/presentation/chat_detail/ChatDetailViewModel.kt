@@ -12,7 +12,7 @@ import com.kikepb.chat.domain.models.ConnectionStateModel
 import com.kikepb.chat.domain.models.ConnectionStateModel.CONNECTED
 import com.kikepb.chat.domain.models.ConnectionStateModel.DISCONNECTED
 import com.kikepb.chat.domain.models.OutgoingNewMessageModel
-import com.kikepb.chat.domain.repository.ChatConnectionClient
+import com.kikepb.chat.domain.repository.chat.ChatConnectionClient
 import com.kikepb.chat.domain.usecases.FetchChatByIdUseCase
 import com.kikepb.chat.domain.usecases.GetChatInfoByIdUseCase
 import com.kikepb.chat.domain.usecases.LeaveChatUseCase

@@ -2,7 +2,7 @@ package com.kikepb.chat.presentation.chat_list_detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kikepb.chat.domain.repository.ChatConnectionClient
+import com.kikepb.chat.domain.repository.chat.ChatConnectionClient
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnSelectChat
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnCreateChatClick
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnDismissCurrentDialog

@@ -10,8 +10,8 @@ import com.kikepb.chat.database.entities.ChatWithParticipants
 import com.kikepb.chat.domain.models.ChatInfoModel
 import com.kikepb.chat.domain.models.ChatModel
 import com.kikepb.chat.domain.models.ChatParticipantModel
-import com.kikepb.chat.domain.repository.ChatRepository
-import com.kikepb.chat.domain.repository.ChatService
+import com.kikepb.chat.domain.repository.chat.ChatRepository
+import com.kikepb.chat.domain.repository.chat.ChatService
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
