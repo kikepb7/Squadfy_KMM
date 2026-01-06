@@ -38,6 +38,8 @@ import com.kikepb.core.designsystem.components.dialogs.SquadfyDestructiveConfirm
 import com.kikepb.core.designsystem.components.divider.SquadfyHorizontalDivider
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
+import com.kikepb.core.presentation.permissions.Permission
+import com.kikepb.core.presentation.permissions.rememberPermissionController
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -88,6 +90,12 @@ fun ChatListScreen(
     onAction: (ChatListAction) -> Unit,
     snackBarHostState: SnackbarHostState
 ) {
+    val permissionController = rememberPermissionController()
+
+    LaunchedEffect(key1 = true) {
+        permissionController.requestPermission(permission = Permission.NOTIFICATIONS)
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
