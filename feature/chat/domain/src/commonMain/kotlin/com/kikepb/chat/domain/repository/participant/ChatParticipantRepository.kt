@@ -8,4 +8,5 @@ import com.kikepb.core.domain.util.Result
 interface ChatParticipantRepository {
     suspend fun fetchLocalParticipant(): Result<ChatParticipantModel, DataError>
     suspend fun uploadProfilePicture(imageBytes: ByteArray, mimeType: String): EmptyResult<DataError.Remote>
+    suspend fun deleteProfilePicture(): EmptyResult<DataError.Remote>
 }

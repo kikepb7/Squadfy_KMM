@@ -13,9 +13,11 @@ import com.kikepb.chat.data.websocket.remote.WebSocketChatConnectionClient
 import com.kikepb.chat.database.DatabaseFactory
 import com.kikepb.chat.domain.repository.chat.ChatConnectionClient
 import com.kikepb.chat.domain.repository.chat.ChatRepository
+import com.kikepb.chat.domain.repository.chat.ChatService
 import com.kikepb.chat.domain.repository.message.ChatMessageService
 import com.kikepb.chat.domain.repository.message.MessageRepository
 import com.kikepb.chat.domain.repository.participant.ChatParticipantRepository
+import com.kikepb.chat.domain.repository.participant.ChatParticipantService
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -26,8 +28,8 @@ expect val platformChatDataModule: Module
 val chatDataModule = module {
     includes(platformChatDataModule)
 
-    singleOf(::KtorChatParticipantService) bind KtorChatParticipantService::class
-    singleOf(::KtorChatService) bind KtorChatService::class
+    singleOf(::KtorChatParticipantService) bind ChatParticipantService::class
+    singleOf(::KtorChatService) bind ChatService::class
     singleOf(::OfflineFirstChatRepositoryImpl) bind ChatRepository::class
     singleOf(::OfflineFirstMessageRepositoryImpl) bind MessageRepository::class
     singleOf(::OfflineFirstChatParticipantRepositoryImpl) bind ChatParticipantRepository::class

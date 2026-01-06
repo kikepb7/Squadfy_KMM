@@ -7,8 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.chat.domain.usecases.participant.FetchLocalParticipantUseCase
 import com.kikepb.chat.domain.usecases.profile.ChangePasswordUseCase
+import com.kikepb.chat.domain.usecases.profile.DeleteProfilePictureUseCase
 import com.kikepb.chat.domain.usecases.profile.UploadProfilePictureUseCase
 import com.kikepb.chat.presentation.profile.ProfileAction.OnChangePasswordClick
+import com.kikepb.chat.presentation.profile.ProfileAction.OnConfirmDeleteClick
+import com.kikepb.chat.presentation.profile.ProfileAction.OnDeletePictureClick
 import com.kikepb.chat.presentation.profile.ProfileAction.OnPictureSelected
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleCurrentPasswordVisibility
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleNewPasswordVisibility
@@ -39,6 +42,7 @@ class ProfileViewModel(
     private val changePasswordUseCase: ChangePasswordUseCase,
     private val fetchLocalParticipantUseCase: FetchLocalParticipantUseCase,
     private val uploadProfilePictureUseCase: UploadProfilePictureUseCase,
+    private val deleteProfilePictureUseCase: DeleteProfilePictureUseCase,
     private val sessionStorage: SessionStorage
 ): ViewModel() {
 
@@ -76,9 +80,9 @@ class ProfileViewModel(
         }
 
 
-    private fun onToggleCurrentPasswordVisibility() = _state.update { it.copy(isCurrentPasswordVisible = !it.isCurrentPasswordVisible) }
+    private fun toggleCurrentPasswordVisibility() = _state.update { it.copy(isCurrentPasswordVisible = !it.isCurrentPasswordVisible) }
 
-    private fun onToggleNewPasswordVisibility() = _state.update { it.copy(isNewPasswordVisible = !it.isNewPasswordVisible) }
+    private fun toggleNewPasswordVisibility() = _state.update { it.copy(isNewPasswordVisible = !it.isNewPasswordVisible) }
 
     private fun changePassword() {
         if (!state.value.canChangePassword && state.value.isChangingPassword) return
@@ -153,12 +157,35 @@ class ProfileViewModel(
         }
     }
 
+    private fun showDeleteConfirmation() = _state.update { it.copy(showDeleteConfirmationDialog = true) }
+
+    private fun dismissDeleteConfirmation() = _state.update { it.copy(showDeleteConfirmationDialog = false) }
+
+    private fun deleteProfilePicture() {
+        if (state.value.isDeletingImage && state.value.profilePictureUrl == null) return
+
+        _state.update { it.copy(isDeletingImage = true, imageError = null, showDeleteConfirmationDialog = false) }
+
+        viewModelScope.launch {
+            deleteProfilePictureUseCase.deleteProfilePicture()
+                .onSuccess {
+                    _state.update { it.copy(isDeletingImage = false) }
+                }
+                .onFailure { error ->
+                    _state.update { it.copy(imageError = error.toUiText(), isDeletingImage = false) }
+                }
+        }
+    }
+
     fun onAction(action: ProfileAction) {
         when (action) {
             is OnChangePasswordClick -> changePassword()
-            is OnToggleCurrentPasswordVisibility -> onToggleCurrentPasswordVisibility()
-            is OnToggleNewPasswordVisibility -> onToggleNewPasswordVisibility()
+            is OnToggleCurrentPasswordVisibility -> toggleCurrentPasswordVisibility()
+            is OnToggleNewPasswordVisibility -> toggleNewPasswordVisibility()
             is OnPictureSelected -> uploadProfilePicture(bytes = action.bytes, mimeType = action.mimeType)
+            is OnDeletePictureClick -> showDeleteConfirmation()
+            is OnConfirmDeleteClick -> deleteProfilePicture()
+            is ProfileAction.OnDismissDeleteConfirmationDialogClick -> dismissDeleteConfirmation()
             else -> Unit
         }
     }
@@ -186,8 +213,6 @@ data class ProfileState(
 sealed interface ProfileAction {
     data object OnDismiss: ProfileAction
     data object OnUploadPictureClick: ProfileAction
-    data object OnErrorImagePicker: ProfileAction
-    data class OnUriSelected(val uri: String): ProfileAction
     class OnPictureSelected(val bytes: ByteArray, val mimeType: String?): ProfileAction
     data object OnDeletePictureClick: ProfileAction
     data object OnConfirmDeleteClick: ProfileAction

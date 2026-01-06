@@ -7,6 +7,7 @@ import com.kikepb.chat.data.mappers.toDomain
 import com.kikepb.chat.domain.models.ChatParticipantModel
 import com.kikepb.chat.domain.models.ProfilePictureUploadUrlsModel
 import com.kikepb.chat.domain.repository.participant.ChatParticipantService
+import com.kikepb.core.data.networking.delete
 import com.kikepb.core.data.networking.get
 import com.kikepb.core.data.networking.post
 import com.kikepb.core.data.networking.safeCall
@@ -66,4 +67,7 @@ class KtorChatParticipantService(
             route = "/participants/confirm-profile-picture",
             body = ConfirmProfilePictureRequestDTO(publicUrl = publicUrl)
         )
+
+    override suspend fun deleteProfilePicture(): EmptyResult<DataError.Remote> =
+        httpClient.delete(route = "/participants/profile-picture")
 }
