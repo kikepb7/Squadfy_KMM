@@ -19,8 +19,6 @@ fun App(
     viewModel: MainViewModel = koinViewModel()
 ) {
     val navController = rememberNavController()
-    DeepLinkListener(navController = navController)
-
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(key1 = state.isCheckingAuth) {
@@ -45,6 +43,7 @@ fun App(
                 navController = navController,
                 startDestination = if (state.isLoggedIn) ChatGraph else AuthGraph
             )
+            DeepLinkListener(navController = navController)
         }
     }
 }

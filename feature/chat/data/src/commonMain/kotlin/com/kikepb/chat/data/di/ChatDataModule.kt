@@ -8,9 +8,11 @@ import com.kikepb.chat.data.datasource.remote.KtorChatService
 import com.kikepb.chat.data.datasource.remote.participant.OfflineFirstChatParticipantRepositoryImpl
 import com.kikepb.chat.data.network.ConnectionRetryHandler
 import com.kikepb.chat.data.network.KtorWebSocketConnector
+import com.kikepb.chat.data.notification.KtorDeviceTokenRepositoryImpl
 import com.kikepb.chat.data.websocket.local.OfflineFirstMessageRepositoryImpl
 import com.kikepb.chat.data.websocket.remote.WebSocketChatConnectionClient
 import com.kikepb.chat.database.DatabaseFactory
+import com.kikepb.chat.domain.notification.DeviceTokenService
 import com.kikepb.chat.domain.repository.chat.ChatConnectionClient
 import com.kikepb.chat.domain.repository.chat.ChatRepository
 import com.kikepb.chat.domain.repository.chat.ChatService
@@ -35,6 +37,7 @@ val chatDataModule = module {
     singleOf(::OfflineFirstChatParticipantRepositoryImpl) bind ChatParticipantRepository::class
     singleOf(::WebSocketChatConnectionClient) bind ChatConnectionClient::class
     singleOf(::KtorChatMessageService) bind ChatMessageService::class
+    singleOf(::KtorDeviceTokenRepositoryImpl) bind DeviceTokenService::class
     singleOf(::ConnectionRetryHandler)
     singleOf(::KtorWebSocketConnector)
     single {

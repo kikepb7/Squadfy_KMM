@@ -2,10 +2,14 @@ package org.kikepb.squadfy
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kikepb.chat.domain.notification.DeviceTokenService
+import com.kikepb.chat.domain.notification.PushNotificationService
+import com.kikepb.core.data.util.PlatformUtils
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -17,10 +21,14 @@ import kotlinx.coroutines.launch
 import org.kikepb.squadfy.MainEvent.OnSessionExpired
 
 class MainViewModel(
-    private val sessionStorage: SessionStorage
+    private val sessionStorage: SessionStorage,
+    private val pushNotificationService: PushNotificationService,
+    private val deviceTokenService: DeviceTokenService
 ) : ViewModel() {
 
     private var previousRefreshToken: String? = null
+    private var currentDeviceToken: String? = null
+    private var previousDeviceToken: String? = null
     private var hasLoadedInitialData = false
     private val eventChannel = Channel<MainEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -57,12 +65,27 @@ class MainViewModel(
                 if (isSessionExpired) {
                     sessionStorage.set(info = null)
                     _state.update { it.copy(isLoggedIn = false) }
+                    currentDeviceToken?.let {
+                        deviceTokenService.unregisterToken(token = it)
+                    }
                     eventChannel.send(OnSessionExpired)
                 }
 
                 previousRefreshToken = authInfo?.refreshToken
             }
+            .combine(flow = pushNotificationService.observeDeviceToken()) { authInfo, deviceToken ->
+                currentDeviceToken = deviceToken
+                if (authInfo != null && deviceToken != previousDeviceToken && deviceToken != null) {
+                    registerDeviceToken(token = deviceToken, platform = PlatformUtils.getOSName())
+                }
+            }
             .launchIn(scope = viewModelScope)
+    }
+
+    private fun registerDeviceToken(token: String, platform: String) {
+        viewModelScope.launch {
+            deviceTokenService.registerToken(token = token, platform = platform)
+        }
     }
 }
 
