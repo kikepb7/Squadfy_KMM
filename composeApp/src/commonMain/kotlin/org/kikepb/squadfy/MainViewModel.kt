@@ -77,6 +77,7 @@ class MainViewModel(
                 currentDeviceToken = deviceToken
                 if (authInfo != null && deviceToken != previousDeviceToken && deviceToken != null) {
                     registerDeviceToken(token = deviceToken, platform = PlatformUtils.getOSName())
+                    previousDeviceToken = deviceToken
                 }
             }
             .launchIn(scope = viewModelScope)
