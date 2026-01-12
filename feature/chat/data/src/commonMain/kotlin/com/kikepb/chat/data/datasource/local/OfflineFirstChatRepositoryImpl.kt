@@ -116,14 +116,6 @@ class OfflineFirstChatRepositoryImpl(
                 db.chatDao.deleteChatById(chatId = chatId)
             }
 
-    private suspend fun List<ChatParticipantEntity>.onlyActive(chatId: String): List<ChatParticipantEntity> {
-        val activeParticipants = db.chatDao.getActiveParticipantsByChatId(chatId = chatId)
-            .first()
-            .map { it.userId }
-
-        return this.filter { it.userId in activeParticipants }
-    }
-
     override suspend fun addParticipantsToChat(
         chatId: String,
         userIds: List<String>
@@ -137,4 +129,14 @@ class OfflineFirstChatRepositoryImpl(
                     crossRefDao = db.chatParticipantsCrossRefDao
                 )
             }
+
+    override suspend fun deleteAllChats() = db.chatDao.deleteAllChats()
+
+    private suspend fun List<ChatParticipantEntity>.onlyActive(chatId: String): List<ChatParticipantEntity> {
+        val activeParticipants = db.chatDao.getActiveParticipantsByChatId(chatId = chatId)
+            .first()
+            .map { it.userId }
+
+        return this.filter { it.userId in activeParticipants }
+    }
 }

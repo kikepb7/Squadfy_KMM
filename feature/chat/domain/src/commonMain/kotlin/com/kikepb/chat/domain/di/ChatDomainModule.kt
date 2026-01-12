@@ -2,6 +2,7 @@ package com.kikepb.chat.domain.di
 
 import com.kikepb.chat.domain.usecases.AddParticipantsToChatUseCase
 import com.kikepb.chat.domain.usecases.CreateChatUseCase
+import com.kikepb.chat.domain.usecases.DeleteAllChatsUseCase
 import com.kikepb.chat.domain.usecases.FetchChatByIdUseCase
 import com.kikepb.chat.domain.usecases.FetchChatsUseCase
 import com.kikepb.chat.domain.usecases.GetActiveParticipantsByChatIdUseCase
@@ -9,6 +10,8 @@ import com.kikepb.chat.domain.usecases.GetChatInfoByIdUseCase
 import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
 import com.kikepb.chat.domain.usecases.GetChatsUseCase
 import com.kikepb.chat.domain.usecases.LeaveChatUseCase
+import com.kikepb.chat.domain.usecases.LogoutUseCase
+import com.kikepb.chat.domain.usecases.UnregisterTokenUseCase
 import com.kikepb.chat.domain.usecases.message.DeleteMessageUseCase
 import com.kikepb.chat.domain.usecases.message.FetchMessagesUseCase
 import com.kikepb.chat.domain.usecases.message.GetMessagesForChatUseCase
@@ -40,4 +43,7 @@ val chatDomainModule = module {
     singleOf(::FetchLocalParticipantUseCase)
     singleOf(::UploadProfilePictureUseCase)
     singleOf(::DeleteProfilePictureUseCase)
+    singleOf(::LogoutUseCase)
+    singleOf(::UnregisterTokenUseCase)
+    singleOf(::DeleteAllChatsUseCase)
 }

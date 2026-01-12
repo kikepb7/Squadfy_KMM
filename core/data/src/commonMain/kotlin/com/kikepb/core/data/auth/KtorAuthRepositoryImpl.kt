@@ -4,6 +4,7 @@ import com.kikepb.core.data.auth.dto.AuthInfoSerializableDTO
 import com.kikepb.core.data.auth.dto.request.ChangePasswordRequestDTO
 import com.kikepb.core.data.auth.dto.request.EmailRequestDTO
 import com.kikepb.core.data.auth.dto.request.LoginRequestDTO
+import com.kikepb.core.data.auth.dto.request.RefreshRequestDTO
 import com.kikepb.core.data.auth.dto.request.RegisterRequestDTO
 import com.kikepb.core.data.auth.dto.request.ResetPasswordRequestDTO
 import com.kikepb.core.data.auth.provider.AuthRoutes.FORGOT_PASSWORD_ROUTE
@@ -21,7 +22,10 @@ import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.map
+import com.kikepb.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.auth.authProvider
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 
 class KtorAuthRepositoryImpl(
     private val httpClient: HttpClient
@@ -88,4 +92,12 @@ class KtorAuthRepositoryImpl(
                 newPassword = newPassword
             )
         )
+
+    override suspend fun logout(refreshToken: String): EmptyResult<DataError.Remote> =
+        httpClient.post<RefreshRequestDTO, Unit>(
+            route = "/auth/logout",
+            body = RefreshRequestDTO(refreshToken = refreshToken)
+        ).onSuccess {
+            httpClient.authProvider<BearerAuthProvider>()?.clearToken()
+        }
 }

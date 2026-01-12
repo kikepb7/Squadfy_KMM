@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -30,6 +31,8 @@ import com.kikepb.chat.presentation.chat_list.ChatListAction.OnConfirmLogout
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnCreateChatClick
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnProfileSettingsClick
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnSelectChat
+import com.kikepb.chat.presentation.chat_list.ChatListEvent.OnLogoutError
+import com.kikepb.chat.presentation.chat_list.ChatListEvent.OnLogoutSuccess
 import com.kikepb.chat.presentation.chat_list.components.ChatListHeader
 import com.kikepb.chat.presentation.chat_list.components.ChatListItemUi
 import com.kikepb.chat.presentation.components.EmptySection
@@ -40,6 +43,8 @@ import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.presentation.permissions.Permission
 import com.kikepb.core.presentation.permissions.rememberPermissionController
+import com.kikepb.core.presentation.util.ObserveAsEvents
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -56,16 +61,28 @@ import squadfy_app.feature.chat.presentation.generated.resources.Res.string as R
 fun ChatListRoot(
     selectedChatId: String?,
     onChatClick: (String?) -> Unit,
-    onConfirmLogoutClick: () -> Unit,
+    onSuccessfulLogout: () -> Unit,
     onCreateChatClick: () -> Unit,
     onProfileSettingsClick: () -> Unit,
     viewModel: ChatListViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(key1 = selectedChatId) {
         viewModel.onAction(action = OnSelectChat(chatId = selectedChatId))
+    }
+
+    ObserveAsEvents(flow = viewModel.events) { event ->
+        when (event) {
+            is OnLogoutError -> {
+                scope.launch {
+                    snackBarHostState.showSnackbar(message = event.error.asStringAsync())
+                }
+            }
+            OnLogoutSuccess -> onSuccessfulLogout()
+        }
     }
 
     ChatListScreen(
@@ -73,7 +90,7 @@ fun ChatListRoot(
         onAction = { action ->
             when(action) {
                 is OnSelectChat -> onChatClick(action.chatId)
-                OnConfirmLogout -> onConfirmLogoutClick()
+                OnConfirmLogout -> onSuccessfulLogout()
                 OnCreateChatClick -> onCreateChatClick()
                 OnProfileSettingsClick -> onProfileSettingsClick()
                 else -> Unit

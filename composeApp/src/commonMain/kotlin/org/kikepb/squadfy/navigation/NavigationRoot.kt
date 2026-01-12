@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.authGraph
-import com.kikepb.chat.presentation.navigation.ChatGraphRoutes
+import com.kikepb.chat.presentation.navigation.ChatGraphRoutes.ChatGraph
 import com.kikepb.chat.presentation.navigation.chatGraph
 
 @Composable
@@ -20,15 +20,22 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
         authGraph(
             navController = navController,
             onLoginSuccess = {
-                navController.navigate(route = ChatGraphRoutes.ChatGraph) {
-                    popUpTo(AuthGraph) {
+                navController.navigate(route = ChatGraph) {
+                    popUpTo(route = AuthGraph) {
                         inclusive = true
                     }
                 }
             }
         )
         chatGraph(
-            navController = navController
+            navController = navController,
+            onLogout = {
+                navController.navigate(route = AuthGraph) {
+                    popUpTo(route = ChatGraph) {
+                        inclusive = true
+                    }
+                }
+            }
         )
     }
 }

@@ -81,7 +81,7 @@ fun ChatListDetailAdaptiveLayout(
                         chatListDetailViewModel.onAction(action = OnSelectChat(chatId = it))
                         scope.launch { scaffoldNavigator.navigateTo(Detail) }
                     },
-                    onConfirmLogoutClick = { onLogout() },
+                    onSuccessfulLogout = { onLogout() },
                     onCreateChatClick = { chatListDetailViewModel.onAction(action = OnCreateChatClick) },
                     onProfileSettingsClick = { chatListDetailViewModel.onAction(action = OnProfileSettingsClick) }
                 )

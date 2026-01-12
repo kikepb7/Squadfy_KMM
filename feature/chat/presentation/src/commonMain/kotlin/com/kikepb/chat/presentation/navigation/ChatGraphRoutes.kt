@@ -19,7 +19,7 @@ sealed interface ChatGraphRoutes {
     data class ChatListDetailRoute(val chatId: String? = null): ChatGraphRoutes
 }
 
-fun NavGraphBuilder.chatGraph(navController: NavController) {
+fun NavGraphBuilder.chatGraph(navController: NavController, onLogout: () -> Unit) {
     navigation<ChatGraph>(
         startDestination = ChatListDetailRoute(chatId = null)
     ) {
@@ -33,9 +33,7 @@ fun NavGraphBuilder.chatGraph(navController: NavController) {
             val route = backStackEntry.toRoute<ChatListDetailRoute>()
             ChatListDetailAdaptiveLayout(
                 initialChatId = route.chatId,
-                onLogout = {
-                    // TODO --> Implement logout navigation
-                }
+                onLogout = onLogout
             )
         }
     }
