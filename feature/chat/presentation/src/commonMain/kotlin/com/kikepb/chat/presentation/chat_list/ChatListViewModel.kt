@@ -7,6 +7,7 @@ import com.kikepb.chat.domain.usecases.FetchChatsUseCase
 import com.kikepb.chat.domain.usecases.GetChatsUseCase
 import com.kikepb.chat.domain.usecases.LogoutUseCase
 import com.kikepb.chat.domain.usecases.UnregisterTokenUseCase
+import com.kikepb.chat.domain.usecases.profile.FetchLocalUserProfileUseCase
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnConfirmLogout
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnDismissLogoutDialog
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnDismissUserMenu
@@ -41,7 +42,8 @@ class ChatListViewModel(
     private val sessionStorage: SessionStorage,
     private val logoutUseCase: LogoutUseCase,
     private val unregisterTokenUseCase: UnregisterTokenUseCase,
-    private val deleteAllChatsUseCase: DeleteAllChatsUseCase
+    private val deleteAllChatsUseCase: DeleteAllChatsUseCase,
+    private val fetchLocalUserProfileUseCase: FetchLocalUserProfileUseCase
 ) : ViewModel() {
 
     private var hasLoadedInitialData = false
@@ -64,6 +66,7 @@ class ChatListViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                 loadChats()
+                fetchLocalUserProfile()
                 hasLoadedInitialData = true
             }
         }
@@ -101,6 +104,11 @@ class ChatListViewModel(
         }
     }
 
+    private fun fetchLocalUserProfile() {
+        viewModelScope.launch {
+            fetchLocalUserProfileUseCase.fetchLocalUserProfile()
+        }
+    }
 
     fun onAction(action: ChatListAction) {
         when (action) {

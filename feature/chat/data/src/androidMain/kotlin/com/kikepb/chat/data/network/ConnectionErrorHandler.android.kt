@@ -31,6 +31,7 @@ actual class ConnectionErrorHandler {
             is SocketTimeoutException,
             is WebSocketException,
             is SocketException,
+            is UnknownHostException,
             is EOFException -> true
             else -> false
         }

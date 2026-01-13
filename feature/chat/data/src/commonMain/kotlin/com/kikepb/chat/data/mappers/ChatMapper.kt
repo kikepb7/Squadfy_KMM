@@ -15,31 +15,44 @@ import kotlin.time.Instant
 
 typealias DataMessageWithSender = MessageWithSender
 typealias DomainMessageWithSender =  MessageWithSenderModel
-fun ChatDTO.toDomain(): ChatModel =
-    ChatModel(
+
+fun ChatDTO.toDomain(): ChatModel {
+    val lastMessageSenderUsername = lastMessage?.let { message ->
+        participants.find { it.userId == message.senderId }?.username
+    }
+    return ChatModel(
         id = id,
         participants = participants.map { it.toDomain() },
         lastActivityAt = Instant.parse(input = lastActivityAt),
-        lastMessage = lastMessage?.toDomain()
+        lastMessage = lastMessage?.toDomain(),
+        lastMessageSenderUsername = lastMessageSenderUsername
     )
+}
 
 fun ChatEntity.toDomain(
     participants: List<ChatParticipantModel>,
     lastMessage: ChatMessageModel? = null
-): ChatModel =
-    ChatModel(
+): ChatModel {
+    val lastMessageSenderUsername = lastMessage?.let { message ->
+        participants.find { it.userId == message.senderId }?.username
+    }
+
+    return ChatModel(
         id = chatId,
         participants = participants,
         lastActivityAt = Instant.fromEpochMilliseconds(epochMilliseconds = lastActivityAt),
-        lastMessage = lastMessage
+        lastMessage = lastMessage,
+        lastMessageSenderUsername = lastMessageSenderUsername
     )
+}
 
 fun ChatWithParticipants.toDomain(): ChatModel =
     ChatModel(
         id = chat.chatId,
         participants = participants.map { it.toDomain() },
         lastActivityAt = Instant.fromEpochMilliseconds(epochMilliseconds = chat.lastActivityAt),
-        lastMessage = lastMessage?.toDomain()
+        lastMessage = lastMessage?.toDomain(),
+        lastMessageSenderUsername = lastMessage?.senderUsername
     )
 
 fun ChatModel.toEntity(): ChatEntity =

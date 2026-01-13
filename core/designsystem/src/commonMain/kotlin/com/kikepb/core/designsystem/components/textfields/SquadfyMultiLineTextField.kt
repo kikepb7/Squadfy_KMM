@@ -2,6 +2,7 @@ package com.kikepb.core.designsystem.components.textfields
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,8 +21,11 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
@@ -40,6 +44,8 @@ fun SquadfyMultiLineTextField(
     maxHeightInLines: Int = 3,
     bottomContent: @Composable (RowScope.() -> Unit)? = null
 ) {
+    val textFieldFocusRequester = remember { FocusRequester() }
+
     Column(
         modifier = modifier
             .background(
@@ -51,6 +57,13 @@ fun SquadfyMultiLineTextField(
                 color = MaterialTheme.colorScheme.extended.surfaceOutline,
                 shape = RoundedCornerShape(size = 16.dp)
             )
+            .clickable(
+                interactionSource = null,
+                indication = null,
+                onClick = {
+                    textFieldFocusRequester.requestFocus()
+                }
+            )
             .padding(
                 vertical = 12.dp,
                 horizontal = 16.dp
@@ -60,6 +73,9 @@ fun SquadfyMultiLineTextField(
         BasicTextField(
             state = state,
             enabled = enabled,
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester = textFieldFocusRequester),
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.extended.textPrimary
             ),

@@ -35,6 +35,7 @@ import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnTopVisibleInd
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnScrollToTop
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSelectChat
 import com.kikepb.chat.presentation.chat_detail.ChatDetailAction.OnSendMessageClick
+import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnChatLeft
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnError
 import com.kikepb.chat.presentation.chat_detail.ChatDetailEvent.OnNewMessage
 import com.kikepb.chat.presentation.mappers.toUi
@@ -94,7 +95,10 @@ class ChatDetailViewModel(
     private val _chatId = MutableStateFlow<String?>(value = null)
     private val chatInfoFlow = _chatId
         .onEach { chatId ->
-            if (chatId != null) setUpPaginatorForChat(chatId = chatId) else currentPaginator = null
+            if (chatId != null) {
+                setUpPaginatorForChat(chatId = chatId)
+                loadNextItems()
+            } else currentPaginator = null
         }
         .flatMapLatest { chatId ->
             if (chatId != null) getChatInfoByIdUseCase.getChatInfoById(chatId = chatId) else emptyFlow()
@@ -162,9 +166,11 @@ class ChatDetailViewModel(
                             bannerState = BannerState()
                         )
                     }
+
+                    eventChannel.send(element = OnChatLeft)
                 }
                 .onFailure { error ->
-                    eventChannel.send(OnError(error.toUiText()))
+                    eventChannel.send(element = OnError(error.toUiText()))
                 }
         }
     }

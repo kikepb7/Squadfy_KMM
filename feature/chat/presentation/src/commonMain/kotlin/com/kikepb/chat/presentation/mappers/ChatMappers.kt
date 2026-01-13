@@ -11,9 +11,7 @@ fun ChatModel.toUi(localParticipantId: String): ChatModelUi {
         localParticipant = local.first().toUi(),
         otherParticipants = other.map { it.toUi() },
         lastMessage = lastMessage,
-        lastMessageSenderUsername = participants
-            .find { it.userId == lastMessage?.senderId }
-            ?.username
+        lastMessageSenderUsername = lastMessageSenderUsername
     )
 }
 

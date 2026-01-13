@@ -19,6 +19,7 @@ import com.kikepb.core.designsystem.theme.titleXSmall
 import org.jetbrains.compose.resources.stringResource
 import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
 import squadfy_app.feature.chat.presentation.generated.resources.group_chat
+import squadfy_app.feature.chat.presentation.generated.resources.only_you
 import squadfy_app.feature.chat.presentation.generated.resources.you
 
 @Composable
@@ -32,13 +33,17 @@ fun ChatItemHeaderRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        SquadfyStackedAvatars(avatars = chat.otherParticipants,)
+        if (chat.otherParticipants.isNotEmpty()) {
+            SquadfyStackedAvatars(avatars = chat.otherParticipants,)
+        }
+
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                text = if (!isGroupChat) chat.otherParticipants.first().username else stringResource(RString.group_chat),
+                text = if (!isGroupChat) chat.otherParticipants.firstOrNull()?.username ?: stringResource(RString.only_you)
+                else stringResource(RString.group_chat),
                 style = MaterialTheme.typography.titleXSmall,
                 color = MaterialTheme.colorScheme.extended.textPrimary,
                 overflow = TextOverflow.Ellipsis,

@@ -27,7 +27,7 @@ import com.kikepb.chat.presentation.create_chat.ManageChatState
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle
 import com.kikepb.core.designsystem.components.divider.SquadfyHorizontalDivider
-import com.kikepb.core.presentation.util.DeviceConfiguration
+import com.kikepb.core.presentation.util.DeviceConfiguration.MOBILE_LANDSCAPE
 import com.kikepb.core.presentation.util.clearFocusOnTap
 import com.kikepb.core.presentation.util.currentDeviceConfiguration
 import org.jetbrains.compose.resources.stringResource
@@ -46,8 +46,8 @@ fun ManageChatScreen(
     val isKeyboardVisible = imeHeight > 0
     val configuration = currentDeviceConfiguration()
 
-    val shouldHideHeader = configuration == DeviceConfiguration.MOBILE_LANDSCAPE
-            || (isKeyboardVisible && configuration != DeviceConfiguration.DESKTOP) || isTextFieldFocused
+    val shouldHideHeader = configuration == MOBILE_LANDSCAPE
+            && (isKeyboardVisible || isTextFieldFocused)
 
     Column(
         modifier = Modifier

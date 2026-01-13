@@ -58,7 +58,8 @@ fun ChatMessageModel.toLastMessageView(): LastMessageView =
         senderId = senderId,
         content = content,
         timestamp = createdAt.toEpochMilliseconds(),
-        deliveryStatus = deliveryStatus.name
+        deliveryStatus = deliveryStatus.name,
+        senderUsername = null
     )
 
 fun ChatMessageModel.toNewMessage(): OutgoingWebSocketDTO.NewMessage =

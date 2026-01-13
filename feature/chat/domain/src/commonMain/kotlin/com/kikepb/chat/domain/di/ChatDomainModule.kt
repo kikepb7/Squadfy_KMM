@@ -20,6 +20,7 @@ import com.kikepb.chat.domain.usecases.message.SendMessageUseCase
 import com.kikepb.chat.domain.usecases.participant.FetchLocalParticipantUseCase
 import com.kikepb.chat.domain.usecases.profile.ChangePasswordUseCase
 import com.kikepb.chat.domain.usecases.profile.DeleteProfilePictureUseCase
+import com.kikepb.chat.domain.usecases.profile.FetchLocalUserProfileUseCase
 import com.kikepb.chat.domain.usecases.profile.UploadProfilePictureUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -46,4 +47,5 @@ val chatDomainModule = module {
     singleOf(::LogoutUseCase)
     singleOf(::UnregisterTokenUseCase)
     singleOf(::DeleteAllChatsUseCase)
+    singleOf(::FetchLocalUserProfileUseCase)
 }
