@@ -4,7 +4,10 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kikepb.core.domain.util.DataError
+import com.kikepb.auth.presentation.register.RegisterAction.OnLoginClick
+import com.kikepb.auth.presentation.register.RegisterAction.OnRegisterClick
+import com.kikepb.auth.presentation.register.RegisterAction.OnTogglePasswordVisibilityClick
+import com.kikepb.core.domain.util.DataError.Remote.CONFLICT
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
 import com.kikepb.core.domain.validation.PasswordValidator
@@ -137,24 +140,20 @@ class RegisterViewModel(
                 }
                 .onFailure { error ->
                     val registrationError = when (error) {
-                        DataError.Remote.CONFLICT -> UiText.Resource(RString.error_account_exists)
+                        CONFLICT -> UiText.Resource(RString.error_account_exists)
                         else -> error.toUiText()
                     }
-                    _state.update {
-                        it.copy(
-                            isRegistering = false,
-                            registrationError = registrationError
-                        )
-                    }
+
+                    _state.update { it.copy(isRegistering = false, registrationError = registrationError) }
                 }
         }
     }
 
     fun onAction(action: RegisterAction) {
         when (action) {
-            RegisterAction.OnLoginClick -> Unit
-            RegisterAction.OnRegisterClick -> register()
-            RegisterAction.OnTogglePasswordVisibilityClick -> {
+            OnLoginClick -> Unit
+            OnRegisterClick -> register()
+            OnTogglePasswordVisibilityClick -> {
                 _state.update { it.copy(isPasswordVisible = !it.isPasswordVisible) }
             }
             else -> Unit

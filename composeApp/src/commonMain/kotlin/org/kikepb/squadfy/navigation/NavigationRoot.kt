@@ -3,12 +3,11 @@ package org.kikepb.squadfy.navigation
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Graph
+import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.authGraph
-import com.kikepb.chat.presentation.chat_list.ChatListRoute
-import com.kikepb.chat.presentation.chat_list.ChatListScreenRoot
+import com.kikepb.chat.presentation.navigation.ChatGraphRoutes.ChatGraph
+import com.kikepb.chat.presentation.navigation.chatGraph
 
 @Composable
 fun NavigationRoot(navController: NavHostController, startDestination: Any) {
@@ -21,15 +20,22 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
         authGraph(
             navController = navController,
             onLoginSuccess = {
-                navController.navigate(ChatListRoute) {
-                    popUpTo(Graph) {
+                navController.navigate(route = ChatGraph) {
+                    popUpTo(route = AuthGraph) {
                         inclusive = true
                     }
                 }
             }
         )
-        composable<ChatListRoute> {
-            ChatListScreenRoot()
-        }
+        chatGraph(
+            navController = navController,
+            onLogout = {
+                navController.navigate(route = AuthGraph) {
+                    popUpTo(route = ChatGraph) {
+                        inclusive = true
+                    }
+                }
+            }
+        )
     }
 }

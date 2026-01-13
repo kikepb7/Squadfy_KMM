@@ -1,10 +1,12 @@
 package com.kikepb.core.data.auth
 
-import com.kikepb.core.data.auth.dto.AuthInfoSerializableDto
-import com.kikepb.core.data.auth.dto.request.EmailRequestDto
-import com.kikepb.core.data.auth.dto.request.LoginRequestDto
-import com.kikepb.core.data.auth.dto.request.RegisterRequestDto
-import com.kikepb.core.data.auth.dto.request.ResetPasswordRequestDto
+import com.kikepb.core.data.auth.dto.AuthInfoSerializableDTO
+import com.kikepb.core.data.auth.dto.request.ChangePasswordRequestDTO
+import com.kikepb.core.data.auth.dto.request.EmailRequestDTO
+import com.kikepb.core.data.auth.dto.request.LoginRequestDTO
+import com.kikepb.core.data.auth.dto.request.RefreshRequestDTO
+import com.kikepb.core.data.auth.dto.request.RegisterRequestDTO
+import com.kikepb.core.data.auth.dto.request.ResetPasswordRequestDTO
 import com.kikepb.core.data.auth.provider.AuthRoutes.FORGOT_PASSWORD_ROUTE
 import com.kikepb.core.data.auth.provider.AuthRoutes.LOGIN_ROUTE
 import com.kikepb.core.data.auth.provider.AuthRoutes.REGISTER_ROUTE
@@ -20,7 +22,10 @@ import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.map
+import com.kikepb.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.auth.authProvider
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 
 class KtorAuthRepositoryImpl(
     private val httpClient: HttpClient
@@ -30,9 +35,9 @@ class KtorAuthRepositoryImpl(
         email: String,
         password: String
     ): Result<AuthInfoModel, DataError.Remote> =
-        httpClient.post<LoginRequestDto, AuthInfoSerializableDto>(
+        httpClient.post<LoginRequestDTO, AuthInfoSerializableDTO>(
             route = LOGIN_ROUTE,
-            body = LoginRequestDto(
+            body = LoginRequestDTO(
                 email = email,
                 password = password
             )
@@ -47,7 +52,7 @@ class KtorAuthRepositoryImpl(
     ): EmptyResult<DataError.Remote> {
         return httpClient.post(
             route = REGISTER_ROUTE,
-            body = RegisterRequestDto(
+            body = RegisterRequestDTO(
                 username = username,
                 email = email,
                 password = password
@@ -58,7 +63,7 @@ class KtorAuthRepositoryImpl(
     override suspend fun resendVerificationEmail(email: String): EmptyResult<DataError.Remote> =
         httpClient.post(
             route = RESEND_VERIFICATION_ROUTE,
-            body = EmailRequestDto(email = email)
+            body = EmailRequestDTO(email = email)
         )
 
     override suspend fun verifyEmail(token: String): EmptyResult<DataError.Remote> =
@@ -68,14 +73,31 @@ class KtorAuthRepositoryImpl(
         )
 
     override suspend fun forgotPassword(email: String): EmptyResult<DataError.Remote> =
-        httpClient.post<EmailRequestDto, Unit>(
+        httpClient.post<EmailRequestDTO, Unit>(
             route = FORGOT_PASSWORD_ROUTE,
-            body = EmailRequestDto(email = email)
+            body = EmailRequestDTO(email = email)
         )
 
     override suspend fun resetPassword(newPassword: String, token: String): EmptyResult<DataError.Remote> =
         httpClient.post(
             route = RESET_PASSWORD_ROUTE,
-            body = ResetPasswordRequestDto(newPassword = newPassword, token = token)
+            body = ResetPasswordRequestDTO(newPassword = newPassword, token = token)
         )
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): EmptyResult<DataError.Remote> =
+        httpClient.post(
+            route = "/auth/change-password",
+            body = ChangePasswordRequestDTO(
+                currentPassword = currentPassword,
+                newPassword = newPassword
+            )
+        )
+
+    override suspend fun logout(refreshToken: String): EmptyResult<DataError.Remote> =
+        httpClient.post<RefreshRequestDTO, Unit>(
+            route = "/auth/logout",
+            body = RefreshRequestDTO(refreshToken = refreshToken)
+        ).onSuccess {
+            httpClient.authProvider<BearerAuthProvider>()?.clearToken()
+        }
 }

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 sealed interface AuthGraphRoutes {
     @Serializable
-    data object Graph: AuthGraphRoutes
+    data object AuthGraph: AuthGraphRoutes
 
     @Serializable
     data object Login: AuthGraphRoutes

@@ -4,7 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.kikepb.core.data.auth.dto.AuthInfoSerializableDto
+import com.kikepb.core.data.auth.dto.AuthInfoSerializableDTO
 import com.kikepb.core.data.mappers.toDomain
 import com.kikepb.core.data.mappers.toDto
 import com.kikepb.core.domain.auth.model.AuthInfoModel
@@ -27,7 +27,7 @@ class DataStoreSessionStorage(
         return dataStore.data.map { preferences ->
             val serializedJson = preferences[authInfoKey]
             serializedJson?.let {
-                json.decodeFromString<AuthInfoSerializableDto>(string = it).toDomain()
+                json.decodeFromString<AuthInfoSerializableDTO>(string = it).toDomain()
             }
         }
     }

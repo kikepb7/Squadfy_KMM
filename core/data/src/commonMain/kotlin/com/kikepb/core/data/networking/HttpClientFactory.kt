@@ -1,8 +1,8 @@
 package com.kikepb.core.data.networking
 
 import com.kikepb.core.data.BuildKonfig
-import com.kikepb.core.data.auth.dto.AuthInfoSerializableDto
-import com.kikepb.core.data.auth.dto.request.RefreshRequestDto
+import com.kikepb.core.data.auth.dto.AuthInfoSerializableDTO
+import com.kikepb.core.data.auth.dto.request.RefreshRequestDTO
 import com.kikepb.core.data.mappers.toDomain
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.logger.SquadfyLogger
@@ -86,9 +86,9 @@ class HttpClientFactory(
                         }
 
                         var bearerTokens: BearerTokens? = null
-                        client.post<RefreshRequestDto, AuthInfoSerializableDto>(
+                        client.post<RefreshRequestDTO, AuthInfoSerializableDTO>(
                             route = "/auth/refresh",
-                            body = RefreshRequestDto(
+                            body = RefreshRequestDTO(
                                 refreshToken = authInfo.refreshToken
                             ),
                             builder = {

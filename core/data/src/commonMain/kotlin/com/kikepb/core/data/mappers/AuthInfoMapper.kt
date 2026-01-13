@@ -1,11 +1,11 @@
 package com.kikepb.core.data.mappers
 
-import com.kikepb.core.data.auth.dto.AuthInfoSerializableDto
-import com.kikepb.core.data.auth.dto.UserSerializableDto
+import com.kikepb.core.data.auth.dto.AuthInfoSerializableDTO
+import com.kikepb.core.data.auth.dto.UserSerializableDTO
 import com.kikepb.core.domain.auth.model.AuthInfoModel
 import com.kikepb.core.domain.auth.model.UserModel
 
-fun AuthInfoSerializableDto.toDomain(): AuthInfoModel {
+fun AuthInfoSerializableDTO.toDomain(): AuthInfoModel {
     return AuthInfoModel(
         accessToken = accessToken,
         refreshToken = refreshToken,
@@ -13,7 +13,7 @@ fun AuthInfoSerializableDto.toDomain(): AuthInfoModel {
     )
 }
 
-fun UserSerializableDto.toDomain(): UserModel {
+fun UserSerializableDTO.toDomain(): UserModel {
     return UserModel(
         id = id,
         email = email,
@@ -23,8 +23,8 @@ fun UserSerializableDto.toDomain(): UserModel {
     )
 }
 
-fun UserModel.toDto(): UserSerializableDto {
-    return UserSerializableDto(
+fun UserModel.toDto(): UserSerializableDTO {
+    return UserSerializableDTO(
         id = id,
         email = email,
         username = username,
@@ -33,8 +33,8 @@ fun UserModel.toDto(): UserSerializableDto {
     )
 }
 
-fun AuthInfoModel.toDto(): AuthInfoSerializableDto {
-    return AuthInfoSerializableDto(
+fun AuthInfoModel.toDto(): AuthInfoSerializableDTO {
+    return AuthInfoSerializableDTO(
         accessToken = accessToken,
         refreshToken = refreshToken,
         user = user.toDto()

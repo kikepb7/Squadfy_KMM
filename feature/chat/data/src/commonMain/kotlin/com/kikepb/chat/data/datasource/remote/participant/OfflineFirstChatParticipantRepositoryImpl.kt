@@ -1,0 +1,68 @@
+package com.kikepb.chat.data.datasource.remote.participant
+
+import com.kikepb.chat.domain.models.ChatParticipantModel
+import com.kikepb.chat.domain.repository.participant.ChatParticipantRepository
+import com.kikepb.chat.domain.repository.participant.ChatParticipantService
+import com.kikepb.core.domain.auth.repository.SessionStorage
+import com.kikepb.core.domain.util.DataError
+import com.kikepb.core.domain.util.EmptyResult
+import com.kikepb.core.domain.util.Result
+import com.kikepb.core.domain.util.onSuccess
+import kotlinx.coroutines.flow.first
+
+class OfflineFirstChatParticipantRepositoryImpl(
+    private val sessionStorage: SessionStorage,
+    private val chatParticipantService: ChatParticipantService
+): ChatParticipantRepository {
+
+    override suspend fun fetchLocalParticipant(): Result<ChatParticipantModel, DataError> =
+        chatParticipantService.getLocalParticipant()
+            .onSuccess { participant ->
+                val currentAuthInfo = sessionStorage.observeAuthInfo().first()
+                sessionStorage.set(
+                    info = currentAuthInfo?.copy(
+                        user = currentAuthInfo.user.copy(
+                            id = participant.userId,
+                            username = participant.username,
+                            profilePictureUrl = participant.profilePictureUrl
+                        )
+                    )
+                )
+            }
+
+    override suspend fun uploadProfilePicture(imageBytes: ByteArray, mimeType: String): EmptyResult<DataError.Remote> {
+        val result = chatParticipantService.getProfilePictureUploadUrl(mimeType = mimeType)
+
+        if (result is Result.Failure) return result
+
+        val uploadUrls = (result as Result.Success).data
+        val uploadResult = chatParticipantService.uploadProfilePicture(
+            uploadUrl = uploadUrls.uploadUrl,
+            imageBytes = imageBytes,
+            headers = uploadUrls.headers
+        )
+
+        if (uploadResult is Result.Failure) return uploadResult
+
+        return chatParticipantService.confirmProfilePictureUpload(publicUrl = uploadUrls.publicUrl)
+            .onSuccess {
+                val currentAuthInfo = sessionStorage.observeAuthInfo().first()
+                sessionStorage.set(
+                    info = currentAuthInfo?.copy(
+                        user = currentAuthInfo.user.copy(
+                            profilePictureUrl = uploadUrls.publicUrl
+                        )
+                    )
+                )
+            }
+    }
+
+    override suspend fun deleteProfilePicture(): EmptyResult<DataError.Remote> =
+        chatParticipantService.deleteProfilePicture()
+            .onSuccess {
+                val authInfo = sessionStorage.observeAuthInfo().first()
+                sessionStorage.set(
+                    authInfo?.copy(user = authInfo.user.copy(profilePictureUrl = null))
+                )
+            }
+}
