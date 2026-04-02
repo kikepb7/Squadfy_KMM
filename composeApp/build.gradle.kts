@@ -34,6 +34,26 @@ kotlin {
             implementation(projects.feature.chat.domain)
             implementation(projects.feature.chat.presentation)
 
+            // GLOBAL POSITION
+            implementation(projects.feature.globalPosition.data)
+            implementation(projects.feature.globalPosition.domain)
+            implementation(projects.feature.globalPosition.presentation)
+
+            // ECONOMY FEATURE
+            implementation(projects.feature.economy.data)
+            implementation(projects.feature.economy.domain)
+            implementation(projects.feature.economy.presentation)
+
+            // ONBOARDING FEATURE
+            implementation(projects.feature.onboarding.data)
+            implementation(projects.feature.onboarding.domain)
+            implementation(projects.feature.onboarding.presentation)
+
+            // CLUB FEATURE
+            implementation(projects.feature.club.data)
+            implementation(projects.feature.club.domain)
+            implementation(projects.feature.club.presentation)
+
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
