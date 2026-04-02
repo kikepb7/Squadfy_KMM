@@ -34,6 +34,11 @@ kotlin {
             implementation(projects.feature.chat.domain)
             implementation(projects.feature.chat.presentation)
 
+            // CLUB FEATURE
+            implementation(projects.feature.club.data)
+            implementation(projects.feature.club.domain)
+            implementation(projects.feature.club.presentation)
+
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
