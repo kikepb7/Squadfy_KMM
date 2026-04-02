@@ -8,6 +8,7 @@ import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.authGraph
 import com.kikepb.chat.presentation.navigation.ChatGraphRoutes.ChatGraph
 import com.kikepb.chat.presentation.navigation.chatGraph
+import com.kikepb.club.presentation.navigation.clubGraph
 
 @Composable
 fun NavigationRoot(navController: NavHostController, startDestination: Any) {
@@ -37,5 +38,6 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                 }
             }
         )
+        clubGraph(navController = navController)
     }
 }
