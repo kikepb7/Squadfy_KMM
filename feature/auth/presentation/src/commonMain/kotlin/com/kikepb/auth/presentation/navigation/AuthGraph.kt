@@ -18,6 +18,30 @@ import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.ResetPassword
 import com.kikepb.auth.presentation.register.RegisterRoot
 import com.kikepb.auth.presentation.register_success.RegisterSuccessRoot
 import com.kikepb.auth.presentation.reset_password.ResetPasswordRoot
+import kotlinx.serialization.Serializable
+
+sealed interface AuthGraphRoutes {
+    @Serializable
+    data object AuthGraph: AuthGraphRoutes
+
+    @Serializable
+    data object Login: AuthGraphRoutes
+
+    @Serializable
+    data object Register: AuthGraphRoutes
+
+    @Serializable
+    data class RegisterSuccess(val email: String): AuthGraphRoutes
+
+    @Serializable
+    data object ForgotPassword: AuthGraphRoutes
+
+    @Serializable
+    data class ResetPassword(val token: String): AuthGraphRoutes
+
+    @Serializable
+    data class EmailVerification(val token: String): AuthGraphRoutes
+}
 
 fun NavGraphBuilder.authGraph(
     navController: NavController,
