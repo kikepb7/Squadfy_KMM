@@ -22,6 +22,8 @@ kotlin {
             implementation(projects.core.presentation)
 
             implementation(libs.jetbrains.compose.navigation)
+            implementation(libs.jetbrains.compose.material.icons.core)
+            implementation(libs.jetbrains.compose.material.icons.extended)
             implementation(libs.bundles.koin.common)
 
             // AUTH FEATURE

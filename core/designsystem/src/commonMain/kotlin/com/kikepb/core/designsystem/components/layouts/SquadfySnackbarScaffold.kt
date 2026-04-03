@@ -25,8 +25,7 @@ fun SquadfySnackbarScaffold(
         contentWindowInsets = WindowInsets.statusBars
             .union(WindowInsets.displayCutout)
             .union(WindowInsets.ime),
-        snackbarHost = {4779
-
+        snackbarHost = {
             snackbarHostState?.let {
                 SnackbarHost(
                     hostState = snackbarHostState,

@@ -1,41 +1,84 @@
 package org.kikepb.squadfy.navigation
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.authGraph
-import com.kikepb.chat.presentation.navigation.ChatGraphRoutes.ChatGraph
 import com.kikepb.chat.presentation.navigation.chatGraph
+import com.kikepb.core.designsystem.components.navigation.SquadfyBottomBar
+import com.kikepb.core.designsystem.components.navigation.SquadfyBottomBarItemModel
+import com.kikepb.globalPosition.presentation.navigation.GlobalPositionGraphRoutes.GlobalPositionGraph
+import com.kikepb.globalPosition.presentation.navigation.globalPositionGraph
+import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.Chat
+import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.GlobalPosition
 
 @Composable
 fun NavigationRoot(navController: NavHostController, startDestination: Any) {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
-    NavHost(
-        navController = navController,
-        startDestination = startDestination
-    ) {
-        authGraph(
+    val bottomBarItems = listOf(GlobalPosition, Chat)
+    val showBottomBar = bottomBarItems.any { it.isSelected(destination = currentDestination) }
+    val selectedIndex = bottomBarItems.indexOfFirst { it.isSelected(destination = currentDestination) }.coerceAtLeast(minimumValue = 0)
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            if (showBottomBar) {
+                SquadfyBottomBar(
+                    items = bottomBarItems.map { item ->
+                        SquadfyBottomBarItemModel(label = item.title, icon = item.icon)
+                    },
+                    selectedIndex = selectedIndex,
+                    onItemClick = { index ->
+                        navController.navigate(bottomBarItems[index].navigateTo) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
+        }
+    ) { paddingValues ->
+        NavHost(
             navController = navController,
-            onLoginSuccess = {
-                navController.navigate(route = ChatGraph) {
-                    popUpTo(route = AuthGraph) {
-                        inclusive = true
+            startDestination = startDestination,
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
+        ) {
+            authGraph(
+                navController = navController,
+                onLoginSuccess = {
+                    navController.navigate(route = GlobalPositionGraph) {
+                        popUpTo(route = AuthGraph) {
+                            inclusive = true
+                        }
                     }
                 }
-            }
-        )
-        chatGraph(
-            navController = navController,
-            onLogout = {
-                navController.navigate(route = AuthGraph) {
-                    popUpTo(route = ChatGraph) {
-                        inclusive = true
+            )
+            globalPositionGraph()
+            chatGraph(
+                navController = navController,
+                onLogout = {
+                    navController.navigate(route = AuthGraph) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = true
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     }
 }
