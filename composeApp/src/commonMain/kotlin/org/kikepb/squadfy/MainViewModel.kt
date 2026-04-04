@@ -20,6 +20,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.kikepb.squadfy.MainEvent.OnSessionExpired
+import org.kikepb.squadfy.StartDestination.Auth
+import org.kikepb.squadfy.StartDestination.Home
+import org.kikepb.squadfy.StartDestination.Onboarding
 
 class MainViewModel(
     private val sessionStorage: SessionStorage,
@@ -97,6 +100,14 @@ class MainViewModel(
             .launchIn(scope = viewModelScope)
     }
 
+    fun onLoginCompleted() {
+        viewModelScope.launch {
+            val hasSeenOnboarding = getHasSeenOnboardingUseCase().firstOrNull() ?: false
+            val destination = if (hasSeenOnboarding) Home else Onboarding
+            eventChannel.send(MainEvent.NavigateAfterLogin(destination = destination))
+        }
+    }
+
     private fun registerDeviceToken(token: String, platform: String) {
         viewModelScope.launch {
             deviceTokenService.registerToken(token = token, platform = platform)
@@ -108,8 +119,22 @@ data class MainState(
     val isLoggedIn: Boolean = false,
     val isCheckingAuth: Boolean = true,
     val hasSeenOnboarding: Boolean = false
-)
+) {
+    val startDestination: StartDestination
+        get() = when {
+            !isLoggedIn -> Auth
+            !hasSeenOnboarding -> Onboarding
+            else -> Home
+        }
+}
+
+sealed interface StartDestination {
+    data object Auth : StartDestination
+    data object Onboarding : StartDestination
+    data object Home : StartDestination
+}
 
 sealed interface MainEvent {
-    data object OnSessionExpired: MainEvent
+    data object OnSessionExpired : MainEvent
+    data class NavigateAfterLogin(val destination: StartDestination) : MainEvent
 }

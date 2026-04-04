@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -27,11 +26,10 @@ import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.GlobalPosition
 fun NavigationRoot(
     navController: NavHostController,
     startDestination: Any,
-    hasSeenOnboarding: Boolean
+    onLoginSuccess: () -> Unit
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    val currentHasSeenOnboarding by rememberUpdatedState(hasSeenOnboarding)
 
     val bottomBarItems = listOf(GlobalPosition, Chat)
     val showBottomBar = bottomBarItems.any { it.isSelected(destination = currentDestination) }
@@ -66,14 +64,7 @@ fun NavigationRoot(
         ) {
             authGraph(
                 navController = navController,
-                onLoginSuccess = {
-                    val destination = if (currentHasSeenOnboarding) GlobalPositionGraph else OnboardingGraph
-                    navController.navigate(route = destination) {
-                        popUpTo(route = AuthGraph) {
-                            inclusive = true
-                        }
-                    }
-                }
+                onLoginSuccess = onLoginSuccess
             )
             onboardingGraph(
                 onOnboardingFinished = {

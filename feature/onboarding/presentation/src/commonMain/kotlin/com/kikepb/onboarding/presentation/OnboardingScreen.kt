@@ -47,9 +47,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.core.presentation.util.ObserveAsEvents
 import com.kikepb.onboarding.presentation.OnboardingEvent.OnFinished
 import com.kikepb.onboarding.presentation.model.OnboardingPageDataUiModel
-import com.kikepb.onboarding.presentation.utils.gradientEnd
-import com.kikepb.onboarding.presentation.utils.gradientStart
-import com.kikepb.onboarding.presentation.utils.illustrationColor
+import com.kikepb.onboarding.presentation.utils.gradientOnboardingEnd
+import com.kikepb.onboarding.presentation.utils.gradientOnboardingStart
+import com.kikepb.onboarding.presentation.utils.imageOnboardingColor
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.absoluteValue
 
@@ -90,12 +90,12 @@ fun OnboardingScreen(state: OnboardingState, onAction: (OnboardingAction) -> Uni
             .background(color = MaterialTheme.colorScheme.background)
     ) {
         val backgroundStart by animateColorAsState(
-            targetValue = currentPage.gradientStart(),
+            targetValue = currentPage.gradientOnboardingStart(),
             animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
             label = "backgroundStart"
         )
         val backgroundEnd by animateColorAsState(
-            targetValue = currentPage.gradientEnd(),
+            targetValue = currentPage.gradientOnboardingEnd(),
             animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
             label = "backgroundEnd"
         )
@@ -190,7 +190,7 @@ private fun OnboardingPageContent(page: OnboardingPageDataUiModel, pagerState: P
                 .background(Color.White.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
-            IllustrationPlaceholder(image = page.image, color = page.illustrationColor())
+            IllustrationPlaceholder(image = page.image, color = page.imageOnboardingColor())
         }
 
         Spacer(modifier = Modifier.height(40.dp))
