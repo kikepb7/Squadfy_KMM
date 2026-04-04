@@ -6,6 +6,7 @@ import com.kikepb.chat.domain.notification.DeviceTokenService
 import com.kikepb.chat.domain.notification.PushNotificationService
 import com.kikepb.core.data.util.PlatformUtils
 import com.kikepb.core.domain.auth.repository.SessionStorage
+import com.kikepb.onboarding.domain.usecase.GetHasSeenOnboardingUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,7 +24,8 @@ import org.kikepb.squadfy.MainEvent.OnSessionExpired
 class MainViewModel(
     private val sessionStorage: SessionStorage,
     private val pushNotificationService: PushNotificationService,
-    private val deviceTokenService: DeviceTokenService
+    private val deviceTokenService: DeviceTokenService,
+    private val getHasSeenOnboardingUseCase: GetHasSeenOnboardingUseCase
 ) : ViewModel() {
 
     private var previousRefreshToken: String? = null
@@ -50,9 +52,21 @@ class MainViewModel(
     init {
         viewModelScope.launch {
             val authInfo = sessionStorage.observeAuthInfo().firstOrNull()
-
-            _state.update { it.copy(isCheckingAuth = false, isLoggedIn = authInfo != null) }
+            val hasSeenOnboarding = getHasSeenOnboardingUseCase().firstOrNull() ?: false
+            _state.update {
+                it.copy(
+                    isCheckingAuth = false,
+                    isLoggedIn = authInfo != null,
+                    hasSeenOnboarding = hasSeenOnboarding
+                )
+            }
         }
+
+        getHasSeenOnboardingUseCase()
+            .onEach { hasSeenOnboarding ->
+                _state.update { it.copy(hasSeenOnboarding = hasSeenOnboarding) }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun observeSession() {
@@ -92,7 +106,8 @@ class MainViewModel(
 
 data class MainState(
     val isLoggedIn: Boolean = false,
-    val isCheckingAuth: Boolean = true
+    val isCheckingAuth: Boolean = true,
+    val hasSeenOnboarding: Boolean = false
 )
 
 sealed interface MainEvent {
