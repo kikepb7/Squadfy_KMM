@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import squadfy_app.feature.onboarding.presentation.generated.resources.Res.string as RString
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.core.presentation.util.ObserveAsEvents
 import com.kikepb.onboarding.presentation.OnboardingEvent.OnFinished
@@ -50,7 +51,16 @@ import com.kikepb.onboarding.presentation.model.OnboardingPageDataUiModel
 import com.kikepb.onboarding.presentation.utils.gradientOnboardingEnd
 import com.kikepb.onboarding.presentation.utils.gradientOnboardingStart
 import com.kikepb.onboarding.presentation.utils.imageOnboardingColor
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import squadfy_app.feature.onboarding.presentation.generated.resources.squadfy_onboarding_background_end
+import squadfy_app.feature.onboarding.presentation.generated.resources.squadfy_onboarding_background_start
+import squadfy_app.feature.onboarding.presentation.generated.resources.squadfy_onboarding_content_alpha
+import squadfy_app.feature.onboarding.presentation.generated.resources.squadfy_onboarding_content_scale
+import squadfy_app.feature.onboarding.presentation.generated.resources.squadfy_onboarding_label_skip
+import squadfy_app.feature.onboarding.presentation.generated.resources.squadfy_onboarding_next
+import squadfy_app.feature.onboarding.presentation.generated.resources.squadfy_onboarding_skip
+import squadfy_app.feature.onboarding.presentation.generated.resources.squadfy_onboarding_start
 import kotlin.math.absoluteValue
 
 @Composable
@@ -92,17 +102,17 @@ fun OnboardingScreen(state: OnboardingState, onAction: (OnboardingAction) -> Uni
         val backgroundStart by animateColorAsState(
             targetValue = currentPage.gradientOnboardingStart(),
             animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
-            label = "backgroundStart"
+            label = stringResource(RString.squadfy_onboarding_background_start)
         )
         val backgroundEnd by animateColorAsState(
             targetValue = currentPage.gradientOnboardingEnd(),
             animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
-            label = "backgroundEnd"
+            label = stringResource(RString.squadfy_onboarding_background_end)
         )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(420.dp)
+                .height(height = 420.dp)
                 .background(Brush.verticalGradient(colors = listOf(backgroundStart, backgroundEnd)))
         )
 
@@ -122,7 +132,7 @@ fun OnboardingScreen(state: OnboardingState, onAction: (OnboardingAction) -> Uni
                 val skipAlpha by animateFloatAsState(
                     targetValue = if (state.isLastPage) 0f else 1f,
                     animationSpec = tween(durationMillis = 300),
-                    label = "skipAlpha"
+                    label = stringResource(RString.squadfy_onboarding_label_skip)
                 )
                 TextButton(
                     onClick = { onAction(OnboardingAction.OnSkip) },
@@ -130,14 +140,14 @@ fun OnboardingScreen(state: OnboardingState, onAction: (OnboardingAction) -> Uni
                     enabled = !state.isLastPage
                 ) {
                     Text(
-                        text = "Saltar",
+                        text = stringResource(RString.squadfy_onboarding_skip),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
             }
 
-            HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { pageIndex ->
+            HorizontalPager(state = pagerState, modifier = Modifier.weight(weight = 1f)) { pageIndex ->
                 state.pages.getOrNull(pageIndex)?.let { page ->
                     OnboardingPageContent(page = page, pagerState = pagerState, pageIndex = pageIndex)
                 }
@@ -152,12 +162,12 @@ fun OnboardingScreen(state: OnboardingState, onAction: (OnboardingAction) -> Uni
 
                 Button(
                     onClick = { onAction(OnboardingAction.OnNextPage) },
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth().height(height = 56.dp),
+                    shape = RoundedCornerShape(size = 16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
-                        text = if (state.isLastPage) "¡Empezar!" else "Siguiente",
+                        text = if (state.isLastPage) stringResource(RString.squadfy_onboarding_start)  else stringResource(RString.squadfy_onboarding_next),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -171,8 +181,8 @@ fun OnboardingScreen(state: OnboardingState, onAction: (OnboardingAction) -> Uni
 @Composable
 private fun OnboardingPageContent(page: OnboardingPageDataUiModel, pagerState: PagerState, pageIndex: Int) {
     val pageOffset = (pagerState.currentPage - pageIndex + pagerState.currentPageOffsetFraction).absoluteValue.coerceIn(0f, 1f)
-    val contentAlpha by animateFloatAsState(targetValue = 1f - pageOffset, animationSpec = tween(durationMillis = 200), label = "contentAlpha")
-    val contentScale by animateFloatAsState(targetValue = 1f - (pageOffset * 0.08f), animationSpec = tween(durationMillis = 200), label = "contentScale")
+    val contentAlpha by animateFloatAsState(targetValue = 1f - pageOffset, animationSpec = tween(durationMillis = 200), label = stringResource(RString.squadfy_onboarding_content_alpha))
+    val contentScale by animateFloatAsState(targetValue = 1f - (pageOffset * 0.08f), animationSpec = tween(durationMillis = 200), label = stringResource(RString.squadfy_onboarding_content_scale))
 
     Column(
         modifier = Modifier
@@ -234,7 +244,7 @@ private fun PageIndicator(pagerState: PagerState, pageCount: Int) {
             )
             Box(
                 modifier = Modifier
-                    .height(8.dp)
+                    .height(height = 8.dp)
                     .width(dotWidth)
                     .clip(CircleShape)
                     .background(dotColor)
@@ -247,7 +257,7 @@ private fun PageIndicator(pagerState: PagerState, pageCount: Int) {
 private fun IllustrationPlaceholder(image: String, color: Color) {
     Box(
         modifier = Modifier
-            .size(160.dp)
+            .size(size = 160.dp)
             .clip(CircleShape)
             .background(color.copy(alpha = 0.15f)),
         contentAlignment = Alignment.Center

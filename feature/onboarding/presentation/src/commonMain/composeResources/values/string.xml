@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <string name="squadfy_onboarding_start">¡Empezar!</string>
+    <string name="squadfy_onboarding_next">Siguiente</string>
+    <string name="squadfy_onboarding_skip">Saltar</string>
+    <string name="squadfy_onboarding_background_start">backgroundStart</string>
+    <string name="squadfy_onboarding_background_end">backgroundEnd</string>
+    <string name="squadfy_onboarding_label_skip">skipAlpha</string>
+    <string name="squadfy_onboarding_content_alpha">contentAlpha</string>
+    <string name="squadfy_onboarding_content_scale">contentScale</string>
 </resources>
