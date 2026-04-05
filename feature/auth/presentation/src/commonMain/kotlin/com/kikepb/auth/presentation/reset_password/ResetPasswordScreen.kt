@@ -13,10 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.auth.presentation.reset_password.ResetPasswordAction.OnSubmitClick
 import com.kikepb.auth.presentation.reset_password.ResetPasswordAction.OnTogglePasswordVisibilityClick
-import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveFormLayout
 import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.components.textfields.SquadfyPasswordTextField
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
@@ -47,13 +47,13 @@ fun ResetPasswordScreen(
     state: ResetPasswordState,
     onAction: (ResetPasswordAction) -> Unit
 ) {
-    SquadfySnackbarScaffold {
+    SquadfySnackbarScaffold(
+        topBar = { SquadfyTopBar(title = "Nueva Contraseña") }
+    ) {
         SquadfyAdaptiveFormLayout(
             headerText = stringResource(RString.set_new_password),
             errorText = state.errorText?.asString(),
-            logo = {
-                SquadfyBrandLogo()
-            }
+            logo = {}
         ) {
             SquadfyPasswordTextField(
                 state = state.passwordTextState,

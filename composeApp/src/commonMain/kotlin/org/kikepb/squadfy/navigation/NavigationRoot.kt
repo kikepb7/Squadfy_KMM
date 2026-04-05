@@ -10,7 +10,6 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.authGraph
 import com.kikepb.chat.presentation.navigation.chatGraph
@@ -23,7 +22,6 @@ import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.GlobalPosition
 
 @Composable
 fun NavigationRoot(navController: NavHostController, startDestination: Any) {
-    val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 

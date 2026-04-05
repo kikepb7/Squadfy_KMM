@@ -18,10 +18,12 @@ import androidx.compose.ui.unit.dp
 fun SquadfySnackbarScaffold(
     snackbarHostState: SnackbarHostState? = null,
     modifier: Modifier = Modifier,
+    topBar: @Composable () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
+        topBar = topBar,
         contentWindowInsets = WindowInsets.statusBars
             .union(WindowInsets.displayCutout)
             .union(WindowInsets.ime),

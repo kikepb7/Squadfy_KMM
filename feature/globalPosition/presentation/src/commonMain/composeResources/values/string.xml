@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+    <string name="squadfy_global_position_home">Inicio</string>
+    <string name="squadfy_global_position_my_clubs">Mis Clubs</string>
+    <string name="squadfy_global_position_last_matches">Últimos partidos</string>
+    <string name="squadfy_global_position_last_news">Últimas noticias</string>
 </resources>

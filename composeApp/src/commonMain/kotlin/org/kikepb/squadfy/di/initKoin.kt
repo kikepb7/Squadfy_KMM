@@ -13,7 +13,7 @@ import com.kikepb.club.presentation.di.clubPresentationModule
 import com.kikepb.economy.data.di.economyDataModule
 import com.kikepb.economy.domain.di.economyDomainModule
 import com.kikepb.economy.presentation.di.economyPresentationModule
-import com.kikepb.global_position.data.di.globalPositionDataModule
+import com.kikepb.globalPosition.data.di.globalPositionDataModule
 import com.kikepb.global_position.domain.di.globalPositionDomainModule
 import com.kikepb.global_position.presentation.di.globalPositionPresentationModule
 import com.kikepb.onboarding.data.di.onboardingDataModule
