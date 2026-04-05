@@ -38,7 +38,7 @@ import squadfy_app.core.designsystem.generated.resources.Res.string as RString
 fun SquadfyTopBar(
     title: String = "Squadfy",
     modifier: Modifier = Modifier,
-    onNavigateBack: (() -> Unit)? = null,
+    onBackClick: (() -> Unit)? = null,
     onSettingsClick: (() -> Unit)? = null
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -51,8 +51,8 @@ fun SquadfyTopBar(
                 )
             },
             navigationIcon = {
-                if (onNavigateBack != null) {
-                    TopBarIconButton(onClick = onNavigateBack) {
+                if (onBackClick != null) {
+                    TopBarIconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(RString.squadfy_topbar_back),
@@ -119,11 +119,11 @@ private fun SquadfyTopBarHomePreview() {
 @Preview
 @Composable
 private fun SquadfyTopBarDetailPreview() {
-    SquadfyTheme { SquadfyTopBar(title = "Mi Perfil", onNavigateBack = {}, onSettingsClick = {}) }
+    SquadfyTheme { SquadfyTopBar(title = "Mi Perfil", onBackClick = {}, onSettingsClick = {}) }
 }
 
 @Preview
 @Composable
 private fun SquadfyTopBarDarkPreview() {
-    SquadfyTheme(darkTheme = true) { SquadfyTopBar(title = "Últimos Partidos", onNavigateBack = {}, onSettingsClick = {}) }
+    SquadfyTheme(darkTheme = true) { SquadfyTopBar(title = "Últimos Partidos", onBackClick = {}, onSettingsClick = {}) }
 }

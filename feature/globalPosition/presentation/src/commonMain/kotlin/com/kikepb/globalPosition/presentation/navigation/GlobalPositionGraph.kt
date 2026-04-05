@@ -7,12 +7,16 @@ import com.kikepb.globalPosition.presentation.GlobalPositionRoot
 import com.kikepb.globalPosition.presentation.navigation.GlobalPositionGraphRoutes.GlobalPosition
 import com.kikepb.globalPosition.presentation.navigation.GlobalPositionGraphRoutes.GlobalPositionGraph
 
-fun NavGraphBuilder.globalPositionGraph() {
+fun NavGraphBuilder.globalPositionGraph(
+    onNavigateToClub: (String) -> Unit = {}
+) {
     navigation<GlobalPositionGraph>(
         startDestination = GlobalPosition
     ) {
         composable<GlobalPosition> {
-            GlobalPositionRoot()
+            GlobalPositionRoot(
+                onNavigateToClub = onNavigateToClub
+            )
         }
     }
 }

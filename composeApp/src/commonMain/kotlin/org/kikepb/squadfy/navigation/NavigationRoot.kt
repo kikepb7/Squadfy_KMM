@@ -13,6 +13,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.authGraph
 import com.kikepb.chat.presentation.navigation.chatGraph
+import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubDetailRoute
+import com.kikepb.club.presentation.navigation.clubGraph
 import com.kikepb.core.designsystem.components.navigation.SquadfyBottomBar
 import com.kikepb.core.designsystem.components.navigation.SquadfyBottomBarItemModel
 import com.kikepb.globalPosition.presentation.navigation.GlobalPositionGraphRoutes.GlobalPositionGraph
@@ -66,7 +68,11 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                     }
                 }
             )
-            globalPositionGraph()
+            globalPositionGraph(
+                onNavigateToClub = { clubId ->
+                    navController.navigate(ClubDetailRoute(clubId = clubId))
+                }
+            )
             chatGraph(
                 navController = navController,
                 onLogout = {
@@ -77,6 +83,7 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                     }
                 }
             )
+            clubGraph(navController = navController)
         }
     }
 }

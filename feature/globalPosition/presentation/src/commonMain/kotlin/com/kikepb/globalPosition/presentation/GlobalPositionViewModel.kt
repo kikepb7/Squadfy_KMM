@@ -7,6 +7,7 @@ import com.kikepb.core.domain.util.onSuccess
 import com.kikepb.globalPosition.domain.usecase.GetLatestNewsUseCase
 import com.kikepb.globalPosition.domain.usecase.GetRecentMatchesUseCase
 import com.kikepb.globalPosition.domain.usecase.GetUserClubsUseCase
+import com.kikepb.globalPosition.presentation.GlobalPositionAction.OnClubClick
 import com.kikepb.globalPosition.presentation.GlobalPositionAction.OnCopyInviteCode
 import com.kikepb.globalPosition.presentation.GlobalPositionAction.OnSettingsClick
 import com.kikepb.globalPosition.presentation.GlobalPositionEvent.CopyToClipboard
@@ -52,6 +53,7 @@ class GlobalPositionViewModel(
         when (action) {
             is OnCopyInviteCode -> { viewModelScope.launch { eventChannel.send(CopyToClipboard(action.code)) } }
             OnSettingsClick -> { viewModelScope.launch { eventChannel.send(GlobalPositionEvent.NavigateToSettings) } }
+            is OnClubClick -> { viewModelScope.launch { eventChannel.send(GlobalPositionEvent.NavigateToClub(action.clubId)) } }
         }
     }
 
@@ -95,10 +97,12 @@ data class GlobalPositionUiState(
 
 sealed interface GlobalPositionAction {
     data class OnCopyInviteCode(val code: String) : GlobalPositionAction
+    data class OnClubClick(val clubId: String) : GlobalPositionAction
     data object OnSettingsClick : GlobalPositionAction
 }
 
 sealed interface GlobalPositionEvent {
     data class CopyToClipboard(val code: String) : GlobalPositionEvent
+    data class NavigateToClub(val clubId: String) : GlobalPositionEvent
     data object NavigateToSettings : GlobalPositionEvent
 }
