@@ -24,6 +24,7 @@ import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.presentation.util.ObserveAsEvents
 import com.kikepb.globalPosition.presentation.GlobalPositionAction.OnSettingsClick
 import com.kikepb.globalPosition.presentation.GlobalPositionEvent.CopyToClipboard
+import com.kikepb.globalPosition.presentation.GlobalPositionEvent.NavigateToClub
 import com.kikepb.globalPosition.presentation.GlobalPositionEvent.NavigateToSettings
 import com.kikepb.globalPosition.presentation.components.ClubCard
 import com.kikepb.globalPosition.presentation.components.MatchCard
@@ -41,6 +42,7 @@ import squadfy_app.feature.globalposition.presentation.generated.resources.Res.s
 fun GlobalPositionRoot(
     modifier: Modifier = Modifier,
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToClub: (String) -> Unit = {},
     viewModel: GlobalPositionViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -50,6 +52,7 @@ fun GlobalPositionRoot(
         when (event) {
             is CopyToClipboard -> { clipboard.setText(AnnotatedString(text = event.code)) }
             NavigateToSettings -> onNavigateToSettings()
+            is NavigateToClub -> onNavigateToClub(event.clubId)
         }
     }
 
@@ -88,7 +91,8 @@ fun GlobalPositionScreen(
                     club = club,
                     onCopyInviteCode = { code ->
                         onAction(GlobalPositionAction.OnCopyInviteCode(code))
-                    }
+                    },
+                    onClick = { onAction(GlobalPositionAction.OnClubClick(club.id)) }
                 )
             }
 

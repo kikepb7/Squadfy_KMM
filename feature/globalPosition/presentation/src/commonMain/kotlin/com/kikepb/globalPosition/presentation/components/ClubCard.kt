@@ -35,9 +35,11 @@ import com.kikepb.globalPosition.presentation.model.ClubUiModel
 fun ClubCard(
     club: ClubUiModel,
     onCopyInviteCode: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     Surface(
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -52,7 +54,7 @@ fun ClubCard(
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             SquadfyAvatarPhoto(
-                displayText = club.initials,
+                displayText = club.logoUrl.toString(),
                 imageUrl = club.logoUrl,
                 size = AvatarSize.LARGE
             )
