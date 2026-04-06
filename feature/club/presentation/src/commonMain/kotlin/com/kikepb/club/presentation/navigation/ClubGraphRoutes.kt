@@ -43,30 +43,3 @@ fun NavGraphBuilder.clubGraph(navController: NavController) {
         )
     }
 }
-
-//    composable<ClubTeamsRoute> {
-//        ClubTeamsListRoot(
-//            onClubClick = { clubId ->
-//                navController.navigate(ClubDetailRoute(clubId = clubId))
-//            }
-//        )
-//    }
-//
-//    composable<ClubInfoCenterRoute> {
-//        ClubInfoCenterRoot(
-//            onNavigateToTeams = {
-//                navController.navigate(ClubTeamsRoute) {
-//                    popUpTo(ClubTeamsRoute) { inclusive = false; saveState = true }
-//                    launchSingleTop = true
-//                    restoreState = true
-//                }
-//            }
-//        )
-//    }
-//
-//    composable<ClubMemberDetailRoute> {
-//        ClubMemberDetailRoot(
-//            onBackClick = { navController.navigateUp() }
-//        )
-//    }
-//}
