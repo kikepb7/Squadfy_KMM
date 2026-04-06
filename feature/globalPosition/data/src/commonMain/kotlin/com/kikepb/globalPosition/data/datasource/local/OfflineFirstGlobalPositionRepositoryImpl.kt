@@ -1,31 +1,50 @@
-package com.kikepb.globalPosition.data.datasource.remote
+package com.kikepb.globalPosition.data.datasource.local
 
+import com.kikepb.club.database.SquadfyClubDatabase
 import com.kikepb.core.data.networking.get
 import com.kikepb.core.domain.util.DataError
+import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
-import com.kikepb.core.domain.util.map
+import com.kikepb.core.domain.util.asEmptyResult
+import com.kikepb.core.domain.util.onSuccess
 import com.kikepb.globalPosition.data.dto.ClubDto
-import com.kikepb.globalPosition.data.mapper.toDomain
+import com.kikepb.globalPosition.data.mapper.toEntity
+import com.kikepb.globalPosition.data.mapper.toGlobalPositionDomain
 import com.kikepb.globalPosition.domain.model.ClubModel
 import com.kikepb.globalPosition.domain.model.MatchModel
 import com.kikepb.globalPosition.domain.model.MatchStatus
 import com.kikepb.globalPosition.domain.model.NewsModel
-import com.kikepb.globalPosition.domain.repository.GlobalPositionService
+import com.kikepb.globalPosition.domain.repository.GlobalPositionRepository
 import io.ktor.client.HttpClient
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
-class KtorGlobalPositionRepositoryImpl(
-    private val httpClient: HttpClient
-) : GlobalPositionService {
+class OfflineFirstGlobalPositionRepositoryImpl(
+    private val httpClient: HttpClient,
+    private val db: SquadfyClubDatabase
+) : GlobalPositionRepository {
 
-    override suspend fun getUserClubs(): Result<List<ClubModel>, DataError.Remote> =
+    // ── Offline-first: DB as source of truth ───────────────────────────────
+
+    override fun getUserClubs(): Flow<List<ClubModel>> =
+        db.clubDao.observeAllClubs()
+            .map { entities -> entities.map { it.toGlobalPositionDomain() } }
+
+    override suspend fun fetchUserClubs(): EmptyResult<DataError.Remote> =
         httpClient.get<List<ClubDto>>(route = "/club")
-            .map { clubDto -> clubDto.map { it.toDomain() } }
+            .onSuccess { clubs ->
+                db.clubDao.syncClubs(clubs = clubs.map { it.toEntity() })
+            }
+            .asEmptyResult()
 
-    override suspend fun getRecentMatches(): Result<List<MatchModel>, DataError.Remote> = Result.Success(data = mockMatches)
+    // ── Matches and News (mocks, unchanged) ────────────────────────────────
 
-    override suspend fun getLatestNews(): Result<List<NewsModel>, DataError.Remote> = Result.Success(data = mockNews)
+    override suspend fun getRecentMatches(): Result<List<MatchModel>, DataError.Remote> =
+        Result.Success(data = mockMatches)
 
-    // TODO --> remove mocks and use real service
+    override suspend fun getLatestNews(): Result<List<NewsModel>, DataError.Remote> =
+        Result.Success(data = mockNews)
+
     private val mockMatches = listOf(
         MatchModel(
             id = "m1",
