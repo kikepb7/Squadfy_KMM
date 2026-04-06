@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.convention.kmp.library)
+    alias(libs.plugins.convention.room)
 }
 
 kotlin {
@@ -7,11 +8,6 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.stdlib)
-                implementation(libs.kotlinx.coroutines.core)
-
-                implementation(projects.core.domain)
-
-                implementation(libs.koin.core)
             }
         }
 
