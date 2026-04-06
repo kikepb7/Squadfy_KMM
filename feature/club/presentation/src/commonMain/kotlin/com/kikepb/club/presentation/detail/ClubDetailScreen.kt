@@ -157,7 +157,7 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
                 strokeWidth = 3.dp
             )
             Text(
-                text = "Cargando peña...",
+                text = "Cargando club...",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.extended.textPlaceholder
             )
@@ -184,7 +184,7 @@ private fun EmptyContent(modifier: Modifier = Modifier, onRetry: () -> Unit) {
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
             )
             Text(
-                text = "No se pudo cargar la peña",
+                text = "No se pudo cargar el club",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.extended.textSecondary,
                 textAlign = TextAlign.Center

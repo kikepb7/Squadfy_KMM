@@ -40,7 +40,7 @@ fun SquadfyClubDetailSettingsTab(club: ClubModel) {
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item { SquadfyClubDetailTabSectionTitle("Ajustes de peña") }
+        item { SquadfyClubDetailTabSectionTitle("Ajustes del club") }
 
         item {
             SquadfyClubDetailSettingsGroup(title = "Administrador") {
@@ -54,13 +54,13 @@ fun SquadfyClubDetailSettingsTab(club: ClubModel) {
 
         item {
             SquadfyClubDetailSettingsGroup(title = "Miembro") {
-                SquadfyClubDetailSettingsRow(label = "Salir de la peña", icon = Icons.Outlined.Close, destructive = true)
+                SquadfyClubDetailSettingsRow(label = "Salir del club", icon = Icons.Outlined.Close, destructive = true)
             }
         }
 
         item {
             SquadfyClubDetailSettingsGroup(title = "Zona de peligro") {
-                SquadfyClubDetailSettingsRow(label = "Eliminar peña (solo admin)", icon = Icons.Outlined.Delete, destructive = true)
+                SquadfyClubDetailSettingsRow(label = "Eliminar club (solo admin)", icon = Icons.Outlined.Delete, destructive = true)
             }
         }
     }

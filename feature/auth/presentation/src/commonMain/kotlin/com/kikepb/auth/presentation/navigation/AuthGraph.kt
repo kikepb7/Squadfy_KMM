@@ -98,8 +98,8 @@ fun NavGraphBuilder.authGraph(
                 }
             )
         }
-        composable< ForgotPassword> {
-            ForgotPasswordRoot()
+        composable<ForgotPassword> {
+            ForgotPasswordRoot(onNavigateBack = { navController.popBackStack() })
         }
         composable<ResetPassword>(
             deepLinks = listOf(

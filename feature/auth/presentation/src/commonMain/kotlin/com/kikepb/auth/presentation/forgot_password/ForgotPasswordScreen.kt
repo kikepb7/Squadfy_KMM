@@ -13,11 +13,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.auth.presentation.forgot_password.ForgotPasswordAction.OnSubmitClick
-import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveFormLayout
 import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
 import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
@@ -32,28 +32,31 @@ import squadfy_app.feature.auth.presentation.generated.resources.submit
 
 @Composable
 fun ForgotPasswordRoot(
+    onNavigateBack: () -> Unit = {},
     viewModel: ForgotPasswordViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     ForgotPasswordScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = viewModel::onAction,
+        onNavigateBack = onNavigateBack
     )
 }
 
 @Composable
 fun ForgotPasswordScreen(
     state: ForgotPasswordState,
-    onAction: (ForgotPasswordAction) -> Unit
+    onAction: (ForgotPasswordAction) -> Unit,
+    onNavigateBack: () -> Unit = {}
 ) {
-    SquadfySnackbarScaffold {
+    SquadfySnackbarScaffold(
+        topBar = { SquadfyTopBar(title = stringResource(RString.forgot_password), onBackClick = onNavigateBack) }
+    ) {
         SquadfyAdaptiveFormLayout(
             headerText = stringResource(RString.forgot_password),
             errorText = state.errorText?.asString(),
-            logo = {
-                SquadfyBrandLogo()
-            }
+            logo = {}
         ) {
             SquadfyTextField(
                 state = state.emailTextFieldState,

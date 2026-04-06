@@ -54,7 +54,7 @@ fun ClubCard(
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             SquadfyAvatarPhoto(
-                displayText = club.logoUrl.toString(),
+                displayText = club.initials,
                 imageUrl = club.logoUrl,
                 size = AvatarSize.LARGE
             )

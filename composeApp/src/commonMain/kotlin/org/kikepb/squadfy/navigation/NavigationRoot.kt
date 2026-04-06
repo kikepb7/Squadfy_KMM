@@ -15,19 +15,21 @@ import com.kikepb.auth.presentation.navigation.authGraph
 import com.kikepb.chat.presentation.navigation.chatGraph
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubDetailRoute
 import com.kikepb.club.presentation.navigation.clubGraph
+import com.kikepb.club.presentation.navigation.setupGraph
 import com.kikepb.core.designsystem.components.navigation.SquadfyBottomBar
 import com.kikepb.core.designsystem.components.navigation.SquadfyBottomBarItemModel
 import com.kikepb.globalPosition.presentation.navigation.GlobalPositionGraphRoutes.GlobalPositionGraph
 import com.kikepb.globalPosition.presentation.navigation.globalPositionGraph
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.Chat
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.GlobalPosition
+import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.Setup
 
 @Composable
 fun NavigationRoot(navController: NavHostController, startDestination: Any) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val bottomBarItems = listOf(GlobalPosition, Chat)
+    val bottomBarItems = listOf(GlobalPosition, Setup, Chat)
     val showBottomBar = bottomBarItems.any { it.isSelected(destination = currentDestination) }
     val selectedIndex = bottomBarItems.indexOfFirst { it.isSelected(destination = currentDestination) }.coerceAtLeast(minimumValue = 0)
 
@@ -80,6 +82,19 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             inclusive = true
                         }
+                    }
+                }
+            )
+            setupGraph(
+                navController = navController,
+                onSetupComplete = {
+                    navController.navigate(route = GlobalPositionGraph) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = false
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
                     }
                 }
             )
