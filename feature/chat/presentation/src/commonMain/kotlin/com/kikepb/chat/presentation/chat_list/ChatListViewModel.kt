@@ -15,15 +15,11 @@ import com.kikepb.chat.presentation.chat_list.ChatListAction.OnLogoutClick
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnProfileSettingsClick
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnSelectChat
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnUserAvatarClick
-import com.kikepb.chat.presentation.chat_list.ChatListEvent.OnLogoutError
 import com.kikepb.chat.presentation.chat_list.ChatListEvent.OnLogoutSuccess
 import com.kikepb.chat.presentation.mappers.toUi
 import com.kikepb.chat.presentation.model.ChatModelUi
 import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 import com.kikepb.core.domain.auth.repository.SessionStorage
-import com.kikepb.core.domain.util.onFailure
-import com.kikepb.core.domain.util.onSuccess
-import com.kikepb.core.presentation.mapper.toUiText
 import com.kikepb.core.presentation.util.UiText
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,22 +81,21 @@ class ChatListViewModel(
 
         viewModelScope.launch {
             val authInfo = sessionStorage.observeAuthInfo().first()
-            val refreshToken = authInfo?.refreshToken ?: return@launch
+            val refreshToken = authInfo?.refreshToken
 
-            unregisterTokenUseCase.unregisterToken(token = refreshToken)
-                .onSuccess {
-                    logoutUseCase.logout(refreshToken = refreshToken)
-                        .onSuccess {
-                            sessionStorage.set(info = null)
-                            deleteAllChatsUseCase.deleteAllChats()
-                            eventChannel.send(element = OnLogoutSuccess)
-                        }
-                        .onFailure { error ->
-                        eventChannel.send(element = OnLogoutError(error = error.toUiText())) }
-                }
-                .onFailure { error ->
-                    eventChannel.send(element = OnLogoutError(error = error.toUiText()))
-                }
+            // 1. Local logout first — always succeeds, even without internet.
+            //    Clearing the session makes the app behave as unauthenticated immediately.
+            sessionStorage.set(info = null)
+            deleteAllChatsUseCase.deleteAllChats()
+            eventChannel.send(element = OnLogoutSuccess)
+
+            // 2. Best-effort remote cleanup — fire and forget.
+            //    If offline, the refresh token will expire on the server on its own.
+            //    We don't block logout on network availability.
+            if (refreshToken != null) {
+                launch { unregisterTokenUseCase.unregisterToken(token = refreshToken) }
+                launch { logoutUseCase.logout(refreshToken = refreshToken) }
+            }
         }
     }
 

@@ -10,10 +10,16 @@ import kotlinx.serialization.Serializable
 
 sealed interface ClubGraphRoutes {
     @Serializable
-    data object ClubGraph : ClubGraphRoutes
+    data object SetupGraph : ClubGraphRoutes
 
     @Serializable
-    data object ClubInfoCenterRoute : ClubGraphRoutes
+    data object SetupHome : ClubGraphRoutes
+
+    @Serializable
+    data object JoinClubRoute : ClubGraphRoutes
+
+    @Serializable
+    data object CreateClubRoute : ClubGraphRoutes
 
     @Serializable
     data class ClubDetailRoute(val clubId: String) : ClubGraphRoutes

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
+import com.kikepb.globalPosition.domain.usecase.FetchUserClubsUseCase
 import com.kikepb.globalPosition.domain.usecase.GetLatestNewsUseCase
 import com.kikepb.globalPosition.domain.usecase.GetRecentMatchesUseCase
 import com.kikepb.globalPosition.domain.usecase.GetUserClubsUseCase
@@ -11,6 +12,8 @@ import com.kikepb.globalPosition.presentation.GlobalPositionAction.OnClubClick
 import com.kikepb.globalPosition.presentation.GlobalPositionAction.OnCopyInviteCode
 import com.kikepb.globalPosition.presentation.GlobalPositionAction.OnSettingsClick
 import com.kikepb.globalPosition.presentation.GlobalPositionEvent.CopyToClipboard
+import com.kikepb.globalPosition.presentation.GlobalPositionEvent.NavigateToClub
+import com.kikepb.globalPosition.presentation.GlobalPositionEvent.NavigateToSettings
 import com.kikepb.globalPosition.presentation.mapper.toUiModel
 import com.kikepb.globalPosition.presentation.model.ClubUiModel
 import com.kikepb.globalPosition.presentation.model.MatchUiModel
@@ -18,6 +21,7 @@ import com.kikepb.globalPosition.presentation.model.NewsUiModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -26,17 +30,27 @@ import kotlinx.coroutines.launch
 
 class GlobalPositionViewModel(
     private val getUserClubsUseCase: GetUserClubsUseCase,
+    private val fetchUserClubsUseCase: FetchUserClubsUseCase,
     private val getRecentMatchesUseCase: GetRecentMatchesUseCase,
     private val getLatestNewsUseCase: GetLatestNewsUseCase,
 ) : ViewModel() {
-
     private var hasLoadedInitialData = false
 
     private val _state = MutableStateFlow(GlobalPositionUiState())
-    val state = _state
+
+    val state = combine(
+        flow = _state,
+        flow2 = getUserClubsUseCase()
+    ) { current, clubs ->
+        current.copy(
+            clubs = clubs.map { it.toUiModel() },
+            isLoadingClubs = false
+        )
+    }
         .onStart {
             if (!hasLoadedInitialData) {
-                loadData()
+                fetchClubs()
+                loadMatchesAndNews()
                 hasLoadedInitialData = true
             }
         }
@@ -51,37 +65,32 @@ class GlobalPositionViewModel(
 
     fun onAction(action: GlobalPositionAction) {
         when (action) {
-            is OnCopyInviteCode -> { viewModelScope.launch { eventChannel.send(CopyToClipboard(action.code)) } }
-            OnSettingsClick -> { viewModelScope.launch { eventChannel.send(GlobalPositionEvent.NavigateToSettings) } }
-            is OnClubClick -> { viewModelScope.launch { eventChannel.send(GlobalPositionEvent.NavigateToClub(action.clubId)) } }
+            is OnCopyInviteCode -> viewModelScope.launch { eventChannel.send(element = CopyToClipboard(action.code)) }
+            OnSettingsClick -> viewModelScope.launch { eventChannel.send(element = NavigateToSettings) }
+            is OnClubClick -> viewModelScope.launch { eventChannel.send(element = NavigateToClub(action.clubId)) }
         }
     }
 
-    private fun loadData() {
-
-        // TODO --> Combine in one use case and use flows
+    private fun fetchClubs() {
         viewModelScope.launch {
-            getUserClubsUseCase()
-                .onSuccess { clubs ->
-                    _state.update { it.copy(clubs = clubs.map { club -> club.toUiModel() }, isLoadingClubs = false) }
-                }
-                .onFailure { _state.update { it.copy(isLoadingClubs = false) } }
+            fetchUserClubsUseCase()
         }
+    }
+
+    private fun loadMatchesAndNews() {
         viewModelScope.launch {
             getRecentMatchesUseCase()
                 .onSuccess { matches ->
-                    _state.update { it.copy(matches = matches.map { match -> match.toUiModel() }, isLoadingMatches = false) }
+                    _state.update { it.copy(matches = matches.map { m -> m.toUiModel() }, isLoadingMatches = false) }
                 }
                 .onFailure { _state.update { it.copy(isLoadingMatches = false) } }
         }
         viewModelScope.launch {
             getLatestNewsUseCase()
                 .onSuccess { news ->
-                    _state.update { it.copy(news = news.map { item -> item.toUiModel() }, isLoadingNews = false) }
+                    _state.update { it.copy(news = news.map { n -> n.toUiModel() }, isLoadingNews = false) }
                 }
-                .onFailure {
-                    _state.update { it.copy(isLoadingNews = false) }
-                }
+                .onFailure { _state.update { it.copy(isLoadingNews = false) } }
         }
     }
 }
