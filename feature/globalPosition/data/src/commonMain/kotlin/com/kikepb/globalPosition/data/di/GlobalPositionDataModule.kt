@@ -1,6 +1,6 @@
 package com.kikepb.globalPosition.data.di
 
-import com.kikepb.globalPosition.data.datasource.remote.KtorGlobalPositionRepositoryImpl
+import com.kikepb.globalPosition.data.datasource.local.OfflineFirstGlobalPositionRepositoryImpl
 import com.kikepb.globalPosition.domain.repository.GlobalPositionRepository
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.bind
@@ -11,5 +11,5 @@ expect val platformGlobalPositionDataModule: Module
 
 val globalPositionDataModule = module {
     includes(platformGlobalPositionDataModule)
-    singleOf(::KtorGlobalPositionRepositoryImpl) { bind<GlobalPositionRepository>() }
+    singleOf(::OfflineFirstGlobalPositionRepositoryImpl) { bind<GlobalPositionRepository>() }
 }
