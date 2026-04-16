@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -128,18 +129,14 @@ fun CreateClubScreen(
                 )
             }
 
-            // Logo picker card
             ClubLogoPickerCard(
-                selectedBytes = state.selectedLogoBytes,
-                isUploading = state.isUploadingLogo,
-                error = state.logoError?.asString(),
+                selectedBytes = state.logoSelection?.bytes,
                 onPickLogo = onPickLogo,
                 onClearLogo = { onAction(CreateClubAction.OnClearLogoSelection) },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Fields card
-            androidx.compose.material3.Surface(
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
                 color = MaterialTheme.colorScheme.surface,
@@ -159,7 +156,7 @@ fun CreateClubScreen(
                         placeholder = "Ej: Los Cracks FC",
                         singleLine = true,
                         isError = state.nameError != null,
-                        supportingText = state.nameError ?: "Máx. 120 caracteres",
+                        supportingText = state.nameError?.asString() ?: "Máx. 120 caracteres",
                         keyboardType = KeyboardType.Text
                     )
 
@@ -193,15 +190,15 @@ fun CreateClubScreen(
                         placeholder = "Ej: 20",
                         singleLine = true,
                         isError = state.maxMembersError != null,
-                        supportingText = state.maxMembersError ?: "Opcional · Sin límite si se deja vacío",
+                        supportingText = state.maxMembersError?.asString() ?: "Opcional · Sin límite si se deja vacío",
                         keyboardType = KeyboardType.Number
                     )
                 }
             }
 
             SquadfyButton(
-                text = if (state.isUploadingLogo) "Subiendo imagen..." else "Crear club",
-                onClick = { onAction(CreateClubAction.OnSubmit) },
+                text = "Crear club",
+                onClick = { onAction(CreateClubAction.OnCreateClub) },
                 enabled = state.canSubmit,
                 isLoading = state.isLoading,
                 modifier = Modifier.fillMaxWidth()
@@ -215,15 +212,13 @@ fun CreateClubScreen(
 @Composable
 private fun ClubLogoPickerCard(
     selectedBytes: ByteArray?,
-    isUploading: Boolean,
-    error: String?,
     onPickLogo: () -> Unit,
     onClearLogo: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val shape = RoundedCornerShape(20.dp)
 
-    androidx.compose.material3.Surface(
+    Surface(
         modifier = modifier,
         shape = shape,
         color = MaterialTheme.colorScheme.surface,
@@ -237,7 +232,6 @@ private fun ClubLogoPickerCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Image preview or placeholder
             Box(
                 modifier = Modifier
                     .size(72.dp)
@@ -245,10 +239,7 @@ private fun ClubLogoPickerCard(
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
                     .border(
                         width = 1.dp,
-                        color = if (error != null)
-                            MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
-                        else
-                            MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(14.dp)
                     )
                     .clickable(onClick = onPickLogo),
@@ -283,22 +274,14 @@ private fun ClubLogoPickerCard(
                     color = MaterialTheme.colorScheme.extended.textPrimary
                 )
                 Text(
-                    text = when {
-                        error != null -> error
-                        isUploading -> "Subiendo imagen..."
-                        selectedBytes != null -> "Imagen seleccionada · Toca para cambiar"
-                        else -> "Opcional · Toca la imagen para elegir"
-                    },
+                    text = if (selectedBytes != null) "Imagen seleccionada · Toca para cambiar"
+                    else "Opcional · Toca la imagen para elegir",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (error != null)
-                        MaterialTheme.colorScheme.error
-                    else
-                        MaterialTheme.colorScheme.extended.textPlaceholder
+                    color = MaterialTheme.colorScheme.extended.textPlaceholder
                 )
             }
 
-            // Clear button
-            if (selectedBytes != null && !isUploading) {
+            if (selectedBytes != null) {
                 IconButton(
                     onClick = onClearLogo,
                     modifier = Modifier.size(32.dp)

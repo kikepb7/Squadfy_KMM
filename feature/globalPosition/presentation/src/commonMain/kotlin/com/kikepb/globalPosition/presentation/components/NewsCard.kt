@@ -44,7 +44,6 @@ fun NewsCard(
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Category + date
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -70,7 +69,6 @@ fun NewsCard(
                 }
             }
 
-            // Title
             Text(
                 text = news.title,
                 style = MaterialTheme.typography.titleSmall.copy(
@@ -83,7 +81,6 @@ fun NewsCard(
                 overflow = TextOverflow.Ellipsis
             )
 
-            // Summary
             Text(
                 text = news.summary,
                 style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp),
@@ -92,10 +89,7 @@ fun NewsCard(
                 overflow = TextOverflow.Ellipsis
             )
 
-            // Source
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
                         .size(6.dp)

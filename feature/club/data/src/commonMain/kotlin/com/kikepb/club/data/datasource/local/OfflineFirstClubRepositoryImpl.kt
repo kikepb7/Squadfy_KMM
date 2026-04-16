@@ -1,16 +1,16 @@
 package com.kikepb.club.data.datasource.local
 
 import com.kikepb.club.data.dto.ClubDTO
-import com.kikepb.club.data.dto.ClubLogoUploadUrlsResponseDto
 import com.kikepb.club.data.dto.ClubMemberDTO
-import com.kikepb.club.data.dto.CreateClubRequestDto
-import com.kikepb.club.data.dto.JoinClubRequestDto
+import com.kikepb.club.data.dto.request.CreateClubRequestDto
+import com.kikepb.club.data.dto.request.JoinClubRequestDto
 import com.kikepb.club.data.mappers.toDomain
 import com.kikepb.club.data.mappers.toEntity
 import com.kikepb.club.database.SquadfyClubDatabase
 import com.kikepb.club.domain.model.ClubMemberModel
 import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.club.domain.repository.ClubRepository
+import com.kikepb.core.data.networking.constructRoute
 import com.kikepb.core.data.networking.get
 import com.kikepb.core.data.networking.post
 import com.kikepb.core.data.networking.safeCall
@@ -21,10 +21,13 @@ import com.kikepb.core.domain.util.asEmptyResult
 import com.kikepb.core.domain.util.map
 import com.kikepb.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
-import io.ktor.client.request.header
-import io.ktor.client.request.put
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -74,29 +77,27 @@ class OfflineFirstClubRepositoryImpl(
             .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
             .map { it.toEntity().toDomain() }
 
-    override suspend fun uploadClubLogo(bytes: ByteArray, mimeType: String): Result<String, DataError.Remote> {
-        val urlsResult = httpClient.post<Unit, ClubLogoUploadUrlsResponseDto>(
-            route = "/club/logo-upload",
-            queryParams = mapOf("mimeType" to mimeType),
-            body = Unit
-        )
-
-        val urls = when (urlsResult) {
-            is Result.Success -> urlsResult.data
-            is Result.Failure -> return Result.Failure(error = urlsResult.error)
-        }
-
-        val uploadResult: Result<Unit, DataError.Remote> = safeCall {
-            httpClient.put {
-                url(urlString = urls.uploadUrl)
-                urls.headers.forEach { (key, value) -> header(key, value) }
-                setBody(body = bytes)
+    // TODO --> Change to use own methods
+    override suspend fun uploadClubLogo(clubId: String, bytes: ByteArray, mimeType: String): Result<ClubModel, DataError.Remote> =
+        safeCall<ClubDTO> {
+            httpClient.post {
+                url(constructRoute("/club/$clubId/logo"))
+                setBody(
+                    MultiPartFormDataContent(
+                        formData {
+                            append(
+                                key = "clubLogo",
+                                value = bytes,
+                                headers = Headers.build {
+                                    append(HttpHeaders.ContentType, mimeType)
+                                    append(HttpHeaders.ContentDisposition, "filename=\"logo\"")
+                                }
+                            )
+                        }
+                    )
+                )
             }
         }
-
-        return when (uploadResult) {
-            is Result.Success -> Result.Success(data = urls.publicUrl)
-            is Result.Failure -> Result.Failure(error = uploadResult.error)
-        }
-    }
+            .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
+            .map { it.toEntity().toDomain() }
 }

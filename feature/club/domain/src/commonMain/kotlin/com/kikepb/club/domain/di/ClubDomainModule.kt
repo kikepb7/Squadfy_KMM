@@ -6,6 +6,7 @@ import com.kikepb.club.domain.usecase.FetchClubMembersUseCase
 import com.kikepb.club.domain.usecase.GetClubByIdUseCase
 import com.kikepb.club.domain.usecase.GetClubMembersUseCase
 import com.kikepb.club.domain.usecase.JoinClubUseCase
+import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
 import com.kikepb.club.domain.usecase.UploadClubLogoUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
@@ -16,6 +17,7 @@ val clubDomainModule = module {
     singleOf(::FetchClubByIdUseCase)
     singleOf(::FetchClubMembersUseCase)
     singleOf(::JoinClubUseCase)
+    singleOf(::SyncClubDetailUseCase)
     singleOf(::CreateClubUseCase)
     singleOf(::UploadClubLogoUseCase)
 }

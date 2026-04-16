@@ -5,10 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.club.domain.model.ClubMemberModel
 import com.kikepb.club.domain.model.ClubModel
-import com.kikepb.club.domain.usecase.FetchClubByIdUseCase
-import com.kikepb.club.domain.usecase.FetchClubMembersUseCase
 import com.kikepb.club.domain.usecase.GetClubByIdUseCase
 import com.kikepb.club.domain.usecase.GetClubMembersUseCase
+import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
+import com.kikepb.club.presentation.detail.ClubDetailAction.OnRefresh
 import com.kikepb.club.presentation.detail.ClubDetailEvent.ShowMessage
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.presentation.mapper.toUiText
@@ -26,8 +26,7 @@ import kotlinx.coroutines.launch
 class ClubDetailViewModel(
     private val getClubByIdUseCase: GetClubByIdUseCase,
     private val getClubMembersUseCase: GetClubMembersUseCase,
-    private val fetchClubByIdUseCase: FetchClubByIdUseCase,
-    private val fetchClubMembersUseCase: FetchClubMembersUseCase,
+    private val syncClubDetailUseCase: SyncClubDetailUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -40,9 +39,9 @@ class ClubDetailViewModel(
     private val _state = MutableStateFlow(ClubDetailState())
 
     val state = combine(
-        _state,
-        getClubByIdUseCase(clubId = clubId),
-        getClubMembersUseCase(clubId = clubId)
+        flow = _state,
+        flow2 = getClubByIdUseCase(clubId = clubId),
+        flow3 = getClubMembersUseCase(clubId = clubId)
     ) { current, club, members ->
         current.copy(club = club, members = members, isLoading = false)
     }
@@ -55,24 +54,17 @@ class ClubDetailViewModel(
 
     fun onAction(action: ClubDetailAction) {
         when (action) {
-            ClubDetailAction.OnRefresh -> syncFromNetwork()
+            OnRefresh -> syncFromNetwork()
         }
     }
 
     private fun syncFromNetwork() {
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            fetchClubByIdUseCase(clubId = clubId)
+            syncClubDetailUseCase(clubId = clubId)
                 .onFailure { error ->
                     _state.update { it.copy(isLoading = false) }
-                    eventChannel.send(element = ShowMessage(error.toUiText()))
-                }
-        }
-        viewModelScope.launch {
-            fetchClubMembersUseCase(clubId = clubId)
-                .onFailure { error ->
-                    _state.update { it.copy(isLoading = false) }
-                    eventChannel.send(element = ShowMessage(error.toUiText()))
+                    eventChannel.send(ShowMessage(error.toUiText()))
                 }
         }
     }

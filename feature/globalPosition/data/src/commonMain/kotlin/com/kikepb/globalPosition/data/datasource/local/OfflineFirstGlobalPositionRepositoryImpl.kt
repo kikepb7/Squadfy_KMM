@@ -24,8 +24,6 @@ class OfflineFirstGlobalPositionRepositoryImpl(
     private val db: SquadfyClubDatabase
 ) : GlobalPositionRepository {
 
-    // ── Offline-first: DB as source of truth ───────────────────────────────
-
     override fun getUserClubs(): Flow<List<ClubModel>> =
         db.clubDao.observeAllClubs()
             .map { entities -> entities.map { it.toGlobalPositionDomain() } }
@@ -36,8 +34,6 @@ class OfflineFirstGlobalPositionRepositoryImpl(
                 db.clubDao.syncClubs(clubs = clubs.map { it.toEntity() })
             }
             .asEmptyResult()
-
-    // ── Matches and News (mocks, unchanged) ────────────────────────────────
 
     override suspend fun getRecentMatches(): Result<List<MatchModel>, DataError.Remote> =
         Result.Success(data = mockMatches)

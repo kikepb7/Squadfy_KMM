@@ -34,6 +34,9 @@ import com.kikepb.core.presentation.util.ObserveAsEvents
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.kikepb.club.presentation.join.JoinClubAction.OnJoinClub
+import com.kikepb.club.presentation.join.JoinClubEvent.Error
+import com.kikepb.club.presentation.join.JoinClubEvent.Success
 
 @Composable
 fun JoinClubRoot(
@@ -47,8 +50,8 @@ fun JoinClubRoot(
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
-            JoinClubEvent.Success -> onSuccess()
-            is JoinClubEvent.Error -> scope.launch {
+            Success -> onSuccess()
+            is Error -> scope.launch {
                 snackbarHostState.showSnackbar(event.message.asStringAsync())
             }
         }
@@ -119,7 +122,7 @@ fun JoinClubScreen(
                         placeholder = "Ej: ABC123",
                         singleLine = true,
                         isError = state.invitationCodeError != null,
-                        supportingText = state.invitationCodeError ?: "6–12 caracteres alfanuméricos",
+                        supportingText = state.invitationCodeError?.asString() ?: "6–12 caracteres alfanuméricos",
                         keyboardType = KeyboardType.Text
                     )
 
@@ -132,7 +135,7 @@ fun JoinClubScreen(
                         placeholder = "Ej: 10",
                         singleLine = true,
                         isError = state.shirtNumberError != null,
-                        supportingText = state.shirtNumberError ?: "Opcional · Entre 1 y 999",
+                        supportingText = state.shirtNumberError?.asString() ?: "Opcional · Entre 1 y 99",
                         keyboardType = KeyboardType.Number
                     )
 
@@ -152,7 +155,7 @@ fun JoinClubScreen(
 
             SquadfyButton(
                 text = "Unirme al club",
-                onClick = { onAction(JoinClubAction.OnSubmit) },
+                onClick = { onAction(OnJoinClub) },
                 enabled = state.canSubmit,
                 isLoading = state.isLoading,
                 modifier = Modifier.fillMaxWidth()

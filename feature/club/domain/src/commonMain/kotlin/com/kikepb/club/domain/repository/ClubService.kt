@@ -10,5 +10,5 @@ interface ClubService {
     suspend fun getClubMembers(clubId: String): Result<List<ClubMemberModel>, DataError.Remote>
     suspend fun joinClub(invitationCode: String, shirtNumber: Int?, position: String?): Result<ClubModel, DataError.Remote>
     suspend fun createClub(name: String, description: String?, clubLogoUrl: String?, maxMembers: Int?): Result<ClubModel, DataError.Remote>
-    suspend fun uploadClubLogo(bytes: ByteArray, mimeType: String): Result<String, DataError.Remote>
+    suspend fun uploadClubLogo(clubId: String, bytes: ByteArray, mimeType: String): Result<ClubModel, DataError.Remote>
 }
