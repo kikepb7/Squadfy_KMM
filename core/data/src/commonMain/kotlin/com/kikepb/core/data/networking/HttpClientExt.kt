@@ -14,6 +14,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.statement.HttpResponse
 
 expect suspend fun <T> platformSafeCall(
@@ -70,6 +71,16 @@ suspend inline fun <reified Request, reified Response: Any> HttpClient.put(
             setBody(body)
             builder()
         }
+    }
+}
+
+suspend inline fun <reified Response: Any> HttpClient.postMultipart(
+    route: String,
+    content: MultiPartFormDataContent
+): Result<Response, DataError.Remote> = safeCall {
+    post {
+        url(constructRoute(route))
+        setBody(content)
     }
 }
 

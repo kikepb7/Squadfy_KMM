@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalForeignApi::class)
 
-package com.kikepb.club.presentation.mediapicker
+package com.kikepb.core.presentation.mediapicker
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -28,7 +28,7 @@ import platform.posix.memcpy
 
 @Composable
 actual fun rememberImagePickerLauncher(
-    onResult: (PickedImageData) -> Unit
+    onResult: (PickedImage) -> Unit
 ): ImagePickerLauncher {
     val scope = rememberCoroutineScope()
 
@@ -39,7 +39,7 @@ actual fun rememberImagePickerLauncher(
 
                 val results = didFinishPicking.filterIsInstance<PHPickerResult>()
                 val dispatchGroup = dispatch_group_create()
-                val imageDataList = mutableListOf<PickedImageData>()
+                val imageDataList = mutableListOf<PickedImage>()
 
                 for (result in results) {
                     dispatch_group_enter(dispatchGroup)
@@ -70,7 +70,7 @@ actual fun rememberImagePickerLauncher(
                                 withContext(context = Dispatchers.Default) {
                                     memcpy(bytes.refTo(index = 0), it.bytes, it.length)
                                 }
-                                imageDataList.add(PickedImageData(bytes = bytes, mimeType = mimeType))
+                                imageDataList.add(PickedImage(bytes = bytes, mimeType = mimeType))
                             }
                             dispatch_group_leave(dispatchGroup)
                         }
@@ -78,8 +78,8 @@ actual fun rememberImagePickerLauncher(
 
                     dispatch_group_notify(dispatchGroup, dispatch_get_main_queue()) {
                         scope.launch {
-                            imageDataList.firstOrNull()?.let { item ->
-                                onResult(item)
+                            imageDataList.firstOrNull()?.let { image ->
+                                onResult(image)
                             }
                         }
                     }

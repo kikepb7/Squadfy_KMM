@@ -1,4 +1,4 @@
-package com.kikepb.chat.presentation.profile.mediapicker
+package com.kikepb.core.presentation.mediapicker
 
 import android.content.Context
 import android.net.Uri
@@ -18,9 +18,9 @@ class ContentUriParser(
 
     private fun getMimeTypeFromExtension(uri: Uri): String? {
         val extension = uri.toString().substringAfterLast(delimiter = ".", missingDelimiterValue = "")
-
         return if (extension.isNotBlank()) MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) else null
     }
 
-    fun getMimeType(uri: Uri): String? = context.contentResolver.getType(uri) ?: getMimeTypeFromExtension(uri = uri)
+    fun getMimeType(uri: Uri): String? =
+        context.contentResolver.getType(uri) ?: getMimeTypeFromExtension(uri = uri)
 }

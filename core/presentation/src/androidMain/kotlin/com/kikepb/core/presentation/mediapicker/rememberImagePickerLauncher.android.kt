@@ -1,4 +1,4 @@
-package com.kikepb.chat.presentation.profile.mediapicker
+package com.kikepb.core.presentation.mediapicker
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -11,23 +11,23 @@ import kotlinx.coroutines.launch
 
 @Composable
 actual fun rememberImagePickerLauncher(
-    onResult: (PickedImageData) -> Unit
+    onResult: (PickedImage) -> Unit
 ): ImagePickerLauncher {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         if (uri != null) {
             val parser = ContentUriParser(context = context)
             val mimeType = parser.getMimeType(uri = uri)
-
             scope.launch {
-                val data = PickedImageData(
+                val image = PickedImage(
                     bytes = parser.readUri(uri = uri) ?: return@launch,
                     mimeType = mimeType
                 )
-                onResult(data)
+                onResult(image)
             }
         }
     }

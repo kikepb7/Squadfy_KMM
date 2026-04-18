@@ -36,7 +36,7 @@ import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleNewPasswordVis
 import com.kikepb.chat.presentation.profile.ProfileAction.OnUploadPictureClick
 import com.kikepb.chat.presentation.profile.components.ProfileHeaderSection
 import com.kikepb.chat.presentation.profile.components.ProfileSectionLayout
-import com.kikepb.chat.presentation.profile.mediapicker.rememberImagePickerLauncher
+import com.kikepb.core.presentation.mediapicker.rememberImagePickerLauncher
 import com.kikepb.core.designsystem.components.avatar.AvatarSize.LARGE
 import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton

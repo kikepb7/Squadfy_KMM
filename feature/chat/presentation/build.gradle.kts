@@ -9,6 +9,7 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
 
                 implementation(projects.core.domain)
+                implementation(projects.core.presentation)
                 implementation(projects.core.designsystem)
                 implementation(projects.feature.chat.domain)
 
