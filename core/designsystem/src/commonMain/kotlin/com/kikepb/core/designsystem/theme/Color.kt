@@ -57,6 +57,18 @@ val SquadfyCakeLightPurple = Color(0xFFE6D9FF) // Soft purple
 val SquadfyCakeLightRed = Color(0xFFFFD9DC) // Soft red
 val SquadfyCakeLightMint = Color(0xFFE0FFE8) // Soft mint
 
+// Disciplinary card colors — Light
+val SquadfyYellowCardBgLight = Color(0xFFFEF4A5)
+val SquadfyYellowCardTextLight = Color(0xFF7A6000)
+val SquadfyRedCardBgLight = Color(0xFFFFD9DC)
+val SquadfyRedCardTextLight = Color(0xFF8B0000)
+
+// Disciplinary card colors — Dark
+val SquadfyYellowCardBgDark = Color(0x26FEF4A5)
+val SquadfyYellowCardTextDark = Color(0xFFFEF0A0)
+val SquadfyRedCardBgDark = Color(0x26FF8A95)
+val SquadfyRedCardTextDark = Color(0xFFFFAAB5)
+
 // Cake Colors - Dark Theme (Muted shades with good contrast)
 val SquadfyCakeDarkViolet = Color(0x26FCB6FF) // Muted violet (15% alpha)
 val SquadfyCakeDarkGreen = Color(0x26C2FFA6) // Muted green (15% alpha)

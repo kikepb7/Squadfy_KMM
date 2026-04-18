@@ -54,6 +54,12 @@ data class ExtendedColors(
     val accentLightBlue: Color,
     val accentGrey: Color,
 
+    // Disciplinary card colors
+    val yellowCardBackground: Color,
+    val yellowCardText: Color,
+    val redCardBackground: Color,
+    val redCardText: Color,
+
     // Cake colors for chat bubbles
     val cakeViolet: Color,
     val cakeGreen: Color,
@@ -100,6 +106,11 @@ val LightExtendedColors = ExtendedColors(
     accentLightBlue = SquadfyLightBlue,
     accentGrey = SquadfyGrey,
 
+    yellowCardBackground = SquadfyYellowCardBgLight,
+    yellowCardText = SquadfyYellowCardTextLight,
+    redCardBackground = SquadfyRedCardBgLight,
+    redCardText = SquadfyRedCardTextLight,
+
     cakeViolet = SquadfyCakeLightViolet,
     cakeGreen = SquadfyCakeLightGreen,
     cakeBlue = SquadfyCakeLightBlue,
@@ -144,6 +155,11 @@ val DarkExtendedColors = ExtendedColors(
     accentTeal = SquadfyTeal,
     accentLightBlue = SquadfyLightBlue,
     accentGrey = SquadfyGrey,
+
+    yellowCardBackground = SquadfyYellowCardBgDark,
+    yellowCardText = SquadfyYellowCardTextDark,
+    redCardBackground = SquadfyRedCardBgDark,
+    redCardText = SquadfyRedCardTextDark,
 
     cakeViolet = SquadfyCakeDarkViolet,
     cakeGreen = SquadfyCakeDarkGreen,
