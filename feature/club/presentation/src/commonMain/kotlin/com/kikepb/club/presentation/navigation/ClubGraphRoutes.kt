@@ -4,6 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.kikepb.club.presentation.detail.ClubDetailRoot
+import com.kikepb.club.presentation.memberdetail.MemberDetailRoot
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubDetailRoute
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubMemberDetailRoute
 import kotlinx.serialization.Serializable
@@ -41,5 +42,9 @@ fun NavGraphBuilder.clubGraph(navController: NavController) {
                 )
             }
         )
+    }
+
+    composable<ClubMemberDetailRoute> {
+        MemberDetailRoot(onBackClick = { navController.navigateUp() })
     }
 }

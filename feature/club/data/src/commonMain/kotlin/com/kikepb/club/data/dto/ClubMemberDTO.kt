@@ -9,6 +9,7 @@ data class ClubMemberDTO(
     val userId: String,
     val username: String,
     val email: String,
+    val profilePictureUrl: String? = null,
     val shirtNumber: Int? = null,
     val position: String? = null,
     val goalsScored: Int,

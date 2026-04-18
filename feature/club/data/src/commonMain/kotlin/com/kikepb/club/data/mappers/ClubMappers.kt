@@ -22,6 +22,7 @@ fun ClubMemberDTO.clubMemberToDomain(): ClubMemberModel = ClubMemberModel(
     userId = userId,
     username = username,
     email = email,
+    profilePictureUrl = profilePictureUrl,
     shirtNumber = shirtNumber,
     position = position,
     goalsScored = goalsScored,

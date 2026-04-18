@@ -13,8 +13,8 @@ import com.kikepb.club.presentation.create.CreateClubAction.OnClearLogoSelection
 import com.kikepb.club.presentation.create.CreateClubAction.OnCreateClub
 import com.kikepb.club.presentation.create.CreateClubAction.OnLogoSelected
 import com.kikepb.club.presentation.mapper.toUiText
-import com.kikepb.club.presentation.utils.ClubLogoSelection
 import com.kikepb.core.domain.util.Result.Failure
+import com.kikepb.core.presentation.mediapicker.PickedImage
 import com.kikepb.core.domain.util.Result.Success
 import com.kikepb.core.presentation.util.UiText
 import kotlinx.coroutines.channels.Channel
@@ -37,7 +37,7 @@ class CreateClubViewModel(
     fun onAction(action: CreateClubAction) {
         when (action) {
             OnCreateClub -> createClub()
-            is OnLogoSelected -> _state.update { it.copy(logoSelection = ClubLogoSelection(bytes = action.bytes, mimeType = action.mimeType)) }
+            is OnLogoSelected -> _state.update { it.copy(logoSelection = PickedImage(bytes = action.bytes, mimeType = action.mimeType)) }
             OnClearLogoSelection -> _state.update { it.copy(logoSelection = null) }
             OnClearErrors -> _state.update { it.copy(nameError = null, maxMembersError = null) }
         }
@@ -75,7 +75,7 @@ data class CreateClubState(
     val nameState: TextFieldState = TextFieldState(),
     val descriptionState: TextFieldState = TextFieldState(),
     val maxMembersState: TextFieldState = TextFieldState(),
-    val logoSelection: ClubLogoSelection? = null,
+    val logoSelection: PickedImage? = null,
     val isLoading: Boolean = false,
     val nameError: UiText? = null,
     val maxMembersError: UiText? = null

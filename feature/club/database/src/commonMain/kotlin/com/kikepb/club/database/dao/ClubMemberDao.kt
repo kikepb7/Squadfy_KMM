@@ -13,6 +13,9 @@ interface ClubMemberDao {
     @Query("SELECT * FROM club_member WHERE clubId = :clubId ORDER BY username ASC")
     fun observeMembersByClub(clubId: String): Flow<List<ClubMemberEntity>>
 
+    @Query("SELECT * FROM club_member WHERE memberId = :memberId LIMIT 1")
+    fun observeMemberById(memberId: String): Flow<ClubMemberEntity?>
+
     @Upsert
     suspend fun upsertMembers(members: List<ClubMemberEntity>)
 

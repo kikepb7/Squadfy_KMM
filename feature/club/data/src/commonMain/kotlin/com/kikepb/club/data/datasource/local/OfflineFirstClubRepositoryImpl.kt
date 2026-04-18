@@ -10,10 +10,9 @@ import com.kikepb.club.database.SquadfyClubDatabase
 import com.kikepb.club.domain.model.ClubMemberModel
 import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.club.domain.repository.ClubRepository
-import com.kikepb.core.data.networking.constructRoute
 import com.kikepb.core.data.networking.get
 import com.kikepb.core.data.networking.post
-import com.kikepb.core.data.networking.safeCall
+import com.kikepb.core.data.networking.postMultipart
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
@@ -23,9 +22,6 @@ import com.kikepb.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.request.url
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.flow.Flow
@@ -44,11 +40,13 @@ class OfflineFirstClubRepositoryImpl(
         db.clubMemberDao.observeMembersByClub(clubId = clubId)
             .map { entities -> entities.map { it.toDomain() } }
 
+    override fun getClubMemberById(memberId: String): Flow<ClubMemberModel?> =
+        db.clubMemberDao.observeMemberById(memberId = memberId)
+            .map { entity -> entity?.toDomain() }
+
     override suspend fun fetchClubById(clubId: String): EmptyResult<DataError.Remote> =
         httpClient.get<ClubDTO>(route = "/club/$clubId")
-            .onSuccess { dto ->
-                db.clubDao.upsertClub(club = dto.toEntity())
-            }
+            .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
             .asEmptyResult()
 
     override suspend fun fetchClubMembers(clubId: String): EmptyResult<DataError.Remote> =
@@ -77,27 +75,33 @@ class OfflineFirstClubRepositoryImpl(
             .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
             .map { it.toEntity().toDomain() }
 
-    // TODO --> Change to use own methods
     override suspend fun uploadClubLogo(clubId: String, bytes: ByteArray, mimeType: String): Result<ClubModel, DataError.Remote> =
-        safeCall<ClubDTO> {
-            httpClient.post {
-                url(constructRoute("/club/$clubId/logo"))
-                setBody(
-                    MultiPartFormDataContent(
-                        formData {
-                            append(
-                                key = "clubLogo",
-                                value = bytes,
-                                headers = Headers.build {
-                                    append(HttpHeaders.ContentType, mimeType)
-                                    append(HttpHeaders.ContentDisposition, "filename=\"logo\"")
-                                }
-                            )
-                        }
-                    )
-                )
-            }
-        }
+        httpClient.postMultipart<ClubDTO>(
+            route = "/club/$clubId/logo",
+            content = buildMultipartImage(key = "clubLogo", bytes = bytes, mimeType = mimeType, filename = "logo")
+        )
             .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
             .map { it.toEntity().toDomain() }
+
+    override suspend fun uploadMemberPhoto(clubId: String, memberId: String, bytes: ByteArray, mimeType: String): Result<ClubMemberModel, DataError.Remote> =
+        httpClient.postMultipart<ClubMemberDTO>(
+            route = "/club/$clubId/members/$memberId/photo",
+            content = buildMultipartImage(key = "memberPhoto", bytes = bytes, mimeType = mimeType, filename = "photo")
+        )
+            .onSuccess { dto -> db.clubMemberDao.upsertMembers(listOf(dto.toEntity())) }
+            .map { it.toEntity().toDomain() }
+
+    private fun buildMultipartImage(key: String, bytes: ByteArray, mimeType: String, filename: String): MultiPartFormDataContent =
+        MultiPartFormDataContent(
+            formData {
+                append(
+                    key = key,
+                    value = bytes,
+                    headers = Headers.build {
+                        append(HttpHeaders.ContentType, mimeType)
+                        append(HttpHeaders.ContentDisposition, "filename=\"$filename\"")
+                    }
+                )
+            }
+        )
 }

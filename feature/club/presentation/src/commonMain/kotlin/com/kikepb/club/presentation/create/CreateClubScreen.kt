@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.kikepb.club.presentation.mediapicker.rememberImagePickerLauncher
+import com.kikepb.core.presentation.mediapicker.rememberImagePickerLauncher
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.textfields.SquadfyMultiLineTextField
 import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
