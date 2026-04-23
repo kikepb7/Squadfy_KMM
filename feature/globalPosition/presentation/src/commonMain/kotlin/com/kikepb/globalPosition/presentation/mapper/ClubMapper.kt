@@ -11,6 +11,7 @@ fun ClubModel.toUiModel() = ClubUiModel(
     invitationCode = invitationCode,
     membersCount = membersCount,
     maxMembers = maxMembers,
+    location = location,
     initials = name
         .split(" ")
         .take(2)

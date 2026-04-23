@@ -9,6 +9,7 @@ data class ClubDTO(
     val description: String? = null,
     val clubLogoUrl: String? = null,
     val ownerId: String,
+    val location: String? = null,
     val invitationCode: String,
     val maxMembers: Int? = null,
     val membersCount: Int

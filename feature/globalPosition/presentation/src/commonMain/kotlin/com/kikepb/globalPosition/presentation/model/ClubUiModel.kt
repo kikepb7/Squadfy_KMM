@@ -8,5 +8,8 @@ data class ClubUiModel(
     val invitationCode: String,
     val membersCount: Int,
     val maxMembers: Int?,
-    val initials: String
-)
+    val initials: String,
+    val location: String?
+) {
+    val isFull: Boolean get() = maxMembers != null && membersCount >= maxMembers
+}

@@ -12,5 +12,6 @@ data class ClubEntity(
     val ownerId: String,
     val invitationCode: String,
     val maxMembers: Int?,
-    val membersCount: Int
+    val membersCount: Int,
+    val location: String?
 )

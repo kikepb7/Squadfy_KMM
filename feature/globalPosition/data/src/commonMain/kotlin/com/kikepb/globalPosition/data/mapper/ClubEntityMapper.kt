@@ -11,7 +11,8 @@ fun ClubEntity.toGlobalPositionDomain() = ClubModel(
     logoUrl = clubLogoUrl,
     invitationCode = invitationCode,
     membersCount = membersCount,
-    maxMembers = maxMembers
+    maxMembers = maxMembers,
+    location = location
 )
 
 fun ClubDto.toEntity() = ClubEntity(
@@ -22,5 +23,6 @@ fun ClubDto.toEntity() = ClubEntity(
     ownerId = ownerId,
     invitationCode = invitationCode,
     maxMembers = maxMembers,
-    membersCount = membersCount
+    membersCount = membersCount,
+    location = location
 )

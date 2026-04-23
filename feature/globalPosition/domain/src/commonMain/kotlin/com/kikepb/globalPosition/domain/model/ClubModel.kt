@@ -7,5 +7,6 @@ data class ClubModel(
     val logoUrl: String?,
     val invitationCode: String,
     val membersCount: Int,
-    val maxMembers: Int?
+    val maxMembers: Int?,
+    val location: String?
 )

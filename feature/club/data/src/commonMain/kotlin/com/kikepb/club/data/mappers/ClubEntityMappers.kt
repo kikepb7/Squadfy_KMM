@@ -15,7 +15,8 @@ fun ClubDTO.toEntity(): ClubEntity = ClubEntity(
     ownerId = ownerId,
     invitationCode = invitationCode,
     maxMembers = maxMembers,
-    membersCount = membersCount
+    membersCount = membersCount,
+    location = location
 )
 
 fun ClubMemberDTO.toEntity(): ClubMemberEntity = ClubMemberEntity(
@@ -44,7 +45,8 @@ fun ClubEntity.toDomain(): ClubModel = ClubModel(
     ownerId = ownerId,
     invitationCode = invitationCode,
     maxMembers = maxMembers,
-    membersCount = membersCount
+    membersCount = membersCount,
+    location = location
 )
 
 fun ClubMemberEntity.toDomain(): ClubMemberModel = ClubMemberModel(
@@ -73,5 +75,6 @@ fun ClubModel.toEntity(): ClubEntity = ClubEntity(
     ownerId = ownerId,
     invitationCode = invitationCode,
     maxMembers = maxMembers,
-    membersCount = membersCount
+    membersCount = membersCount,
+    location = location
 )

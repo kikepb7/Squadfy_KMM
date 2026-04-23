@@ -13,7 +13,8 @@ fun ClubDTO.clubToDomain(): ClubModel = ClubModel(
     ownerId = ownerId,
     invitationCode = invitationCode,
     maxMembers = maxMembers,
-    membersCount = membersCount
+    membersCount = membersCount,
+    location = location
 )
 
 fun ClubMemberDTO.clubMemberToDomain(): ClubMemberModel = ClubMemberModel(

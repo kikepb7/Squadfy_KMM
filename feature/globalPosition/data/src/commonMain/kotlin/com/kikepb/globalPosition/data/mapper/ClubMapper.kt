@@ -10,5 +10,6 @@ fun ClubDto.toDomain() = ClubModel(
     logoUrl = clubLogoUrl,
     invitationCode = invitationCode,
     membersCount = membersCount,
-    maxMembers = maxMembers
+    maxMembers = maxMembers,
+    location = location
 )

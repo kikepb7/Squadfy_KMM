@@ -15,6 +15,7 @@ data class ClubDto(
     val invitationCode: String,
     val maxMembers: Int?,
     val membersCount: Int,
+    val location: String? = null,
     val createdAt: String,
     val updatedAt: String
 )
