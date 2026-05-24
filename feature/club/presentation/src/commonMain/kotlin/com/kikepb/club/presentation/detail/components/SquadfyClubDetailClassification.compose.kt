@@ -2,17 +2,12 @@ package com.kikepb.club.presentation.detail.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -22,117 +17,180 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kikepb.club.domain.model.ClubMemberModel
-import com.kikepb.club.domain.model.ClubModel
-import com.kikepb.club.presentation.detail.model.ClubDetailTableColumn
 import com.kikepb.club.presentation.detail.model.StandingRowUiModel
+import com.kikepb.club.presentation.utils.initialsOf
 import com.kikepb.club.presentation.utils.toStandingRow
+import com.kikepb.core.designsystem.components.avatar.AvatarSize
+import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
 import com.kikepb.core.designsystem.theme.extended
 
+private val RankWidth = 32.dp
+private val StatWidth = 40.dp
+
 @Composable
-fun SquadfyClubDetailClassificationTab(
-    club: ClubModel,
+fun SquadfyClubDetailClassificationSection(
     members: List<ClubMemberModel>,
-    onMemberClick: (String) -> Unit
+    onMemberClick: (String) -> Unit,
+    onSeeAllClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        item { SquadfyClubDetailIdentityCard(club = club) }
-        item {
-            if (members.isEmpty()) EmptyTabMessage("Aún no hay jugadores en este equipo.")
-            else SquadfyClubDetailClassificationTable(members = members, onMemberClick = onMemberClick)
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        ClubDetailSectionHeader(
+            title = "Clasificación",
+            actionLabel = "Ver completa",
+            onActionClick = onSeeAllClick
+        )
+
+        if (members.isEmpty()) {
+            EmptyTabMessage("Aún no hay jugadores en este club.")
+        } else {
+            val standings = remember(members) {
+                members.map { it.toStandingRow() }
+                    .sortedWith(
+                        compareByDescending<StandingRowUiModel> { it.points }
+                            .thenByDescending { it.goals }
+                    )
+            }
+            ClassificationTable(standings = standings, onMemberClick = onMemberClick)
         }
     }
 }
 
 @Composable
-private fun SquadfyClubDetailClassificationHeader() {
-    Row(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        ClubDetailTableColumn.entries.forEach { entry ->
-            SquadfyClubDetailTableCell(text = entry.title, isHeader = true)
-        }
-    }
-}
-
-@Composable
-private fun SquadfyClubDetailClassificationTable(members: List<ClubMemberModel>, onMemberClick: (String) -> Unit) {
-    val standings = remember(members) {
-        members.map { it.toStandingRow() }
-            .sortedWith(compareByDescending<StandingRowUiModel> { it.points }.thenByDescending { it.rating })
-    }
-
+private fun ClassificationTable(
+    standings: List<StandingRowUiModel>,
+    onMemberClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 1.dp,
+        shadowElevation = 2.dp,
         tonalElevation = 0.dp
     ) {
-        val scroll = rememberScrollState()
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(scroll)
-        ) {
-            SquadfyClubDetailClassificationHeader()
-            standings.forEachIndexed { index, row ->
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "#",
+                    modifier = Modifier.width(RankWidth),
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "JUGADOR",
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.4.sp
+                    ),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                listOf("G", "A", "Pts").forEach { label ->
+                    Text(
+                        text = label,
+                        modifier = Modifier.width(StatWidth),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
+            standings.take(5).forEachIndexed { index, row ->
                 if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-                SquadfyClubDetailClassificationDataRow(index = index, row = row, onClick = { onMemberClick(row.memberId) })
+                ClassificationRow(
+                    rank = index + 1,
+                    row = row,
+                    onClick = { onMemberClick(row.memberId) }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun SquadfyClubDetailClassificationDataRow(index: Int, row: StandingRowUiModel, onClick: () -> Unit) {
+private fun ClassificationRow(rank: Int, row: StandingRowUiModel, onClick: () -> Unit) {
+    val isTopThree = rank <= 3
+    val rankColor = if (isTopThree) MaterialTheme.colorScheme.primary
+    else MaterialTheme.colorScheme.extended.textPlaceholder
+    val ptsColor = if (isTopThree) MaterialTheme.colorScheme.primary
+    else MaterialTheme.colorScheme.extended.textPrimary
+
     Row(
         modifier = Modifier
-            .background(
-                if (index % 2 != 0) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f)
-                else Color.Transparent
-            )
+            .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        SquadfyClubDetailTableCell(text = row.shirtNumber)
-        SquadfyClubDetailTableCell(text = row.playerName)
-        SquadfyClubDetailTableCell(text = row.rating)
-        SquadfyClubDetailTableCell(text = row.played.toString())
-        SquadfyClubDetailTableCell(text = row.wins.toString())
-        SquadfyClubDetailTableCell(text = row.draws.toString())
-        SquadfyClubDetailTableCell(text = row.losses.toString())
-        SquadfyClubDetailTableCell(text = row.goals.toString())
-        SquadfyClubDetailTableCell(text = row.minutes.toString())
-        SquadfyClubDetailTableCell(text = row.yellow.toString())
-        SquadfyClubDetailTableCell(text = row.red.toString())
-        SquadfyClubDetailTableCell(text = row.points.toString())
-    }
-}
+        Text(
+            text = "$rank",
+            modifier = Modifier.width(RankWidth),
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+            color = rankColor,
+            textAlign = TextAlign.Center
+        )
 
-@Composable
-private fun SquadfyClubDetailTableCell(text: String, isHeader: Boolean = false) {
-    Text(
-        text = text,
-        style = if (isHeader)
-            MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
-        else
-            MaterialTheme.typography.bodySmall,
-        color = if (isHeader) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.extended.textPrimary,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.width(54.dp)
-    )
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            SquadfyAvatarPhoto(
+                displayText = initialsOf(row.playerName),
+                imageUrl = null,
+                size = AvatarSize.SMALL
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = row.playerName,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.extended.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "#${row.shirtNumber}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.extended.textPlaceholder
+                )
+            }
+        }
+
+        Text(
+            text = row.goals.toString(),
+            modifier = Modifier.width(StatWidth),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.extended.textSecondary,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = row.assists.toString(),
+            modifier = Modifier.width(StatWidth),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.extended.textSecondary,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = row.points.toString(),
+            modifier = Modifier.width(StatWidth),
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+            color = ptsColor,
+            textAlign = TextAlign.Center
+        )
+    }
 }

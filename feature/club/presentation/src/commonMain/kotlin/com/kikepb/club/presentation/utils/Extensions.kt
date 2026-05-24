@@ -22,6 +22,7 @@ fun ClubMemberModel.toStandingRow(): StandingRowUiModel {
         draws = draws,
         losses = losses,
         goals = goalsScored,
+        assists = assists,
         minutes = minutesPlayed,
         yellow = yellowCards,
         red = redCards,

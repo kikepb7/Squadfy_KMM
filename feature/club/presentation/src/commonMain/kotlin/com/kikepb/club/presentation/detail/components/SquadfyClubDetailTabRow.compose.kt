@@ -1,8 +1,10 @@
 package com.kikepb.club.presentation.detail.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -14,6 +16,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +70,38 @@ fun SquadfyClubDetailTabRow(selectedIndex: Int, onTabSelected: (Int) -> Unit) {
                 }
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+        }
+    }
+}
+
+@Composable
+fun ClubDetailSectionHeader(
+    title: String,
+    actionLabel: String? = null,
+    onActionClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                letterSpacing = (-0.2).sp
+            ),
+            color = MaterialTheme.colorScheme.extended.textPrimary
+        )
+        if (actionLabel != null) {
+            TextButton(onClick = onActionClick) {
+                Text(
+                    text = actionLabel,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }

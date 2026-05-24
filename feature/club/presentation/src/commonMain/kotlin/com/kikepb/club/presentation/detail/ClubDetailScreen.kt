@@ -1,17 +1,13 @@
 package com.kikepb.club.presentation.detail
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,11 +20,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -36,12 +29,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.club.domain.model.ClubModel
-import com.kikepb.club.presentation.detail.components.SquadfyClubDetailActivityTab
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailBanner
-import com.kikepb.club.presentation.detail.components.SquadfyClubDetailClassificationTab
-import com.kikepb.club.presentation.detail.components.SquadfyClubDetailMembersTab
-import com.kikepb.club.presentation.detail.components.SquadfyClubDetailSettingsTab
-import com.kikepb.club.presentation.detail.components.SquadfyClubDetailTabRow
+import com.kikepb.club.presentation.detail.components.SquadfyClubDetailClassificationSection
+import com.kikepb.club.presentation.detail.components.SquadfyClubDetailLastMatchSection
+import com.kikepb.club.presentation.detail.components.SquadfyClubDetailTopScorersSection
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.theme.extended
@@ -85,11 +76,10 @@ fun ClubDetailScreen(
     snackbarHostState: SnackbarHostState
 ) {
     val club = state.club
-    var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
-        topBar = { SquadfyTopBar(title = "Detalles del club", onBackClick = onBackClick) },
+        topBar = { SquadfyTopBar(title = club?.name ?: "Club", onBackClick = onBackClick) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         when {
@@ -103,8 +93,6 @@ fun ClubDetailScreen(
             else -> ClubContent(
                 club = club,
                 state = state,
-                selectedTabIndex = selectedTabIndex,
-                onTabSelected = { selectedTabIndex = it },
                 onMemberClick = { memberId -> onMemberClick(club.id, memberId) },
                 modifier = Modifier.padding(padding)
             )
@@ -116,30 +104,44 @@ fun ClubDetailScreen(
 private fun ClubContent(
     club: ClubModel,
     state: ClubDetailState,
-    selectedTabIndex: Int,
-    onTabSelected: (Int) -> Unit,
     onMemberClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
-        SquadfyClubDetailBanner(
-            club = club,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-        )
-        SquadfyClubDetailTabRow(selectedIndex = selectedTabIndex, onTabSelected = onTabSelected)
-        AnimatedContent(
-            targetState = selectedTabIndex,
-            transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
-            modifier = Modifier.weight(1f)
-        ) { tabIndex ->
-            when (tabIndex) {
-                0 -> SquadfyClubDetailClassificationTab(club = club, members = state.members, onMemberClick = onMemberClick)
-                1 -> SquadfyClubDetailMembersTab(members = state.members, onMemberClick = onMemberClick)
-                2 -> SquadfyClubDetailActivityTab()
-                3 -> SquadfyClubDetailSettingsTab(club = club)
-            }
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 32.dp)
+    ) {
+        item(key = "banner") {
+            SquadfyClubDetailBanner(club = club)
+        }
+
+        item(key = "classification") {
+            SquadfyClubDetailClassificationSection(
+                members = state.members,
+                onMemberClick = onMemberClick,
+                onSeeAllClick = { /* TODO: navigate to full classification */ },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp)
+            )
+        }
+
+        item(key = "last_match") {
+            SquadfyClubDetailLastMatchSection(
+                lastMatch = state.lastMatch,
+                onSeeAllClick = { /* TODO: navigate to matches list */ },
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 20.dp)
+            )
+        }
+
+        item(key = "top_scorers") {
+            SquadfyClubDetailTopScorersSection(
+                members = state.members,
+                onRankingClick = { /* TODO: navigate to full ranking */ },
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 4.dp)
+            )
         }
     }
 }

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -42,68 +41,78 @@ fun MatchCard(
         shadowElevation = 2.dp,
         tonalElevation = 0.dp
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.07f),
-                        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-                    )
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = match.competition.uppercase(),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.8.sp
-                    ),
-                    color = MaterialTheme.colorScheme.primary
-                )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    if (match.status == MatchStatusUi.LIVE) LiveBadge()
+                    if (match.matchday != null) {
+                        Text(
+                            text = match.matchday,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+                            color = MaterialTheme.colorScheme.extended.textPlaceholder
+                        )
+                        Text(
+                            text = "·",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.extended.textPlaceholder.copy(alpha = 0.5f)
+                        )
+                    }
                     Text(
                         text = match.date,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.extended.textPlaceholder
                     )
                 }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (match.clubName != null) {
+                        Text(
+                            text = match.clubName,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = MaterialTheme.colorScheme.extended.textSecondary,
+                            maxLines = 1
+                        )
+                    }
+                    StatusBadge(status = match.status)
+                }
             }
 
             HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
 
-            // Teams + score
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 20.dp),
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TeamColumn(
-                    initials = match.homeTeamInitials,
-                    logoUrl = match.homeTeamLogoUrl,
-                    teamName = match.homeTeamName,
+                RecentMatchTeamColumn(
+                    code = match.firstTeamCode,
+                    name = match.firstTeamName,
+                    logoUrl = null,
                     modifier = Modifier.weight(1f)
                 )
 
-                ScoreDisplay(
-                    match = match,
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .padding(horizontal = 12.dp)
+                RecentScoreDisplay(
+                    firstScore = match.firstTeamScore,
+                    secondScore = match.secondTeamScore,
+                    modifier = Modifier.padding(horizontal = 10.dp)
                 )
 
-                TeamColumn(
-                    initials = match.awayTeamInitials,
-                    logoUrl = match.awayTeamLogoUrl,
-                    teamName = match.awayTeamName,
+                RecentMatchTeamColumn(
+                    code = match.secondTeamCode,
+                    name = match.secondTeamName,
+                    logoUrl = null,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -112,25 +121,25 @@ fun MatchCard(
 }
 
 @Composable
-private fun TeamColumn(
-    initials: String,
+private fun RecentMatchTeamColumn(
+    code: String,
+    name: String,
     logoUrl: String?,
-    teamName: String,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         SquadfyAvatarPhoto(
-            displayText = initials,
+            displayText = code,
             imageUrl = logoUrl,
             size = AvatarSize.SMALL
         )
         Text(
-            text = teamName,
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+            text = name,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
             color = MaterialTheme.colorScheme.extended.textSecondary,
             textAlign = TextAlign.Center,
             maxLines = 2
@@ -139,62 +148,40 @@ private fun TeamColumn(
 }
 
 @Composable
-private fun ScoreDisplay(
-    match: MatchUiModel,
+private fun RecentScoreDisplay(
+    firstScore: Int,
+    secondScore: Int,
     modifier: Modifier = Modifier
 ) {
-    if (match.status == MatchStatusUi.SCHEDULED) {
-        Box(
-            modifier = modifier
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.extended.surfaceLower)
-                .padding(horizontal = 18.dp, vertical = 10.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "VS",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 1.sp
-                ),
-                color = MaterialTheme.colorScheme.extended.textTertiary
-            )
-        }
-    } else {
-        Row(
-            modifier = modifier
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.extended.surfaceLower)
-                .padding(horizontal = 4.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            ScoreNumber(score = match.homeScore ?: 0)
-            Text(
-                text = "–",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Light),
-                color = MaterialTheme.colorScheme.extended.textPlaceholder,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
-            ScoreNumber(score = match.awayScore ?: 0)
-        }
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        ScoreBox(score = firstScore)
+        Text(
+            text = "–",
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Light),
+            color = MaterialTheme.colorScheme.extended.textPlaceholder
+        )
+        ScoreBox(score = secondScore)
     }
 }
 
 @Composable
-private fun ScoreNumber(score: Int, modifier: Modifier = Modifier) {
+private fun ScoreBox(score: Int, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .size(36.dp)
+            .size(34.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(SquadfyBrand500.copy(alpha = 0.12f)),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = "$score",
-            style = MaterialTheme.typography.titleMedium.copy(
+            style = MaterialTheme.typography.titleSmall.copy(
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = 18.sp
+                fontSize = 16.sp
             ),
             color = MaterialTheme.colorScheme.extended.textPrimary
         )
@@ -202,21 +189,42 @@ private fun ScoreNumber(score: Int, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun LiveBadge(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(SquadfyRed500.copy(alpha = 0.15f))
-            .padding(horizontal = 6.dp, vertical = 2.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "EN VIVO",
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontWeight = FontWeight.Bold,
-                color = SquadfyRed500,
-                letterSpacing = 0.5.sp
-            )
-        )
+private fun StatusBadge(status: MatchStatusUi, modifier: Modifier = Modifier) {
+    when (status) {
+        MatchStatusUi.FINISHED -> {
+            Box(
+                modifier = modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(MaterialTheme.colorScheme.extended.surfaceLower)
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "FT",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.4.sp
+                    ),
+                    color = MaterialTheme.colorScheme.extended.textPlaceholder
+                )
+            }
+        }
+        MatchStatusUi.IN_PROGRESS -> {
+            Box(
+                modifier = modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(SquadfyRed500.copy(alpha = 0.15f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "EN VIVO",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.4.sp,
+                        color = SquadfyRed500
+                    )
+                )
+            }
+        }
+        MatchStatusUi.SCHEDULED -> Unit
     }
 }

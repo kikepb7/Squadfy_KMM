@@ -39,9 +39,9 @@ import com.kikepb.club.presentation.memberdetail.MemberDetailAction.OnPhotoSelec
 import com.kikepb.club.presentation.memberdetail.MemberDetailAction.OnUploadPhoto
 import com.kikepb.club.presentation.memberdetail.MemberDetailEvent.PhotoUpdated
 import com.kikepb.club.presentation.memberdetail.MemberDetailEvent.ShowMessage
-import com.kikepb.club.presentation.memberdetail.components.MemberDisciplinarySection
 import com.kikepb.club.presentation.memberdetail.components.MemberHeroCard
-import com.kikepb.club.presentation.memberdetail.components.MemberInfoSection
+import com.kikepb.club.presentation.memberdetail.components.MemberParticipationSection
+import com.kikepb.club.presentation.memberdetail.components.MemberPerformanceSection
 import com.kikepb.club.presentation.memberdetail.components.MemberStatsSection
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.theme.extended
@@ -123,7 +123,8 @@ private fun MemberContent(
             .fillMaxSize()
             .padding(contentPadding)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp)
+            .padding(top = 12.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         MemberHeroCard(
@@ -132,11 +133,13 @@ private fun MemberContent(
             pendingPhotoBytes = state.pendingPhotoSelection?.bytes,
             isUploadingPhoto = state.isUploadingPhoto,
             onPickPhoto = onPickPhoto,
-            onUploadPhoto = { onAction(OnUploadPhoto) }
+            onUploadPhoto = { onAction(OnUploadPhoto) },
+            modifier = Modifier.fillMaxWidth()
         )
+
         MemberStatsSection(member = member, modifier = Modifier.fillMaxWidth())
-        MemberDisciplinarySection(member = member, modifier = Modifier.fillMaxWidth())
-        MemberInfoSection(member = member, modifier = Modifier.fillMaxWidth())
+        MemberPerformanceSection(member = member, modifier = Modifier.fillMaxWidth())
+        MemberParticipationSection(participation = state.recentParticipation, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
