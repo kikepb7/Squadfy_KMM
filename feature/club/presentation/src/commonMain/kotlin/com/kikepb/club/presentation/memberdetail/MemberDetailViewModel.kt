@@ -32,9 +32,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MemberDetailViewModel(
-    private val getClubMemberByIdUseCase: GetClubMemberByIdUseCase,
     private val canEditMemberProfileUseCase: CanEditMemberProfileUseCase,
     private val uploadMemberPhotoUseCase: UploadMemberPhotoUseCase,
+    getClubMemberByIdUseCase: GetClubMemberByIdUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -108,7 +108,43 @@ data class MemberDetailState(
     val isUploadingPhoto: Boolean = false,
     val isOwnProfile: Boolean = false,
     val member: ClubMemberModel? = null,
-    val pendingPhotoSelection: PickedImage? = null
+    val pendingPhotoSelection: PickedImage? = null,
+    // TODO: Replace with real match participation data when backend endpoint is available
+    val recentParticipation: List<MemberMatchParticipation> = mockParticipation
+)
+
+data class MemberMatchParticipation(
+    val matchday: String,
+    val date: String,
+    val homeTeam: String,
+    val awayTeam: String,
+    val homeScore: Int,
+    val awayScore: Int,
+    val goalMinutes: List<Int>,
+    val assistMinutes: List<Int>
+)
+
+private val mockParticipation = listOf(
+    MemberMatchParticipation(
+        matchday = "Jornada 10",
+        date = "Sáb, 19 Abr",
+        homeTeam = "Equipo Blanco",
+        awayTeam = "Equipo Azul",
+        homeScore = 3,
+        awayScore = 1,
+        goalMinutes = listOf(12, 78),
+        assistMinutes = emptyList()
+    ),
+    MemberMatchParticipation(
+        matchday = "Jornada 9",
+        date = "Sáb, 12 Abr",
+        homeTeam = "Equipo Rojo",
+        awayTeam = "Equipo Blanco",
+        homeScore = 2,
+        awayScore = 2,
+        goalMinutes = listOf(90),
+        assistMinutes = emptyList()
+    )
 )
 
 sealed interface MemberDetailAction {

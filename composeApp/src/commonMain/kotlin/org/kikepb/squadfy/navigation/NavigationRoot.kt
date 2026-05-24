@@ -14,6 +14,7 @@ import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.authGraph
 import com.kikepb.chat.presentation.navigation.chatGraph
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubDetailRoute
+import com.kikepb.club.presentation.navigation.ClubGraphRoutes.SetupGraph
 import com.kikepb.club.presentation.navigation.clubGraph
 import com.kikepb.club.presentation.navigation.setupGraph
 import com.kikepb.core.designsystem.components.navigation.SquadfyBottomBar
@@ -73,6 +74,15 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
             globalPositionGraph(
                 onNavigateToClub = { clubId ->
                     navController.navigate(ClubDetailRoute(clubId = clubId))
+                },
+                onNavigateToJoinClub = {
+                    navController.navigate(SetupGraph) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             )
             chatGraph(

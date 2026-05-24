@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.club.domain.model.ClubMemberModel
 import com.kikepb.club.domain.model.ClubModel
+import com.kikepb.club.presentation.detail.model.ClubDetailMatchModel
 import com.kikepb.club.domain.usecase.GetClubByIdUseCase
 import com.kikepb.club.domain.usecase.GetClubMembersUseCase
 import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
@@ -24,9 +25,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ClubDetailViewModel(
-    private val getClubByIdUseCase: GetClubByIdUseCase,
-    private val getClubMembersUseCase: GetClubMembersUseCase,
     private val syncClubDetailUseCase: SyncClubDetailUseCase,
+    getClubByIdUseCase: GetClubByIdUseCase,
+    getClubMembersUseCase: GetClubMembersUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -73,7 +74,21 @@ class ClubDetailViewModel(
 data class ClubDetailState(
     val isLoading: Boolean = true,
     val club: ClubModel? = null,
-    val members: List<ClubMemberModel> = emptyList()
+    val members: List<ClubMemberModel> = emptyList(),
+    // TODO: replace with real match data from a club match repository
+    val lastMatch: ClubDetailMatchModel? = ClubDetailMatchModel(
+        id = "mock_last",
+        matchday = "Jornada 10",
+        date = "Sáb, 19 Abr",
+        firstTeamName = "Equipo Blanco",
+        firstTeamCode = "BLC",
+        firstTeamScore = 3,
+        secondTeamName = "Equipo Azul",
+        secondTeamCode = "AZL",
+        secondTeamScore = 1,
+        venue = "Campo Municipal Norte",
+        isFinished = true
+    )
 )
 
 sealed interface ClubDetailAction {
