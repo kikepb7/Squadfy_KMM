@@ -5,10 +5,10 @@ import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.map
 import com.kikepb.globalPosition.data.dto.ClubDto
+import com.kikepb.globalPosition.data.dto.MatchDto
 import com.kikepb.globalPosition.data.mapper.toDomain
 import com.kikepb.globalPosition.domain.model.ClubModel
 import com.kikepb.globalPosition.domain.model.MatchModel
-import com.kikepb.globalPosition.domain.model.MatchStatus
 import com.kikepb.globalPosition.domain.model.NewsModel
 import com.kikepb.globalPosition.domain.repository.GlobalPositionService
 import io.ktor.client.HttpClient
@@ -21,49 +21,13 @@ class KtorGlobalPositionRepositoryImpl(
         httpClient.get<List<ClubDto>>(route = "/club")
             .map { clubDto -> clubDto.map { it.toDomain() } }
 
-    override suspend fun getRecentMatches(): Result<List<MatchModel>, DataError.Remote> = Result.Success(data = mockMatches)
+    // TODO: replace with real endpoints when available
+    override suspend fun getRecentMatches(): Result<List<MatchModel>, DataError.Remote> =
+        httpClient.get<List<MatchDto>>(route = "/match/recent")
+            .map { dtos -> dtos.map { it.toDomain() } }
 
-    override suspend fun getLatestNews(): Result<List<NewsModel>, DataError.Remote> = Result.Success(data = mockNews)
-
-    // TODO --> remove mocks and use real service
-    private val mockMatches = listOf(
-        MatchModel(
-            id = "m1",
-            homeTeamName = "Team 1",
-            homeTeamLogoUrl = null,
-            awayTeamName = "Team 2",
-            awayTeamLogoUrl = null,
-            homeScore = 3,
-            awayScore = 1,
-            date = "Ayer · 19:00",
-            competition = "Liga Amateur",
-            status = MatchStatus.FINISHED
-        ),
-        MatchModel(
-            id = "m2",
-            homeTeamName = "Team 1",
-            homeTeamLogoUrl = null,
-            awayTeamName = "Team 2",
-            awayTeamLogoUrl = null,
-            homeScore = 2,
-            awayScore = 2,
-            date = "Hace 3 días",
-            competition = "Copa Verano",
-            status = MatchStatus.FINISHED
-        ),
-        MatchModel(
-            id = "m3",
-            homeTeamName = "Team 1",
-            homeTeamLogoUrl = null,
-            awayTeamName = "Team 2",
-            awayTeamLogoUrl = null,
-            homeScore = null,
-            awayScore = null,
-            date = "Mañana · 20:30",
-            competition = "Liga Amateur",
-            status = MatchStatus.SCHEDULED
-        )
-    )
+    override suspend fun getLatestNews(): Result<List<NewsModel>, DataError.Remote> =
+        Result.Success(data = mockNews)
 
     private val mockNews = listOf(
         NewsModel(
