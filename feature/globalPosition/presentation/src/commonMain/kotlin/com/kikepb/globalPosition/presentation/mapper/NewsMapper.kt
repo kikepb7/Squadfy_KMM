@@ -10,5 +10,7 @@ fun NewsModel.toUiModel() = NewsUiModel(
     imageUrl = imageUrl,
     publishedAt = publishedAt,
     category = category,
-    source = source
+    source = source,
+    clubName = clubName,
+    jornada = jornada
 )

@@ -10,6 +10,7 @@ data class StandingRowUiModel(
     val draws: Int,
     val losses: Int,
     val goals: Int,
+    val assists: Int,
     val minutes: Int,
     val yellow: Int,
     val red: Int,

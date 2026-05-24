@@ -7,5 +7,7 @@ data class NewsUiModel(
     val imageUrl: String?,
     val publishedAt: String,
     val category: String,
-    val source: String
+    val source: String,
+    val clubName: String? = null,
+    val jornada: String? = null
 )
