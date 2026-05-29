@@ -24,6 +24,14 @@ kotlin {
             dependencies {}
         }
 
+        androidUnitTest {
+            dependencies {
+                implementation(libs.junit4)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.turbine)
+            }
+        }
+
         iosMain {
             dependencies {}
         }
