@@ -36,6 +36,21 @@ kotlin {
         iosMain {
             dependencies {}
         }
+
+        commonTest {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
+            }
+        }
+
+        androidUnitTest {
+            dependencies {
+                implementation(libs.junit4)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.ktor.client.mock)
+            }
+        }
     }
 
     targets.withType<KotlinNativeTarget> {
