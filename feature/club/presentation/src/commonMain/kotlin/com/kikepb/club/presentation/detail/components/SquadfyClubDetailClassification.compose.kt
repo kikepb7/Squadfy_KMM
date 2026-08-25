@@ -70,7 +70,7 @@ private fun SquadfyClubDetailClassificationHeader() {
 private fun SquadfyClubDetailClassificationTable(members: List<ClubMemberModel>, onMemberClick: (String) -> Unit) {
     val standings = remember(members) {
         members.map { it.toStandingRow() }
-            .sortedWith(compareByDescending<StandingRowUiModel> { it.points }.thenByDescending { it.rating })
+            .sortedWith(compareByDescending<StandingRowUiModel> { it.rating.toDoubleOrNull() ?: 0.0 }.thenByDescending { it.goals })
     }
 
     Surface(
@@ -111,14 +111,10 @@ private fun SquadfyClubDetailClassificationDataRow(index: Int, row: StandingRowU
         SquadfyClubDetailTableCell(text = row.playerName)
         SquadfyClubDetailTableCell(text = row.rating)
         SquadfyClubDetailTableCell(text = row.played.toString())
-        SquadfyClubDetailTableCell(text = row.wins.toString())
-        SquadfyClubDetailTableCell(text = row.draws.toString())
-        SquadfyClubDetailTableCell(text = row.losses.toString())
         SquadfyClubDetailTableCell(text = row.goals.toString())
         SquadfyClubDetailTableCell(text = row.minutes.toString())
         SquadfyClubDetailTableCell(text = row.yellow.toString())
         SquadfyClubDetailTableCell(text = row.red.toString())
-        SquadfyClubDetailTableCell(text = row.points.toString())
     }
 }
 

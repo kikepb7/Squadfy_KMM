@@ -48,6 +48,8 @@ coil-network = "3.3.0"
 moko = "0.19.1"
 buildkonfig = "0.17.1"
 kermit = "2.0.6"
+ktlint-gradle = "12.1.1"
+kover = "0.9.1"
 
 projectApplicationId = "com.kikepb.squadfy"
 projectVersionName = "1.0"
@@ -201,6 +203,8 @@ google-services = { id = "com.google.gms.google-services", version.ref = "google
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 
 [bundles]
 koin-common = [

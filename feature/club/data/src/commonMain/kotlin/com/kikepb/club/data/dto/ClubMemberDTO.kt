@@ -12,6 +12,7 @@ data class ClubMemberDTO(
     val profilePictureUrl: String? = null,
     val shirtNumber: Int? = null,
     val position: String? = null,
+    val rating: Int = 50,
     val goalsScored: Int,
     val assists: Int,
     val yellowCards: Int,

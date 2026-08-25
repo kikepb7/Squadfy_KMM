@@ -2,6 +2,14 @@ plugins {
     alias(libs.plugins.convention.cmp.application)
     alias(libs.plugins.compose.hot.reload)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.kover)
+}
+
+ktlint {
+    // The codebase predates ktlint: report violations in CI without blocking builds until it's
+    // been brought into compliance. Flip this once a follow-up formatting pass lands.
+    ignoreFailures = true
 }
 
 kotlin {

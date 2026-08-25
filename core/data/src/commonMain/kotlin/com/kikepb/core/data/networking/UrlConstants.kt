@@ -1,7 +1,13 @@
 package com.kikepb.core.data.networking
 
+import com.kikepb.core.data.BuildKonfig
+
+/**
+ * Values default to the Android emulator loopback (10.0.2.2) for local development. Any real
+ * build must override BASE_URL_HTTP/BASE_URL_WS at build time (see [BuildKonfigConventionPlugin]
+ * in build-logic), otherwise it will try to reach a backend that doesn't exist on that device.
+ */
 object UrlConstants {
-//    const val BASE_URL_HTTP = "https:/squadfy.com/api"
-    const val BASE_URL_HTTP = "http://10.0.2.2:8080/api"    // Emulator
-    const val BASE_URL_WS = "wss://10.0.2.2:8080/ws"    // Emulator
+    val BASE_URL_HTTP = BuildKonfig.BASE_URL_HTTP
+    val BASE_URL_WS = BuildKonfig.BASE_URL_WS
 }

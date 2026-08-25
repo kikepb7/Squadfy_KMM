@@ -15,6 +15,7 @@ kotlin {
                 implementation(projects.core.presentation)
 
                 implementation(libs.bundles.koin.common)
+                implementation(libs.kotlinx.datetime)
 
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)

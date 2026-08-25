@@ -9,6 +9,7 @@ data class ClubMemberModel(
     val profilePictureUrl: String?,
     val shirtNumber: Int?,
     val position: String?,
+    val rating: Int,
     val goalsScored: Int,
     val assists: Int,
     val yellowCards: Int,

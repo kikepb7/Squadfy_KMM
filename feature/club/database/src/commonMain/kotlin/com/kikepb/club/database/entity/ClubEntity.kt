@@ -12,5 +12,11 @@ data class ClubEntity(
     val ownerId: String,
     val invitationCode: String,
     val maxMembers: Int?,
-    val membersCount: Int
+    val membersCount: Int,
+    val matchDayOfWeek: String?,
+    val matchStartTime: String?,
+    val matchEndTime: String?,
+    val seasonStartMonth: Int,
+    val seasonStartDay: Int,
+    val drawTime: String
 )

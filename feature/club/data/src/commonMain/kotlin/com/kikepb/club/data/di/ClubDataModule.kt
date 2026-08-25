@@ -1,5 +1,6 @@
 package com.kikepb.club.data.di
 
+import androidx.room.fallbackToDestructiveMigration
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.kikepb.club.data.datasource.local.OfflineFirstClubRepositoryImpl
 import com.kikepb.club.data.datasource.remote.KtorClubRepositoryImpl
@@ -20,6 +21,9 @@ val clubDataModule = module {
         get<DatabaseFactory>()
             .create()
             .setDriver(BundledSQLiteDriver())
+            // The club/member schema is still evolving pre-launch; destructive migration is
+            // acceptable until the app has real installs to preserve local cache for.
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
 

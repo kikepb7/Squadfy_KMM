@@ -5,12 +5,8 @@ enum class ClubDetailTableColumn(val title: String) {
     PLAYER("Jugador"),
     RATING("VAL"),
     MATCHES_PLAYED("PJ"),
-    WINS("PG"),
-    DRAWS("PE"),
-    LOSSES("PP"),
     GOALS("G"),
     MINUTES("MIN"),
     YELLOW_CARDS("TA"),
-    RED_CARDS("TR"),
-    POINTS("PTS");
+    RED_CARDS("TR");
 }

@@ -34,12 +34,12 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Run unit tests
-        run: ./gradlew :app:testDebugUnitTest :app:koverXmlReportDebug :app:koverHtmlReportDebug :app:koverVerifyDebug
+        run: ./gradlew :composeApp:testDebugUnitTest :composeApp:koverXmlReportDebug :composeApp:koverHtmlReportDebug :composeApp:koverVerifyDebug
 
       - name: Cobertura → resumen del run
         if: always()
         run: |
-          XML=app/build/reports/kover/reportDebug.xml
+          XML=composeApp/build/reports/kover/reportDebug.xml
           if [ -f "$XML" ]; then
             echo "## 🧪 Cobertura de líneas (unit)" >> "$GITHUB_STEP_SUMMARY"
             awk -F'"' '/type="LINE"/{m=$4;c=$6} END{t=m+c; if(t>0) printf "- **%d%%** (%d/%d líneas) — gate mínimo: 20%%\n", c*100/t, c, t}' "$XML" >> "$GITHUB_STEP_SUMMARY"
@@ -50,7 +50,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           check_name: Unit test results
-          files: app/build/test-results/testDebugUnitTest/**/*.xml
+          files: composeApp/build/test-results/testDebugUnitTest/**/*.xml
 
   build:
     name: 🏗️ Assemble debug APK
@@ -70,13 +70,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Assemble debug
-        run: ./gradlew :app:assembleDebug
+        run: ./gradlew :composeApp:assembleDebug
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: composeApp/build/outputs/apk/debug/composeApp-debug.apk
           retention-days: 7
 
   static-analysis:
@@ -97,7 +97,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: ktlint
-        run: ./gradlew :app:ktlintCheck
+        run: ./gradlew :composeApp:ktlintCheck
 
   instrumented-tests:
     name: 📱 Instrumented (API ${{ matrix.api-level }})
@@ -149,20 +149,20 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew :app:connectedDebugAndroidTest
+          script: ./gradlew :composeApp:connectedDebugAndroidTest
       - name: Publish instrumented results
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           check_name: Instrumented results (API ${{ matrix.api-level }})
-          files: app/build/outputs/androidTest-results/connected/**/*.xml
+          files: composeApp/build/outputs/androidTest-results/connected/**/*.xml
       - name: Upload instrumented report
         if: failure()
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: instrumented-report-api${{ matrix.api-level }}
-          path: app/build/reports/androidTests/connected/
+          path: composeApp/build/reports/androidTests/connected/
           retention-days: 7
 
   summary:

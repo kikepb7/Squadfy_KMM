@@ -26,6 +26,7 @@ data class ClubMemberEntity(
     val shirtNumber: Int?,
     val profilePictureUrl: String?,
     val position: String?,
+    val rating: Int,
     val goalsScored: Int,
     val assists: Int,
     val yellowCards: Int,

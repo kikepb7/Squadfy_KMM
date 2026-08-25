@@ -13,7 +13,7 @@ import com.kikepb.club.database.entity.ClubMemberEntity
         ClubEntity::class,
         ClubMemberEntity::class
     ],
-    version = 1
+    version = 2
 )
 @ConstructedBy(SquadfyClubDatabaseConstructor::class)
 abstract class SquadfyClubDatabase : RoomDatabase() {
