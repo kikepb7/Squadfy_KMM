@@ -36,12 +36,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.club.domain.model.ClubModel
-import com.kikepb.club.presentation.detail.components.SquadfyClubDetailActivityTab
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailBanner
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailClassificationTab
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailMembersTab
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailSettingsTab
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailTabRow
+import com.kikepb.club.presentation.match.MatchRoot
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.theme.extended
@@ -106,6 +106,7 @@ fun ClubDetailScreen(
                 selectedTabIndex = selectedTabIndex,
                 onTabSelected = { selectedTabIndex = it },
                 onMemberClick = { memberId -> onMemberClick(club.id, memberId) },
+                snackbarHostState = snackbarHostState,
                 modifier = Modifier.padding(padding)
             )
         }
@@ -119,6 +120,7 @@ private fun ClubContent(
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
     onMemberClick: (String) -> Unit,
+    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -137,7 +139,7 @@ private fun ClubContent(
             when (tabIndex) {
                 0 -> SquadfyClubDetailClassificationTab(club = club, members = state.members, onMemberClick = onMemberClick)
                 1 -> SquadfyClubDetailMembersTab(members = state.members, onMemberClick = onMemberClick)
-                2 -> SquadfyClubDetailActivityTab()
+                2 -> MatchRoot(snackbarHostState = snackbarHostState)
                 3 -> SquadfyClubDetailSettingsTab(club = club)
             }
         }

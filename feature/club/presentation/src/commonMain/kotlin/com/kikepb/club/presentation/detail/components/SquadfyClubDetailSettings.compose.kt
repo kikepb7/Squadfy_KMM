@@ -42,6 +42,8 @@ fun SquadfyClubDetailSettingsTab(club: ClubModel) {
     ) {
         item { SquadfyClubDetailTabSectionTitle("Ajustes del club") }
 
+        item { SquadfyClubDetailScheduleSection(club = club) }
+
         item {
             SquadfyClubDetailSettingsGroup(title = "Administrador") {
                 SquadfyClubDetailSettingsRow(label = "Editar nombre", icon = Icons.Outlined.Edit)
