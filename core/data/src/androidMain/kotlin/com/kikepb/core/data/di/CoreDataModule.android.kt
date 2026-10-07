@@ -3,6 +3,8 @@ package com.kikepb.core.data.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.kikepb.core.data.auth.createDataStore
+import com.kikepb.core.data.auth.storage.KeystoreSessionCipher
+import com.kikepb.core.data.auth.storage.SessionCipher
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.android.ext.koin.androidContext
@@ -13,4 +15,5 @@ actual val platformCoreDataModule = module {
     single<DataStore<Preferences>> {
         createDataStore(androidContext())
     }
+    single<SessionCipher> { KeystoreSessionCipher() }
 }

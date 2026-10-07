@@ -51,4 +51,4 @@ La app no se puede publicar tal como está:
 - **Crashes:** Firebase Crashlytics, solo en release y con consentimiento.
 - **D-3 Borrado de cuenta:** se asume `DELETE /api/v1/me {password}` → 204, y 401 `INVALID_CREDENTIALS` si la contraseña es incorrecta. El backend lo implementa en paralelo; en la app queda tras el flag `ACCOUNT_DELETION`, apagado hasta que el endpoint esté desplegado.
 - **URLs legales:** `PRIVACY_POLICY_URL` y `ACCOUNT_DELETION_URL` salen de BuildKonfig. Los valores por defecto son `https://squadfy.app/privacy` y `https://squadfy.app/delete-account`, y el owner publica las páginas.
-
+- **Sesión en iOS (AC-011-05):** en lugar del Keychain se usa la protección de datos de iOS. El fichero de sesión va en `Application Support/squadfy` con `NSFileProtectionCompleteUntilFirstUserAuthentication` y excluido de las copias de seguridad. Pasar al Keychain queda como mejora posterior, porque requiere probarlo en un dispositivo con los entitlements reales.
