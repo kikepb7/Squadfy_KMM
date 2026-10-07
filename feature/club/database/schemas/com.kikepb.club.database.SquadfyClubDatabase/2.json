@@ -1,0 +1,232 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "15efabf5c91334f7e2131c29dbef9491",
+    "entities": [
+      {
+        "tableName": "club",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`clubId` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `clubLogoUrl` TEXT, `ownerId` TEXT NOT NULL, `invitationCode` TEXT NOT NULL, `maxMembers` INTEGER, `membersCount` INTEGER NOT NULL, `matchDayOfWeek` TEXT, `matchStartTime` TEXT, `matchEndTime` TEXT, `seasonStartMonth` INTEGER NOT NULL, `seasonStartDay` INTEGER NOT NULL, `drawTime` TEXT NOT NULL, PRIMARY KEY(`clubId`))",
+        "fields": [
+          {
+            "fieldPath": "clubId",
+            "columnName": "clubId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clubLogoUrl",
+            "columnName": "clubLogoUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "ownerId",
+            "columnName": "ownerId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "invitationCode",
+            "columnName": "invitationCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxMembers",
+            "columnName": "maxMembers",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "membersCount",
+            "columnName": "membersCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "matchDayOfWeek",
+            "columnName": "matchDayOfWeek",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "matchStartTime",
+            "columnName": "matchStartTime",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "matchEndTime",
+            "columnName": "matchEndTime",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "seasonStartMonth",
+            "columnName": "seasonStartMonth",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seasonStartDay",
+            "columnName": "seasonStartDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "drawTime",
+            "columnName": "drawTime",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "clubId"
+          ]
+        }
+      },
+      {
+        "tableName": "club_member",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`memberId` TEXT NOT NULL, `clubId` TEXT NOT NULL, `userId` TEXT NOT NULL, `username` TEXT NOT NULL, `email` TEXT NOT NULL, `shirtNumber` INTEGER, `profilePictureUrl` TEXT, `position` TEXT, `rating` INTEGER NOT NULL, `goalsScored` INTEGER NOT NULL, `assists` INTEGER NOT NULL, `yellowCards` INTEGER NOT NULL, `redCards` INTEGER NOT NULL, `minutesPlayed` INTEGER NOT NULL, `matchesPlayed` INTEGER NOT NULL, `role` TEXT NOT NULL, PRIMARY KEY(`memberId`), FOREIGN KEY(`clubId`) REFERENCES `club`(`clubId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "memberId",
+            "columnName": "memberId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clubId",
+            "columnName": "clubId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shirtNumber",
+            "columnName": "shirtNumber",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "profilePictureUrl",
+            "columnName": "profilePictureUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "goalsScored",
+            "columnName": "goalsScored",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assists",
+            "columnName": "assists",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "yellowCards",
+            "columnName": "yellowCards",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "redCards",
+            "columnName": "redCards",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minutesPlayed",
+            "columnName": "minutesPlayed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "matchesPlayed",
+            "columnName": "matchesPlayed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "memberId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_club_member_clubId",
+            "unique": false,
+            "columnNames": [
+              "clubId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_club_member_clubId` ON `${TABLE_NAME}` (`clubId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "club",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "clubId"
+            ],
+            "referencedColumns": [
+              "clubId"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '15efabf5c91334f7e2131c29dbef9491')"
+    ]
+  }
+}
