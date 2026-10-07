@@ -1,39 +1,17 @@
 package com.kikepb.globalPosition.data.datasource.local
 
-import com.kikepb.club.database.SquadfyClubDatabase
-import com.kikepb.core.data.networking.get
 import com.kikepb.core.domain.util.DataError
-import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
-import com.kikepb.core.domain.util.asEmptyResult
-import com.kikepb.core.domain.util.onSuccess
-import com.kikepb.globalPosition.data.dto.ClubDto
-import com.kikepb.globalPosition.data.mapper.toEntity
-import com.kikepb.globalPosition.data.mapper.toGlobalPositionDomain
-import com.kikepb.globalPosition.domain.model.ClubModel
 import com.kikepb.globalPosition.domain.model.MatchModel
 import com.kikepb.globalPosition.domain.model.MatchStatus
 import com.kikepb.globalPosition.domain.model.NewsModel
 import com.kikepb.globalPosition.domain.repository.GlobalPositionRepository
-import io.ktor.client.HttpClient
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
-class OfflineFirstGlobalPositionRepositoryImpl(
-    private val httpClient: HttpClient,
-    private val db: SquadfyClubDatabase
-) : GlobalPositionRepository {
-
-    override fun getUserClubs(): Flow<List<ClubModel>> =
-        db.clubDao.observeAllClubs()
-            .map { entities -> entities.map { it.toGlobalPositionDomain() } }
-
-    override suspend fun fetchUserClubs(): EmptyResult<DataError.Remote> =
-        httpClient.get<List<ClubDto>>(route = "/clubs")
-            .onSuccess { clubs ->
-                db.clubDao.syncClubs(clubs = clubs.map { it.toEntity() })
-            }
-            .asEmptyResult()
+/**
+ * Home sections that still use sample data, only requested with HOME_RECENT_MATCHES / HOME_NEWS on (off in PRO).
+ * My clubs and their announcements come from the club feature (spec 010).
+ */
+class OfflineFirstGlobalPositionRepositoryImpl : GlobalPositionRepository {
 
     override suspend fun getRecentMatches(): Result<List<MatchModel>, DataError.Remote> =
         Result.Success(data = mockMatches)

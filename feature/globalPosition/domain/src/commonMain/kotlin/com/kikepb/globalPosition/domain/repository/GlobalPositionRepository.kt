@@ -1,16 +1,12 @@
 package com.kikepb.globalPosition.domain.repository
 
 import com.kikepb.core.domain.util.DataError
-import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
-import com.kikepb.globalPosition.domain.model.ClubModel
 import com.kikepb.globalPosition.domain.model.MatchModel
 import com.kikepb.globalPosition.domain.model.NewsModel
-import kotlinx.coroutines.flow.Flow
 
+/** Sample home sections behind HOME_RECENT_MATCHES / HOME_NEWS; clubs come from the club feature (spec 010). */
 interface GlobalPositionRepository {
-    fun getUserClubs(): Flow<List<ClubModel>>
-    suspend fun fetchUserClubs(): EmptyResult<DataError.Remote>
     suspend fun getRecentMatches(): Result<List<MatchModel>, DataError.Remote>
     suspend fun getLatestNews(): Result<List<NewsModel>, DataError.Remote>
 }

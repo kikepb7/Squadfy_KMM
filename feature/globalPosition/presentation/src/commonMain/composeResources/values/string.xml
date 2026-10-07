@@ -4,4 +4,19 @@
     <string name="squadfy_global_position_my_clubs">Mis Clubs</string>
     <string name="squadfy_global_position_last_matches">Últimos partidos</string>
     <string name="squadfy_global_position_last_news">Últimas noticias</string>
+    <string name="home_no_clubs">Aún no estás en ningún club. Únete con un código o crea el tuyo desde la pestaña Clubs.</string>
+    <string name="home_next_match">Próximo partido · %1$s</string>
+    <string name="home_no_match">Sin partido programado</string>
+    <string name="home_unavailable">No disponible</string>
+    <string name="home_retry">Reintentar</string>
+    <string name="home_window_open">Convocatoria abierta</string>
+    <string name="home_window_not_open">La convocatoria aún no está abierta</string>
+    <string name="home_window_closed">Convocatoria cerrada</string>
+    <string name="home_window_cancelled">Partido cancelado</string>
+    <string name="home_status_confirmed">Convocado</string>
+    <string name="home_status_waitlisted">En espera n.º %1$d</string>
+    <string name="home_status_not_enrolled">Sin apuntar</string>
+    <string name="home_free_seats">%1$d plazas libres</string>
+    <string name="home_enroll">Apuntarme</string>
+    <string name="home_enroll_failed">No se pudo completar la inscripción. Inténtalo desde el club.</string>
 </resources>

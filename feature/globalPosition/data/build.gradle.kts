@@ -15,7 +15,6 @@ kotlin {
                 implementation(projects.core.data)
                 implementation(projects.core.domain)
                 implementation(projects.feature.globalPosition.domain)
-                implementation(projects.feature.club.database)
                 implementation(libs.androidx.room.runtime)
                 implementation(libs.sqlite.bundled)
 

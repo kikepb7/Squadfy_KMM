@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="squadfy_global_position_home">Home</string>
+    <string name="squadfy_global_position_my_clubs">My clubs</string>
+    <string name="squadfy_global_position_last_matches">Latest matches</string>
+    <string name="squadfy_global_position_last_news">Latest news</string>
+    <string name="home_no_clubs">You are not in any club yet. Join one with a code or create yours from the Clubs tab.</string>
+    <string name="home_next_match">Next match · %1$s</string>
+    <string name="home_no_match">No scheduled match</string>
+    <string name="home_unavailable">Not available</string>
+    <string name="home_retry">Retry</string>
+    <string name="home_window_open">Announcement open</string>
+    <string name="home_window_not_open">The announcement is not open yet</string>
+    <string name="home_window_closed">Announcement closed</string>
+    <string name="home_window_cancelled">Match cancelled</string>
+    <string name="home_status_confirmed">Confirmed</string>
+    <string name="home_status_waitlisted">Waitlist #%1$d</string>
+    <string name="home_status_not_enrolled">Not signed up</string>
+    <string name="home_free_seats">%1$d free spots</string>
+    <string name="home_enroll">Sign me up</string>
+    <string name="home_enroll_failed">Sign-up failed. Try again from the club.</string>
+</resources>
