@@ -1,6 +1,6 @@
 # 006 · Detalle del partido, equipos y equilibrio
 
-- **Estado:** Draft
+- **Estado:** In progress (implementada en `app-parity-feature`; falta el E2E)
 - **Reglas:** BE-003 RN-1…10, BE-002 RN-7c, APP-RN-04, APP-RN-06, APP-RN-09
 - **Backend:** BE-003, BE-008 (RN-A6, RN-D3), `BACKEND.md` §7.4, §8.3 (`/matches/{id}`, `/teams`, `/team-balance`)
 - **Depende de:** 005

@@ -12,7 +12,7 @@
 ## Fase 3 · Presentación
 - [x] **T-006** `AnnouncementViewModel`: estado, ticker ligado a la suscripción (no corre con la pantalla cerrada), acciones, errores tipados y refresco al cruzar la ventana + `AnnouncementViewModelTest` (AC-005-03/04/05/07/08).
 - [x] **T-007** UI: la pestaña Partido pasa a ser la primera; cabecera en la zona del club, cuenta atrás, botón principal según mi estado, listas con nombres resueltos y «Exjugador», pull-to-refresh, refresco al volver a primer plano y marca de sin conexión (AC-005-02…09).
-- [~] **T-008** Historial de convocatorias (AC-005-10): se carga y se mostrará con el detalle de partido de la spec 006, que es su destino al tocarlo.
+- [x] **T-008** Historial de convocatorias (AC-005-10): cada fila abre el detalle del partido (spec 006), igual que «Ver partido» con la convocatoria cerrada.
 - [x] **T-009** Invitados tras `MATCH_GUESTS` (activo en PRE) (AC-005-13); flujo legacy (signups, invitados antiguos, resultado) eliminado. El «partido de prueba» (`DEV_TEST_MATCH`) pasa a la spec 007 como partido extra.
 - [x] **T-010** Strings ES/EN.
 

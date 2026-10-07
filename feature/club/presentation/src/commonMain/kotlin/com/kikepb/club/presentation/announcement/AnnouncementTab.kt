@@ -98,7 +98,7 @@ fun AnnouncementTab(
     snackbarHostState: SnackbarHostState,
     onOpenSchedule: () -> Unit,
     onNotMemberAnymore: () -> Unit,
-    /** Null until the match detail exists (spec 006): the "view match" entries stay hidden. */
+    /** Opens the match detail (spec 006) from "view match" and the history; null hides those entries. */
     onOpenMatch: ((matchId: String) -> Unit)? = null,
     viewModel: AnnouncementViewModel = koinViewModel()
 ) {

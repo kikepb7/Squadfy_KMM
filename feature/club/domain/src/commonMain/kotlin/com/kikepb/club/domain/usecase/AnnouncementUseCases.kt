@@ -37,3 +37,7 @@ class RemoveGuestFromAnnouncementUseCase(private val repository: AnnouncementRep
     suspend operator fun invoke(announcementId: String, guestId: String): Result<MatchAnnouncementModel, ClubError> =
         repository.removeGuest(announcementId = announcementId, guestId = guestId)
 }
+
+class GetMatchAnnouncementUseCase(private val repository: AnnouncementRepository) {
+    suspend operator fun invoke(matchId: String): Result<MatchAnnouncementModel, ClubError> = repository.getByMatch(matchId)
+}

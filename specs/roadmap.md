@@ -12,7 +12,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 003 | Clubes y membresía (roles, vetos, transferencia, Room v3) | **In progress** (15/16; falta el E2E) | ✅ | ✅ | ✅ | 002 | 5 d |
 | 004 | Horario semanal (+ cierre/sorteo y semanas especiales) | **In progress** (7/8; falta el E2E) | ✅ | — | ✅ | 003 | — |
 | 005 | Convocatoria vigente, lista de espera e invitados | **In progress** (9/11) | ✅ | ✅ | ✅ | 003 | — |
-| 006 | Detalle del partido, equipos y equilibrio | Draft | ✅ | — | — | 005 | 3 d |
+| 006 | Detalle del partido, equipos y equilibrio | **In progress** (8/9; falta el E2E) | ✅ | — | ✅ | 005 | — |
 | 007 | Acta: eventos, minutos, cerrar, reabrir, cancelar, partido extra | Draft | ✅ | — | — | 006 | 3 d |
 | 008 | Clasificaciones de rating y estadísticas | Draft | ✅ | — | — | 003 | 2 d |
 | 009 | Push del ciclo de partido + silenciar club | Draft | ✅ | — | — | 002, 005, 006 | 2,5 d |

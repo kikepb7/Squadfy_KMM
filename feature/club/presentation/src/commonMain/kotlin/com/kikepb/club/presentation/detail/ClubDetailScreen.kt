@@ -63,6 +63,7 @@ fun ClubDetailRoot(
     onMemberClick: (clubId: String, memberId: String) -> Unit,
     onOpenBans: (clubId: String) -> Unit,
     onOpenSchedule: (clubId: String) -> Unit,
+    onOpenMatch: (clubId: String, matchId: String) -> Unit,
     onLeftClub: () -> Unit,
     viewModel: ClubDetailViewModel = koinViewModel()
 ) {
@@ -84,6 +85,7 @@ fun ClubDetailRoot(
         onMemberClick = onMemberClick,
         onOpenBans = onOpenBans,
         onOpenSchedule = onOpenSchedule,
+        onOpenMatch = onOpenMatch,
         onLeftClub = onLeftClub,
         snackbarHostState = snackbarHostState
     )
@@ -98,6 +100,7 @@ fun ClubDetailScreen(
     onMemberClick: (clubId: String, memberId: String) -> Unit,
     onOpenBans: (clubId: String) -> Unit,
     onOpenSchedule: (clubId: String) -> Unit,
+    onOpenMatch: (clubId: String, matchId: String) -> Unit,
     onLeftClub: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
@@ -125,6 +128,7 @@ fun ClubDetailScreen(
                 onMemberClick = { memberId -> onMemberClick(club.id, memberId) },
                 onOpenBans = { onOpenBans(club.id) },
                 onOpenSchedule = { onOpenSchedule(club.id) },
+                onOpenMatch = { matchId -> onOpenMatch(club.id, matchId) },
                 onLeftClub = onLeftClub,
                 snackbarHostState = snackbarHostState,
                 modifier = Modifier.padding(padding)
@@ -142,6 +146,7 @@ private fun ClubContent(
     onMemberClick: (String) -> Unit,
     onOpenBans: () -> Unit,
     onOpenSchedule: () -> Unit,
+    onOpenMatch: (matchId: String) -> Unit,
     onLeftClub: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
@@ -163,7 +168,8 @@ private fun ClubContent(
                 ClubDetailTabModel.MATCH -> AnnouncementTab(
                     snackbarHostState = snackbarHostState,
                     onOpenSchedule = onOpenSchedule,
-                    onNotMemberAnymore = onLeftClub
+                    onNotMemberAnymore = onLeftClub,
+                    onOpenMatch = onOpenMatch
                 )
                 ClubDetailTabModel.CLASSIFICATION -> SquadfyClubDetailClassificationTab(club = club, members = state.members, onMemberClick = onMemberClick)
                 ClubDetailTabModel.MEMBERS -> SquadfyClubDetailMembersTab(members = state.members, onMemberClick = onMemberClick)

@@ -31,6 +31,20 @@ import com.kikepb.club.domain.usecase.TransferOwnershipUseCase
 import com.kikepb.club.domain.usecase.UnbanMemberUseCase
 import com.kikepb.club.domain.usecase.UpdateMyMembershipUseCase
 import com.kikepb.club.domain.usecase.UploadClubLogoUseCase
+import com.kikepb.club.domain.usecase.GetMatchUseCase
+import com.kikepb.club.domain.usecase.GetMatchAnnouncementUseCase
+import com.kikepb.club.domain.usecase.GetClubMatchesUseCase
+import com.kikepb.club.domain.usecase.GetTeamBalanceUseCase
+import com.kikepb.club.domain.usecase.GenerateTeamsUseCase
+import com.kikepb.club.domain.usecase.CreateExtraMatchUseCase
+import com.kikepb.club.domain.usecase.CancelMatchUseCase
+import com.kikepb.club.domain.usecase.CompleteMatchUseCase
+import com.kikepb.club.domain.usecase.ReopenMatchUseCase
+import com.kikepb.club.domain.usecase.AddMatchEventUseCase
+import com.kikepb.club.domain.usecase.DeleteMatchEventUseCase
+import com.kikepb.club.domain.usecase.SetPlayerMinutesUseCase
+import com.kikepb.club.domain.usecase.SetManualScoreUseCase
+import com.kikepb.club.domain.usecase.ClearManualScoreUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -71,4 +85,20 @@ val clubDomainModule = module {
     singleOf(::WithdrawUseCase)
     singleOf(::AddGuestToAnnouncementUseCase)
     singleOf(::RemoveGuestFromAnnouncementUseCase)
+
+    // Matches, teams and result (specs 006/007)
+    singleOf(::GetMatchUseCase)
+    singleOf(::GetMatchAnnouncementUseCase)
+    singleOf(::GetClubMatchesUseCase)
+    singleOf(::GetTeamBalanceUseCase)
+    singleOf(::GenerateTeamsUseCase)
+    singleOf(::CreateExtraMatchUseCase)
+    singleOf(::CancelMatchUseCase)
+    singleOf(::CompleteMatchUseCase)
+    singleOf(::ReopenMatchUseCase)
+    singleOf(::AddMatchEventUseCase)
+    singleOf(::DeleteMatchEventUseCase)
+    singleOf(::SetPlayerMinutesUseCase)
+    singleOf(::SetManualScoreUseCase)
+    singleOf(::ClearManualScoreUseCase)
 }

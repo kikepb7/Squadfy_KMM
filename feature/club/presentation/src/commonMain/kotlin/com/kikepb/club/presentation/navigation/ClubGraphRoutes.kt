@@ -10,6 +10,8 @@ import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubBansRoute
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubDetailRoute
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubMemberDetailRoute
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubScheduleRoute
+import com.kikepb.club.presentation.navigation.ClubGraphRoutes.MatchDetailRoute
+import com.kikepb.club.presentation.match.MatchDetailRoot
 import com.kikepb.club.presentation.schedule.ScheduleRoot
 import kotlinx.serialization.Serializable
 
@@ -38,6 +40,9 @@ sealed interface ClubGraphRoutes {
 
     @Serializable
     data class ClubScheduleRoute(val clubId: String) : ClubGraphRoutes
+
+    @Serializable
+    data class MatchDetailRoute(val clubId: String, val matchId: String) : ClubGraphRoutes
 }
 
 fun NavGraphBuilder.clubGraph(navController: NavController) {
@@ -49,6 +54,7 @@ fun NavGraphBuilder.clubGraph(navController: NavController) {
             },
             onOpenBans = { clubId -> navController.navigate(route = ClubBansRoute(clubId = clubId)) },
             onOpenSchedule = { clubId -> navController.navigate(route = ClubScheduleRoute(clubId = clubId)) },
+            onOpenMatch = { clubId, matchId -> navController.navigate(route = MatchDetailRoute(clubId = clubId, matchId = matchId)) },
             onLeftClub = { navController.navigateUp() }
         )
     }
@@ -60,5 +66,8 @@ fun NavGraphBuilder.clubGraph(navController: NavController) {
     }
     composable<ClubScheduleRoute> {
         ScheduleRoot(onBackClick = { navController.navigateUp() })
+    }
+    composable<MatchDetailRoute> {
+        MatchDetailRoot(onBackClick = { navController.navigateUp() })
     }
 }

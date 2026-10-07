@@ -66,10 +66,10 @@
 | `PUT /matches/{id}/score {teamAScore, teamBScore}`, `DELETE /matches/{id}/score` | `POST /club/matches/{id}/result` | 007 | 🔁 flag `MANUAL_SCORE` (BE-008) |
 | `GET /clubs/{id}/matches?status=` | `GET /club/{id}/matches` | 006/007 | 🔁 |
 | `POST /clubs/{id}/matches {scheduledAt, format?, durationMinutes?}` → 201 | `POST /club/{id}/matches` (botón «partido de prueba») | 007 | 🔁 se convierte en «Partido extra» para gestores |
-| `GET /matches/{id}` | `GET /club/matches/{id}` (sin uso) | 006 | 🔁 |
+| `GET /matches/{id}` | `GET /club/matches/{id}` (sin uso) | 006 | ✅ `KtorMatchRepository` |
 | `POST /matches/{id}/cancel` | `POST /club/matches/{id}/cancel` (sin uso) | 007 | 🔁 |
-| `POST /matches/{id}/teams {mode, manualTeamA?, manualTeamB?}` | `POST /club/matches/{id}/generate-teams` | 006 | 🔁 IDs = `clubMemberId` |
-| `GET /matches/{id}/team-balance` | — | 006 | ➕ |
+| `POST /matches/{id}/teams {mode, manualTeamA?, manualTeamB?}` | `POST /club/matches/{id}/generate-teams` | 006 | ✅ IDs = `clubMemberId` o `guestId` (BE-008) |
+| `GET /matches/{id}/team-balance` | — | 006 | ✅ 409 = sin equipos (panel oculto) |
 | `POST /matches/{id}/events` → 201, `DELETE /matches/{id}/events/{eventId}` | — | 007 | ➕ |
 | `PUT /matches/{id}/players/{memberId}/minutes {minutes}` | — | 007 | ➕ |
 | `POST /matches/{id}/complete`, `POST /matches/{id}/reopen` | `POST /club/matches/{id}/result` | 007 | 🔁 el resultado deja de enviarse como marcador |
@@ -118,3 +118,4 @@
 | 2026-10-07 | Spec 002: auth, `/users`, foto, chat y `/devices` migrados a v1 (✅) |
 | 2026-10-07 | BE-008 publicada: invitados, excepciones, ausencias, cierre y sorteo configurables, marcador manual y `ratingChanges` |
 | 2026-10-07 | D-1: invitados, excepciones, `drawTime` y marcador manual pasan a ⏳ (backend en curso) y quedan tras flags |
+| 2026-10-07 | Spec 006: `GET /matches/{id}`, `/teams` (AUTO/MANUAL con invitados), `/team-balance` y `GET /matches/{id}/announcement` (✅). `KtorMatchRepository` ya expone también las rutas de la 007 |
