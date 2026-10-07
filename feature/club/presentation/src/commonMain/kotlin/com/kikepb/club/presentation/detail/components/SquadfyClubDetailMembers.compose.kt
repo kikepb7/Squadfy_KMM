@@ -1,5 +1,7 @@
 package com.kikepb.club.presentation.detail.components
 
+import squadfy_app.feature.club.presentation.generated.resources.members_count_one
+import squadfy_app.feature.club.presentation.generated.resources.members_count_other
 import squadfy_app.feature.club.presentation.generated.resources.members_empty
 import org.jetbrains.compose.resources.stringResource
 import squadfy_app.feature.club.presentation.generated.resources.Res
@@ -46,7 +48,10 @@ fun SquadfyClubDetailMembersTab(members: List<ClubMemberModel>, onMemberClick: (
     ) {
         item {
             Text(
-                text = "${members.size} miembro${if (members.size != 1) "s" else ""}",
+                text = stringResource(
+                    if (members.size == 1) Res.string.members_count_one else Res.string.members_count_other,
+                    members.size
+                ),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.extended.textPlaceholder,
                 modifier = Modifier.padding(bottom = 4.dp)

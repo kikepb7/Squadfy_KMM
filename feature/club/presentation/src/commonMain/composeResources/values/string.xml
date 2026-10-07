@@ -360,4 +360,6 @@
     <string name="club_members_many">%1$d miembros</string>
     <string name="announcement_upcoming_title">Próximas convocatorias</string>
     <string name="announcement_upcoming_item">Cierra %1$s · %2$d / %3$d convocados</string>
+    <string name="members_count_one">%1$d miembro</string>
+    <string name="members_count_other">%1$d miembros</string>
 </resources>

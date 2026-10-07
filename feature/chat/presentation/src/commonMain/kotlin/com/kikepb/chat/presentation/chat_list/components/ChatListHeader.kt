@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,22 +14,24 @@ import androidx.compose.ui.unit.dp
 import com.kikepb.chat.presentation.components.ChatHeader
 import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 import org.jetbrains.compose.resources.vectorResource
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
+import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import com.kikepb.core.designsystem.components.dropdown.SquadfyDropDownItemModel
 import com.kikepb.core.designsystem.components.dropdown.SquadfyDropDownMenu
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import squadfy_app.core.designsystem.generated.resources.app_name
 import squadfy_app.core.designsystem.generated.resources.log_out_icon
 import squadfy_app.core.designsystem.generated.resources.users_icon
 import squadfy_app.feature.chat.presentation.generated.resources.logout
 import squadfy_app.feature.chat.presentation.generated.resources.profile_settings
 import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
 import squadfy_app.core.designsystem.generated.resources.Res.drawable as DesignSystemDrawable
+import squadfy_app.core.designsystem.generated.resources.Res.string as DesignSystemString
 
 @Composable
 fun ChatListHeader(
@@ -48,13 +51,9 @@ fun ChatListHeader(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                imageVector = vectorResource(DesignSystemDrawable.users_icon), // TODO --> change by Squadfy logo
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.tertiary
-            )
+            SquadfyBrandLogo(modifier = Modifier.size(24.dp))
             Text(
-                text = "Squadfy",
+                text = stringResource(DesignSystemString.app_name),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.extended.textPrimary
             )

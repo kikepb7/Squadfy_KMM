@@ -5,7 +5,7 @@
 - [x] **T-003** Logging por tipo de build: `IS_RELEASE`, Ktor, Kermit, Koin y sin log del token FCM (AC-011-04).
 - [x] **T-004** Sesión cifrada (Keystore/Keychain) con migración, `allowBackup = false` y reglas de extracción (AC-011-05). *Verificación:* `EncryptedSessionStorageTest`, y en el emulador una sesión en claro de la build anterior se migra a `enc1:` sin cerrar la sesión.
 - [x] **T-005** Branding: nombre, icono adaptativo y splash con el logo de Squadfy (AC-011-06).
-- [ ] **T-006** i18n de auth y chat (ES/EN) + `checkHardcodedStrings` en el CI (AC-011-09).
+- [x] **T-006** i18n de auth y chat (ES/EN) + `checkHardcodedStrings` en el CI (AC-011-09). Verificación: auth, chat y designsystem pasan a ES por defecto + `values-en`; se corrige `core/presentation` (estaba invertido); los literales de ResetPassword, ChatListHeader, el contador de miembros y MatchCard pasan a recursos; `./gradlew checkHardcodedStrings` en verde y bloqueante en el CI; login visto en ES y EN en el emulador.
 - [ ] **T-007** Eliminar cuenta tras `ACCOUNT_DELETION` + enlaces a privacidad y a la web de borrado (AC-011-07/08).
 - [ ] **T-008** Accesibilidad: `contentDescription` y áreas táctiles (AC-011-11).
 - [ ] **T-009** iOS: bundle canónico, entitlement de producción, sin `print()` y plist fuera del tracking (AC-011-12).

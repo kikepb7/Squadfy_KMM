@@ -19,4 +19,6 @@
     <string name="home_free_seats">%1$d free spots</string>
     <string name="home_enroll">Sign me up</string>
     <string name="home_enroll_failed">Sign-up failed. Try again from the club.</string>
+    <string name="match_card_vs">VS</string>
+    <string name="match_card_live">LIVE</string>
 </resources>

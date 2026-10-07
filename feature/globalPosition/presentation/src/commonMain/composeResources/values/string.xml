@@ -19,4 +19,6 @@
     <string name="home_free_seats">%1$d plazas libres</string>
     <string name="home_enroll">Apuntarme</string>
     <string name="home_enroll_failed">No se pudo completar la inscripción. Inténtalo desde el club.</string>
+    <string name="match_card_vs">VS</string>
+    <string name="match_card_live">EN VIVO</string>
 </resources>

@@ -29,6 +29,10 @@ import com.kikepb.core.designsystem.theme.SquadfyRed500
 import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.globalPosition.presentation.model.MatchStatusUi
 import com.kikepb.globalPosition.presentation.model.MatchUiModel
+import org.jetbrains.compose.resources.stringResource
+import squadfy_app.feature.globalposition.presentation.generated.resources.Res
+import squadfy_app.feature.globalposition.presentation.generated.resources.match_card_live
+import squadfy_app.feature.globalposition.presentation.generated.resources.match_card_vs
 
 @Composable
 fun MatchCard(
@@ -152,7 +156,7 @@ private fun ScoreDisplay(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "VS",
+                text = stringResource(Res.string.match_card_vs),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp
@@ -211,7 +215,7 @@ private fun LiveBadge(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "EN VIVO",
+            text = stringResource(Res.string.match_card_live),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Bold,
                 color = SquadfyRed500,

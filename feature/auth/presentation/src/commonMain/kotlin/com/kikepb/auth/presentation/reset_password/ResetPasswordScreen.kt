@@ -27,6 +27,7 @@ import squadfy_app.feature.auth.presentation.generated.resources.Res.string as R
 import squadfy_app.feature.auth.presentation.generated.resources.password
 import squadfy_app.feature.auth.presentation.generated.resources.password_hint
 import squadfy_app.feature.auth.presentation.generated.resources.reset_password_successfully
+import squadfy_app.feature.auth.presentation.generated.resources.reset_password_title
 import squadfy_app.feature.auth.presentation.generated.resources.set_new_password
 import squadfy_app.feature.auth.presentation.generated.resources.submit
 
@@ -48,7 +49,7 @@ fun ResetPasswordScreen(
     onAction: (ResetPasswordAction) -> Unit
 ) {
     SquadfySnackbarScaffold(
-        topBar = { SquadfyTopBar(title = "Nueva Contraseña") }
+        topBar = { SquadfyTopBar(title = stringResource(RString.reset_password_title)) }
     ) {
         SquadfyAdaptiveFormLayout(
             headerText = stringResource(RString.set_new_password),

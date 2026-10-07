@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="app_name">Squadfy</string>
+    <string name="hide_password">Hide password</string>
+    <string name="show_password">Show password</string>
+    <string name="special_character">Special characters</string>
+    <string name="min_length">Minimum length</string>
+    <string name="upper_case">Uppercase letter</string>
+    <string name="dismiss_dialog">Dismiss dialog</string>
+    <string name="squadfy_topbar_back">Back</string>
+    <string name="squadfy_topbar_settings">Settings</string>
+</resources>
