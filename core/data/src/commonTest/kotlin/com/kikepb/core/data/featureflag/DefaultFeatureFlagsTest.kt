@@ -51,14 +51,14 @@ class DefaultFeatureFlagsTest {
     fun `AC-013-04 observe emits when an override changes in PRE`() = runTest(UnconfinedTestDispatcher()) {
         val flags = createFlags(AppEnvironment.PRE)
 
-        flags.observe(FeatureFlag.MATCH_GUESTS).test {
+        flags.observe(FeatureFlag.MANUAL_SCORE).test {
             assertFalse(awaitItem())
-            flags.setOverride(FeatureFlag.MATCH_GUESTS, enabled = true)
+            flags.setOverride(FeatureFlag.MANUAL_SCORE, enabled = true)
             assertTrue(awaitItem())
-            flags.setOverride(FeatureFlag.MATCH_GUESTS, enabled = null)
+            flags.setOverride(FeatureFlag.MANUAL_SCORE, enabled = null)
             assertFalse(awaitItem())
         }
-        assertFalse(flags.isEnabled(FeatureFlag.MATCH_GUESTS))
+        assertFalse(flags.isEnabled(FeatureFlag.MANUAL_SCORE))
     }
 
     @Test
@@ -76,25 +76,25 @@ class DefaultFeatureFlagsTest {
 
     @Test
     fun `AC-013-03 PRO ignores and does not persist overrides`() = runTest(UnconfinedTestDispatcher()) {
-        overrideStore.values.value = mapOf(FeatureFlag.MATCH_GUESTS.key to true)
+        overrideStore.values.value = mapOf(FeatureFlag.MANUAL_SCORE.key to true)
         val flags = createFlags(AppEnvironment.PRO)
 
         flags.setOverride(FeatureFlag.HOME_NEWS, enabled = true)
 
-        assertFalse(flags.isEnabled(FeatureFlag.MATCH_GUESTS))
+        assertFalse(flags.isEnabled(FeatureFlag.MANUAL_SCORE))
         assertFalse(flags.isEnabled(FeatureFlag.HOME_NEWS))
-        assertEquals(mapOf(FeatureFlag.MATCH_GUESTS.key to true), overrideStore.values.value)
+        assertEquals(mapOf(FeatureFlag.MANUAL_SCORE.key to true), overrideStore.values.value)
     }
 
     @Test
     fun `AC-013-09 remote values apply in PRO`() = runTest(UnconfinedTestDispatcher()) {
         val flags = createFlags(AppEnvironment.PRO)
 
-        remoteSource.values.value = mapOf(FeatureFlag.MATCH_GUESTS.key to true)
+        remoteSource.values.value = mapOf(FeatureFlag.MANUAL_SCORE.key to true)
 
-        assertTrue(flags.isEnabled(FeatureFlag.MATCH_GUESTS))
+        assertTrue(flags.isEnabled(FeatureFlag.MANUAL_SCORE))
         flags.observeAll().test {
-            assertEquals(FlagValueSource.REMOTE, awaitItem().first { it.flag == FeatureFlag.MATCH_GUESTS }.source)
+            assertEquals(FlagValueSource.REMOTE, awaitItem().first { it.flag == FeatureFlag.MANUAL_SCORE }.source)
         }
     }
 }

@@ -37,7 +37,7 @@ class ClubDetailViewModel(
     private val clubId = savedStateHandle.get<String>("clubId")
         ?: throw IllegalStateException("clubId is required")
 
-    private val eventChannel = Channel<ClubDetailEvent>()
+    private val eventChannel = Channel<ClubDetailEvent>(Channel.BUFFERED)
     val events = eventChannel.receiveAsFlow()
 
     private val _state = MutableStateFlow(ClubDetailState())

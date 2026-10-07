@@ -1,6 +1,6 @@
 # 005 · Convocatoria vigente: apuntarse, desapuntarse y lista de espera
 
-- **Estado:** Draft
+- **Estado:** In progress (falta el historial navegable, que llega con la 006, y el E2E). Aprobada por el owner el 2026-10-07.
 - **Reglas:** BE-002 RN-4…9, APP-RN-01, APP-RN-02, APP-RN-03, APP-RN-06, APP-RN-08
 - **ADRs:** ADR-0006
 - **Backend:** BE-002, BE-008 (RN-A, RN-C, RN-D), `BACKEND.md` §7.3, §8.4 y §9 (`CurrentMatchAnnouncementDto`)

@@ -2,15 +2,11 @@ package com.kikepb.club.domain.fake
 
 import com.kikepb.club.domain.error.ClubError
 import com.kikepb.club.domain.model.ClubBanModel
-import com.kikepb.club.domain.model.ClubMatchModel
 import com.kikepb.club.domain.model.ClubMemberModel
 import com.kikepb.club.domain.model.ClubMemberRole
 import com.kikepb.club.domain.model.ClubModel
-import com.kikepb.club.domain.model.MatchSignupModel
 import com.kikepb.club.domain.model.PlayerPosition
 import com.kikepb.club.domain.repository.ClubRepository
-import com.kikepb.club.domain.repository.PlayerStatInput
-import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
 import kotlinx.coroutines.flow.Flow
@@ -74,13 +70,4 @@ class FakeClubRepository : ClubRepository {
     override suspend fun banMember(clubId: String, memberId: String): EmptyResult<ClubError> = Result.Success(Unit)
     override suspend fun unbanMember(clubId: String, memberId: String): EmptyResult<ClubError> = Result.Success(Unit)
 
-    override suspend fun getMatchesForClub(clubId: String): Result<List<ClubMatchModel>, DataError.Remote> = TODO("legacy")
-    override suspend fun createMatch(clubId: String, scheduledAt: String?, signupOpensAt: String?, signupClosesAt: String?): Result<ClubMatchModel, DataError.Remote> = TODO("legacy")
-    override suspend fun listSignups(matchId: String): Result<List<MatchSignupModel>, DataError.Remote> = TODO("legacy")
-    override suspend fun signUpForMatch(matchId: String): Result<MatchSignupModel, DataError.Remote> = TODO("legacy")
-    override suspend fun cancelSignup(matchId: String): EmptyResult<DataError.Remote> = TODO("legacy")
-    override suspend fun addGuest(matchId: String, guestName: String, position: String?, rating: Int?): Result<MatchSignupModel, DataError.Remote> = TODO("legacy")
-    override suspend fun removeSignup(matchId: String, signupId: String): EmptyResult<DataError.Remote> = TODO("legacy")
-    override suspend fun generateTeams(matchId: String, mode: String, manualTeamA: List<String>?, manualTeamB: List<String>?): Result<ClubMatchModel, DataError.Remote> = TODO("legacy")
-    override suspend fun recordMatchResult(matchId: String, teamAScore: Int, teamBScore: Int, playerStats: List<PlayerStatInput>): Result<ClubMatchModel, DataError.Remote> = TODO("legacy")
 }

@@ -24,7 +24,7 @@ class ClubsListViewModel(
     private val fetchMyClubsUseCase: FetchMyClubsUseCase
 ) : ViewModel() {
 
-    private val eventChannel = Channel<ClubsListEvent>()
+    private val eventChannel = Channel<ClubsListEvent>(Channel.BUFFERED)
     val events = eventChannel.receiveAsFlow()
 
     private val _state = MutableStateFlow(ClubsListState())

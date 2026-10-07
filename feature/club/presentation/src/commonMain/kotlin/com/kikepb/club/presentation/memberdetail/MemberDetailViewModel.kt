@@ -50,7 +50,7 @@ class MemberDetailViewModel(
     private val memberId = savedStateHandle.get<String>("memberId")
         ?: throw IllegalStateException("memberId is required")
 
-    private val eventChannel = Channel<MemberDetailEvent>()
+    private val eventChannel = Channel<MemberDetailEvent>(Channel.BUFFERED)
     val events = eventChannel.receiveAsFlow()
 
     private val _state = MutableStateFlow(MemberDetailState())

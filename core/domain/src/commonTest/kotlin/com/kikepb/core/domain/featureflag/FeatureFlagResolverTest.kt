@@ -3,7 +3,6 @@ package com.kikepb.core.domain.featureflag
 import com.kikepb.core.domain.featureflag.AppEnvironment.PRE
 import com.kikepb.core.domain.featureflag.AppEnvironment.PRO
 import com.kikepb.core.domain.featureflag.FeatureFlag.DEV_TEST_MATCH
-import com.kikepb.core.domain.featureflag.FeatureFlag.MATCH_GUESTS
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -47,8 +46,9 @@ class FeatureFlagResolverTest {
 
     @Test
     fun `AC-013-03 values for other flags do not leak`() {
+        // MANUAL_SCORE is off in PRE until spec 007 is implemented
         val resolved = FeatureFlagResolver.resolve(
-            flag = MATCH_GUESTS,
+            flag = FeatureFlag.MANUAL_SCORE,
             environment = PRE,
             remote = mapOf(DEV_TEST_MATCH.key to true, "unknown_flag" to true),
             overrides = mapOf(DEV_TEST_MATCH.key to true)
@@ -65,7 +65,7 @@ class FeatureFlagResolverTest {
 
     @Test
     fun `AC-013-07 implemented app-parity features are on in PRE for QA`() {
-        listOf(FeatureFlag.SCHEDULE_EXCEPTIONS, FeatureFlag.CUSTOM_DRAW_TIME)
+        listOf(FeatureFlag.SCHEDULE_EXCEPTIONS, FeatureFlag.CUSTOM_DRAW_TIME, FeatureFlag.MATCH_GUESTS)
             .forEach { flag -> assertEquals(true, flag.defaultFor(PRE), "${flag.name} in PRE") }
     }
 

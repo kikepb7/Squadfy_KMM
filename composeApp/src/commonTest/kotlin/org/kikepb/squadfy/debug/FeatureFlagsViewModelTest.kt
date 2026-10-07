@@ -64,10 +64,10 @@ class FeatureFlagsViewModelTest {
     fun `AC-013-06 toggling stores an override and toggling back to the default clears it`() = runTest {
         val viewModel = FeatureFlagsViewModel(featureFlags = flags, overrides = flags)
 
-        viewModel.onAction(FeatureFlagsAction.OnToggle(FeatureFlag.MATCH_GUESTS, enabled = true))
-        assertEquals(mapOf(FeatureFlag.MATCH_GUESTS.key to true), flags.overrides.value)
+        viewModel.onAction(FeatureFlagsAction.OnToggle(FeatureFlag.MANUAL_SCORE, enabled = true))
+        assertEquals(mapOf(FeatureFlag.MANUAL_SCORE.key to true), flags.overrides.value)
 
-        viewModel.onAction(FeatureFlagsAction.OnToggle(FeatureFlag.MATCH_GUESTS, enabled = false))
+        viewModel.onAction(FeatureFlagsAction.OnToggle(FeatureFlag.MANUAL_SCORE, enabled = false))
         assertTrue(flags.overrides.value.isEmpty())
     }
 

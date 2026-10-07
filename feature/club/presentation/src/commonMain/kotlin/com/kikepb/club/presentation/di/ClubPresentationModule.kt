@@ -1,11 +1,11 @@
 package com.kikepb.club.presentation.di
 
+import com.kikepb.club.presentation.announcement.AnnouncementViewModel
 import com.kikepb.club.presentation.bans.ClubBansViewModel
 import com.kikepb.club.presentation.clubs.ClubsListViewModel
 import com.kikepb.club.presentation.create.CreateClubViewModel
 import com.kikepb.club.presentation.detail.ClubDetailViewModel
 import com.kikepb.club.presentation.join.JoinClubViewModel
-import com.kikepb.club.presentation.match.MatchViewModel
 import com.kikepb.club.presentation.memberdetail.MemberDetailViewModel
 import com.kikepb.club.presentation.schedule.ScheduleViewModel
 import com.kikepb.club.presentation.settings.ClubSettingsViewModel
@@ -21,5 +21,5 @@ val clubPresentationModule = module {
     viewModelOf(::ClubSettingsViewModel)
     viewModelOf(::ClubBansViewModel)
     viewModelOf(::ScheduleViewModel)
-    viewModelOf(::MatchViewModel)
+    viewModelOf(::AnnouncementViewModel)
 }

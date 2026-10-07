@@ -39,7 +39,7 @@ class ClubSettingsViewModel(
     private val _state = MutableStateFlow(ClubSettingsState())
     val state = _state.asStateFlow()
 
-    private val eventChannel = Channel<ClubSettingsEvent>()
+    private val eventChannel = Channel<ClubSettingsEvent>(Channel.BUFFERED)
     val events = eventChannel.receiveAsFlow()
 
     fun onAction(action: ClubSettingsAction) {

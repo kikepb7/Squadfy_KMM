@@ -17,6 +17,7 @@ import com.kikepb.core.domain.featureflag.FeatureFlags
 import com.kikepb.core.domain.featureflag.RemoteFeatureFlagSource
 import com.kikepb.core.domain.logger.SquadfyLogger
 import org.koin.core.module.Module
+import kotlin.time.Clock
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.binds
@@ -32,6 +33,9 @@ val coreDataModule = module {
     }
     singleOf(::KtorAuthRepositoryImpl) bind AuthRepository::class
     singleOf(::DataStoreSessionStorage) bind SessionStorage::class
+
+    // Wall clock for time-based rules (announcement window countdown, spec 005)
+    single<Clock> { Clock.System }
 
     // Feature flags (spec 013): environment comes from SQUADFY_ENV at build time
     single { AppEnvironment.fromKey(BuildKonfig.ENVIRONMENT) }

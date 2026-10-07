@@ -2,10 +2,12 @@ package com.kikepb.club.data.di
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.kikepb.club.data.datasource.local.OfflineFirstClubRepositoryImpl
+import com.kikepb.club.data.datasource.remote.KtorAnnouncementRepository
 import com.kikepb.club.data.datasource.remote.KtorScheduleRepository
 import com.kikepb.club.database.DatabaseFactory
 import com.kikepb.club.database.SquadfyClubDatabase
 import com.kikepb.club.database.migration.ClubDatabaseMigrations
+import com.kikepb.club.domain.repository.AnnouncementRepository
 import com.kikepb.club.domain.repository.ClubRepository
 import com.kikepb.club.domain.repository.ScheduleRepository
 import org.koin.core.module.Module
@@ -27,4 +29,5 @@ val clubDataModule = module {
     }
     singleOf(::OfflineFirstClubRepositoryImpl) bind ClubRepository::class
     singleOf(::KtorScheduleRepository) bind ScheduleRepository::class
+    singleOf(::KtorAnnouncementRepository) bind AnnouncementRepository::class
 }

@@ -62,7 +62,7 @@ class ScheduleViewModel(
     private val clubId = savedStateHandle.get<String>("clubId")
         ?: throw IllegalStateException("clubId is required")
 
-    private val eventChannel = Channel<ScheduleEvent>()
+    private val eventChannel = Channel<ScheduleEvent>(Channel.BUFFERED)
     val events = eventChannel.receiveAsFlow()
 
     private val _state = MutableStateFlow(ScheduleState())

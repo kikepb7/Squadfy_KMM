@@ -11,7 +11,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 002 | Base de la API v1: red, errores, auth, perfil, chat, dispositivos | **In progress** (14/16; falta el E2E con el backend y `Clock`, que pasa a la 005) | ✅ | ✅ | ✅ | 001 | 4 d |
 | 003 | Clubes y membresía (roles, vetos, transferencia, Room v3) | **In progress** (15/16; falta el E2E) | ✅ | ✅ | ✅ | 002 | 5 d |
 | 004 | Horario semanal (+ cierre/sorteo y semanas especiales) | **In progress** (7/8; falta el E2E) | ✅ | — | ✅ | 003 | — |
-| 005 | Convocatoria vigente y lista de espera | Draft | ✅ | ✅ | ✅ | 003 | 3 d |
+| 005 | Convocatoria vigente, lista de espera e invitados | **In progress** (9/11) | ✅ | ✅ | ✅ | 003 | — |
 | 006 | Detalle del partido, equipos y equilibrio | Draft | ✅ | — | — | 005 | 3 d |
 | 007 | Acta: eventos, minutos, cerrar, reabrir, cancelar, partido extra | Draft | ✅ | — | — | 006 | 3 d |
 | 008 | Clasificaciones de rating y estadísticas | Draft | ✅ | — | — | 003 | 2 d |

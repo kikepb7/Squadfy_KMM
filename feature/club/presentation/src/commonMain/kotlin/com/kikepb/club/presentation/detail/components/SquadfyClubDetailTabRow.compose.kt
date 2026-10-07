@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kikepb.club.presentation.detail.model.ClubDetailTabModel
+import org.jetbrains.compose.resources.stringResource
 import com.kikepb.core.designsystem.theme.extended
 
 @Composable
@@ -55,7 +56,7 @@ fun SquadfyClubDetailTabRow(selectedIndex: Int, onTabSelected: (Int) -> Unit) {
                         unselectedContentColor = MaterialTheme.colorScheme.extended.textPlaceholder,
                         text = {
                             Text(
-                                text = tab.title,
+                                text = stringResource(tab.title),
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = if (selectedIndex == index) FontWeight.Bold else FontWeight.Medium
                                 ),

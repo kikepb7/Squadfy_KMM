@@ -2,19 +2,12 @@ package com.kikepb.club.data.datasource.local
 
 import com.kikepb.club.data.dto.ClubBanDTO
 import com.kikepb.club.data.dto.ClubDTO
-import com.kikepb.club.data.dto.ClubMatchDTO
 import com.kikepb.club.data.dto.ClubMemberDTO
 import com.kikepb.club.data.dto.InvitationCodeDTO
-import com.kikepb.club.data.dto.MatchSignupDTO
-import com.kikepb.club.data.dto.request.AddGuestRequestDto
 import com.kikepb.club.data.dto.request.ChangeRoleRequestDto
 import com.kikepb.club.data.dto.request.CreateClubRequestDto
-import com.kikepb.club.data.dto.request.CreateMatchRequestDto
 import com.kikepb.club.data.dto.request.EditClubRequestDto
-import com.kikepb.club.data.dto.request.GenerateTeamsRequestDto
 import com.kikepb.club.data.dto.request.JoinClubRequestDto
-import com.kikepb.club.data.dto.request.PlayerStatRequestDto
-import com.kikepb.club.data.dto.request.RecordMatchResultRequestDto
 import com.kikepb.club.data.dto.request.TransferOwnershipRequestDto
 import com.kikepb.club.data.dto.request.UpdateMyMembershipRequestDto
 import com.kikepb.club.data.mappers.toDomain
@@ -24,25 +17,16 @@ import com.kikepb.club.domain.error.ClubError
 import com.kikepb.club.domain.error.ClubOperation
 import com.kikepb.club.domain.error.toClubError
 import com.kikepb.club.domain.model.ClubBanModel
-import com.kikepb.club.domain.model.ClubMatchModel
 import com.kikepb.club.domain.model.ClubMemberModel
 import com.kikepb.club.domain.model.ClubMemberRole
 import com.kikepb.club.domain.model.ClubModel
-import com.kikepb.club.domain.model.MatchSignupModel
 import com.kikepb.club.domain.model.PlayerPosition
 import com.kikepb.club.domain.repository.ClubRepository
-import com.kikepb.club.domain.repository.PlayerStatInput
 import com.kikepb.core.data.networking.apiDelete
 import com.kikepb.core.data.networking.apiGet
 import com.kikepb.core.data.networking.apiPatch
 import com.kikepb.core.data.networking.apiPost
 import com.kikepb.core.data.networking.apiPutMultipart
-import com.kikepb.core.data.networking.constructRoute
-import com.kikepb.core.data.networking.delete
-import com.kikepb.core.data.networking.get
-import com.kikepb.core.data.networking.post
-import com.kikepb.core.data.networking.safeCall
-import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.RemoteError
 import com.kikepb.core.domain.util.Result
@@ -53,8 +37,6 @@ import com.kikepb.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.request.post
-import io.ktor.client.request.url
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.flow.Flow
@@ -213,74 +195,6 @@ class OfflineFirstClubRepositoryImpl(
     private fun <T> Result<T, RemoteError>.asClubResult(operation: ClubOperation = ClubOperation.OTHER): Result<T, ClubError> =
         mapError { it.toClubError(operation) }
 
-    // region Legacy match flow (pre-v1 routes), replaced in specs 005-007
-
-    override suspend fun getMatchesForClub(clubId: String): Result<List<ClubMatchModel>, DataError.Remote> =
-        httpClient.get<List<ClubMatchDTO>>(route = "/club/$clubId/matches").map { matches ->
-            matches.map { it.toDomain() }
-        }
-
-    override suspend fun createMatch(clubId: String, scheduledAt: String?, signupOpensAt: String?, signupClosesAt: String?): Result<ClubMatchModel, DataError.Remote> =
-        httpClient.post<CreateMatchRequestDto, ClubMatchDTO>(
-            route = "/club/$clubId/matches",
-            body = CreateMatchRequestDto(scheduledAt = scheduledAt, signupOpensAt = signupOpensAt, signupClosesAt = signupClosesAt)
-        ).map { it.toDomain() }
-
-    override suspend fun listSignups(matchId: String): Result<List<MatchSignupModel>, DataError.Remote> =
-        httpClient.get<List<MatchSignupDTO>>(route = "/club/matches/$matchId/signups").map { signups ->
-            signups.map { it.toDomain() }
-        }
-
-    override suspend fun signUpForMatch(matchId: String): Result<MatchSignupModel, DataError.Remote> =
-        safeCall<MatchSignupDTO> {
-            httpClient.post {
-                url(constructRoute("/club/matches/$matchId/signups"))
-            }
-        }.map { it.toDomain() }
-
-    override suspend fun cancelSignup(matchId: String): EmptyResult<DataError.Remote> =
-        httpClient.delete<Unit>(route = "/club/matches/$matchId/signups/me").asEmptyResult()
-
-    override suspend fun addGuest(matchId: String, guestName: String, position: String?, rating: Int?): Result<MatchSignupModel, DataError.Remote> =
-        httpClient.post<AddGuestRequestDto, MatchSignupDTO>(
-            route = "/club/matches/$matchId/guests",
-            body = AddGuestRequestDto(guestName = guestName, position = position, rating = rating)
-        ).map { it.toDomain() }
-
-    override suspend fun removeSignup(matchId: String, signupId: String): EmptyResult<DataError.Remote> =
-        httpClient.delete<Unit>(route = "/club/matches/$matchId/signups/$signupId").asEmptyResult()
-
-    override suspend fun generateTeams(matchId: String, mode: String, manualTeamA: List<String>?, manualTeamB: List<String>?): Result<ClubMatchModel, DataError.Remote> =
-        httpClient.post<GenerateTeamsRequestDto, ClubMatchDTO>(
-            route = "/club/matches/$matchId/generate-teams",
-            body = GenerateTeamsRequestDto(mode = mode, manualTeamA = manualTeamA, manualTeamB = manualTeamB)
-        ).map { it.toDomain() }
-
-    override suspend fun recordMatchResult(
-        matchId: String,
-        teamAScore: Int,
-        teamBScore: Int,
-        playerStats: List<PlayerStatInput>
-    ): Result<ClubMatchModel, DataError.Remote> =
-        httpClient.post<RecordMatchResultRequestDto, ClubMatchDTO>(
-            route = "/club/matches/$matchId/result",
-            body = RecordMatchResultRequestDto(
-                teamAScore = teamAScore,
-                teamBScore = teamBScore,
-                playerStats = playerStats.map {
-                    PlayerStatRequestDto(
-                        clubMemberId = it.clubMemberId,
-                        goals = it.goals,
-                        assists = it.assists,
-                        yellowCards = it.yellowCards,
-                        redCards = it.redCards,
-                        minutesPlayed = it.minutesPlayed
-                    )
-                }
-            )
-        ).map { it.toDomain() }
-
-    // endregion
 
     private fun buildMultipartImage(key: String, bytes: ByteArray, mimeType: String, filename: String): MultiPartFormDataContent =
         MultiPartFormDataContent(

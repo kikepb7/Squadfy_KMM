@@ -48,7 +48,8 @@ import squadfy_app.feature.club.presentation.generated.resources.club_detail_loa
 import squadfy_app.feature.club.presentation.generated.resources.club_detail_title
 import squadfy_app.feature.club.presentation.generated.resources.common_retry
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailTabRow
-import com.kikepb.club.presentation.match.MatchRoot
+import com.kikepb.club.presentation.announcement.AnnouncementTab
+import com.kikepb.club.presentation.detail.model.ClubDetailTabModel
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.theme.extended
@@ -158,11 +159,15 @@ private fun ClubContent(
             transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
             modifier = Modifier.weight(1f)
         ) { tabIndex ->
-            when (tabIndex) {
-                0 -> SquadfyClubDetailClassificationTab(club = club, members = state.members, onMemberClick = onMemberClick)
-                1 -> SquadfyClubDetailMembersTab(members = state.members, onMemberClick = onMemberClick)
-                2 -> MatchRoot(snackbarHostState = snackbarHostState)
-                3 -> ClubSettingsTab(
+            when (ClubDetailTabModel.entries[tabIndex]) {
+                ClubDetailTabModel.MATCH -> AnnouncementTab(
+                    snackbarHostState = snackbarHostState,
+                    onOpenSchedule = onOpenSchedule,
+                    onNotMemberAnymore = onLeftClub
+                )
+                ClubDetailTabModel.CLASSIFICATION -> SquadfyClubDetailClassificationTab(club = club, members = state.members, onMemberClick = onMemberClick)
+                ClubDetailTabModel.MEMBERS -> SquadfyClubDetailMembersTab(members = state.members, onMemberClick = onMemberClick)
+                ClubDetailTabModel.SETTINGS -> ClubSettingsTab(
                     club = club,
                     myMembership = state.myMembership,
                     snackbarHostState = snackbarHostState,

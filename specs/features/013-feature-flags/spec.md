@@ -36,7 +36,7 @@ Poder **activar o desactivar desarrollos en PRE y en PRO** sin borrar código: f
 
   | Flag | PRE | PRO | Motivo |
   |---|---|---|---|
-  | `MATCH_GUESTS` | off | off | Backend BE-008; app en las specs 005/006 |
+  | `MATCH_GUESTS` | **on** (desde la 005) | off | Backend BE-008; app en las specs 005/006 |
   | `SCHEDULE_EXCEPTIONS` | **on** (desde la 004) | off | Backend BE-008; app en la spec 004 |
   | `CUSTOM_DRAW_TIME` | **on** (desde la 004) | off | Backend BE-008; app en la spec 004 |
   | `MANUAL_SCORE` | off | off | Backend BE-008; app en la spec 007 |

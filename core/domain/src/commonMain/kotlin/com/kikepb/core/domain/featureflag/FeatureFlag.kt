@@ -15,8 +15,8 @@ enum class FeatureFlag(
     // App-parity features (decision D-1, backend spec BE-008)
     MATCH_GUESTS(
         key = "match_guests",
-        description = "Guests added by an enrolled member to a match announcement",
-        defaultInPre = false,
+        description = "Members add up to 2 guests to an announcement (specs 005/006)",
+        defaultInPre = true,
         defaultInPro = false
     ),
     SCHEDULE_EXCEPTIONS(
