@@ -86,8 +86,8 @@
 ## Rating y estadísticas
 | Endpoint v1 | Spec | Estado |
 |---|---|---|
-| `GET /clubs/{id}/ratings`, `GET /clubs/{id}/ratings/me` | 008 | ➕ (sustituye a `performanceIndex`) |
-| `GET /clubs/{id}/stats?sortBy=`, `GET /clubs/{id}/stats/me` | 008 | ➕ |
+| `GET /clubs/{id}/ratings`, `GET /clubs/{id}/ratings/me` | 008 | ✅ `KtorStandingsRepository` (sustituye a `performanceIndex`) |
+| `GET /clubs/{id}/stats?sortBy=`, `GET /clubs/{id}/stats/me` | 008 | ✅ |
 
 ## Notificaciones
 | Endpoint v1 | Ruta actual | Spec | Estado |
@@ -120,3 +120,4 @@
 | 2026-10-07 | D-1: invitados, excepciones, `drawTime` y marcador manual pasan a ⏳ (backend en curso) y quedan tras flags |
 | 2026-10-07 | Spec 006: `GET /matches/{id}`, `/teams` (AUTO/MANUAL con invitados), `/team-balance` y `GET /matches/{id}/announcement` (✅). `KtorMatchRepository` ya expone también las rutas de la 007 |
 | 2026-10-07 | Spec 007: eventos, minutos, cerrar, reabrir, cancelar, partido extra y marcador manual (✅) |
+| 2026-10-07 | Spec 008: `/ratings`, `/ratings/me`, `/stats?sortBy=` y `/stats/me` (✅); el «rating del partido» sale de `ratingChanges` |

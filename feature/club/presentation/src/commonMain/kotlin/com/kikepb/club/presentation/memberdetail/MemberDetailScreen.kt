@@ -91,7 +91,13 @@ fun MemberDetailRoot(
         }
     }
 
-    MemberDetailScreen(state = state, onAction = viewModel::onAction, onBackClick = onBackClick, snackbarHostState = snackbarHostState)
+    MemberDetailScreen(
+        state = state,
+        onAction = viewModel::onAction,
+        onBackClick = onBackClick,
+        snackbarHostState = snackbarHostState,
+        statsSection = { MemberStatsSection() }
+    )
 }
 
 @Composable
@@ -99,7 +105,8 @@ fun MemberDetailScreen(
     state: MemberDetailState,
     onAction: (MemberDetailAction) -> Unit,
     onBackClick: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    statsSection: @Composable () -> Unit = {}
 ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
@@ -124,6 +131,7 @@ fun MemberDetailScreen(
             ) {
                 MemberHeader(member = member)
                 MemberInfo(member = member)
+                statsSection()
                 MemberActions(state = state, onAction = onAction)
             }
         }

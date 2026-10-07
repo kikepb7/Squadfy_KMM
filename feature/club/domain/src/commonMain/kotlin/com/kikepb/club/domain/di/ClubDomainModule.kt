@@ -45,6 +45,11 @@ import com.kikepb.club.domain.usecase.DeleteMatchEventUseCase
 import com.kikepb.club.domain.usecase.SetPlayerMinutesUseCase
 import com.kikepb.club.domain.usecase.SetManualScoreUseCase
 import com.kikepb.club.domain.usecase.ClearManualScoreUseCase
+import com.kikepb.club.domain.usecase.GetRatingLeaderboardUseCase
+import com.kikepb.club.domain.usecase.GetMyRatingUseCase
+import com.kikepb.club.domain.usecase.GetStatsLeaderboardUseCase
+import com.kikepb.club.domain.usecase.GetMyStatsUseCase
+import com.kikepb.club.domain.usecase.GetRecentRatingChangesUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -101,4 +106,11 @@ val clubDomainModule = module {
     singleOf(::SetPlayerMinutesUseCase)
     singleOf(::SetManualScoreUseCase)
     singleOf(::ClearManualScoreUseCase)
+
+    // Ratings and stats (spec 008)
+    singleOf(::GetRatingLeaderboardUseCase)
+    singleOf(::GetMyRatingUseCase)
+    singleOf(::GetStatsLeaderboardUseCase)
+    singleOf(::GetMyStatsUseCase)
+    singleOf(::GetRecentRatingChangesUseCase)
 }

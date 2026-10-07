@@ -274,7 +274,8 @@ private fun TeamCard(team: Team, players: List<TeamPlayer>, state: MatchDetailSt
                 highlighted = isMine && player.isMe,
                 editing = state.editing != null,
                 onClick = { onAction(MatchDetailAction.OnMovePlayer(player.id)) },
-                stats = playerStats(player = player, state = state)
+                stats = playerStats(player = player, state = state),
+                ratingChange = state.match?.ratingChanges?.get(player.id)?.takeIf { !player.isGuest }
             )
             // Guests have no stats (BE-008 RN-A6): only members get report controls
             if (state.reportMode && !player.isGuest) ReportControls(player = player, state = state, onAction = onAction)
@@ -292,7 +293,7 @@ private fun PositionsSummary(players: List<TeamPlayer>) {
 }
 
 @Composable
-private fun PlayerRow(player: TeamPlayer, highlighted: Boolean, editing: Boolean, onClick: () -> Unit, stats: String? = null) {
+private fun PlayerRow(player: TeamPlayer, highlighted: Boolean, editing: Boolean, onClick: () -> Unit, stats: String? = null, ratingChange: Int? = null) {
     val name = player.name ?: stringResource(Res.string.former_member)
     Surface(
         modifier = Modifier.fillMaxWidth().then(if (editing) Modifier.clickable(onClick = onClick) else Modifier),
@@ -315,6 +316,14 @@ private fun PlayerRow(player: TeamPlayer, highlighted: Boolean, editing: Boolean
                 if (details.isNotBlank()) HintText(text = details)
             }
             stats?.let { Text(text = it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.extended.textSecondary) }
+            // AC-008-08: match rating, green when it goes up and red when it goes down
+            ratingChange?.let { change ->
+                Text(
+                    text = if (change > 0) "+$change" else "$change",
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                    color = if (change >= 0) MaterialTheme.colorScheme.extended.success else MaterialTheme.colorScheme.error
+                )
+            }
             if (editing) {
                 Icon(imageVector = Icons.AutoMirrored.Outlined.CompareArrows, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             }
@@ -409,7 +418,7 @@ private val MatchEventType.symbol: String
         MatchEventType.RED_CARD -> "🟥"
     }
 
-/** "⚽2 🟨 · 45 min · +12": events, minutes (report or completed) and the match rating once completed. */
+/** "⚽2 🟨 · 45 min": events plus the minutes in report mode or once completed. */
 @Composable
 private fun playerStats(player: TeamPlayer, state: MatchDetailState): String? {
     val match = state.match ?: return null
@@ -419,8 +428,7 @@ private fun playerStats(player: TeamPlayer, state: MatchDetailState): String? {
         .joinToString(" ") { (type, count) -> if (count > 1) "${type.symbol}$count" else type.symbol }
     val showMinutes = state.reportMode || match.status == MatchStatus.COMPLETED
     val minutes = if (showMinutes) stringResource(Res.string.match_minutes_value, match.minutesOf(player.id)) else null
-    val rating = match.ratingChanges[player.id]?.let { if (it > 0) "+$it" else "$it" }
-    return listOf(events, minutes, rating).filter { !it.isNullOrBlank() }.joinToString(" · ").ifBlank { null }
+    return listOf(events, minutes).filter { !it.isNullOrBlank() }.joinToString(" · ").ifBlank { null }
 }
 
 @Composable

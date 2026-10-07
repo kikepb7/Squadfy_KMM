@@ -1,6 +1,6 @@
 # 008 · Clasificaciones: rating y estadísticas
 
-- **Estado:** Draft
+- **Estado:** In progress (implementada en `app-parity-feature`; falta el E2E)
 - **Reglas:** BE-003 RN-6/11, BE-004 RN-7/8, APP-RN-06, APP-RN-09
 - **Backend:** `BACKEND.md` §7.5 y §8.5
 - **Depende de:** 003 (miembros)
@@ -31,3 +31,9 @@ Además ofrece mi posición y mis cifras.
 - **AC-008-06** Estado vacío: «Aún no hay partidos cerrados» cuando todos tienen 0 partidos.
 - **AC-008-07** Se eliminan `performanceIndex` (`Extensions.kt`), `StandingRowUiModel` y las columnas antiguas.
 - **AC-008-08** **Valoración del partido** (BE-008 RN-F1): en un partido `COMPLETED`, cada miembro de los equipos muestra su variación de rating (`ratingChanges`: «+12» en verde, «−8» en rojo). La ficha del miembro muestra la variación de sus últimos partidos. No existe valoración manual.
+
+## Decisiones de implementación
+- **Caché (AC-008-05)**: no hay caché en memoria entre pantallas. La pestaña se recarga al abrirse, al volver a primer plano y con pull-to-refresh, así que un partido cerrado o reabierto aparece sin una invalidación explícita (ADR-0006).
+- **Ficha del miembro**: las estadísticas viven en un `MemberStatsViewModel` aparte, para no mezclarlas con las acciones de gestión.
+- **Mi rating**: sin partidos valorados, `/ratings/me` puede devolver 404. En ese caso la tarjeta «Tu posición» no se muestra.
+
