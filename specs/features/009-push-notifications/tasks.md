@@ -17,4 +17,4 @@
 
 ## Fase 4 · Verificación
 - [ ] **T-010** Manual: subir la clave APNs a Firebase; comprobar que `FIREBASE_ANDROID_PACKAGE` coincide con el `applicationId` (AC-009-06/07, se documenta en la 012).
-- [ ] **T-011** E2E con push reales: abrir la convocatoria → push → al tocarla, se abre la pestaña Partido; con el club abierto, snackbar y refresco; silenciar el club → no llegan push salvo la de plaza conseguida.
+- [~] **T-011** E2E con push reales: abrir la convocatoria → push → al tocarla, se abre la pestaña Partido; con el club abierto, snackbar y refresco; silenciar el club → no llegan push salvo la de plaza conseguida. — **2026-10-08**: enrutado verificado con el intent de una push (abrió el detalle del partido tras corregir `launchMode`); silenciar guarda `muted` en el backend. Faltan push reales (backend local con `FIREBASE_ENABLED=false`).

@@ -17,4 +17,4 @@
 - [x] **T-010** Strings ES/EN.
 
 ## Fase 4 · Verificación
-- [ ] **T-011** E2E con el backend local: crear un horario 5v5 → la convocatoria se abre al momento → 11 usuarios se apuntan → el 11.º queda en espera → uno se desapunta → el de espera sube. Para comprobar el cierre, crear un partido extra cercano.
+- [x] **T-011** E2E con el backend local: crear un horario 5v5 → la convocatoria se abre al momento → 11 usuarios se apuntan → el 11.º queda en espera → uno se desapunta → el de espera sube. Para comprobar el cierre, crear un partido extra cercano. — **Hecho 2026-10-08** en emulador contra el backend local: 10 apuntados, el 11.º en espera, un invitado detrás de los miembros, desapuntarse por ausencia hace subir al de la espera.

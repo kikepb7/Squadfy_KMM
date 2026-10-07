@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -206,7 +206,8 @@ fun ChatDetailScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets.safeDrawing,
+        // System bars come from the root Scaffold; only the keyboard is handled here
+        contentWindowInsets = WindowInsets.ime,
         containerColor =
             if (!configuration.isWideScreen) MaterialTheme.colorScheme.surface
             else MaterialTheme.colorScheme.extended.surfaceLower,

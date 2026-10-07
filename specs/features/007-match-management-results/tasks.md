@@ -16,4 +16,4 @@
 - [x] **T-009** Strings ES/EN.
 
 ## Fase 4 · Verificación
-- [ ] **T-010** E2E con el backend local: crear un partido extra dentro de 15 min → apuntarse → sorteo → registrar goles y minutos → cerrar (los ratings cambian) → reabrir → cancelar otro partido.
+- [~] **T-010** E2E con el backend local: crear un partido extra dentro de 15 min → apuntarse → sorteo → registrar goles y minutos → cerrar (los ratings cambian) → reabrir → cancelar otro partido. — **2026-10-08**: acta (gol con minuto), marcador y acciones de gestor verificados. Cerrar/reabrir pendiente: `POST /clubs/{id}/matches` (partido extra) da 500 en el backend (NPE en `MatchPlanningService` por la llamada `$default` que esquiva el proxy de Spring) y el partido semanal aún no ha empezado.

@@ -15,4 +15,4 @@
 - [x] **T-008** Strings ES/EN.
 
 ## Fase 4 · Verificación
-- [ ] **T-009** E2E con el backend local: cerrar la convocatoria → los equipos aparecen al llegar `drawAt` → un gestor repite el sorteo y mueve un invitado → el equilibrio se actualiza; un jugador no ve el panel.
+- [x] **T-009** E2E con el backend local: cerrar la convocatoria → los equipos aparecen al llegar `drawAt` → un gestor repite el sorteo y mueve un invitado → el equilibrio se actualiza; un jugador no ve el panel. — **Hecho 2026-10-08**: equipos tras el sorteo AUTO, «Juegas en el B», equilibrio con ratings y apertura desde la push `match.teams.published`.

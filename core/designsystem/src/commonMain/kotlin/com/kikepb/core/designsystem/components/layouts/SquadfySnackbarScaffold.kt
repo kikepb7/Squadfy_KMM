@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -24,7 +23,8 @@ fun SquadfySnackbarScaffold(
     Scaffold(
         modifier = modifier,
         topBar = topBar,
-        contentWindowInsets = WindowInsets.statusBars
+        // The root Scaffold (NavigationRoot) already pads the status bar
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
             .union(WindowInsets.displayCutout)
             .union(WindowInsets.ime),
         snackbarHost = {
