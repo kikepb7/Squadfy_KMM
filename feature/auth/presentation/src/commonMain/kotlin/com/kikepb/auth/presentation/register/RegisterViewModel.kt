@@ -134,9 +134,9 @@ class RegisterViewModel(
             val password = state.value.passwordTextState.text.toString()
 
             authRegisterUseCase.authRegister(username = username, email = email, password = password)
-                .onSuccess {
+                .onSuccess { alreadyVerified ->
                     _state.update { it.copy(isRegistering = false) }
-                    eventChannel.send(RegisterEvent.Success(email = email))
+                    eventChannel.send(RegisterEvent.Success(email = email, alreadyVerified = alreadyVerified))
                 }
                 .onFailure { error ->
                     val registrationError = when (error) {
@@ -178,7 +178,8 @@ data class RegisterState(
 )
 
 sealed interface RegisterEvent {
-    data class Success(val email: String): RegisterEvent
+    /** [alreadyVerified]: the backend has email verification off, so the user can log in right away. */
+    data class Success(val email: String, val alreadyVerified: Boolean = false): RegisterEvent
 }
 
 sealed interface RegisterAction {

@@ -11,7 +11,7 @@ import com.kikepb.core.domain.util.Result.Success
 class FakeAuthRepository : AuthRepository {
 
     var loginResult: Result<AuthInfoModel, DataError.Remote> = Success(defaultAuthInfoModel())
-    var registerResult: EmptyResult<DataError.Remote> = Success(Unit)
+    var registerResult: Result<Boolean, DataError.Remote> = Success(false)
     var resendVerificationResult: EmptyResult<DataError.Remote> = Success(Unit)
     var verifyEmailResult: EmptyResult<DataError.Remote> = Success(Unit)
     var forgotPasswordResult: EmptyResult<DataError.Remote> = Success(Unit)

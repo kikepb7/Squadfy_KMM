@@ -50,6 +50,7 @@ Todas las demás features dependen de esta.
 - **AC-002-15** Las rutas de chat pasan a `/chats`, `/chats/{id}`, `/chats/{id}/messages`, `/chats/{id}/participants` y `/chats/{id}/participants/me`, y la de mensajes a `/messages/{id}`. El WebSocket no cambia. `ChatDto.creator` es opcional en el cliente.
 - **AC-002-16** El dispositivo se registra con `POST /devices {token, platform}` y se da de baja con `DELETE /devices/{token}`.
 - **AC-002-17** Los 151 tests existentes siguen en verde con las rutas actualizadas, y se añaden tests de `RemoteError` y de los mappers con **fixtures JSON reales** de `BACKEND.md` (constitución V.4).
+- **AC-002-18** Si el backend tiene la verificación de email desactivada (backend spec 009, `EMAIL_VERIFICATION_ENABLED=false`), el registro devuelve `hasVerifiedEmail = true`. En ese caso la pantalla de éxito dice que ya se puede iniciar sesión y no ofrece reenviar el email.
 
 ## Casos límite
 | Situación | Comportamiento |

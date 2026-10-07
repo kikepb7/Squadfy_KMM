@@ -35,7 +35,7 @@ class LoginViewModelTest {
         val resentTo = mutableListOf<String>()
 
         override suspend fun login(email: String, password: String) = loginResult
-        override suspend fun register(username: String, email: String, password: String): EmptyResult<DataError.Remote> = Result.Success(Unit)
+        override suspend fun register(username: String, email: String, password: String): Result<Boolean, DataError.Remote> = Result.Success(false)
         override suspend fun resendVerificationEmail(email: String): EmptyResult<DataError.Remote> {
             resentTo += email
             return resendResult

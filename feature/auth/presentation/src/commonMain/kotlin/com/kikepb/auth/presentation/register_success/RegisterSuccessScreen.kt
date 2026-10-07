@@ -22,6 +22,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import squadfy_app.feature.auth.presentation.generated.resources.Res.string as RString
+import squadfy_app.feature.auth.presentation.generated.resources.account_ready_to_login
 import squadfy_app.feature.auth.presentation.generated.resources.account_successfully_created
 import squadfy_app.feature.auth.presentation.generated.resources.login
 import squadfy_app.feature.auth.presentation.generated.resources.resend_verification_email
@@ -73,10 +74,11 @@ fun RegisterSuccessScreen(
         SquadfyAdaptiveResultLayout {
             SquadfySimpleSuccessLayout(
                 title = stringResource(RString.account_successfully_created),
-                description = stringResource(
-                    RString.verification_email_sent_to_x,
-                    state.registeredEmail
-                ),
+                description = if (state.alreadyVerified) {
+                    stringResource(RString.account_ready_to_login)
+                } else {
+                    stringResource(RString.verification_email_sent_to_x, state.registeredEmail)
+                },
                 icon = { SquadfySuccessIcon() },
                 primaryButton = {
                     SquadfyButton(
@@ -85,7 +87,8 @@ fun RegisterSuccessScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
                 },
-                secondaryButton = {
+                secondaryButton = if (state.alreadyVerified) null else {
+                    {
                     SquadfyButton(
                         text = stringResource(RString.resend_verification_email),
                         onClick = { onAction(OnResendVerificationEmailClick) },
@@ -94,6 +97,7 @@ fun RegisterSuccessScreen(
                         isLoading = state.isResendingVerificationEmail,
                         style = SquadfyButtonStyle.SECONDARY
                     )
+                    }
                 },
                 secondaryError = state.resendVerificationError?.asString()
             )

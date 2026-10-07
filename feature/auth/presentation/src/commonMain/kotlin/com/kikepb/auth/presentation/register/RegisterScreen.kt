@@ -37,7 +37,7 @@ import squadfy_app.feature.auth.presentation.generated.resources.welcome_to_squa
 @Composable
 fun RegisterRoot(
     viewModel: RegisterViewModel = koinViewModel(),
-    onRegisterSuccess: (String) -> Unit,
+    onRegisterSuccess: (email: String, alreadyVerified: Boolean) -> Unit,
     onLoginClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -45,7 +45,7 @@ fun RegisterRoot(
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
-            is RegisterEvent.Success -> onRegisterSuccess(event.email)
+            is RegisterEvent.Success -> onRegisterSuccess(event.email, event.alreadyVerified)
         }
     }
 

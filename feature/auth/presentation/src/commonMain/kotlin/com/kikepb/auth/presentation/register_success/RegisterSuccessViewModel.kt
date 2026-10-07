@@ -28,7 +28,9 @@ class RegisterSuccessViewModel(
     val events = eventChannel.receiveAsFlow()
     private val email = savedStateHandle.get<String>("email")
         ?: throw IllegalStateException("No email passed to register success screen")
-    private val _state = MutableStateFlow(RegisterSuccessState(registeredEmail = email ?: ""))
+    private val _state = MutableStateFlow(
+        RegisterSuccessState(registeredEmail = email ?: "", alreadyVerified = savedStateHandle.get<Boolean>("alreadyVerified") ?: false)
+    )
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) hasLoadedInitialData = true
@@ -68,6 +70,8 @@ class RegisterSuccessViewModel(
 
 data class RegisterSuccessState(
     val registeredEmail: String = "",
+    /** Email verification is off in the backend: no email was sent and the user can log in. */
+    val alreadyVerified: Boolean = false,
     val isResendingVerificationEmail: Boolean = false,
     val resendVerificationError: UiText? = null
 )

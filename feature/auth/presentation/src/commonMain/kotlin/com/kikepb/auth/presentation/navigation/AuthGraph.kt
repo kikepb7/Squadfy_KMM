@@ -42,8 +42,8 @@ fun NavGraphBuilder.authGraph(
         }
         composable<Register> {
             RegisterRoot(
-                onRegisterSuccess = { email ->
-                    navController.navigate(route = RegisterSuccess(email = email))
+                onRegisterSuccess = { email, alreadyVerified ->
+                    navController.navigate(route = RegisterSuccess(email = email, alreadyVerified = alreadyVerified))
                 },
                 onLoginClick = {
                     navController.navigate(route = Login) {

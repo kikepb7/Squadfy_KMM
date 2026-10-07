@@ -2,6 +2,7 @@ package com.kikepb.core.data.auth
 
 import com.kikepb.core.data.auth.dto.AuthInfoSerializableDTO
 import com.kikepb.core.data.auth.dto.PublicUserSerializableDTO
+import com.kikepb.core.data.auth.dto.UserSerializableDTO
 import com.kikepb.core.data.auth.dto.request.ChangePasswordRequestDTO
 import com.kikepb.core.data.auth.dto.request.EmailRequestDTO
 import com.kikepb.core.data.auth.dto.request.LoginRequestDTO
@@ -69,15 +70,15 @@ class KtorAuthRepositoryImpl(
         username: String,
         email: String,
         password: String
-    ): EmptyResult<DataError.Remote> {
-        return httpClient.post(
+    ): Result<Boolean, DataError.Remote> {
+        return httpClient.post<RegisterRequestDTO, UserSerializableDTO>(
             route = REGISTER_ROUTE,
             body = RegisterRequestDTO(
                 username = username,
                 email = email,
                 password = password
             )
-        )
+        ).map { it.hasVerifiedEmail }
     }
 
     override suspend fun resendVerificationEmail(email: String): EmptyResult<DataError.Remote> =

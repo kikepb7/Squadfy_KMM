@@ -13,7 +13,7 @@ sealed interface AuthGraphRoutes {
     data object Register: AuthGraphRoutes
 
     @Serializable
-    data class RegisterSuccess(val email: String): AuthGraphRoutes
+    data class RegisterSuccess(val email: String, val alreadyVerified: Boolean = false): AuthGraphRoutes
 
     @Serializable
     data object ForgotPassword: AuthGraphRoutes

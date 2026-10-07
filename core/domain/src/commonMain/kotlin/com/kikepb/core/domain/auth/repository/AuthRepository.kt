@@ -7,7 +7,8 @@ import com.kikepb.core.domain.util.Result
 
 interface AuthRepository {
     suspend fun login(email: String, password: String): Result<AuthInfoModel, DataError.Remote>
-    suspend fun register(username: String, email: String, password: String): EmptyResult<DataError.Remote>
+    /** Success carries `hasVerifiedEmail`: true when the backend has email verification switched off (backend spec 009). */
+    suspend fun register(username: String, email: String, password: String): Result<Boolean, DataError.Remote>
     suspend fun resendVerificationEmail(email: String): EmptyResult<DataError.Remote>
     suspend fun verifyEmail(token: String): EmptyResult<DataError.Remote>
     suspend fun forgotPassword(email: String): EmptyResult<DataError.Remote>
