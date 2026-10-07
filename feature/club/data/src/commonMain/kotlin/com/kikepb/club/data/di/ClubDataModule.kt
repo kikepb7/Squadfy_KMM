@@ -2,6 +2,7 @@ package com.kikepb.club.data.di
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.kikepb.club.data.datasource.local.OfflineFirstClubRepositoryImpl
+import com.kikepb.club.data.datasource.remote.KtorAbsenceRepository
 import com.kikepb.club.data.datasource.remote.KtorAnnouncementRepository
 import com.kikepb.club.data.datasource.remote.KtorMatchRepository
 import com.kikepb.club.data.datasource.remote.KtorNotificationSettingsRepository
@@ -10,6 +11,7 @@ import com.kikepb.club.data.datasource.remote.KtorStandingsRepository
 import com.kikepb.club.database.DatabaseFactory
 import com.kikepb.club.database.SquadfyClubDatabase
 import com.kikepb.club.database.migration.ClubDatabaseMigrations
+import com.kikepb.club.domain.repository.AbsenceRepository
 import com.kikepb.club.domain.repository.AnnouncementRepository
 import com.kikepb.club.domain.repository.ClubRepository
 import com.kikepb.club.domain.repository.MatchRepository
@@ -39,4 +41,5 @@ val clubDataModule = module {
     singleOf(::KtorMatchRepository) bind MatchRepository::class
     singleOf(::KtorStandingsRepository) bind StandingsRepository::class
     singleOf(::KtorNotificationSettingsRepository) bind NotificationSettingsRepository::class
+    singleOf(::KtorAbsenceRepository) bind AbsenceRepository::class
 }

@@ -12,6 +12,8 @@ import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubDetailRoute
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubMemberDetailRoute
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubScheduleRoute
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.MatchDetailRoute
+import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubAbsencesRoute
+import com.kikepb.club.presentation.absences.AbsencesRoot
 import com.kikepb.club.presentation.match.MatchDetailRoot
 import com.kikepb.club.presentation.schedule.ScheduleRoot
 import kotlinx.serialization.Serializable
@@ -43,6 +45,9 @@ sealed interface ClubGraphRoutes {
     data class ClubScheduleRoute(val clubId: String) : ClubGraphRoutes
 
     @Serializable
+    data class ClubAbsencesRoute(val clubId: String) : ClubGraphRoutes
+
+    @Serializable
     data class MatchDetailRoute(val clubId: String, val matchId: String) : ClubGraphRoutes
 }
 
@@ -57,6 +62,7 @@ fun NavGraphBuilder.clubGraph(navController: NavController) {
             onOpenBans = { clubId -> navController.navigate(route = ClubBansRoute(clubId = clubId)) },
             onOpenSchedule = { clubId -> navController.navigate(route = ClubScheduleRoute(clubId = clubId)) },
             onOpenMatch = { clubId, matchId -> navController.navigate(route = MatchDetailRoute(clubId = clubId, matchId = matchId)) },
+            onOpenAbsences = { clubId -> navController.navigate(route = ClubAbsencesRoute(clubId = clubId)) },
             onLeftClub = { navController.navigateUp() }
         )
     }
@@ -68,6 +74,9 @@ fun NavGraphBuilder.clubGraph(navController: NavController) {
     }
     composable<ClubScheduleRoute> {
         ScheduleRoot(onBackClick = { navController.navigateUp() })
+    }
+    composable<ClubAbsencesRoute> {
+        AbsencesRoot(onBackClick = { navController.navigateUp() })
     }
     composable<MatchDetailRoute>(deepLinks = listOf(navDeepLink { uriPattern = "squadfy://match/{matchId}?clubId={clubId}" })) {
         MatchDetailRoot(onBackClick = { navController.navigateUp() })

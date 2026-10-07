@@ -52,25 +52,25 @@ class DefaultFeatureFlagsTest {
         val flags = createFlags(AppEnvironment.PRE)
 
         flags.observe(FeatureFlag.MANUAL_SCORE).test {
-            assertFalse(awaitItem())
-            flags.setOverride(FeatureFlag.MANUAL_SCORE, enabled = true)
             assertTrue(awaitItem())
-            flags.setOverride(FeatureFlag.MANUAL_SCORE, enabled = null)
+            flags.setOverride(FeatureFlag.MANUAL_SCORE, enabled = false)
             assertFalse(awaitItem())
+            flags.setOverride(FeatureFlag.MANUAL_SCORE, enabled = null)
+            assertTrue(awaitItem())
         }
-        assertFalse(flags.isEnabled(FeatureFlag.MANUAL_SCORE))
+        assertTrue(flags.isEnabled(FeatureFlag.MANUAL_SCORE))
     }
 
     @Test
     fun `AC-013-05 clearOverrides restores defaults`() = runTest(UnconfinedTestDispatcher()) {
         val flags = createFlags(AppEnvironment.PRE)
         flags.setOverride(FeatureFlag.HOME_NEWS, enabled = false)
-        flags.setOverride(FeatureFlag.MANUAL_SCORE, enabled = true)
+        flags.setOverride(FeatureFlag.MANUAL_SCORE, enabled = false)
 
         flags.clearOverrides()
 
         assertTrue(flags.isEnabled(FeatureFlag.HOME_NEWS))
-        assertFalse(flags.isEnabled(FeatureFlag.MANUAL_SCORE))
+        assertTrue(flags.isEnabled(FeatureFlag.MANUAL_SCORE))
         assertTrue(overrideStore.values.value.isEmpty())
     }
 

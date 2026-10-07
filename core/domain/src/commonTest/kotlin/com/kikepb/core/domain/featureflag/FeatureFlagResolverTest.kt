@@ -46,14 +46,14 @@ class FeatureFlagResolverTest {
 
     @Test
     fun `AC-013-03 values for other flags do not leak`() {
-        // MANUAL_SCORE is off in PRE until spec 007 is implemented
+        // MANUAL_SCORE is on in PRE: values for DEV_TEST_MATCH or unknown keys must not turn it off
         val resolved = FeatureFlagResolver.resolve(
             flag = FeatureFlag.MANUAL_SCORE,
             environment = PRE,
-            remote = mapOf(DEV_TEST_MATCH.key to true, "unknown_flag" to true),
-            overrides = mapOf(DEV_TEST_MATCH.key to true)
+            remote = mapOf(DEV_TEST_MATCH.key to false, "unknown_flag" to false),
+            overrides = mapOf(DEV_TEST_MATCH.key to false)
         )
-        assertEquals(false, resolved.enabled)
+        assertEquals(true, resolved.enabled)
         assertEquals(FlagValueSource.DEFAULT, resolved.source)
     }
 
@@ -65,7 +65,7 @@ class FeatureFlagResolverTest {
 
     @Test
     fun `AC-013-07 implemented app-parity features are on in PRE for QA`() {
-        listOf(FeatureFlag.SCHEDULE_EXCEPTIONS, FeatureFlag.CUSTOM_DRAW_TIME, FeatureFlag.MATCH_GUESTS)
+        listOf(FeatureFlag.SCHEDULE_EXCEPTIONS, FeatureFlag.CUSTOM_DRAW_TIME, FeatureFlag.MATCH_GUESTS, FeatureFlag.MANUAL_SCORE, FeatureFlag.MEMBER_ABSENCES)
             .forEach { flag -> assertEquals(true, flag.defaultFor(PRE), "${flag.name} in PRE") }
     }
 

@@ -59,6 +59,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import squadfy_app.feature.club.presentation.generated.resources.Res
+import squadfy_app.feature.club.presentation.generated.resources.announcement_absence_warning
 import squadfy_app.feature.club.presentation.generated.resources.announcement_cancelled
 import squadfy_app.feature.club.presentation.generated.resources.announcement_closed
 import squadfy_app.feature.club.presentation.generated.resources.announcement_closes_in
@@ -248,6 +249,13 @@ private fun HeaderCard(state: AnnouncementState, onOpenMatch: ((String) -> Unit)
                 text = it,
                 style = MaterialTheme.typography.labelLarge,
                 color = if (state.windowState == WindowState.OPEN) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.extended.textPlaceholder
+            )
+        }
+        if (state.hasAbsenceOnMatchDay) {
+            Text(
+                text = stringResource(Res.string.announcement_absence_warning),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.error
             )
         }
         if (announcement.drawAt != announcement.closesAt && state.windowState != WindowState.CANCELLED) {

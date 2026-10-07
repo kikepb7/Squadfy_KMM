@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.club.domain.usecase.EditClubUseCase
 import com.kikepb.club.domain.usecase.GetClubMutedUseCase
+import com.kikepb.core.domain.featureflag.FeatureFlag
+import com.kikepb.core.domain.featureflag.FeatureFlags
 import com.kikepb.club.domain.usecase.LeaveClubUseCase
 import com.kikepb.club.domain.usecase.SetClubMutedUseCase
 import com.kikepb.club.domain.usecase.RegenerateInvitationCodeUseCase
@@ -34,6 +36,7 @@ class ClubSettingsViewModel(
     private val leaveClubUseCase: LeaveClubUseCase,
     private val getClubMutedUseCase: GetClubMutedUseCase,
     private val setClubMutedUseCase: SetClubMutedUseCase,
+    featureFlags: FeatureFlags,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -47,6 +50,9 @@ class ClubSettingsViewModel(
     val events = eventChannel.receiveAsFlow()
 
     init {
+        viewModelScope.launch {
+            featureFlags.observe(FeatureFlag.MEMBER_ABSENCES).collect { enabled -> _state.update { it.copy(absencesEnabled = enabled) } }
+        }
         viewModelScope.launch {
             getClubMutedUseCase(clubId).onSuccess { muted -> _state.update { it.copy(muted = muted) } }
         }
@@ -150,7 +156,8 @@ data class ClubSettingsState(
     val editMaxMembers: TextFieldState = TextFieldState(),
     val editError: UiText? = null,
     /** Null until loaded: the switch is hidden. */
-    val muted: Boolean? = null
+    val muted: Boolean? = null,
+    val absencesEnabled: Boolean = false
 )
 
 sealed interface ClubSettingsAction {

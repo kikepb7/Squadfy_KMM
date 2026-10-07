@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.EventBusy
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material.icons.outlined.Refresh
@@ -72,6 +73,7 @@ import squadfy_app.feature.club.presentation.generated.resources.settings_code_c
 import squadfy_app.feature.club.presentation.generated.resources.settings_copy_code
 import squadfy_app.feature.club.presentation.generated.resources.settings_edit_club
 import squadfy_app.feature.club.presentation.generated.resources.settings_invitation_code
+import squadfy_app.feature.club.presentation.generated.resources.settings_absences
 import squadfy_app.feature.club.presentation.generated.resources.settings_leave
 import squadfy_app.feature.club.presentation.generated.resources.settings_mute
 import squadfy_app.feature.club.presentation.generated.resources.settings_mute_hint
@@ -100,6 +102,7 @@ fun ClubSettingsTab(
     onOpenBans: () -> Unit,
     onOpenSchedule: () -> Unit,
     onLeftClub: () -> Unit,
+    onOpenAbsences: () -> Unit = {},
     extraSections: @Composable () -> Unit = {},
     viewModel: ClubSettingsViewModel = koinViewModel()
 ) {
@@ -143,6 +146,11 @@ fun ClubSettingsTab(
         item(key = "club") {
             SettingsGroup(title = stringResource(Res.string.settings_section_club)) {
                 SettingsRow(label = stringResource(Res.string.settings_schedule), icon = Icons.Outlined.CalendarMonth, onClick = onOpenSchedule)
+                // Spec 014: behind MEMBER_ABSENCES
+                if (state.absencesEnabled) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+                    SettingsRow(label = stringResource(Res.string.settings_absences), icon = Icons.Outlined.EventBusy, onClick = onOpenAbsences)
+                }
                 state.muted?.let { muted ->
                     HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
                     SettingsRow(

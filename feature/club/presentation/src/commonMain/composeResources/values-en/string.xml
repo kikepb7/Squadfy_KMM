@@ -309,4 +309,21 @@
     <string name="notifications_permission_text">We will tell you when the announcement opens, teams are published or you get a spot.</string>
     <string name="notifications_permission_allow">Turn on</string>
     <string name="notifications_permission_later">Not now</string>
+    <string name="absences_title">Absences</string>
+    <string name="absences_empty">Nobody has reported upcoming absences</string>
+    <string name="absences_add">Add absence</string>
+    <string name="absences_from">From: %1$s</string>
+    <string name="absences_to">To: %1$s</string>
+    <string name="absences_reason">Reason (optional)</string>
+    <string name="absences_period">%1$s – %2$s</string>
+    <string name="absences_created">You have been withdrawn from open announcements on those dates</string>
+    <string name="absences_delete">Delete absence</string>
+    <string name="absences_delete_title">Delete the absence?</string>
+    <string name="absences_delete_description">You will receive the announcements for those dates again.</string>
+    <string name="absences_error_order">The end date cannot be before the start date</string>
+    <string name="absences_error_past">The absence cannot end in the past</string>
+    <string name="absences_error_long">An absence can last at most one year</string>
+    <string name="absences_error_reason">The reason can have at most 200 characters</string>
+    <string name="announcement_absence_warning">You have an absence that day</string>
+    <string name="settings_absences">Absences</string>
 </resources>

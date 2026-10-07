@@ -65,6 +65,7 @@ fun ClubDetailRoot(
     onOpenBans: (clubId: String) -> Unit,
     onOpenSchedule: (clubId: String) -> Unit,
     onOpenMatch: (clubId: String, matchId: String) -> Unit,
+    onOpenAbsences: (clubId: String) -> Unit,
     onLeftClub: () -> Unit,
     viewModel: ClubDetailViewModel = koinViewModel()
 ) {
@@ -89,6 +90,7 @@ fun ClubDetailRoot(
         onOpenBans = onOpenBans,
         onOpenSchedule = onOpenSchedule,
         onOpenMatch = onOpenMatch,
+        onOpenAbsences = onOpenAbsences,
         onLeftClub = onLeftClub,
         snackbarHostState = snackbarHostState
     )
@@ -104,6 +106,7 @@ fun ClubDetailScreen(
     onOpenBans: (clubId: String) -> Unit,
     onOpenSchedule: (clubId: String) -> Unit,
     onOpenMatch: (clubId: String, matchId: String) -> Unit,
+    onOpenAbsences: (clubId: String) -> Unit = {},
     onLeftClub: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
@@ -132,6 +135,7 @@ fun ClubDetailScreen(
                 onOpenBans = { onOpenBans(club.id) },
                 onOpenSchedule = { onOpenSchedule(club.id) },
                 onOpenMatch = { matchId -> onOpenMatch(club.id, matchId) },
+                onOpenAbsences = { onOpenAbsences(club.id) },
                 onLeftClub = onLeftClub,
                 snackbarHostState = snackbarHostState,
                 modifier = Modifier.padding(padding)
@@ -150,6 +154,7 @@ private fun ClubContent(
     onOpenBans: () -> Unit,
     onOpenSchedule: () -> Unit,
     onOpenMatch: (matchId: String) -> Unit,
+    onOpenAbsences: () -> Unit,
     onLeftClub: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
@@ -182,6 +187,7 @@ private fun ClubContent(
                     snackbarHostState = snackbarHostState,
                     onOpenBans = onOpenBans,
                     onOpenSchedule = onOpenSchedule,
+                    onOpenAbsences = onOpenAbsences,
                     onLeftClub = onLeftClub
                 )
             }

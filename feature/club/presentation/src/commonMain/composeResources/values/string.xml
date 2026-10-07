@@ -309,4 +309,21 @@
     <string name="notifications_permission_text">Te avisaremos cuando se abra la convocatoria, se publiquen los equipos o te toque plaza.</string>
     <string name="notifications_permission_allow">Activar</string>
     <string name="notifications_permission_later">Ahora no</string>
+    <string name="absences_title">Ausencias</string>
+    <string name="absences_empty">Nadie ha avisado de ausencias próximas</string>
+    <string name="absences_add">Añadir ausencia</string>
+    <string name="absences_from">Desde: %1$s</string>
+    <string name="absences_to">Hasta: %1$s</string>
+    <string name="absences_reason">Motivo (opcional)</string>
+    <string name="absences_period">%1$s – %2$s</string>
+    <string name="absences_created">Te hemos desapuntado de las convocatorias abiertas de esas fechas</string>
+    <string name="absences_delete">Borrar ausencia</string>
+    <string name="absences_delete_title">¿Borrar la ausencia?</string>
+    <string name="absences_delete_description">Volverás a recibir las convocatorias de esas fechas.</string>
+    <string name="absences_error_order">La fecha final no puede ser anterior a la inicial</string>
+    <string name="absences_error_past">La ausencia no puede terminar en el pasado</string>
+    <string name="absences_error_long">Una ausencia puede durar como mucho un año</string>
+    <string name="absences_error_reason">El motivo puede tener como mucho 200 caracteres</string>
+    <string name="announcement_absence_warning">Tienes una ausencia ese día</string>
+    <string name="settings_absences">Ausencias</string>
 </resources>

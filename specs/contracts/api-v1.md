@@ -62,7 +62,7 @@
 | `GET/POST/PATCH /clubs/{id}/schedule` | `PATCH /club/{id}/schedule` → `ClubDTO` | 004 | 🔁 nuevo DTO `ClubMatchScheduleDto` |
 | `GET/POST /clubs/{id}/schedule/exceptions` `{date, type: CANCELLED\|RESCHEDULED, newScheduledAt?, reason?}` → 201, `DELETE …/exceptions/{exceptionId}` → 204 | `GET/POST/DELETE /club/{id}/schedule/exceptions[/{id}]` | 004 | 🔁 flag `SCHEDULE_EXCEPTIONS` (BE-008) |
 | Horario: `closeDaysBefore`, `closeTime`, `drawDaysBefore`, `drawTime` en `ClubMatchScheduleDto` y en sus peticiones | `drawTime` en `PATCH /club/{id}/schedule` | 004 | 🔁 flag `CUSTOM_DRAW_TIME` (BE-008) |
-| `GET /clubs/{id}/absences?from=&to=`, `POST /clubs/{id}/members/me/absences` → 201, `DELETE …/members/me/absences/{id}` → 204 | — | 014 | ➕ flag `MEMBER_ABSENCES` (BE-008) |
+| `GET /clubs/{id}/absences?from=&to=`, `POST /clubs/{id}/members/me/absences` → 201, `DELETE …/members/me/absences/{id}` → 204 | — | 014 | ✅ flag `MEMBER_ABSENCES` (BE-008), `KtorAbsenceRepository` |
 | `PUT /matches/{id}/score {teamAScore, teamBScore}`, `DELETE /matches/{id}/score` | `POST /club/matches/{id}/result` | 007 | ✅ flag `MANUAL_SCORE` (BE-008) |
 | `GET /clubs/{id}/matches?status=` | `GET /club/{id}/matches` | 006/007 | ✅ `?status=COMPLETED` decide si se puede reabrir |
 | `POST /clubs/{id}/matches {scheduledAt, format?, durationMinutes?}` → 201 | `POST /club/{id}/matches` (botón «partido de prueba») | 007 | ✅ «Partido extra» para gestores; `DEV_TEST_MATCH` solo añade el atajo «dentro de 15 min» |
@@ -122,3 +122,4 @@
 | 2026-10-07 | Spec 007: eventos, minutos, cerrar, reabrir, cancelar, partido extra y marcador manual (✅) |
 | 2026-10-07 | Spec 008: `/ratings`, `/ratings/me`, `/stats?sortBy=` y `/stats/me` (✅); el «rating del partido» sale de `ratingChanges` |
 | 2026-10-07 | Spec 009: enrutado de push por `data.type`, push en primer plano dentro de la app, silenciar club y baja del dispositivo con el token FCM (✅) |
+| 2026-10-07 | Spec 014: ausencias (✅); `MANUAL_SCORE` y `MEMBER_ABSENCES` pasan a estar activos en PRE |

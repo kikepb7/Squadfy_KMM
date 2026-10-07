@@ -33,14 +33,14 @@ enum class FeatureFlag(
     ),
     MANUAL_SCORE(
         key = "manual_score",
-        description = "Enter the final score manually instead of from goal events",
-        defaultInPre = false,
+        description = "Enter the final score manually instead of from goal events (spec 007)",
+        defaultInPre = true,
         defaultInPro = false
     ),
     MEMBER_ABSENCES(
         key = "member_absences",
-        description = "Members register absence periods that withdraw them from open announcements",
-        defaultInPre = false,
+        description = "Members register absence periods that withdraw them from open announcements (spec 014)",
+        defaultInPre = true,
         defaultInPro = false
     ),
 

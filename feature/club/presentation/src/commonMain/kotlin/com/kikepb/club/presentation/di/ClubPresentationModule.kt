@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.di
 
+import com.kikepb.club.presentation.absences.AbsencesViewModel
 import com.kikepb.club.presentation.announcement.AnnouncementViewModel
 import com.kikepb.club.presentation.bans.ClubBansViewModel
 import com.kikepb.club.presentation.clubs.ClubsListViewModel
@@ -30,4 +31,5 @@ val clubPresentationModule = module {
     viewModelOf(::ExtraMatchViewModel)
     viewModelOf(::StandingsViewModel)
     viewModelOf(::MemberStatsViewModel)
+    viewModelOf(::AbsencesViewModel)
 }

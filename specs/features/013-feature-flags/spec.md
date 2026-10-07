@@ -39,8 +39,8 @@ Poder **activar o desactivar desarrollos en PRE y en PRO** sin borrar código: f
   | `MATCH_GUESTS` | **on** (desde la 005) | off | Backend BE-008; app en las specs 005/006 |
   | `SCHEDULE_EXCEPTIONS` | **on** (desde la 004) | off | Backend BE-008; app en la spec 004 |
   | `CUSTOM_DRAW_TIME` | **on** (desde la 004) | off | Backend BE-008; app en la spec 004 |
-  | `MANUAL_SCORE` | off | off | Backend BE-008; app en la spec 007 |
-  | `MEMBER_ABSENCES` | off | off | Backend BE-008; app en la spec 014 |
+  | `MANUAL_SCORE` | **on** | off | Backend BE-008; app hecha en la spec 007 (activo en PRE para QA) |
+  | `MEMBER_ABSENCES` | **on** | off | Backend BE-008; app hecha en la spec 014 (activo en PRE para QA) |
   | `DEV_TEST_MATCH` | **on** | off | Herramienta de QA (crear partido de prueba) |
   | `HOME_RECENT_MATCHES` | **on** | off | Hoy son mocks (spec 010) |
   | `HOME_NEWS` | **on** | off | Hoy son mocks; fuera del MVP |

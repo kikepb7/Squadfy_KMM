@@ -1,6 +1,6 @@
 # 014 · Ausencias de jugadores
 
-- **Estado:** Approved (el owner pidió el 2026-10-07 completar la funcionalidad mínima del MVP)
+- **Estado:** In progress (implementada en `app-parity-feature`; falta el E2E). Aprobada el 2026-10-07, cuando el owner pidió completar la funcionalidad mínima del MVP
 - **Reglas:** BE-008 RN-C1…C5, APP-RN-03, APP-RN-06
 - **Backend:** BE-008 (implementada), `BACKEND.md` §7.3 y §8.2
 - **Flag:** `MEMBER_ABSENCES`
@@ -27,3 +27,8 @@ Un jugador que se va de vacaciones o está lesionado quiere avisar una sola vez 
 
 ## Contrato de API
 `GET /clubs/{clubId}/absences?from=&to=` · `POST /clubs/{clubId}/members/me/absences {fromDate, toDate, reason?}` · `DELETE /clubs/{clubId}/members/me/absences/{absenceId}` · `MemberAbsenceDto(id, clubId, clubMemberId, fromDate, toDate, reason?, createdAt)`.
+
+## Decisiones de implementación
+- **Dónde**: «Ausencias» es una fila de Ajustes del club (solo con el flag) que abre su propia pantalla, con la lista, el alta y el borrado.
+- **«Hoy»** se calcula en la zona del club (APP-RN-03), y también las fechas del aviso en la convocatoria.
+- **Refresco de la convocatoria (AC-014-03)**: al volver de la pantalla de ausencias, la pestaña Partido se refresca sola al volver a primer plano (APP-RN-08). No hace falta un evento entre pantallas.

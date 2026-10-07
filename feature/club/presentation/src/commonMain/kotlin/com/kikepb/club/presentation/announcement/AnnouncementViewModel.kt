@@ -16,7 +16,10 @@ import com.kikepb.club.domain.policy.AnnouncementWindowPolicy
 import com.kikepb.club.domain.policy.MemberPermissions
 import com.kikepb.club.domain.policy.WindowState
 import com.kikepb.club.domain.usecase.AddGuestToAnnouncementUseCase
+import com.kikepb.club.domain.model.MemberAbsenceModel
 import com.kikepb.club.domain.usecase.EnrollUseCase
+import com.kikepb.club.domain.usecase.GetAbsencesUseCase
+import com.kikepb.club.domain.usecase.coversMe
 import com.kikepb.club.domain.usecase.GetAnnouncementHistoryUseCase
 import com.kikepb.club.domain.usecase.GetClubMembersUseCase
 import com.kikepb.club.domain.usecase.GetCurrentAnnouncementUseCase
@@ -45,6 +48,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import squadfy_app.feature.club.presentation.generated.resources.Res
 import squadfy_app.feature.club.presentation.generated.resources.announcement_already_enrolled
 import squadfy_app.feature.club.presentation.generated.resources.announcement_enrolled_message
@@ -61,7 +65,8 @@ import kotlin.time.Instant
 class AnnouncementViewModel(
     getClubMembersUseCase: GetClubMembersUseCase,
     observeMyMembershipUseCase: ObserveMyMembershipUseCase,
-    featureFlags: FeatureFlags,
+    private val featureFlags: FeatureFlags,
+    private val getAbsencesUseCase: GetAbsencesUseCase,
     private val getCurrentAnnouncementUseCase: GetCurrentAnnouncementUseCase,
     private val getAnnouncementHistoryUseCase: GetAnnouncementHistoryUseCase,
     private val getScheduleUseCase: GetScheduleUseCase,
@@ -157,6 +162,11 @@ class AnnouncementViewModel(
                     _state.update { it.copy(current = current, hasLoaded = true, isStale = false, lastUpdatedAt = clock.now()) }
                 }
                 .onFailure { error -> onLoadError(error) }
+            // AC-005-15: my absences, only with MEMBER_ABSENCES on (APP-RN-17)
+            if (featureFlags.isEnabled(FeatureFlag.MEMBER_ABSENCES)) {
+                val today = clock.now().toLocalDateTime(_state.value.zone).date
+                getAbsencesUseCase(clubId, from = today).onSuccess { absences -> _state.update { it.copy(absences = absences) } }
+            }
             getAnnouncementHistoryUseCase(clubId).onSuccess { history ->
                 // The current one is shown on top, the rest are past announcements (AC-005-10)
                 _state.update { state -> state.copy(history = history.filterNot { it.id == state.current?.announcement?.id }) }
@@ -318,12 +328,19 @@ data class AnnouncementState(
     val members: Map<String, ClubMemberModel> = emptyMap(),
     val me: ClubMemberModel? = null,
     val guestsEnabled: Boolean = false,
+    val absences: List<MemberAbsenceModel> = emptyList(),
     val acting: Set<AnnouncementOperation> = emptySet(),
     val dialog: AnnouncementDialog? = null
 ) {
     val windowState: WindowState? get() = current?.let { AnnouncementWindowPolicy.state(it.announcement, now) }
     val timeToNextChange: Duration? get() = current?.let { AnnouncementWindowPolicy.timeToNextChange(it.announcement, now) }
     val isManager: Boolean get() = me?.role?.let(MemberPermissions::canManageClub) == true
+
+    val zone: TimeZone get() = runCatching { TimeZone.of(timeZoneId) }.getOrDefault(TimeZone.currentSystemDefault())
+
+    /** AC-005-15: one of my absences covers the match day; signing up stays possible (BE-008 RN-C4). */
+    val hasAbsenceOnMatchDay: Boolean
+        get() = current?.let { absences.coversMe(me?.id, it.matchScheduledAt.toLocalDateTime(zone).date) } == true
 
     /** AC-005-13: any member while the window is open, at most 2 guests each; never offline. */
     val canAddGuest: Boolean

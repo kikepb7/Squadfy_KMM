@@ -17,7 +17,10 @@ import com.kikepb.club.domain.model.ScheduleDraft
 import com.kikepb.club.domain.model.ScheduleExceptionModel
 import com.kikepb.club.domain.model.ScheduleExceptionType
 import com.kikepb.club.domain.policy.WindowState
+import com.kikepb.club.domain.model.MemberAbsenceModel
+import com.kikepb.club.domain.repository.AbsenceRepository
 import com.kikepb.club.domain.repository.AnnouncementRepository
+import com.kikepb.club.domain.usecase.GetAbsencesUseCase
 import com.kikepb.club.domain.repository.ScheduleRepository
 import com.kikepb.club.domain.usecase.AddGuestToAnnouncementUseCase
 import com.kikepb.club.domain.usecase.EnrollUseCase
@@ -114,6 +117,12 @@ class AnnouncementViewModelTest {
     private val repository = FakeAnnouncementRepository()
     private val clubRepository = FakeClubRepository()
     private val pushCenter = InAppPushCenter()
+    private val absenceRepository = object : AbsenceRepository {
+        var absences = emptyList<MemberAbsenceModel>()
+        override suspend fun getAbsences(clubId: String, from: LocalDate?, to: LocalDate?): Result<List<MemberAbsenceModel>, ClubError> = Result.Success(absences)
+        override suspend fun addMyAbsence(clubId: String, fromDate: LocalDate, toDate: LocalDate, reason: String?) = TODO("not used")
+        override suspend fun deleteMyAbsence(clubId: String, absenceId: String): EmptyResult<ClubError> = TODO("not used")
+    }
 
     @BeforeTest
     fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -127,6 +136,7 @@ class AnnouncementViewModelTest {
             getClubMembersUseCase = GetClubMembersUseCase(clubRepository),
             observeMyMembershipUseCase = ObserveMyMembershipUseCase(clubRepository, FakeSessionStorage("me")),
             featureFlags = flags,
+            getAbsencesUseCase = GetAbsencesUseCase(absenceRepository),
             getCurrentAnnouncementUseCase = GetCurrentAnnouncementUseCase(repository),
             getAnnouncementHistoryUseCase = GetAnnouncementHistoryUseCase(repository),
             getScheduleUseCase = GetScheduleUseCase(NoScheduleRepository()),
@@ -257,5 +267,20 @@ class AnnouncementViewModelTest {
 
         viewModel.onAction(AnnouncementAction.OnVisibilityChanged(false))
         assertFalse(pushCenter.isClubVisible("club-1"))
+    }
+
+    @Test
+    fun `AC-005-15 my absence on the match day shows a warning without blocking sign-up`() = runTest(UnconfinedTestDispatcher()) {
+        // The match of the default announcement is on 2026-10-15
+        absenceRepository.absences = listOf(MemberAbsenceModel("ab-1", "me", LocalDate(2026, 10, 14), LocalDate(2026, 10, 16), null))
+        val viewModel = viewModel(flags = FakeFeatureFlags(FeatureFlag.MEMBER_ABSENCES to true))
+        viewModel.state.launchIn(backgroundScope)
+
+        assertTrue(viewModel.state.value.hasAbsenceOnMatchDay)
+        assertEquals(WindowState.OPEN, viewModel.state.value.windowState)
+
+        val off = viewModel(flags = FakeFeatureFlags(FeatureFlag.MEMBER_ABSENCES to false))
+        off.state.launchIn(backgroundScope)
+        assertFalse(off.state.value.hasAbsenceOnMatchDay)
     }
 }
