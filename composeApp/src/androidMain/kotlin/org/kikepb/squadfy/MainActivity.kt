@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
             ?: intent.extras?.getString("chatId")
 
         if (chatId != null) {
-            val deeplinkUrl = "squadfy://chat_detail/$chatId"
+            val deeplinkUrl = "squadfy://chat_details/$chatId"
             ExternalUriHandler.onNewUri(uri = deeplinkUrl)
         }
     }

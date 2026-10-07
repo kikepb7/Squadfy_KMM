@@ -32,7 +32,7 @@
                 <data android:host="squadfy.com" />
 
                 <data android:pathPrefix="/api/auth/verify" />
-                <data android:pathPrefix="/api/auth/reset_password" />
+                <data android:pathPrefix="/api/auth/reset-password" />
             </intent-filter>
 
             <intent-filter>
@@ -45,7 +45,7 @@
                 <data android:host="squadfy.com" />
 
                 <data android:pathPrefix="/api/auth/verify" />
-                <data android:pathPrefix="/api/auth/reset_password" />
+                <data android:pathPrefix="/api/auth/reset-password" />
             </intent-filter>
         </activity>
     </application>

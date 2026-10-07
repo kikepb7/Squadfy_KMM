@@ -49,7 +49,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         let userInfo = response.notification.request.content.userInfo
         
         if let chatId = userInfo["chatId"] as? String {
-            let deepLinkUrl = "squadfy://chat_detail/\(chatId)"
+            let deepLinkUrl = "squadfy://chat_details/\(chatId)"
             ExternalUriHandler.shared.onNewUri(uri: deepLinkUrl)
         }
         
