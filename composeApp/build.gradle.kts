@@ -52,15 +52,6 @@ kotlin {
             implementation(projects.feature.globalPosition.domain)
             implementation(projects.feature.globalPosition.presentation)
 
-            // ECONOMY FEATURE
-            implementation(projects.feature.economy.data)
-            implementation(projects.feature.economy.domain)
-            implementation(projects.feature.economy.presentation)
-
-            // ONBOARDING FEATURE
-            implementation(projects.feature.onboarding.data)
-            implementation(projects.feature.onboarding.domain)
-            implementation(projects.feature.onboarding.presentation)
 
             // CLUB FEATURE
             implementation(projects.feature.club.data)

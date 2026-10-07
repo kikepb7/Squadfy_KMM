@@ -1,6 +1,6 @@
 # 011 · Tareas
 
-- [ ] **T-001** Retirar `economy` y `onboarding` del build y de Koin (AC-011-10).
+- [x] **T-001** Retirar `economy` y `onboarding` del build y de Koin (AC-011-10).
 - [ ] **T-002** Release Android: firma, R8 con `proguard-rules.pro`, `versionCode` y `versionName`, guarda HTTPS en release y cleartext solo en debug (AC-011-01/02/03).
 - [ ] **T-003** Logging por tipo de build: `IS_RELEASE`, Ktor, Kermit, Koin y sin log del token FCM (AC-011-04).
 - [ ] **T-004** Sesión cifrada (Keystore/Keychain) con migración, `allowBackup = false` y reglas de extracción (AC-011-05).

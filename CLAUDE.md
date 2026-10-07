@@ -27,7 +27,7 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 - `composeApp/google-services.json` está en `.gitignore` y hace falta para compilar Android.
 
 ## Arquitectura
-- `core/{domain,data,presentation,designsystem}` y `feature/<f>/{domain,data,database,presentation}`. Las features son auth, chat, club y globalPosition. Las de economy y onboarding están vacías y fuera del MVP.
+- `core/{domain,data,presentation,designsystem}` y `feature/<f>/{domain,data,database,presentation}`. Las features son auth, chat, club y globalPosition. (`economy` y `onboarding` se retiraron en la spec 011; están en el historial de git).
 - Clean Architecture + MVI + Koin + Room + Ktor. Offline-first para clubes, miembros y horario; network-first para convocatoria, partido y rankings (ADR-0006). Sigue las skills `android-*` del proyecto para cada capa.
 - Los convention plugins están en `build-logic/convention`:
   - un módulo nuevo usa `convention.kmp.library`, `convention.cmp.library` o `convention.cmp.feature`;
