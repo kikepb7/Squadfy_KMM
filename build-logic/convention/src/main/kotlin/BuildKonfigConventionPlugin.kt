@@ -25,15 +25,20 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
 
             val localProperties = gradleLocalProperties(rootDir, rootProject.providers)
 
-            fun resolve(key: String, default: String): String =
-                (providers.gradleProperty(key).orNull ?: localProperties.getProperty(key) ?: default)
+            // Lookup order: -Pkey / gradle.properties, then environment (CI secrets), then local.properties.
+            fun lookup(key: String): String? =
+                providers.gradleProperty(key).orNull
+                    ?: providers.environmentVariable(key).orNull
+                    ?: localProperties.getProperty(key)
+
+            fun resolve(key: String, default: String): String = lookup(key) ?: default
 
             extensions.configure<BuildKonfigExtension> {
                 packageName = target.pathToPackageName()
                 defaultConfigs {
-                    val apiKey = localProperties.getProperty("API_KEY")
+                    val apiKey = lookup("API_KEY")
                         ?: throw IllegalStateException(
-                            "Missing API_KEY property in local.properties"
+                            "Missing API_KEY: set it in local.properties, as -PAPI_KEY or as an environment variable"
                         )
                     buildConfigField(FieldSpec.Type.STRING, "API_KEY", apiKey)
                     buildConfigField(FieldSpec.Type.STRING, "BASE_URL_HTTP", resolve("BASE_URL_HTTP", DEFAULT_BASE_URL_HTTP))

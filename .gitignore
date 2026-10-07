@@ -17,4 +17,13 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
-.claude/skills
+# Claude Code: skills, specs and CLAUDE.md are versioned; personal settings are not
+.claude/settings.local.json
+
+# Secrets / signing
+*.jks
+*.keystore
+keystore.properties
+google-services.json
+.env
+
