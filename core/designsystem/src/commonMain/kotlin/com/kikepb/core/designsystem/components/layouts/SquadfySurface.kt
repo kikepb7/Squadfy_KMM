@@ -1,5 +1,6 @@
 package com.kikepb.core.designsystem.components.layouts
 
+import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,10 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.kikepb.core.designsystem.theme.SquadfyTheme
-import org.jetbrains.compose.resources.vectorResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import squadfy_app.core.designsystem.generated.resources.Res
-import squadfy_app.core.designsystem.generated.resources.loading_icon
 
 @Composable
 fun SquadfySurface(
@@ -65,12 +63,7 @@ fun SquadfySurfacePreview() {
         SquadfySurface(
             modifier = Modifier.fillMaxSize(),
             header = {
-                Icon(
-                    imageVector = vectorResource(Res.drawable.loading_icon), // TODO --> change by Squadfy logo
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(vertical = 32.dp)
-                )
+                SquadfyBrandLogo(modifier = Modifier.padding(vertical = 32.dp))
             },
             content = {
                 Text(
