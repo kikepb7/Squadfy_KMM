@@ -1,6 +1,6 @@
 # 011 · Preparación de la app para producción
 
-- **Estado:** Draft
+- **Estado:** In progress (rama `feature/011-release-readiness`; el owner pidió avanzar el 2026-10-08)
 - **Reglas:** constitución III y IV
 - **Skill:** `kmp-release-readiness` (lista de comprobación detallada)
 - **Depende de:** 002 (logging y red). Se puede avanzar en paralelo con 003–010.
@@ -45,3 +45,10 @@ La app no se puede publicar tal como está:
 **Calidad**
 - **AC-011-13** Crashlytics (o Sentry) en release, con opt-in según la política de privacidad.
 - **AC-011-14** El job de release del CI construye el AAB firmado y lo sube a Play Internal Testing (con `r0adkll/upload-google-play` o Fastlane). El job de iOS (macOS runner) es opcional en el MVP.
+
+## Decisiones (2026-10-08, owner)
+- **D-5 Bundle ID canónico:** `com.kikepb.squadfy` en Android e iOS. En iOS hay que dar de alta la app nueva en Firebase y en App Store Connect (manual).
+- **Crashes:** Firebase Crashlytics, solo en release y con consentimiento.
+- **D-3 Borrado de cuenta:** se asume `DELETE /api/v1/me {password}` → 204, y 401 `INVALID_CREDENTIALS` si la contraseña es incorrecta. El backend lo implementa en paralelo; en la app queda tras el flag `ACCOUNT_DELETION`, apagado hasta que el endpoint esté desplegado.
+- **URLs legales:** `PRIVACY_POLICY_URL` y `ACCOUNT_DELETION_URL` salen de BuildKonfig. Los valores por defecto son `https://squadfy.app/privacy` y `https://squadfy.app/delete-account`, y el owner publica las páginas.
+

@@ -17,7 +17,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 008 | Clasificaciones de rating y estadísticas | **In progress** (7/8; falta el E2E) | ✅ | — | ✅ | 003 | — |
 | 009 | Push del ciclo de partido + silenciar club | **In progress** (9/11; faltan el E2E con push reales y la clave APNs) | ✅ | — | ✅ | 002, 005, 006 | — |
 | 010 | Inicio con mis clubes y el estado de la convocatoria | **In progress** (6/7; falta el E2E) | ✅ | — | ✅ | 003, 005 | — |
-| 011 | Preparación de la app para producción | Draft | ✅ | — | — | 002 (en paralelo) | 5 d |
+| 011 | Preparación de la app para producción | **In progress** (0/13) | ✅ | ✅ | ✅ | 002 (en paralelo) | 5 d |
 | 012 | Puesta en producción (coordinada con el backend) | Draft | ✅ | — | — | todas, BE-008/009/010 | 3 d + revisión de tiendas |
 | 013 | Feature flags por entorno (PRE / PRO) | **Done** | ✅ | ✅ | ✅ | 001 | — |
 | 014 | Ausencias de jugadores | **In progress** (6/7; falta el E2E) | ✅ | — | ✅ | 003, 005 | — |
