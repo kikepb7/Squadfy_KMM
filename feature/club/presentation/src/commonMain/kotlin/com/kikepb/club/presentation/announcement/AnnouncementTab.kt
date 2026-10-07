@@ -42,6 +42,7 @@ import com.kikepb.club.domain.model.MatchAnnouncementModel
 import com.kikepb.club.domain.model.MyEnrollmentStatus
 import com.kikepb.club.domain.policy.WindowState
 import com.kikepb.club.presentation.components.PositionChips
+import com.kikepb.club.presentation.extramatch.ExtraMatchButton
 import com.kikepb.club.presentation.mapper.initialsOf
 import com.kikepb.club.presentation.mapper.label
 import com.kikepb.club.presentation.util.formatDateTime
@@ -117,7 +118,19 @@ fun AnnouncementTab(
         onPauseOrDispose { }
     }
 
-    AnnouncementContent(state = state, onAction = viewModel::onAction, onOpenSchedule = onOpenSchedule, onOpenMatch = onOpenMatch)
+    AnnouncementContent(
+        state = state,
+        onAction = viewModel::onAction,
+        onOpenSchedule = onOpenSchedule,
+        onOpenMatch = onOpenMatch,
+        managerActions = {
+            // AC-007-08: a new match becomes the current announcement, so the tab refreshes
+            ExtraMatchButton(onCreated = { message ->
+                scope.launch { snackbarHostState.showSnackbar(message.asStringAsync()) }
+                viewModel.onAction(AnnouncementAction.OnRefresh)
+            })
+        }
+    )
     AnnouncementDialogs(state = state, onAction = viewModel::onAction)
 }
 
@@ -127,7 +140,8 @@ fun AnnouncementContent(
     state: AnnouncementState,
     onAction: (AnnouncementAction) -> Unit,
     onOpenSchedule: () -> Unit,
-    onOpenMatch: ((matchId: String) -> Unit)?
+    onOpenMatch: ((matchId: String) -> Unit)?,
+    managerActions: @Composable () -> Unit = {}
 ) {
     PullToRefreshBox(
         isRefreshing = state.isRefreshing,
@@ -173,6 +187,7 @@ fun AnnouncementContent(
                     }
                 }
             }
+            if (state.isManager && !state.isStale && state.hasLoaded) item(key = "manager-actions") { managerActions() }
             if (onOpenMatch != null && state.history.isNotEmpty()) {
                 item(key = "history-title") { SectionTitle(text = stringResource(Res.string.announcement_history_title)) }
                 items(items = state.history, key = { "h-${it.id}" }) { past ->

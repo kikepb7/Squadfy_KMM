@@ -63,16 +63,16 @@
 | `GET/POST /clubs/{id}/schedule/exceptions` `{date, type: CANCELLED\|RESCHEDULED, newScheduledAt?, reason?}` → 201, `DELETE …/exceptions/{exceptionId}` → 204 | `GET/POST/DELETE /club/{id}/schedule/exceptions[/{id}]` | 004 | 🔁 flag `SCHEDULE_EXCEPTIONS` (BE-008) |
 | Horario: `closeDaysBefore`, `closeTime`, `drawDaysBefore`, `drawTime` en `ClubMatchScheduleDto` y en sus peticiones | `drawTime` en `PATCH /club/{id}/schedule` | 004 | 🔁 flag `CUSTOM_DRAW_TIME` (BE-008) |
 | `GET /clubs/{id}/absences?from=&to=`, `POST /clubs/{id}/members/me/absences` → 201, `DELETE …/members/me/absences/{id}` → 204 | — | 014 | ➕ flag `MEMBER_ABSENCES` (BE-008) |
-| `PUT /matches/{id}/score {teamAScore, teamBScore}`, `DELETE /matches/{id}/score` | `POST /club/matches/{id}/result` | 007 | 🔁 flag `MANUAL_SCORE` (BE-008) |
-| `GET /clubs/{id}/matches?status=` | `GET /club/{id}/matches` | 006/007 | 🔁 |
-| `POST /clubs/{id}/matches {scheduledAt, format?, durationMinutes?}` → 201 | `POST /club/{id}/matches` (botón «partido de prueba») | 007 | 🔁 se convierte en «Partido extra» para gestores |
+| `PUT /matches/{id}/score {teamAScore, teamBScore}`, `DELETE /matches/{id}/score` | `POST /club/matches/{id}/result` | 007 | ✅ flag `MANUAL_SCORE` (BE-008) |
+| `GET /clubs/{id}/matches?status=` | `GET /club/{id}/matches` | 006/007 | ✅ `?status=COMPLETED` decide si se puede reabrir |
+| `POST /clubs/{id}/matches {scheduledAt, format?, durationMinutes?}` → 201 | `POST /club/{id}/matches` (botón «partido de prueba») | 007 | ✅ «Partido extra» para gestores; `DEV_TEST_MATCH` solo añade el atajo «dentro de 15 min» |
 | `GET /matches/{id}` | `GET /club/matches/{id}` (sin uso) | 006 | ✅ `KtorMatchRepository` |
-| `POST /matches/{id}/cancel` | `POST /club/matches/{id}/cancel` (sin uso) | 007 | 🔁 |
+| `POST /matches/{id}/cancel` | `POST /club/matches/{id}/cancel` (sin uso) | 007 | ✅ |
 | `POST /matches/{id}/teams {mode, manualTeamA?, manualTeamB?}` | `POST /club/matches/{id}/generate-teams` | 006 | ✅ IDs = `clubMemberId` o `guestId` (BE-008) |
 | `GET /matches/{id}/team-balance` | — | 006 | ✅ 409 = sin equipos (panel oculto) |
-| `POST /matches/{id}/events` → 201, `DELETE /matches/{id}/events/{eventId}` | — | 007 | ➕ |
-| `PUT /matches/{id}/players/{memberId}/minutes {minutes}` | — | 007 | ➕ |
-| `POST /matches/{id}/complete`, `POST /matches/{id}/reopen` | `POST /club/matches/{id}/result` | 007 | 🔁 el resultado deja de enviarse como marcador |
+| `POST /matches/{id}/events` → 201, `DELETE /matches/{id}/events/{eventId}` | — | 007 | ✅ borrar con deshacer |
+| `PUT /matches/{id}/players/{memberId}/minutes {minutes}` | — | 007 | ✅ |
+| `POST /matches/{id}/complete`, `POST /matches/{id}/reopen` | `POST /club/matches/{id}/result` | 007 | ✅ el resultado deja de enviarse como marcador |
 
 ## Convocatorias
 | Endpoint v1 | Ruta actual | Spec | Estado |
@@ -119,3 +119,4 @@
 | 2026-10-07 | BE-008 publicada: invitados, excepciones, ausencias, cierre y sorteo configurables, marcador manual y `ratingChanges` |
 | 2026-10-07 | D-1: invitados, excepciones, `drawTime` y marcador manual pasan a ⏳ (backend en curso) y quedan tras flags |
 | 2026-10-07 | Spec 006: `GET /matches/{id}`, `/teams` (AUTO/MANUAL con invitados), `/team-balance` y `GET /matches/{id}/announcement` (✅). `KtorMatchRepository` ya expone también las rutas de la 007 |
+| 2026-10-07 | Spec 007: eventos, minutos, cerrar, reabrir, cancelar, partido extra y marcador manual (✅) |

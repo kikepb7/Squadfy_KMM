@@ -14,7 +14,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.CompareArrows
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -36,6 +45,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kikepb.club.domain.model.MatchEventModel
+import com.kikepb.club.domain.model.MatchEventType
+import com.kikepb.club.domain.model.MatchStatus
 import com.kikepb.club.domain.model.Team
 import com.kikepb.club.domain.model.TeamBalanceModel
 import com.kikepb.club.domain.model.TeamStrengthModel
@@ -50,14 +62,49 @@ import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle
 import com.kikepb.core.designsystem.components.dialogs.SquadfyDestructiveConfirmationDialog
+import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.presentation.util.ObserveAsEvents
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import squadfy_app.feature.club.presentation.generated.resources.Res
 import squadfy_app.feature.club.presentation.generated.resources.common_cancel
+import squadfy_app.feature.club.presentation.generated.resources.common_save
+import squadfy_app.feature.club.presentation.generated.resources.match_cancel
+import squadfy_app.feature.club.presentation.generated.resources.match_cancel_description
+import squadfy_app.feature.club.presentation.generated.resources.match_cancel_title
+import squadfy_app.feature.club.presentation.generated.resources.match_complete
+import squadfy_app.feature.club.presentation.generated.resources.match_complete_description
+import squadfy_app.feature.club.presentation.generated.resources.match_complete_title
+import squadfy_app.feature.club.presentation.generated.resources.match_decrease
+import squadfy_app.feature.club.presentation.generated.resources.match_event_add_title
+import squadfy_app.feature.club.presentation.generated.resources.match_event_assist
+import squadfy_app.feature.club.presentation.generated.resources.match_event_delete
+import squadfy_app.feature.club.presentation.generated.resources.match_event_goal
+import squadfy_app.feature.club.presentation.generated.resources.match_event_minute
+import squadfy_app.feature.club.presentation.generated.resources.match_event_red
+import squadfy_app.feature.club.presentation.generated.resources.match_event_yellow
+import squadfy_app.feature.club.presentation.generated.resources.match_events_empty
+import squadfy_app.feature.club.presentation.generated.resources.match_events_title
+import squadfy_app.feature.club.presentation.generated.resources.match_increase
+import squadfy_app.feature.club.presentation.generated.resources.match_keep
+import squadfy_app.feature.club.presentation.generated.resources.match_manual_score
+import squadfy_app.feature.club.presentation.generated.resources.match_manual_score_clear
+import squadfy_app.feature.club.presentation.generated.resources.match_manual_score_hint
+import squadfy_app.feature.club.presentation.generated.resources.match_minutes_hint
+import squadfy_app.feature.club.presentation.generated.resources.match_minutes_title
+import squadfy_app.feature.club.presentation.generated.resources.match_minutes_value
+import squadfy_app.feature.club.presentation.generated.resources.match_reopen
+import squadfy_app.feature.club.presentation.generated.resources.match_reopen_description
+import squadfy_app.feature.club.presentation.generated.resources.match_reopen_title
+import squadfy_app.feature.club.presentation.generated.resources.match_report_mode
+import squadfy_app.feature.club.presentation.generated.resources.match_report_mode_exit
+import squadfy_app.feature.club.presentation.generated.resources.match_score
+import squadfy_app.feature.club.presentation.generated.resources.match_score_manual
+import squadfy_app.feature.club.presentation.generated.resources.match_undo
 import squadfy_app.feature.club.presentation.generated.resources.former_member
 import squadfy_app.feature.club.presentation.generated.resources.match_balance_expected
 import squadfy_app.feature.club.presentation.generated.resources.match_balance_guest
@@ -97,6 +144,14 @@ fun MatchDetailRoot(
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
             is MatchDetailEvent.ShowMessage -> scope.launch { snackbarHostState.showSnackbar(event.message.asStringAsync()) }
+            is MatchDetailEvent.ShowUndo -> scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = event.message.asStringAsync(),
+                    actionLabel = getString(Res.string.match_undo),
+                    duration = SnackbarDuration.Long
+                )
+                if (result == SnackbarResult.ActionPerformed) viewModel.onAction(MatchDetailAction.OnUndoDeleteEvent(event.event))
+            }
             MatchDetailEvent.Close -> onBackClick()
         }
     }
@@ -135,26 +190,27 @@ fun MatchDetailScreen(
                 if (state.isStale) item(key = "stale") { HintText(text = stringResource(Res.string.match_offline)) }
                 state.match ?: return@LazyColumn
                 item(key = "header") { MatchHeader(state = state) }
+                if (state.match.hasTeams || state.match.status == MatchStatus.COMPLETED) {
+                    item(key = "score") { ScoreCard(state = state, onAction = onAction) }
+                }
+                if (state.canRecord) {
+                    item(key = "report-toggle") {
+                        OutlinedButton(onClick = { onAction(MatchDetailAction.OnToggleReport) }, enabled = state.editing == null, modifier = Modifier.fillMaxWidth()) {
+                            Text(text = stringResource(if (state.reportMode) Res.string.match_report_mode_exit else Res.string.match_report_mode))
+                        }
+                    }
+                }
                 matchTeamsSection(state = state, onAction = onAction)
+                if (state.match.events.isNotEmpty() || state.reportMode) item(key = "events") { EventsCard(state = state, onAction = onAction) }
                 state.balance?.takeIf { state.isManager && state.editing == null }?.let { balance ->
                     item(key = "balance") { BalancePanel(balance = balance, state = state) }
                 }
+                if (state.canComplete || state.canReopen || state.canCancel) item(key = "cycle") { CycleActions(state = state, onAction = onAction) }
             }
         }
     }
 
-    if (state.dialog == MatchDetailDialog.ConfirmRedraw) {
-        val dismiss = { onAction(MatchDetailAction.OnDismissDialog) }
-        SquadfyDestructiveConfirmationDialog(
-            title = stringResource(Res.string.match_redraw_title),
-            description = stringResource(Res.string.match_redraw_description),
-            confirmButtonText = stringResource(Res.string.match_redraw),
-            cancelButtonText = stringResource(Res.string.common_cancel),
-            onConfirmClick = { onAction(MatchDetailAction.OnConfirmRedraw) },
-            onCancelClick = dismiss,
-            onDismiss = dismiss
-        )
-    }
+    MatchDetailDialogs(state = state, onAction = onAction)
 }
 
 @Composable
@@ -217,8 +273,11 @@ private fun TeamCard(team: Team, players: List<TeamPlayer>, state: MatchDetailSt
                 player = player,
                 highlighted = isMine && player.isMe,
                 editing = state.editing != null,
-                onClick = { onAction(MatchDetailAction.OnMovePlayer(player.id)) }
+                onClick = { onAction(MatchDetailAction.OnMovePlayer(player.id)) },
+                stats = playerStats(player = player, state = state)
             )
+            // Guests have no stats (BE-008 RN-A6): only members get report controls
+            if (state.reportMode && !player.isGuest) ReportControls(player = player, state = state, onAction = onAction)
         }
     }
 }
@@ -233,7 +292,7 @@ private fun PositionsSummary(players: List<TeamPlayer>) {
 }
 
 @Composable
-private fun PlayerRow(player: TeamPlayer, highlighted: Boolean, editing: Boolean, onClick: () -> Unit) {
+private fun PlayerRow(player: TeamPlayer, highlighted: Boolean, editing: Boolean, onClick: () -> Unit, stats: String? = null) {
     val name = player.name ?: stringResource(Res.string.former_member)
     Surface(
         modifier = Modifier.fillMaxWidth().then(if (editing) Modifier.clickable(onClick = onClick) else Modifier),
@@ -255,6 +314,7 @@ private fun PlayerRow(player: TeamPlayer, highlighted: Boolean, editing: Boolean
                 ).joinToString(" · ")
                 if (details.isNotBlank()) HintText(text = details)
             }
+            stats?.let { Text(text = it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.extended.textSecondary) }
             if (editing) {
                 Icon(imageVector = Icons.AutoMirrored.Outlined.CompareArrows, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             }
@@ -331,4 +391,256 @@ private fun TeamStrength(name: String, strength: TeamStrengthModel, state: Match
             }
         }
     }
+}
+
+val MatchEventType.label
+    get() = when (this) {
+        MatchEventType.GOAL -> Res.string.match_event_goal
+        MatchEventType.ASSIST -> Res.string.match_event_assist
+        MatchEventType.YELLOW_CARD -> Res.string.match_event_yellow
+        MatchEventType.RED_CARD -> Res.string.match_event_red
+    }
+
+private val MatchEventType.symbol: String
+    get() = when (this) {
+        MatchEventType.GOAL -> "⚽"
+        MatchEventType.ASSIST -> "🅰️"
+        MatchEventType.YELLOW_CARD -> "🟨"
+        MatchEventType.RED_CARD -> "🟥"
+    }
+
+/** "⚽2 🟨 · 45 min · +12": events, minutes (report or completed) and the match rating once completed. */
+@Composable
+private fun playerStats(player: TeamPlayer, state: MatchDetailState): String? {
+    val match = state.match ?: return null
+    if (player.isGuest) return null
+    val events = match.events.filter { it.clubMemberId == player.id }
+        .groupingBy { it.type }.eachCount().entries
+        .joinToString(" ") { (type, count) -> if (count > 1) "${type.symbol}$count" else type.symbol }
+    val showMinutes = state.reportMode || match.status == MatchStatus.COMPLETED
+    val minutes = if (showMinutes) stringResource(Res.string.match_minutes_value, match.minutesOf(player.id)) else null
+    val rating = match.ratingChanges[player.id]?.let { if (it > 0) "+$it" else "$it" }
+    return listOf(events, minutes, rating).filter { !it.isNullOrBlank() }.joinToString(" · ").ifBlank { null }
+}
+
+@Composable
+private fun ReportControls(player: TeamPlayer, state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
+    val match = state.match ?: return
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(start = 48.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        MatchEventType.entries.forEach { type ->
+            TextButton(onClick = { onAction(MatchDetailAction.OnAddEventClick(player.id, type)) }, enabled = !state.isWorking) {
+                Text(text = type.symbol)
+            }
+        }
+        TextButton(onClick = { onAction(MatchDetailAction.OnEditMinutesClick(player.id)) }, enabled = !state.isWorking) {
+            Text(text = stringResource(Res.string.match_minutes_value, match.minutesOf(player.id)))
+        }
+    }
+}
+
+@Composable
+private fun ScoreCard(state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
+    val match = state.match ?: return
+    SectionCard {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            // Official score: from goal events, or the manual one (APP-RN-10, BE-008 RN-E2)
+            Text(
+                text = stringResource(Res.string.match_score, match.teamAScore, match.teamBScore),
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.extended.textPrimary,
+                modifier = Modifier.weight(1f)
+            )
+            if (match.isManualScore) AssistChip(onClick = {}, label = { Text(text = stringResource(Res.string.match_score_manual)) })
+        }
+        if (state.canSetManualScore) {
+            HintText(text = stringResource(Res.string.match_manual_score_hint))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { onAction(MatchDetailAction.OnManualScoreClick) }, enabled = !state.isWorking) {
+                    Text(text = stringResource(Res.string.match_manual_score))
+                }
+                if (match.isManualScore) {
+                    TextButton(onClick = { onAction(MatchDetailAction.OnClearManualScore) }, enabled = !state.isWorking) {
+                        Text(text = stringResource(Res.string.match_manual_score_clear))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EventsCard(state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
+    val match = state.match ?: return
+    SectionCard {
+        SectionTitle(text = stringResource(Res.string.match_events_title))
+        if (match.events.isEmpty()) HintText(text = stringResource(Res.string.match_events_empty))
+        match.events.forEach { event -> EventRow(event = event, state = state, onAction = onAction) }
+    }
+}
+
+@Composable
+private fun EventRow(event: MatchEventModel, state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
+    val player = state.player(event.clubMemberId, isGuest = false)
+    val team = state.match?.teamOf(event.clubMemberId)?.name?.let { " ($it)" }.orEmpty()
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = listOfNotNull(event.minute?.let { "$it'" }, event.type.symbol, stringResource(event.type.label)).joinToString(" ") +
+                " · " + (player.name ?: stringResource(Res.string.former_member)) + team,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f)
+        )
+        if (state.canRecord) {
+            IconButton(onClick = { onAction(MatchDetailAction.OnDeleteEvent(event)) }, enabled = !state.isWorking) {
+                Icon(imageVector = Icons.Outlined.Delete, contentDescription = stringResource(Res.string.match_event_delete))
+            }
+        }
+    }
+    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+}
+
+@Composable
+private fun CycleActions(state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (state.canComplete) {
+            SquadfyButton(
+                text = stringResource(Res.string.match_complete),
+                onClick = { onAction(MatchDetailAction.OnCompleteClick) },
+                isLoading = state.isWorking,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        if (state.canReopen) {
+            SquadfyButton(
+                text = stringResource(Res.string.match_reopen),
+                onClick = { onAction(MatchDetailAction.OnReopenClick) },
+                style = SquadfyButtonStyle.SECONDARY,
+                isLoading = state.isWorking,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        if (state.canCancel) {
+            SquadfyButton(
+                text = stringResource(Res.string.match_cancel),
+                onClick = { onAction(MatchDetailAction.OnCancelMatchClick) },
+                style = SquadfyButtonStyle.DESTRUCTIVE_SECONDARY,
+                enabled = !state.isWorking,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+private fun MatchDetailDialogs(state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
+    val dismiss = { onAction(MatchDetailAction.OnDismissDialog) }
+    val match = state.match
+    when (val dialog = state.dialog) {
+        MatchDetailDialog.ConfirmRedraw -> SquadfyDestructiveConfirmationDialog(
+            title = stringResource(Res.string.match_redraw_title),
+            description = stringResource(Res.string.match_redraw_description),
+            confirmButtonText = stringResource(Res.string.match_redraw),
+            cancelButtonText = stringResource(Res.string.common_cancel),
+            onConfirmClick = { onAction(MatchDetailAction.OnConfirmRedraw) },
+            onCancelClick = dismiss,
+            onDismiss = dismiss
+        )
+        MatchDetailDialog.ConfirmComplete -> ConfirmDialog(
+            title = stringResource(Res.string.match_complete_title),
+            text = stringResource(Res.string.match_complete_description, match?.teamAScore ?: 0, match?.teamBScore ?: 0),
+            confirm = stringResource(Res.string.match_complete),
+            onConfirm = { onAction(MatchDetailAction.OnConfirmComplete) },
+            onDismiss = dismiss
+        )
+        MatchDetailDialog.ConfirmReopen -> ConfirmDialog(
+            title = stringResource(Res.string.match_reopen_title),
+            text = stringResource(Res.string.match_reopen_description),
+            confirm = stringResource(Res.string.match_reopen),
+            onConfirm = { onAction(MatchDetailAction.OnConfirmReopen) },
+            onDismiss = dismiss
+        )
+        MatchDetailDialog.ConfirmCancel -> SquadfyDestructiveConfirmationDialog(
+            title = stringResource(Res.string.match_cancel_title),
+            description = stringResource(Res.string.match_cancel_description),
+            confirmButtonText = stringResource(Res.string.match_cancel),
+            cancelButtonText = stringResource(Res.string.match_keep),
+            onConfirmClick = { onAction(MatchDetailAction.OnConfirmCancelMatch) },
+            onCancelClick = dismiss,
+            onDismiss = dismiss
+        )
+        is MatchDetailDialog.AddEvent -> {
+            val name = state.player(dialog.playerId, isGuest = false).name ?: stringResource(Res.string.former_member)
+            AlertDialog(
+                onDismissRequest = dismiss,
+                title = { Text(text = stringResource(Res.string.match_event_add_title, stringResource(dialog.type.label))) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(text = "${dialog.type.symbol} $name", style = MaterialTheme.typography.bodyLarge)
+                        SquadfyTextField(state = dialog.minute, title = stringResource(Res.string.match_event_minute), singleLine = true)
+                    }
+                },
+                confirmButton = { TextButton(onClick = { onAction(MatchDetailAction.OnConfirmAddEvent) }) { Text(text = stringResource(Res.string.common_save)) } },
+                dismissButton = { TextButton(onClick = dismiss) { Text(text = stringResource(Res.string.common_cancel)) } }
+            )
+        }
+        is MatchDetailDialog.EditMinutes -> AlertDialog(
+            onDismissRequest = dismiss,
+            title = { Text(text = stringResource(Res.string.match_minutes_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(text = state.player(dialog.playerId, isGuest = false).name ?: stringResource(Res.string.former_member))
+                    SquadfyTextField(state = dialog.minutes, title = stringResource(Res.string.match_minutes_title), singleLine = true)
+                    Text(
+                        text = stringResource(Res.string.match_minutes_hint, match?.durationMinutes ?: 0),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (dialog.isInvalid) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.extended.textPlaceholder
+                    )
+                }
+            },
+            confirmButton = { TextButton(onClick = { onAction(MatchDetailAction.OnConfirmMinutes) }) { Text(text = stringResource(Res.string.common_save)) } },
+            dismissButton = { TextButton(onClick = dismiss) { Text(text = stringResource(Res.string.common_cancel)) } }
+        )
+        is MatchDetailDialog.ManualScore -> AlertDialog(
+            onDismissRequest = dismiss,
+            title = { Text(text = stringResource(Res.string.match_manual_score)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    ScoreStepper(label = stringResource(Res.string.match_team_a), value = dialog.teamA) { delta ->
+                        onAction(MatchDetailAction.OnManualScoreChanged(Team.A, delta))
+                    }
+                    ScoreStepper(label = stringResource(Res.string.match_team_b), value = dialog.teamB) { delta ->
+                        onAction(MatchDetailAction.OnManualScoreChanged(Team.B, delta))
+                    }
+                    HintText(text = stringResource(Res.string.match_manual_score_hint))
+                }
+            },
+            confirmButton = { TextButton(onClick = { onAction(MatchDetailAction.OnConfirmManualScore) }) { Text(text = stringResource(Res.string.common_save)) } },
+            dismissButton = { TextButton(onClick = dismiss) { Text(text = stringResource(Res.string.common_cancel)) } }
+        )
+        null -> Unit
+    }
+}
+
+@Composable
+private fun ScoreStepper(label: String, value: Int, onChange: (Int) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(text = label, modifier = Modifier.weight(1f))
+        IconButton(onClick = { onChange(-1) }) { Icon(imageVector = Icons.Outlined.Remove, contentDescription = stringResource(Res.string.match_decrease)) }
+        Text(text = value.toString(), style = MaterialTheme.typography.titleLarge)
+        IconButton(onClick = { onChange(1) }) { Icon(imageVector = Icons.Outlined.Add, contentDescription = stringResource(Res.string.match_increase)) }
+    }
+}
+
+@Composable
+private fun ConfirmDialog(title: String, text: String, confirm: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title) },
+        text = { Text(text = text) },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(text = confirm) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(text = stringResource(Res.string.common_cancel)) } }
+    )
 }

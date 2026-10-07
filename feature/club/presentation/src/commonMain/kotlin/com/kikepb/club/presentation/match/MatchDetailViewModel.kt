@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.match
 
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,24 +8,40 @@ import com.kikepb.club.domain.error.ClubError
 import com.kikepb.club.domain.model.ClubMemberModel
 import com.kikepb.club.domain.model.MatchFormat
 import com.kikepb.club.domain.model.MatchAnnouncementModel
+import com.kikepb.club.domain.model.MatchEventModel
+import com.kikepb.club.domain.model.MatchEventType
 import com.kikepb.club.domain.model.MatchGuestModel
 import com.kikepb.club.domain.model.MatchModel
+import com.kikepb.club.domain.model.MatchStatus
 import com.kikepb.club.domain.model.PlayerPosition
 import com.kikepb.club.domain.model.Team
 import com.kikepb.club.domain.model.TeamBalanceModel
+import com.kikepb.club.domain.policy.MatchCyclePolicy
 import com.kikepb.club.domain.policy.MatchTeamsPolicy
 import com.kikepb.club.domain.policy.MemberPermissions
 import com.kikepb.club.domain.policy.TeamsPending
 import com.kikepb.club.domain.policy.TeamsSplit
+import com.kikepb.club.domain.usecase.AddMatchEventUseCase
+import com.kikepb.club.domain.usecase.CancelMatchUseCase
+import com.kikepb.club.domain.usecase.ClearManualScoreUseCase
+import com.kikepb.club.domain.usecase.CompleteMatchUseCase
+import com.kikepb.club.domain.usecase.DeleteMatchEventUseCase
 import com.kikepb.club.domain.usecase.GenerateTeamsUseCase
+import com.kikepb.club.domain.usecase.GetClubMatchesUseCase
 import com.kikepb.club.domain.usecase.GetClubMembersUseCase
 import com.kikepb.club.domain.usecase.GetMatchAnnouncementUseCase
 import com.kikepb.club.domain.usecase.GetMatchUseCase
 import com.kikepb.club.domain.usecase.GetScheduleUseCase
 import com.kikepb.club.domain.usecase.GetTeamBalanceUseCase
 import com.kikepb.club.domain.usecase.ObserveMyMembershipUseCase
+import com.kikepb.club.domain.usecase.ReopenMatchUseCase
+import com.kikepb.club.domain.usecase.SetManualScoreUseCase
+import com.kikepb.club.domain.usecase.SetPlayerMinutesUseCase
 import com.kikepb.club.presentation.mapper.toUiText
+import com.kikepb.core.domain.featureflag.FeatureFlag
+import com.kikepb.core.domain.featureflag.FeatureFlags
 import com.kikepb.core.domain.util.DataError
+import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
 import com.kikepb.core.presentation.util.UiText
@@ -38,12 +55,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import squadfy_app.feature.club.presentation.generated.resources.Res
+import squadfy_app.feature.club.presentation.generated.resources.match_cancelled_message
+import squadfy_app.feature.club.presentation.generated.resources.match_completed_message
+import squadfy_app.feature.club.presentation.generated.resources.match_event_deleted
+import squadfy_app.feature.club.presentation.generated.resources.match_reopened_message
 import squadfy_app.feature.club.presentation.generated.resources.match_teams_rejected
 import squadfy_app.feature.club.presentation.generated.resources.match_teams_saved
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-/** Match detail: teams, balance and their rectification (spec 006). Network-first (ADR-0006). */
+/** Match detail: teams and balance (spec 006) plus the report, lifecycle and manual score (spec 007). Network-first (ADR-0006). */
 class MatchDetailViewModel(
     getClubMembersUseCase: GetClubMembersUseCase,
     observeMyMembershipUseCase: ObserveMyMembershipUseCase,
@@ -52,6 +73,16 @@ class MatchDetailViewModel(
     private val getTeamBalanceUseCase: GetTeamBalanceUseCase,
     private val generateTeamsUseCase: GenerateTeamsUseCase,
     private val getScheduleUseCase: GetScheduleUseCase,
+    private val getClubMatchesUseCase: GetClubMatchesUseCase,
+    private val addMatchEventUseCase: AddMatchEventUseCase,
+    private val deleteMatchEventUseCase: DeleteMatchEventUseCase,
+    private val setPlayerMinutesUseCase: SetPlayerMinutesUseCase,
+    private val completeMatchUseCase: CompleteMatchUseCase,
+    private val reopenMatchUseCase: ReopenMatchUseCase,
+    private val cancelMatchUseCase: CancelMatchUseCase,
+    private val setManualScoreUseCase: SetManualScoreUseCase,
+    private val clearManualScoreUseCase: ClearManualScoreUseCase,
+    featureFlags: FeatureFlags,
     private val clock: Clock,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -69,9 +100,15 @@ class MatchDetailViewModel(
     val state = combine(
         _state,
         getClubMembersUseCase(clubId),
-        observeMyMembershipUseCase(clubId)
-    ) { current, members, me ->
-        current.copy(members = members.associateBy { it.id }, myMemberId = me?.id, isManager = me != null && MemberPermissions.canManageClub(me.role))
+        observeMyMembershipUseCase(clubId),
+        featureFlags.observe(FeatureFlag.MANUAL_SCORE)
+    ) { current, members, me, manualScore ->
+        current.copy(
+            members = members.associateBy { it.id },
+            myMemberId = me?.id,
+            isManager = me != null && MemberPermissions.canManageClub(me.role),
+            manualScoreEnabled = manualScore
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000L),
@@ -89,6 +126,7 @@ class MatchDetailViewModel(
                 if (me != null && MemberPermissions.canManageClub(me.role) && !balanceRequested) {
                     balanceRequested = true
                     loadBalance()
+                    loadLatestCompleted()
                 }
             }
         }
@@ -106,6 +144,40 @@ class MatchDetailViewModel(
             MatchDetailAction.OnCancelManualEdit -> _state.update { it.copy(editing = null) }
             MatchDetailAction.OnSaveManualEdit -> saveManual()
             MatchDetailAction.OnDismissDialog -> _state.update { it.copy(dialog = null) }
+            MatchDetailAction.OnToggleReport -> _state.update { it.copy(reportMode = !it.reportMode, editing = null) }
+            is MatchDetailAction.OnAddEventClick -> _state.update { it.copy(dialog = MatchDetailDialog.AddEvent(action.playerId, action.type)) }
+            MatchDetailAction.OnConfirmAddEvent -> addEvent()
+            is MatchDetailAction.OnDeleteEvent -> deleteEvent(action.event)
+            is MatchDetailAction.OnUndoDeleteEvent -> launchWorking {
+                addMatchEventUseCase(matchId, action.event.clubMemberId, action.event.type, action.event.minute).handleMatchResult()
+            }
+            is MatchDetailAction.OnEditMinutesClick -> _state.value.match?.let { match ->
+                val minutes = TextFieldState(initialText = match.minutesOf(action.playerId).toString())
+                _state.update { it.copy(dialog = MatchDetailDialog.EditMinutes(action.playerId, minutes)) }
+            }
+            MatchDetailAction.OnConfirmMinutes -> saveMinutes()
+            MatchDetailAction.OnCompleteClick -> _state.update { it.copy(dialog = MatchDetailDialog.ConfirmComplete) }
+            MatchDetailAction.OnConfirmComplete -> runCycle(Res.string.match_completed_message) { completeMatchUseCase(matchId) }
+            MatchDetailAction.OnReopenClick -> _state.update { it.copy(dialog = MatchDetailDialog.ConfirmReopen) }
+            MatchDetailAction.OnConfirmReopen -> runCycle(Res.string.match_reopened_message) { reopenMatchUseCase(matchId) }
+            MatchDetailAction.OnCancelMatchClick -> _state.update { it.copy(dialog = MatchDetailDialog.ConfirmCancel) }
+            MatchDetailAction.OnConfirmCancelMatch -> runCycle(Res.string.match_cancelled_message) { cancelMatchUseCase(matchId) }
+            MatchDetailAction.OnManualScoreClick -> _state.value.match?.let { match ->
+                _state.update { it.copy(dialog = MatchDetailDialog.ManualScore(match.teamAScore, match.teamBScore)) }
+            }
+            is MatchDetailAction.OnManualScoreChanged -> _state.update { state ->
+                val dialog = state.dialog as? MatchDetailDialog.ManualScore ?: return@update state
+                val range = SetManualScoreUseCase.SCORE_RANGE
+                state.copy(
+                    dialog = if (action.team == Team.A) dialog.copy(teamA = (dialog.teamA + action.delta).coerceIn(range))
+                    else dialog.copy(teamB = (dialog.teamB + action.delta).coerceIn(range))
+                )
+            }
+            MatchDetailAction.OnConfirmManualScore -> (_state.value.dialog as? MatchDetailDialog.ManualScore)?.let { dialog ->
+                _state.update { it.copy(dialog = null) }
+                launchWorking { setManualScoreUseCase(matchId, dialog.teamA, dialog.teamB).handleMatchResult() }
+            }
+            MatchDetailAction.OnClearManualScore -> launchWorking { clearManualScoreUseCase(matchId).handleMatchResult() }
         }
     }
 
@@ -118,7 +190,10 @@ class MatchDetailViewModel(
             getMatchAnnouncementUseCase(matchId).onSuccess { announcement ->
                 _state.update { it.copy(announcement = announcement) }
             }
-            if (balanceRequested) loadBalance()
+            if (balanceRequested) {
+                loadBalance()
+                loadLatestCompleted()
+            }
             _state.update { it.copy(isRefreshing = false, hasLoaded = true) }
         }
     }
@@ -157,7 +232,7 @@ class MatchDetailViewModel(
         }
     }
 
-    private suspend fun com.kikepb.core.domain.util.Result<MatchModel, ClubError>.handleTeamsResult() {
+    private suspend fun Result<MatchModel, ClubError>.handleTeamsResult() {
         onSuccess { match ->
             _state.update { it.copy(match = match, editing = null) }
             eventChannel.send(MatchDetailEvent.ShowMessage(UiText.Resource(Res.string.match_teams_saved)))
@@ -177,6 +252,72 @@ class MatchDetailViewModel(
                 refresh()
             }
         }
+    }
+
+    private fun loadLatestCompleted() {
+        viewModelScope.launch {
+            // Newest first: only the first completed match can be reopened (AC-007-06)
+            getClubMatchesUseCase(clubId, MatchStatus.COMPLETED).onSuccess { matches ->
+                _state.update { it.copy(latestCompletedId = matches.firstOrNull()?.id) }
+            }
+        }
+    }
+
+    private fun addEvent() {
+        val dialog = _state.value.dialog as? MatchDetailDialog.AddEvent ?: return
+        val minute = dialog.minute.text.toString().trim().toIntOrNull()
+        _state.update { it.copy(dialog = null) }
+        launchWorking { addMatchEventUseCase(matchId, dialog.playerId, dialog.type, minute).handleMatchResult() }
+    }
+
+    private fun deleteEvent(event: MatchEventModel) {
+        launchWorking {
+            deleteMatchEventUseCase(matchId, event.id)
+                .onSuccess { match ->
+                    _state.update { it.copy(match = match) }
+                    // AC-007-02: the snackbar offers to record the same event again
+                    eventChannel.send(MatchDetailEvent.ShowUndo(UiText.Resource(Res.string.match_event_deleted), event))
+                }
+                .onFailure { error -> onActionError(error) }
+        }
+    }
+
+    private fun saveMinutes() {
+        val dialog = _state.value.dialog as? MatchDetailDialog.EditMinutes ?: return
+        val match = _state.value.match ?: return
+        val minutes = dialog.minutes.text.toString().trim().toIntOrNull()
+        if (!MatchCyclePolicy.isValidMinutes(match, minutes)) {
+            _state.update { it.copy(dialog = dialog.copy(isInvalid = true)) }
+            return
+        }
+        _state.update { it.copy(dialog = null) }
+        launchWorking { setPlayerMinutesUseCase(matchId, dialog.playerId, minutes!!).handleMatchResult() }
+    }
+
+    private fun runCycle(message: org.jetbrains.compose.resources.StringResource, call: suspend () -> Result<MatchModel, ClubError>) {
+        _state.update { it.copy(dialog = null) }
+        launchWorking {
+            call()
+                .onSuccess { match ->
+                    _state.update { it.copy(match = match, reportMode = false, editing = null) }
+                    eventChannel.send(MatchDetailEvent.ShowMessage(UiText.Resource(message)))
+                    loadLatestCompleted()
+                    loadBalance()
+                }
+                .onFailure { error -> onActionError(error) }
+        }
+    }
+
+    private suspend fun Result<MatchModel, ClubError>.handleMatchResult() {
+        onSuccess { match -> _state.update { it.copy(match = match) } }
+        onFailure { error -> onActionError(error) }
+    }
+
+    /** A 400/409 means the match changed meanwhile (e.g. completed by another manager): show it and reload. */
+    private suspend fun onActionError(error: ClubError) {
+        eventChannel.send(MatchDetailEvent.ShowMessage(error.toUiText()))
+        val status = (error as? ClubError.Remote)?.error?.status
+        if (status == DataError.Remote.CONFLICT || status == DataError.Remote.BAD_REQUEST) refresh()
     }
 
     private fun launchWorking(block: suspend () -> Unit) {
@@ -205,6 +346,12 @@ data class TeamPlayer(
 
 sealed interface MatchDetailDialog {
     data object ConfirmRedraw : MatchDetailDialog
+    data object ConfirmComplete : MatchDetailDialog
+    data object ConfirmReopen : MatchDetailDialog
+    data object ConfirmCancel : MatchDetailDialog
+    data class AddEvent(val playerId: String, val type: MatchEventType, val minute: TextFieldState = TextFieldState()) : MatchDetailDialog
+    data class EditMinutes(val playerId: String, val minutes: TextFieldState, val isInvalid: Boolean = false) : MatchDetailDialog
+    data class ManualScore(val teamA: Int, val teamB: Int) : MatchDetailDialog
 }
 
 data class MatchDetailState(
@@ -223,8 +370,18 @@ data class MatchDetailState(
     val format: MatchFormat? = null,
     val now: Instant = Instant.DISTANT_PAST,
     val editing: TeamsSplit? = null,
-    val dialog: MatchDetailDialog? = null
+    val dialog: MatchDetailDialog? = null,
+    /** "Report" mode: per-player event and minute controls (AC-007-01). */
+    val reportMode: Boolean = false,
+    val latestCompletedId: String? = null,
+    val manualScoreEnabled: Boolean = false
 ) {
+    val canRecord: Boolean get() = match != null && MatchCyclePolicy.canRecord(match, isManager) && !isStale
+    val canComplete: Boolean get() = match != null && MatchCyclePolicy.canComplete(match, isManager, now) && !isStale
+    val canReopen: Boolean get() = match != null && MatchCyclePolicy.canReopen(match, isManager, latestCompletedId) && !isStale
+    val canCancel: Boolean get() = match != null && MatchCyclePolicy.canCancel(match, isManager) && !isStale
+    val canSetManualScore: Boolean get() = manualScoreEnabled && canRecord
+
     val canRectify: Boolean get() = match != null && MatchTeamsPolicy.canRectify(match, isManager) && !isStale
 
     val pending: TeamsPending? get() = match?.let { MatchTeamsPolicy.pending(it, announcement, now) }
@@ -262,9 +419,27 @@ sealed interface MatchDetailAction {
     data object OnCancelManualEdit : MatchDetailAction
     data object OnSaveManualEdit : MatchDetailAction
     data object OnDismissDialog : MatchDetailAction
+    data object OnToggleReport : MatchDetailAction
+    data class OnAddEventClick(val playerId: String, val type: MatchEventType) : MatchDetailAction
+    data object OnConfirmAddEvent : MatchDetailAction
+    data class OnDeleteEvent(val event: MatchEventModel) : MatchDetailAction
+    data class OnUndoDeleteEvent(val event: MatchEventModel) : MatchDetailAction
+    data class OnEditMinutesClick(val playerId: String) : MatchDetailAction
+    data object OnConfirmMinutes : MatchDetailAction
+    data object OnCompleteClick : MatchDetailAction
+    data object OnConfirmComplete : MatchDetailAction
+    data object OnReopenClick : MatchDetailAction
+    data object OnConfirmReopen : MatchDetailAction
+    data object OnCancelMatchClick : MatchDetailAction
+    data object OnConfirmCancelMatch : MatchDetailAction
+    data object OnManualScoreClick : MatchDetailAction
+    data class OnManualScoreChanged(val team: Team, val delta: Int) : MatchDetailAction
+    data object OnConfirmManualScore : MatchDetailAction
+    data object OnClearManualScore : MatchDetailAction
 }
 
 sealed interface MatchDetailEvent {
     data class ShowMessage(val message: UiText) : MatchDetailEvent
+    data class ShowUndo(val message: UiText, val event: MatchEventModel) : MatchDetailEvent
     data object Close : MatchDetailEvent
 }

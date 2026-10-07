@@ -8,6 +8,8 @@ import com.kikepb.club.domain.model.ClubMemberRole
 import com.kikepb.club.domain.model.ClubScheduleModel
 import com.kikepb.club.domain.model.CurrentAnnouncementModel
 import com.kikepb.club.domain.model.MatchAnnouncementModel
+import com.kikepb.club.domain.model.MatchEventModel
+import com.kikepb.club.domain.model.MatchEventType
 import com.kikepb.club.domain.model.MatchGuestModel
 import com.kikepb.club.domain.model.MatchStatus
 import com.kikepb.club.domain.model.PlayerPosition
@@ -21,7 +23,16 @@ import com.kikepb.club.domain.model.TeamStrengthModel
 import com.kikepb.club.domain.policy.TeamsPending
 import com.kikepb.club.domain.repository.AnnouncementRepository
 import com.kikepb.club.domain.repository.ScheduleRepository
+import com.kikepb.club.domain.usecase.AddMatchEventUseCase
+import com.kikepb.club.domain.usecase.CancelMatchUseCase
+import com.kikepb.club.domain.usecase.ClearManualScoreUseCase
+import com.kikepb.club.domain.usecase.CompleteMatchUseCase
+import com.kikepb.club.domain.usecase.DeleteMatchEventUseCase
 import com.kikepb.club.domain.usecase.GenerateTeamsUseCase
+import com.kikepb.club.domain.usecase.GetClubMatchesUseCase
+import com.kikepb.club.domain.usecase.ReopenMatchUseCase
+import com.kikepb.club.domain.usecase.SetManualScoreUseCase
+import com.kikepb.club.domain.usecase.SetPlayerMinutesUseCase
 import com.kikepb.club.domain.usecase.GetClubMembersUseCase
 import com.kikepb.club.domain.usecase.GetMatchAnnouncementUseCase
 import com.kikepb.club.domain.usecase.GetMatchUseCase
@@ -29,10 +40,12 @@ import com.kikepb.club.domain.usecase.GetScheduleUseCase
 import com.kikepb.club.domain.usecase.GetTeamBalanceUseCase
 import com.kikepb.club.domain.usecase.ObserveMyMembershipUseCase
 import com.kikepb.club.presentation.fake.FakeClubRepository
+import com.kikepb.club.presentation.fake.FakeFeatureFlags
 import com.kikepb.club.presentation.fake.FakeMatchRepository
 import com.kikepb.club.presentation.fake.FakeSessionStorage
 import com.kikepb.club.presentation.fake.match
 import com.kikepb.club.presentation.fake.member
+import com.kikepb.core.domain.featureflag.FeatureFlag
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.RemoteError
@@ -103,7 +116,7 @@ class MatchDetailViewModelTest {
     @AfterTest
     fun tearDown() = Dispatchers.resetMain()
 
-    private fun viewModel(role: ClubMemberRole = ClubMemberRole.PLAYER): MatchDetailViewModel {
+    private fun viewModel(role: ClubMemberRole = ClubMemberRole.PLAYER, flags: FakeFeatureFlags = FakeFeatureFlags()): MatchDetailViewModel {
         clubRepository.members.value = listOf(member("me", userId = "me", role = role)) + (2..4).map { member("m-$it", userId = "u-$it") }
         return MatchDetailViewModel(
             getClubMembersUseCase = GetClubMembersUseCase(clubRepository),
@@ -113,6 +126,16 @@ class MatchDetailViewModelTest {
             getTeamBalanceUseCase = GetTeamBalanceUseCase(repository),
             generateTeamsUseCase = GenerateTeamsUseCase(repository),
             getScheduleUseCase = GetScheduleUseCase(NoScheduleRepository()),
+            getClubMatchesUseCase = GetClubMatchesUseCase(repository),
+            addMatchEventUseCase = AddMatchEventUseCase(repository),
+            deleteMatchEventUseCase = DeleteMatchEventUseCase(repository),
+            setPlayerMinutesUseCase = SetPlayerMinutesUseCase(repository),
+            completeMatchUseCase = CompleteMatchUseCase(repository),
+            reopenMatchUseCase = ReopenMatchUseCase(repository),
+            cancelMatchUseCase = CancelMatchUseCase(repository),
+            setManualScoreUseCase = SetManualScoreUseCase(repository),
+            clearManualScoreUseCase = ClearManualScoreUseCase(repository),
+            featureFlags = flags,
             clock = clock,
             savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1", "matchId" to "match-1"))
         )
@@ -241,5 +264,124 @@ class MatchDetailViewModelTest {
             assertIs<MatchDetailEvent.ShowMessage>(awaitItem())
         }
         assertEquals(getsBefore + 1, repository.calls.count { it == "get" })
+    }
+
+    private val started = Instant.parse("2026-10-15T18:30:00Z")
+
+    @Test
+    fun `AC-007-01 adding an event sends member, type and minute and shows the returned match`() = runTest(UnconfinedTestDispatcher()) {
+        repository.current = Result.Success(withTeams)
+        val viewModel = viewModel(role = ClubMemberRole.OWNER)
+        viewModel.state.launchIn(backgroundScope)
+        repository.next = withTeams.copy(teamAScore = 1)
+
+        viewModel.onAction(MatchDetailAction.OnToggleReport)
+        viewModel.onAction(MatchDetailAction.OnAddEventClick("m-2", MatchEventType.GOAL))
+        (viewModel.state.value.dialog as MatchDetailDialog.AddEvent).minute.edit { append("33") }
+        viewModel.onAction(MatchDetailAction.OnConfirmAddEvent)
+
+        assertTrue("event-add:m-2:GOAL:33" in repository.calls)
+        assertEquals(1, viewModel.state.value.match?.teamAScore)
+    }
+
+    @Test
+    fun `AC-007-02 deleting an event offers undo that records it again`() = runTest(UnconfinedTestDispatcher()) {
+        val goal = MatchEventModel(id = "ev-1", clubMemberId = "m-2", type = MatchEventType.GOAL, minute = 10, createdAt = started)
+        repository.current = Result.Success(withTeams.copy(events = listOf(goal)))
+        val viewModel = viewModel(role = ClubMemberRole.OWNER)
+        viewModel.state.launchIn(backgroundScope)
+        repository.next = withTeams
+
+        viewModel.events.test {
+            viewModel.onAction(MatchDetailAction.OnDeleteEvent(goal))
+            val undo = assertIs<MatchDetailEvent.ShowUndo>(awaitItem())
+            viewModel.onAction(MatchDetailAction.OnUndoDeleteEvent(undo.event))
+        }
+        assertEquals(listOf("event-delete:ev-1", "event-add:m-2:GOAL:10"), repository.calls.filter { it.startsWith("event") })
+    }
+
+    @Test
+    fun `AC-007-04 minutes out of range are rejected locally`() = runTest(UnconfinedTestDispatcher()) {
+        repository.current = Result.Success(withTeams)
+        val viewModel = viewModel(role = ClubMemberRole.OWNER)
+        viewModel.state.launchIn(backgroundScope)
+
+        viewModel.onAction(MatchDetailAction.OnEditMinutesClick("m-2"))
+        val dialog = viewModel.state.value.dialog as MatchDetailDialog.EditMinutes
+        assertEquals("60", dialog.minutes.text.toString())
+        dialog.minutes.edit { replace(0, length, "75") }
+        viewModel.onAction(MatchDetailAction.OnConfirmMinutes)
+        assertTrue((viewModel.state.value.dialog as MatchDetailDialog.EditMinutes).isInvalid)
+
+        dialog.minutes.edit { replace(0, length, "45") }
+        viewModel.onAction(MatchDetailAction.OnConfirmMinutes)
+        assertTrue("minutes:m-2:45" in repository.calls)
+    }
+
+    @Test
+    fun `AC-007-05 complete is offered only once the match started`() = runTest(UnconfinedTestDispatcher()) {
+        repository.current = Result.Success(withTeams)
+        val before = viewModel(role = ClubMemberRole.OWNER)
+        before.state.launchIn(backgroundScope)
+        assertFalse(before.state.value.canComplete)
+
+        now = started
+        val after = viewModel(role = ClubMemberRole.OWNER)
+        after.state.launchIn(backgroundScope)
+        assertTrue(after.state.value.canComplete)
+
+        repository.next = withTeams.copy(status = MatchStatus.COMPLETED)
+        after.onAction(MatchDetailAction.OnCompleteClick)
+        after.onAction(MatchDetailAction.OnConfirmComplete)
+        assertEquals(MatchStatus.COMPLETED, after.state.value.match?.status)
+        assertFalse(after.state.value.canRecord)
+    }
+
+    @Test
+    fun `AC-007-06 reopen is offered only on the latest completed match`() = runTest(UnconfinedTestDispatcher()) {
+        val completed = withTeams.copy(status = MatchStatus.COMPLETED)
+        repository.current = Result.Success(completed)
+        repository.clubMatches = Result.Success(listOf(completed.copy(id = "newer"), completed))
+        val older = viewModel(role = ClubMemberRole.OWNER)
+        older.state.launchIn(backgroundScope)
+        assertFalse(older.state.value.canReopen)
+
+        repository.clubMatches = Result.Success(listOf(completed))
+        val latest = viewModel(role = ClubMemberRole.OWNER)
+        latest.state.launchIn(backgroundScope)
+        assertTrue(latest.state.value.canReopen)
+    }
+
+    @Test
+    fun `AC-007-07 cancelling asks for confirmation`() = runTest(UnconfinedTestDispatcher()) {
+        repository.current = Result.Success(withTeams)
+        val viewModel = viewModel(role = ClubMemberRole.OWNER)
+        viewModel.state.launchIn(backgroundScope)
+        repository.next = withTeams.copy(status = MatchStatus.CANCELLED)
+
+        viewModel.onAction(MatchDetailAction.OnCancelMatchClick)
+        assertEquals(MatchDetailDialog.ConfirmCancel, viewModel.state.value.dialog)
+        viewModel.onAction(MatchDetailAction.OnConfirmCancelMatch)
+
+        assertTrue("cancel" in repository.calls)
+        assertFalse(viewModel.state.value.canCancel)
+    }
+
+    @Test
+    fun `AC-007-10 manual score needs its flag and is clamped to 0-99`() = runTest(UnconfinedTestDispatcher()) {
+        repository.current = Result.Success(withTeams)
+        val off = viewModel(role = ClubMemberRole.OWNER, flags = FakeFeatureFlags(FeatureFlag.MANUAL_SCORE to false))
+        off.state.launchIn(backgroundScope)
+        assertFalse(off.state.value.canSetManualScore)
+
+        val on = viewModel(role = ClubMemberRole.OWNER, flags = FakeFeatureFlags(FeatureFlag.MANUAL_SCORE to true))
+        on.state.launchIn(backgroundScope)
+        assertTrue(on.state.value.canSetManualScore)
+        on.onAction(MatchDetailAction.OnManualScoreClick)
+        on.onAction(MatchDetailAction.OnManualScoreChanged(Team.A, -1))
+        repeat(3) { on.onAction(MatchDetailAction.OnManualScoreChanged(Team.B, 1)) }
+        on.onAction(MatchDetailAction.OnConfirmManualScore)
+
+        assertTrue("score:0-3" in repository.calls)
     }
 }

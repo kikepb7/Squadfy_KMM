@@ -37,9 +37,22 @@ class GenerateTeamsUseCase(private val repository: MatchRepository) {
     }
 }
 
+enum class ExtraMatchError { NOT_IN_FUTURE, INVALID_DURATION }
+
+/** AC-007-08: a future date and an optional duration of 10-180 minutes (`CreateMatchRequest`). */
 class CreateExtraMatchUseCase(private val repository: MatchRepository) {
     suspend operator fun invoke(clubId: String, scheduledAt: Instant, format: MatchFormat?, durationMinutes: Int?): Result<MatchModel, ClubError> =
         repository.createExtraMatch(clubId, scheduledAt, format, durationMinutes)
+
+    companion object {
+        val VALID_DURATION = 10..180
+
+        fun validate(scheduledAt: Instant, durationMinutes: Int?, now: Instant): ExtraMatchError? = when {
+            scheduledAt <= now -> ExtraMatchError.NOT_IN_FUTURE
+            durationMinutes != null && durationMinutes !in VALID_DURATION -> ExtraMatchError.INVALID_DURATION
+            else -> null
+        }
+    }
 }
 
 class CancelMatchUseCase(private val repository: MatchRepository) {

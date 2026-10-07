@@ -1,6 +1,6 @@
 # 007 · Gestión del partido: eventos, minutos, cerrar, reabrir, cancelar y partido extra
 
-- **Estado:** Draft
+- **Estado:** In progress (implementada en `app-parity-feature`; falta el E2E)
 - **Reglas:** BE-004 RN-1…6, BE-008 RN-E, BE-002 RN-8/9/10, APP-RN-04, APP-RN-10
 - **Backend:** BE-004, `BACKEND.md` §7.5 y §8.3
 - **Depende de:** 006
@@ -35,3 +35,10 @@ La app, en cambio:
   - se avisa de que los goles registrados solo cuentan para cada goleador.
 
   `RecordMatchResultUseCase` (ruta antigua) se sustituye por `SetManualScoreUseCase` y `ClearManualScoreUseCase`. Se elimina el contador +G, +A, +TA, +TR (lo sustituye el acta por eventos).
+
+## Decisiones de implementación
+- **Partido extra y `DEV_TEST_MATCH`** (concilia AC-005 «partido de prueba» con AC-007-08): el «Partido extra» es una función de gestores, sin flag. `DEV_TEST_MATCH` (solo PRE) añade al formulario el atajo «Prueba: dentro de 15 min», que rellena fecha y hora.
+- **Marcador**: se muestra el oficial que devuelve el backend (`teamAScore`/`teamBScore`): suma de goles o, con `isManualScore`, el manual (BE-008 RN-E2).
+- **Rating del partido**: con el partido `COMPLETED`, cada jugador muestra su `ratingChanges[id]` («+12»). Las clasificaciones completas llegan en la 008.
+- **Invalidar rankings**: la 008 es network-first y se recarga al abrirse, así que no hace falta una invalidación explícita.
+

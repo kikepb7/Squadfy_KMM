@@ -13,7 +13,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 004 | Horario semanal (+ cierre/sorteo y semanas especiales) | **In progress** (7/8; falta el E2E) | ✅ | — | ✅ | 003 | — |
 | 005 | Convocatoria vigente, lista de espera e invitados | **In progress** (9/11) | ✅ | ✅ | ✅ | 003 | — |
 | 006 | Detalle del partido, equipos y equilibrio | **In progress** (8/9; falta el E2E) | ✅ | — | ✅ | 005 | — |
-| 007 | Acta: eventos, minutos, cerrar, reabrir, cancelar, partido extra | Draft | ✅ | — | — | 006 | 3 d |
+| 007 | Acta: eventos, minutos, cerrar, reabrir, cancelar, partido extra | **In progress** (9/10; falta el E2E) | ✅ | — | ✅ | 006 | — |
 | 008 | Clasificaciones de rating y estadísticas | Draft | ✅ | — | — | 003 | 2 d |
 | 009 | Push del ciclo de partido + silenciar club | Draft | ✅ | — | — | 002, 005, 006 | 2,5 d |
 | 010 | Inicio con mis clubes y el estado de la convocatoria | Draft | ✅ | — | — | 003, 005 | 1,5 d |
