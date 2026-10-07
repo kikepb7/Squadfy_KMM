@@ -10,6 +10,7 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.core)
 
                 implementation(projects.core.domain)
+                implementation(libs.kotlinx.datetime)
 
                 implementation(libs.koin.core)
             }

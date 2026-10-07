@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Image
@@ -76,6 +77,8 @@ import squadfy_app.feature.club.presentation.generated.resources.settings_owner_
 import squadfy_app.feature.club.presentation.generated.resources.settings_regenerate_code
 import squadfy_app.feature.club.presentation.generated.resources.settings_regenerate_description
 import squadfy_app.feature.club.presentation.generated.resources.settings_regenerate_title
+import squadfy_app.feature.club.presentation.generated.resources.settings_schedule
+import squadfy_app.feature.club.presentation.generated.resources.settings_section_club
 import squadfy_app.feature.club.presentation.generated.resources.settings_section_management
 import squadfy_app.feature.club.presentation.generated.resources.settings_section_membership
 import squadfy_app.feature.club.presentation.generated.resources.settings_share_code
@@ -91,6 +94,7 @@ fun ClubSettingsTab(
     myMembership: ClubMemberModel?,
     snackbarHostState: SnackbarHostState,
     onOpenBans: () -> Unit,
+    onOpenSchedule: () -> Unit,
     onLeftClub: () -> Unit,
     extraSections: @Composable () -> Unit = {},
     viewModel: ClubSettingsViewModel = koinViewModel()
@@ -131,6 +135,11 @@ fun ClubSettingsTab(
                     scope.launch { shareText(getString(Res.string.settings_share_text, club.name, club.invitationCode)) }
                 }
             )
+        }
+        item(key = "club") {
+            SettingsGroup(title = stringResource(Res.string.settings_section_club)) {
+                SettingsRow(label = stringResource(Res.string.settings_schedule), icon = Icons.Outlined.CalendarMonth, onClick = onOpenSchedule)
+            }
         }
         if (isManager) {
             item(key = "management") {

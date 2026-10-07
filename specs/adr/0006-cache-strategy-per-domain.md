@@ -13,7 +13,7 @@ Si esos datos se cachearan en Room, la app podría mostrar «convocatoria abiert
 |---|---|---|
 | Sesión, perfil (`/me`) | DataStore cifrado | Ya existe |
 | Clubes y miembros | **Offline-first** (Room `squadfy_club.db`) | Cambian poco. Se necesitan para resolver nombres y fotos desde `clubMemberId` |
-| Horario del club | Offline-first (Room) | Cambia poco. Se muestra en Inicio |
+| Horario del club | Network-first con caché en memoria (revisado el 2026-10-07) | Solo se usa en Ajustes y en la convocatoria, que ya son network-first; evita otra migración de Room |
 | Convocatoria, partido, equipos, equilibrio | **Network-first** con caché **en memoria** (repositorio con `StateFlow`) y estado `stale` visible si no hay red | Lo cambia el servidor; solo debe mostrarse fresco |
 | Ratings y estadísticas | Network-first con caché en memoria | Son derivados y se recalculan al cerrar un partido |
 | Chat | Offline-first + WebSocket | Ya existe |
@@ -27,4 +27,4 @@ Si esos datos se cachearan en Room, la app podría mostrar «convocatoria abiert
 
 ## Consecuencias
 - La constitución II.3 se reescribe como «offline-first salvo excepción del ADR-0006».
-- No hacen falta tablas de Room para partidos. Sí se añade una tabla `club_schedule` (spec 004).
+- No hacen falta tablas de Room para partidos ni para el horario: Room solo guarda clubes y miembros.

@@ -1,6 +1,11 @@
 package com.kikepb.club.domain.di
 
 import com.kikepb.club.domain.usecase.AddGuestUseCase
+import com.kikepb.club.domain.usecase.AddScheduleExceptionUseCase
+import com.kikepb.club.domain.usecase.DeleteScheduleExceptionUseCase
+import com.kikepb.club.domain.usecase.GetScheduleExceptionsUseCase
+import com.kikepb.club.domain.usecase.GetScheduleUseCase
+import com.kikepb.club.domain.usecase.SaveScheduleUseCase
 import com.kikepb.club.domain.usecase.BanMemberUseCase
 import com.kikepb.club.domain.usecase.CancelSignupUseCase
 import com.kikepb.club.domain.usecase.ChangeMemberRoleUseCase
@@ -54,6 +59,13 @@ val clubDomainModule = module {
     singleOf(::GetClubBansUseCase)
     singleOf(::BanMemberUseCase)
     singleOf(::UnbanMemberUseCase)
+
+    // Weekly schedule (spec 004)
+    singleOf(::GetScheduleUseCase)
+    singleOf(::SaveScheduleUseCase)
+    singleOf(::GetScheduleExceptionsUseCase)
+    singleOf(::AddScheduleExceptionUseCase)
+    singleOf(::DeleteScheduleExceptionUseCase)
 
     // Legacy match flow, replaced in specs 005-007
     singleOf(::GetClubMatchesUseCase)

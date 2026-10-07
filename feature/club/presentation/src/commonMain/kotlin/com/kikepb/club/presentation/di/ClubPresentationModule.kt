@@ -7,6 +7,7 @@ import com.kikepb.club.presentation.detail.ClubDetailViewModel
 import com.kikepb.club.presentation.join.JoinClubViewModel
 import com.kikepb.club.presentation.match.MatchViewModel
 import com.kikepb.club.presentation.memberdetail.MemberDetailViewModel
+import com.kikepb.club.presentation.schedule.ScheduleViewModel
 import com.kikepb.club.presentation.settings.ClubSettingsViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -19,5 +20,6 @@ val clubPresentationModule = module {
     viewModelOf(::MemberDetailViewModel)
     viewModelOf(::ClubSettingsViewModel)
     viewModelOf(::ClubBansViewModel)
+    viewModelOf(::ScheduleViewModel)
     viewModelOf(::MatchViewModel)
 }

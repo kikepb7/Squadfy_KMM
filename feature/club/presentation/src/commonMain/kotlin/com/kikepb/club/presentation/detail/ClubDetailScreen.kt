@@ -61,6 +61,7 @@ fun ClubDetailRoot(
     onBackClick: () -> Unit,
     onMemberClick: (clubId: String, memberId: String) -> Unit,
     onOpenBans: (clubId: String) -> Unit,
+    onOpenSchedule: (clubId: String) -> Unit,
     onLeftClub: () -> Unit,
     viewModel: ClubDetailViewModel = koinViewModel()
 ) {
@@ -81,6 +82,7 @@ fun ClubDetailRoot(
         onBackClick = onBackClick,
         onMemberClick = onMemberClick,
         onOpenBans = onOpenBans,
+        onOpenSchedule = onOpenSchedule,
         onLeftClub = onLeftClub,
         snackbarHostState = snackbarHostState
     )
@@ -94,6 +96,7 @@ fun ClubDetailScreen(
     onBackClick: () -> Unit,
     onMemberClick: (clubId: String, memberId: String) -> Unit,
     onOpenBans: (clubId: String) -> Unit,
+    onOpenSchedule: (clubId: String) -> Unit,
     onLeftClub: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
@@ -120,6 +123,7 @@ fun ClubDetailScreen(
                 onTabSelected = { selectedTabIndex = it },
                 onMemberClick = { memberId -> onMemberClick(club.id, memberId) },
                 onOpenBans = { onOpenBans(club.id) },
+                onOpenSchedule = { onOpenSchedule(club.id) },
                 onLeftClub = onLeftClub,
                 snackbarHostState = snackbarHostState,
                 modifier = Modifier.padding(padding)
@@ -136,6 +140,7 @@ private fun ClubContent(
     onTabSelected: (Int) -> Unit,
     onMemberClick: (String) -> Unit,
     onOpenBans: () -> Unit,
+    onOpenSchedule: () -> Unit,
     onLeftClub: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
@@ -162,6 +167,7 @@ private fun ClubContent(
                     myMembership = state.myMembership,
                     snackbarHostState = snackbarHostState,
                     onOpenBans = onOpenBans,
+                    onOpenSchedule = onOpenSchedule,
                     onLeftClub = onLeftClub
                 )
             }
