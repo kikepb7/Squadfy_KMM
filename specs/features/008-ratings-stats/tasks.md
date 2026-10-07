@@ -14,4 +14,4 @@
 - [x] **T-007** Strings ES/EN; se retiran los de la plantilla provisional.
 
 ## Fase 4 · Verificación
-- [~] **T-008** E2E con el backend local: cerrar dos partidos → los ratings y las estadísticas se actualizan; reabrir el último → vuelven al valor anterior. — **2026-10-08**: clasificación vacía, «Tu posición» y ficha del miembro verificadas; falta cerrar un partido (bloqueado por el mismo 500 del partido extra).
+- [x] **T-008** E2E con el backend local: cerrar dos partidos → los ratings y las estadísticas se actualizan; reabrir el último → vuelven al valor anterior. — **2026-10-08**: clasificación vacía, «Tu posición» y ficha del miembro verificadas; falta cerrar un partido (bloqueado por el mismo 500 del partido extra). **Completado 2026-10-08**: tras cerrar el partido extra, la clasificación muestra los nuevos ratings con empates compartidos y «Tu posición: 7 de 11 · 972»; al reabrir vuelven a 1000.

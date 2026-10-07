@@ -208,7 +208,7 @@ fun MatchDetailScreen(
                 }
                 matchTeamsSection(state = state, onAction = onAction)
                 if (state.match.events.isNotEmpty() || state.reportMode) item(key = "events") { EventsCard(state = state, onAction = onAction) }
-                state.balance?.takeIf { state.isManager && state.editing == null }?.let { balance ->
+                state.visibleBalance?.let { balance ->
                     item(key = "balance") { BalancePanel(balance = balance, state = state) }
                 }
                 if (state.canComplete || state.canReopen || state.canCancel) item(key = "cycle") { CycleActions(state = state, onAction = onAction) }

@@ -407,4 +407,15 @@ class MatchDetailViewModelTest {
         }
         assertEquals(gets + 1, repository.calls.count { it == "get" })
     }
+
+    @Test
+    fun `AC-006-03 the balance is hidden once the match is completed`() = runTest(UnconfinedTestDispatcher()) {
+        val strength = TeamStrengthModel(2, 1000, 2000, listOf(PlayerRatingInTeam("me", 1000, false)))
+        repository.balance = Result.Success(TeamBalanceModel(strength, strength, 0, 0.5))
+        repository.current = Result.Success(withTeams.copy(status = MatchStatus.COMPLETED))
+        val viewModel = viewModel(role = ClubMemberRole.OWNER)
+        viewModel.state.launchIn(backgroundScope)
+
+        assertNull(viewModel.state.value.visibleBalance)
+    }
 }

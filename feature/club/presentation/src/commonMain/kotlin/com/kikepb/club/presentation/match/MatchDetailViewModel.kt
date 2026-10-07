@@ -414,6 +414,9 @@ data class MatchDetailState(
     val canCancel: Boolean get() = match != null && MatchCyclePolicy.canCancel(match, isManager) && !isStale
     val canSetManualScore: Boolean get() = manualScoreEnabled && canRecord
 
+    /** The balance helps rectify the teams; once completed it would show the post-match ratings (AC-006-03). */
+    val visibleBalance: TeamBalanceModel? get() = balance?.takeIf { isManager && editing == null && match?.status == MatchStatus.SCHEDULED }
+
     val canRectify: Boolean get() = match != null && MatchTeamsPolicy.canRectify(match, isManager) && !isStale
 
     val pending: TeamsPending? get() = match?.let { MatchTeamsPolicy.pending(it, announcement, now) }
