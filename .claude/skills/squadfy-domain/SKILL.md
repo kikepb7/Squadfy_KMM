@@ -12,21 +12,17 @@ description: |
 
 The app mirror with references is `specs/product/business-rules.md`: Part A = `BE-NNN RN-x`, Part B = client rules `APP-RN-xx`. **If this file disagrees with the backend, the backend wins: fix this file.** Do not invent domain rules in the client.
 
-## Pending in the backend: keep the code, hide it behind feature flags (D-1, decided 2026-10-07)
-| Feature | Flag (spec 013) | Proposed rule (until the backend spec defines it) |
+## App-parity features (BE-008, available in the backend; the app ships them behind flags)
+| Feature | Flag | Rules |
 |---|---|---|
-| **Guests** | `MATCH_GUESTS` | An enrolled member adds guests manually, under their responsibility ("guest of X") |
-| **Schedule exceptions** | `SCHEDULE_EXCEPTIONS` | Dates without a match |
-| **Custom draw/close time** (`drawTime`) | `CUSTOM_DRAW_TIME` | Replaces the fixed 22:00 cut-off |
-| **Manual score** | `MANUAL_SCORE` | Enter the result without logging every goal |
+| **Guests** | `MATCH_GUESTS` | Any member adds guests (name ≤ 80, optional position) while the window is open, **max 2 per member** (409). **Members have priority**: confirmed seats go to members first, then guests by order of addition; a late member pushes the last confirmed guest to the waitlist. Removed by the host or a manager (403 otherwise). Guests draw with rating 1000 and get no rating, stats, events or push. Entries carry `participantType` MEMBER/GUEST, `guestName`, `invitedByMemberId`; `clubMemberId` is null for guests. |
+| **Schedule exceptions** | `SCHEDULE_EXCEPTIONS` | One per future match-day date. `CANCELLED` (no match that week) or `RESCHEDULED` + `newScheduledAt` (the match moves, keeps its sign-ups, push `match.rescheduled`). Deleting one undoes it. Managers write; members read. |
+| **Absences** | `MEMBER_ABSENCES` | A member's `fromDate`–`toDate` (≤ 1 year, ending today or later): it withdraws them from **open** announcements in that period and mutes the opening and reminder pushes. They may still enroll. Everyone sees them; each member manages their own. |
+| **Close and draw times** | `CUSTOM_DRAW_TIME` | `closeDaysBefore`/`closeTime` (default 1 day before at 22:00) and `drawDaysBefore`/`drawTime` (default = close). Close < kickoff and close ≤ draw < kickoff (400). **Teams are published at `drawAt`**, not at close. |
+| **Manual score** | `MANUAL_SCORE` | `PUT/DELETE /matches/{id}/score` (0–99) while `SCHEDULED`. If set (`isManualScore`), it is the **official** result for rating and stats; goal events only count for the scorer. |
+| Match rating | — | `MatchDto.ratingChanges` = each member's rating delta in a completed match. There is **no manual rating**. |
 
-Do not delete this code, and do not enable these flags in PRO until the backend endpoint exists and is listed in `specs/contracts/api-v1.md`.
-
-**Removed for good:**
-- the manual 1–99 rating (the rating is **always automatic**: Elo from the result and the match stats);
-- per-club member photos;
-- season start;
-- the client-side "performance index".
+Removed for good: the manual 1–99 rating, the admin PATCH of a member, the season start and the client "performance index". The per-club photo is in the backend backlog.
 
 ## Model
 ```
@@ -63,7 +59,7 @@ Teams, entries, ratings and stats reference **`clubMemberId`**, not `userId`. Re
 
 ## Announcement window (BE-002 RN-4/5/6)
 - `opensAt` = start of the day after the last non-cancelled match (club tz), or now.
-- `closesAt` = **22:00 club time, the day before the match**. If the match was created after that cut-off, it closes at kickoff.
+- `closesAt` = the schedule close time (**default 22:00 club time, the day before the match**; configurable, BE-008). If the match was created after that cut-off, it closes at kickoff. `drawAt` = when teams are published.
 - **Client "open" ⇔ `status == OPEN && opensAt ≤ now < closesAt`** (APP-RN-01). `status` may lag up to 5 min after `closesAt`.
 - After close, **nobody** can enroll or withdraw (400 `BAD_REQUEST`). Do not offer "ask an admin".
 - Full → `WAITLISTED` (FIFO). A confirmed player withdrawing auto-promotes the first waitlisted (push `match.waitlist.promoted`). Leaving the waitlist promotes nobody.
@@ -71,7 +67,7 @@ Teams, entries, ratings and stats reference **`clubMemberId`**, not `userId`. Re
 - Golden examples (Thursday 20:00, Europe/Madrid, including the DST week) are in `specs/features/005-match-announcement/spec.md`.
 
 ## Teams (BE-003)
-- They are **published automatically at close**, among CONFIRMED players. Sizes differ by ≤ 1; goalkeepers and then each position are spread; the rating difference is minimized; ties are random.
+- They are **published automatically at `drawAt`** (default = close), among CONFIRMED players and guests. Sizes differ by ≤ 1; goalkeepers and then each position are spread; the rating difference is minimized; ties are random.
 - Managers may rectify until the match is completed:
   - `AUTO` re-draws;
   - `MANUAL` takes lists of `clubMemberId` that are disjoint, non-empty, differ in size by ≤ 1 and contain only confirmed players.
@@ -80,7 +76,7 @@ Teams, entries, ratings and stats reference **`clubMemberId`**, not `userId`. Re
 
 ## Results (BE-004)
 - Managers add or delete events (minute 1–120 optional) only for players on a team and only while `SCHEDULED`.
-- **Score = count of GOAL events per team** (no manual score).
+- **Score** = the manual score if a manager set one (`isManualScore`), otherwise the count of GOAL events per team.
 - Minutes default to the match duration; a manager may override them (0–duration) before completing.
 - `complete` requires `SCHEDULED`, the kickoff time passed, and teams. It updates the Elo ratings.
 - `reopen` only works on the club's **latest** completed match and reverts its ratings.
@@ -92,6 +88,7 @@ Teams, entries, ratings and stats reference **`clubMemberId`**, not `userId`. Re
 - `match.announcement.closing_soon` (24 h before close, only if seats are free and only to non-enrolled members)
 - `match.teams.published` (`team` = A or B)
 - `match.cancelled`
+- `match.rescheduled` (schedule exception moved the match)
 - `match.waitlist.promoted` (delivered **even if the club is muted**)
 - `new_message`
 

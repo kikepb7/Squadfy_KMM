@@ -60,7 +60,10 @@
 | Endpoint v1 | Ruta actual | Spec | Estado |
 |---|---|---|---|
 | `GET/POST/PATCH /clubs/{id}/schedule` | `PATCH /club/{id}/schedule` → `ClubDTO` | 004 | 🔁 nuevo DTO `ClubMatchScheduleDto` |
-| ⏳ (ruta por definir en el backend) | `GET/POST/DELETE /club/{id}/schedule/exceptions[/{id}]` | 004 | ⏳ flag `SCHEDULE_EXCEPTIONS` |
+| `GET/POST /clubs/{id}/schedule/exceptions` `{date, type: CANCELLED\|RESCHEDULED, newScheduledAt?, reason?}` → 201, `DELETE …/exceptions/{exceptionId}` → 204 | `GET/POST/DELETE /club/{id}/schedule/exceptions[/{id}]` | 004 | 🔁 flag `SCHEDULE_EXCEPTIONS` (BE-008) |
+| Horario: `closeDaysBefore`, `closeTime`, `drawDaysBefore`, `drawTime` en `ClubMatchScheduleDto` y en sus peticiones | `drawTime` en `PATCH /club/{id}/schedule` | 004 | 🔁 flag `CUSTOM_DRAW_TIME` (BE-008) |
+| `GET /clubs/{id}/absences?from=&to=`, `POST /clubs/{id}/members/me/absences` → 201, `DELETE …/members/me/absences/{id}` → 204 | — | 014 | ➕ flag `MEMBER_ABSENCES` (BE-008) |
+| `PUT /matches/{id}/score {teamAScore, teamBScore}`, `DELETE /matches/{id}/score` | `POST /club/matches/{id}/result` | 007 | 🔁 flag `MANUAL_SCORE` (BE-008) |
 | `GET /clubs/{id}/matches?status=` | `GET /club/{id}/matches` | 006/007 | 🔁 |
 | `POST /clubs/{id}/matches {scheduledAt, format?, durationMinutes?}` → 201 | `POST /club/{id}/matches` (botón «partido de prueba») | 007 | 🔁 se convierte en «Partido extra» para gestores |
 | `GET /matches/{id}` | `GET /club/matches/{id}` (sin uso) | 006 | 🔁 |
@@ -78,7 +81,7 @@
 | `GET /clubs/{id}/announcements`, `GET /announcements/{id}`, `GET /matches/{id}/announcement` | `GET /club/matches/{id}/signups` | 005/006 | 🔁 |
 | `POST /announcements/{id}/enrollment` | `POST /club/matches/{id}/signups` | 005 | 🔁 |
 | `DELETE /announcements/{id}/enrollment` | `DELETE /club/matches/{id}/signups/me` | 005 | 🔁 |
-| ⏳ (ruta por definir en el backend) | `POST /club/matches/{id}/guests`, `DELETE /club/matches/{id}/signups/{signupId}` | 005 | ⏳ flag `MATCH_GUESTS` (el invitado queda vinculado al miembro responsable) |
+| `POST /announcements/{id}/guests {name, position?}`, `DELETE /announcements/{id}/guests/{guestId}` → `MatchAnnouncementDto` | `POST /club/matches/{id}/guests`, `DELETE /club/matches/{id}/signups/{signupId}` | 005 | 🔁 flag `MATCH_GUESTS` (BE-008: máximo 2 por miembro; los miembros tienen prioridad) |
 
 ## Rating y estadísticas
 | Endpoint v1 | Spec | Estado |
@@ -104,6 +107,8 @@
 | `MatchSignupDTO` | Se sustituye por `MatchAnnouncementDto`/`EntryDto` | 005 |
 | `ChatDto` | Añade `creator` | 002 |
 | `ChatParticipantDto` | Sin `email` | 002 |
+| `MatchAnnouncementDto` (BE-008) | `drawAt`; las entradas ganan `participantType` (MEMBER/GUEST), `guestName`, `guestPosition` e `invitedByMemberId`, y `clubMemberId` es nulo en los invitados | 005 |
+| `MatchDto` (BE-008) | `enrolledGuests`, `teamAGuests`/`teamBGuests` (`MatchGuestDto`), `isManualScore`, `ratingChanges` y `scheduleDate` | 006/007/008 |
 
 ## Historial
 | Fecha | Cambio |
@@ -111,4 +116,5 @@
 | 2026-10-05 | Borrador de contrato propio (ADR-0001), ya reemplazado |
 | 2026-10-07 | Pasa a ser un mapa de consumo del backend v1 (ADR-0005) |
 | 2026-10-07 | Spec 002: auth, `/users`, foto, chat y `/devices` migrados a v1 (✅) |
+| 2026-10-07 | BE-008 publicada: invitados, excepciones, ausencias, cierre y sorteo configurables, marcador manual y `ratingChanges` |
 | 2026-10-07 | D-1: invitados, excepciones, `drawTime` y marcador manual pasan a ⏳ (backend en curso) y quedan tras flags |

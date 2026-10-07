@@ -30,3 +30,4 @@ Además ofrece mi posición y mis cifras.
 - **AC-008-05** Los datos son network-first con caché en memoria (ADR-0006) y se invalidan al cerrar o reabrir un partido (spec 007).
 - **AC-008-06** Estado vacío: «Aún no hay partidos cerrados» cuando todos tienen 0 partidos.
 - **AC-008-07** Se eliminan `performanceIndex` (`Extensions.kt`), `StandingRowUiModel` y las columnas antiguas.
+- **AC-008-08** **Valoración del partido** (BE-008 RN-F1): en un partido `COMPLETED`, cada miembro de los equipos muestra su variación de rating (`ratingChanges`: «+12» en verde, «−8» en rojo). La ficha del miembro muestra la variación de sus últimos partidos. No existe valoración manual.

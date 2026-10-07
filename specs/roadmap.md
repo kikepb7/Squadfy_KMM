@@ -20,6 +20,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 011 | Preparación de la app para producción | Draft | ✅ | — | — | 002 (en paralelo) | 5 d |
 | 012 | Puesta en producción (coordinada con el backend) | Draft | ✅ | — | — | todas, BE-008/009/010 | 3 d + revisión de tiendas |
 | 013 | Feature flags por entorno (PRE / PRO) | **Done** | ✅ | ✅ | ✅ | 001 | — |
+| 014 | Ausencias de jugadores | Approved | ✅ | — | — | 003, 005 | 1 d |
 
 \* Días ideales de una persona. Son orientativos, para priorizar, no un compromiso.
 
@@ -29,8 +30,8 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | **BE-008 Borrado de cuenta**: endpoint `DELETE /me` con contraseña, anonimización del historial y página web de borrado | BE-GAP-1 (requisito de Apple y Google) | 011, 012 |
 | **BE-009 Rate limit del refresh** por usuario o token en lugar de por IP | BE-GAP-2 | 012 (sesiones estables) |
 | **BE-010 Despliegue**: hosting, dominio, CD, backups (cierra BE-006) | BE-GAP-3 | 012 |
-| **Invitados, excepciones de calendario, `drawTime`, marcador manual** (D-1, en curso en la conversación del backend) | Decisión de producto del 2026-10-07 | Activar los flags `MATCH_GUESTS`, `SCHEDULE_EXCEPTIONS`, `CUSTOM_DRAW_TIME` y `MANUAL_SCORE` |
-| Merge de `backend-documentation` → `master` | BE-GAP-7 | 012 |
+| ~~Invitados, excepciones, ausencias, `drawTime`, marcador manual~~ **Hecho en el backend (BE-008, 2026-10-07)** | D-1 | La app los conecta en 004, 005, 006, 007 y 014 |
+| ~~Merge de `backend-documentation` → `master`~~ ✅ | BE-GAP-7 | — |
 | (Opcional) Página de confirmación de la verificación de email | BE-GAP-4 | — |
 
 ## Hitos

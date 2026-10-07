@@ -1,7 +1,7 @@
 # 007 · Gestión del partido: eventos, minutos, cerrar, reabrir, cancelar y partido extra
 
 - **Estado:** Draft
-- **Reglas:** BE-004 RN-1…6, BE-002 RN-8/9/10, APP-RN-04, APP-RN-10
+- **Reglas:** BE-004 RN-1…6, BE-008 RN-E, BE-002 RN-8/9/10, APP-RN-04, APP-RN-10
 - **Backend:** BE-004, `BACKEND.md` §7.5 y §8.3
 - **Depende de:** 006
 - **Repos afectados:** Squadfy_App
@@ -29,4 +29,9 @@ La app, en cambio:
 - **AC-007-09** El partido `COMPLETED` es de solo lectura para todos: marcador, goleadores, asistentes, tarjetas y minutos.
 
 **Limpieza**
-- **AC-007-10** El diálogo de **marcador manual** se muestra solo con el flag `MANUAL_SCORE` y se conecta al endpoint que publique el backend; hasta entonces se conservan `RecordMatchResultUseCase` y su UI tras el flag. Se elimina el contador +G, +A, +TA, +TR (lo sustituye el acta por eventos). La valoración es siempre automática (rating).
+- **AC-007-10** **Marcador manual** (flag `MANUAL_SCORE`, BE-008 RN-E):
+  - con el partido en `SCHEDULED`, el gestor ve «Fijar marcador» (dos steppers de 0 a 99) → `PUT /matches/{id}/score`;
+  - con `isManualScore`, el marcador muestra la etiqueta «Manual» y el botón «Quitar marcador manual» (`DELETE /score`, vuelve al marcador de los goles);
+  - se avisa de que los goles registrados solo cuentan para cada goleador.
+
+  `RecordMatchResultUseCase` (ruta antigua) se sustituye por `SetManualScoreUseCase` y `ClearManualScoreUseCase`. Se elimina el contador +G, +A, +TA, +TR (lo sustituye el acta por eventos).

@@ -3,7 +3,7 @@
 - **Estado:** Draft
 - **Reglas:** BE-002 RN-4…9, APP-RN-01, APP-RN-02, APP-RN-03, APP-RN-06, APP-RN-08
 - **ADRs:** ADR-0006
-- **Backend:** BE-002, `BACKEND.md` §7.3, §8.4 y §9 (`CurrentMatchAnnouncementDto`)
+- **Backend:** BE-002, BE-008 (RN-A, RN-C, RN-D), `BACKEND.md` §7.3, §8.4 y §9 (`CurrentMatchAnnouncementDto`)
 - **Depende de:** 002, 003
 - **Repos afectados:** Squadfy_App
 
@@ -60,9 +60,16 @@ Hoy la pestaña Partido:
 - **AC-005-09** Sin red, se muestra la última convocatoria en memoria con la marca «Sin conexión · actualizado hace X» y los botones de acción deshabilitados.
 - **AC-005-10** «Convocatorias anteriores»: `GET /clubs/{id}/announcements`, con el estado de cada una y el número de confirmados; al tocar una se abre el detalle del partido (spec 006).
 - **AC-005-11** Funciones condicionadas:
-  - El botón «Crear partido de prueba» solo aparece con el flag `DEV_TEST_MATCH` (activo en PRE, inactivo en PRO).
-  - **Invitados**, con el flag `MATCH_GUESTS`: un miembro **apuntado** añade invitados a mano bajo su responsabilidad, y en la lista se muestran como «{nombre} (invitado de {miembro})». El contrato y las reglas (aforo, qué pasa si el responsable se borra) los define la spec del backend; hasta entonces el flag está apagado y la UI y el código actuales se conservan.
-  - Se eliminan la baja de inscripciones ajenas y los use cases `SignUpForMatchUseCase`, `CancelSignupUseCase`, `RemoveSignupUseCase` y `ListSignupsUseCase`, junto con `MatchSignupDTO`, que pasan a la API de convocatorias v1. `AddGuestUseCase` se conserva tras el flag.
+  - El botón «Crear partido de prueba» solo aparece con el flag `DEV_TEST_MATCH` (activo en PRE, inactivo en PRO) y en v1 crea un partido extra (`POST /clubs/{id}/matches`).
+  - Se eliminan la baja de inscripciones ajenas y los use cases `SignUpForMatchUseCase`, `CancelSignupUseCase`, `RemoveSignupUseCase` y `ListSignupsUseCase`, junto con `MatchSignupDTO`, que pasan a la API de convocatorias v1.
+- **AC-005-13** **Invitados** (flag `MATCH_GUESTS`, BE-008 RN-A):
+  - con la convocatoria abierta, cualquier miembro ve «Añadir invitado» (nombre ≤ 80 + chips de posición opcionales) → `POST /announcements/{id}/guests`;
+  - el botón se oculta cuando ya tiene 2 invitados en esa convocatoria; un 409 muestra «Máximo 2 invitados»;
+  - las filas de invitado muestran «{nombre} · invitado de {anfitrión}», con su estado (confirmado o en espera);
+  - el anfitrión y los gestores ven «Quitar» → `DELETE /announcements/{id}/guests/{guestId}`, y un 403 muestra «No tienes permiso»;
+  - la cabecera explica «Los miembros tienen prioridad sobre los invitados».
+- **AC-005-14** La cabecera muestra también la **hora del sorteo** (`drawAt`) si es distinta del cierre: «Equipos el jueves a las 12:00».
+- **AC-005-15** Si el usuario tiene una ausencia (spec 014) que cubre la fecha del partido, aparece el aviso «Tienes una ausencia ese día» sin bloquear «Apuntarme» (BE-008 RN-C4).
 - **AC-005-12** Si la convocatoria está `CLOSED` y el partido ya tiene equipos, la pantalla muestra un acceso «Ver equipos» (spec 006).
 
 ## Tabla de ejemplos (normativa para `AnnouncementWindowPolicy`; sale de BE-002 CA-1/CA-8)

@@ -2,7 +2,7 @@
 
 - **Estado:** Draft
 - **Reglas:** BE-002 RN-1/2/3/10, APP-RN-03, APP-RN-04
-- **Backend:** BE-002, `BACKEND.md` §7.2 y §8.3
+- **Backend:** BE-002, BE-008 (RN-B, RN-D), `BACKEND.md` §7.2 y §8.3
 - **Depende de:** 002, 003 (`myRole`, Room v3)
 - **Repos afectados:** Squadfy_App
 
@@ -27,7 +27,18 @@ El backend v1 tiene otro modelo: día, hora, zona horaria, **formato** (que fija
 - **AC-004-03** Los no gestores ven un resumen de solo lectura: «Jueves 20:00 (Madrid) · 5v5 · 60 min», o «Sin horario: pide a un gestor que lo configure».
 - **AC-004-04** El horario se cachea en Room, en la tabla `club_schedule` (forma parte de la migración v3 de la spec 003 o de una v4 con su `Migration`), y se muestra sin conexión.
 - **AC-004-05** Errores: un 400 por zona horaria desconocida o una duración fuera de rango muestra un texto específico. Un 409 «horario ya existe» provoca un refresco y se pasa a modo edición.
-- **AC-004-06** La sección de **excepciones** se muestra solo con el flag `SCHEDULE_EXCEPTIONS`, y el campo **«Hora del sorteo» (`drawTime`)** solo con `CUSTOM_DRAW_TIME`. Ambos flags están desactivados hasta que el backend publique esas funciones; entonces se migran a las rutas que defina. **Se eliminan** las horas de inicio y fin (sustituidas por la duración), `seasonStartMonth`/`Day` y el cálculo de temporada de `IdentityCard`, que desaparece también como causa de cierres inesperados.
+- **AC-004-06** **Cierre y sorteo** (flag `CUSTOM_DRAW_TIME`, BE-008 RN-D):
+  - el formulario añade «Cierre: N días antes a las HH:mm» y «Sorteo: N días antes a las HH:mm» (0–6 días; por defecto 1 día antes a las 22:00, y el sorteo igual que el cierre);
+  - se valida en local que el cierre sea anterior al inicio y que el sorteo sea ≥ cierre y < inicio; el 400 del servidor también se muestra;
+  - el resumen de solo lectura añade «Cierra el miércoles a las 22:00 · Sorteo el jueves a las 12:00».
+- **AC-004-08** **Excepciones** (flag `SCHEDULE_EXCEPTIONS`, BE-008 RN-B):
+  - todos los miembros ven la lista (`GET /schedule/exceptions`): «Cancelado» o «Movido al {fecha y hora}», con su motivo;
+  - los gestores crean una excepción eligiendo una **fecha futura que caiga en el día de partido** (selector limitado a esos días): `CANCELLED`, o `RESCHEDULED` con fecha y hora futuras; el motivo es opcional (≤ 200);
+  - los gestores pueden borrarla, con la confirmación «Se restaurará el partido de esa semana»;
+  - un 409 (la fecha ya tiene excepción, o la semana ya se jugó) muestra un texto específico.
+
+  Tras crear o borrar una excepción se refresca la convocatoria (spec 005).
+- **AC-004-09** **Se eliminan** las horas de inicio y fin (sustituidas por la duración), `seasonStartMonth`/`Day` y el cálculo de temporada de `IdentityCard`, que desaparece también como causa de cierres inesperados. Las excepciones antiguas (rutas `/club/...`) se sustituyen por las de v1.
 - **AC-004-07** Desactivar el horario (`isActive = false`) pide confirmación con el texto «No se crearán más partidos automáticamente».
 
 ## Preguntas abiertas

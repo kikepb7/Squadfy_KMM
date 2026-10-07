@@ -26,6 +26,7 @@ El backend ya envía push de todo el ciclo de partido. En la app, en cambio:
   | `match.announcement.opened`, `.closing_soon`, `.waitlist.promoted` | `squadfy://club/{clubId}/announcement`, que abre la pestaña Partido del club |
   | `match.teams.published` | `squadfy://match/{matchId}?clubId={clubId}` |
   | `match.cancelled` | Pestaña Partido del club |
+  | `match.rescheduled` (BE-008 RN-B3) | Pestaña Partido del club |
   | `new_message` | `squadfy://chat_details/{chatId}` |
   | Desconocido | Abrir la app sin navegar |
 - **AC-009-04** Al recibir una push en primer plano cuyo `clubId` es el club abierto, la pantalla correspondiente se refresca (APP-RN-08) y se muestra un snackbar en lugar de la notificación del sistema.

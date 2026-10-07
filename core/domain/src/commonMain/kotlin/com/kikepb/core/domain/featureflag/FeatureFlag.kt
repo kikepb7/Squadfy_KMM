@@ -12,7 +12,7 @@ enum class FeatureFlag(
     val defaultInPre: Boolean,
     val defaultInPro: Boolean
 ) {
-    // Pending backend support (decision D-1)
+    // App-parity features (decision D-1, backend spec BE-008)
     MATCH_GUESTS(
         key = "match_guests",
         description = "Guests added by an enrolled member to a match announcement",
@@ -34,6 +34,12 @@ enum class FeatureFlag(
     MANUAL_SCORE(
         key = "manual_score",
         description = "Enter the final score manually instead of from goal events",
+        defaultInPre = false,
+        defaultInPro = false
+    ),
+    MEMBER_ABSENCES(
+        key = "member_absences",
+        description = "Members register absence periods that withdraw them from open announcements",
         defaultInPre = false,
         defaultInPro = false
     ),

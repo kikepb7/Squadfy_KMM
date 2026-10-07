@@ -58,8 +58,8 @@ class FeatureFlagResolverTest {
     }
 
     @Test
-    fun `AC-013-07 backend pending flags are off in both environments`() {
-        listOf(FeatureFlag.MATCH_GUESTS, FeatureFlag.SCHEDULE_EXCEPTIONS, FeatureFlag.CUSTOM_DRAW_TIME, FeatureFlag.MANUAL_SCORE)
+    fun `AC-013-07 app-parity flags start off in both environments until their app spec is done`() {
+        listOf(FeatureFlag.MATCH_GUESTS, FeatureFlag.SCHEDULE_EXCEPTIONS, FeatureFlag.CUSTOM_DRAW_TIME, FeatureFlag.MANUAL_SCORE, FeatureFlag.MEMBER_ABSENCES)
             .forEach { flag ->
                 assertEquals(false, flag.defaultFor(PRE), "${flag.name} in PRE")
                 assertEquals(false, flag.defaultFor(PRO), "${flag.name} in PRO")

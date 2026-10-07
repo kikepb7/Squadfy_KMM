@@ -22,24 +22,19 @@ Se comparan dos estados:
 | Push del ciclo de partido, silenciar club | ✅ | ❌ solo chat; sin `onMessageReceived` | 009 |
 | Inicio real | n/a (`/clubs` + `/announcements/current`) | ❌ partidos y noticias son mocks | 010 |
 
-## 2. Funciones que el backend aún no tiene (D-1 resuelta el 2026-10-07)
-El owner del producto decide **mantener** estas funciones. Se implementan en el backend (la conversación o rama del backend está en curso) y en la app quedan **ocultas tras un feature flag** (spec 013) hasta que el backend las publique:
+## 2. Funciones de la app que mantiene el producto (D-1): ya en el backend (BE-008)
+El backend las implementó el 2026-10-07 (spec BE-008, commit `e375f70` en `master`). La app las conecta tras sus flags:
 
-| Función | Regla propuesta (pendiente de la spec del backend) | Flag de la app | Spec del backend |
-|---|---|---|---|
-| **Invitados** | Un miembro apuntado añade invitados a mano, **bajo su responsabilidad** («invitado de X») | `MATCH_GUESTS` | BE-pendiente (invitados) |
-| **Excepciones de calendario** | Fechas en las que no hay partido | `SCHEDULE_EXCEPTIONS` | BE-pendiente (excepciones) |
-| **`drawTime`** | Hora configurable de cierre y sorteo (hoy fija a las 22:00 del día anterior) | `CUSTOM_DRAW_TIME` | BE-pendiente (`drawTime`) |
-| **Marcador manual** | Introducir el resultado sin registrar todos los goles | `MANUAL_SCORE` | BE-pendiente (marcador manual) |
+| Función | Flag | Spec de la app |
+|---|---|---|
+| Invitados (máximo 2 por miembro; los miembros tienen prioridad) | `MATCH_GUESTS` | 005, 006 |
+| Excepciones del calendario (`CANCELLED` / `RESCHEDULED`) | `SCHEDULE_EXCEPTIONS` | 004 |
+| Ausencias de jugadores | `MEMBER_ABSENCES` | 014 |
+| Hora de cierre y hora de sorteo configurables | `CUSTOM_DRAW_TIME` | 004, 005 |
+| Marcador manual oficial | `MANUAL_SCORE` | 007 |
+| Valoración automática por partido (`ratingChanges`) | — | 008 |
 
-Se **retiran** de verdad, porque no se han pedido:
-- la valoración 1–99 manual (la valoración es el rating automático);
-- el `PATCH` de un miembro por parte de un admin;
-- la foto de miembro por club;
-- el inicio de temporada;
-- el índice de rendimiento del cliente.
-
-En cuanto el backend publique cada función: se actualizan `api-v1.md` y `business-rules.md` (Parte A), se activa el flag en PRE para hacer QA y, después, en PRO.
+Se retiran: la valoración manual 1–99, el `PATCH` de miembro por un admin, el inicio de temporada y el índice de rendimiento. La foto por club queda en el backlog del backend.
 
 ## 3. Lo que falta en el backend para ir a producción (propuestas de specs BE)
 | # | Brecha | Impacto | Prioridad |
@@ -50,6 +45,6 @@ En cuanto el backend publique cada función: se actualizan `api-v1.md` y `busine
 | BE-GAP-4 | `GET /auth/verify` responde 200 vacío en el navegador, sin página de confirmación. | UX pobre en el primer contacto | 🟡 Media |
 | BE-GAP-5 | Hay que servir `/.well-known/assetlinks.json` y `apple-app-site-association` si se quieren App Links o Universal Links (por ejemplo, para el enlace de verificación). | Opcional en el MVP (se puede usar `squadfy://`) | 🟢 Baja |
 | BE-GAP-6 | `DELETE /devices/{token}` no comprueba quién es el dueño del token. | Riesgo bajo, reconocido | 🟢 Baja |
-| BE-GAP-7 | La rama `backend-documentation` no está mergeada a `master` (arreglos de chat y docs). | Desalineación entre ramas | 🟡 Media |
+| ~~BE-GAP-7~~ | Resuelto: `master` incluye la documentación, los arreglos de chat, V7 y BE-008. | — | ✅ |
 | BE-GAP-8 | Errata `USER_EXITS`. | La app tolera `USER_EXITS` y `USER_EXISTS` | 🟢 Baja |
 | BE-GAP-9 | Estadísticas sin filtro por temporada. | Post-MVP | 🟢 Baja |
