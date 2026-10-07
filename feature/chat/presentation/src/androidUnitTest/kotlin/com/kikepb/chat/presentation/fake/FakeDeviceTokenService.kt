@@ -11,5 +11,10 @@ class FakeDeviceTokenService : DeviceTokenService {
     var unregisterTokenResult: EmptyResult<DataError.Remote> = Result.Success(Unit)
 
     override suspend fun registerToken(token: String, platform: String) = registerTokenResult
-    override suspend fun unregisterToken(token: String) = unregisterTokenResult
+    val unregisteredTokens = mutableListOf<String>()
+
+    override suspend fun unregisterToken(token: String): EmptyResult<DataError.Remote> {
+        unregisteredTokens += token
+        return unregisterTokenResult
+    }
 }

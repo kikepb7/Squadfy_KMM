@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.kikepb.core.domain.notification.PushRouter
 import org.kikepb.squadfy.navigation.ExternalUriHandler
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        handleChatMessageDeeplink(intent = intent)
+        handlePushIntent(intent = intent)
 
         setContent {
             App(
@@ -33,17 +34,14 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleChatMessageDeeplink(intent = intent)
+        handlePushIntent(intent = intent)
     }
 
-    private fun handleChatMessageDeeplink(intent: Intent) {
-        val chatId = intent.getStringExtra("chatId")
-            ?: intent.extras?.getString("chatId")
-
-        if (chatId != null) {
-            val deeplinkUrl = "squadfy://chat_details/$chatId"
-            ExternalUriHandler.onNewUri(uri = deeplinkUrl)
-        }
+    /** A tapped push carries its `data` as extras, both from the system tray and from [PushNotifier] (AC-009-03). */
+    private fun handlePushIntent(intent: Intent) {
+        val extras = intent.extras ?: return
+        val data = extras.keySet().mapNotNull { key -> extras.getString(key)?.let { key to it } }.toMap()
+        PushRouter.deepLink(data)?.let { ExternalUriHandler.onNewUri(uri = it) }
     }
 }
 

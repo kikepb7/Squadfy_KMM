@@ -50,6 +50,8 @@ import com.kikepb.club.domain.usecase.GetMyRatingUseCase
 import com.kikepb.club.domain.usecase.GetStatsLeaderboardUseCase
 import com.kikepb.club.domain.usecase.GetMyStatsUseCase
 import com.kikepb.club.domain.usecase.GetRecentRatingChangesUseCase
+import com.kikepb.club.domain.usecase.GetClubMutedUseCase
+import com.kikepb.club.domain.usecase.SetClubMutedUseCase
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -113,4 +115,8 @@ val clubDomainModule = module {
     singleOf(::GetStatsLeaderboardUseCase)
     singleOf(::GetMyStatsUseCase)
     singleOf(::GetRecentRatingChangesUseCase)
+
+    // Push mute per club (spec 009)
+    singleOf(::GetClubMutedUseCase)
+    singleOf(::SetClubMutedUseCase)
 }

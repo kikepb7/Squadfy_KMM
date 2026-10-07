@@ -22,7 +22,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         refreshToken()
     }
     
-    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationWithError error: Error) {
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("iOS: Failed to register for push notifications: \(error.localizedDescription)")
     }
     
@@ -41,18 +41,19 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         completionHandler(.newData)
     }
     
+    // Spec 009 (AC-009-04): a push of the club on screen refreshes it in-app instead of showing a banner
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.banner])
+        let content = notification.request.content
+        if IosPushBridge.shared.shouldPresentInForeground(userInfo: content.userInfo, title: content.title, body: content.body) {
+            completionHandler([.banner, .list, .sound])
+        } else {
+            completionHandler([])
+        }
     }
     
+    // Spec 009 (AC-009-03/06): every push type is routed like on Android
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        let userInfo = response.notification.request.content.userInfo
-        
-        if let chatId = userInfo["chatId"] as? String {
-            let deepLinkUrl = "squadfy://chat_details/\(chatId)"
-            ExternalUriHandler.shared.onNewUri(uri: deepLinkUrl)
-        }
-        
+        IosPushBridge.shared.onNotificationTapped(userInfo: response.notification.request.content.userInfo)
         completionHandler()
     }
     

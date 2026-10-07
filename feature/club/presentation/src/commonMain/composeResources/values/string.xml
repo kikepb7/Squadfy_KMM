@@ -303,4 +303,10 @@
     <string name="member_stats_cards">🟨 %1$d · 🟥 %2$d · %3$d min</string>
     <string name="member_rating">Rating %1$d · puesto %2$d</string>
     <string name="member_recent_changes">Últimos partidos: %1$s</string>
+    <string name="settings_mute">Silenciar notificaciones</string>
+    <string name="settings_mute_hint">Seguirás recibiendo el aviso si te toca plaza.</string>
+    <string name="notifications_permission_title">Activa los avisos</string>
+    <string name="notifications_permission_text">Te avisaremos cuando se abra la convocatoria, se publiquen los equipos o te toque plaza.</string>
+    <string name="notifications_permission_allow">Activar</string>
+    <string name="notifications_permission_later">Ahora no</string>
 </resources>

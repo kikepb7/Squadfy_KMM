@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AlertDialog
@@ -27,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -71,6 +73,8 @@ import squadfy_app.feature.club.presentation.generated.resources.settings_copy_c
 import squadfy_app.feature.club.presentation.generated.resources.settings_edit_club
 import squadfy_app.feature.club.presentation.generated.resources.settings_invitation_code
 import squadfy_app.feature.club.presentation.generated.resources.settings_leave
+import squadfy_app.feature.club.presentation.generated.resources.settings_mute
+import squadfy_app.feature.club.presentation.generated.resources.settings_mute_hint
 import squadfy_app.feature.club.presentation.generated.resources.settings_leave_description
 import squadfy_app.feature.club.presentation.generated.resources.settings_leave_title
 import squadfy_app.feature.club.presentation.generated.resources.settings_owner_cannot_leave
@@ -139,6 +143,21 @@ fun ClubSettingsTab(
         item(key = "club") {
             SettingsGroup(title = stringResource(Res.string.settings_section_club)) {
                 SettingsRow(label = stringResource(Res.string.settings_schedule), icon = Icons.Outlined.CalendarMonth, onClick = onOpenSchedule)
+                state.muted?.let { muted ->
+                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+                    SettingsRow(
+                        label = stringResource(Res.string.settings_mute),
+                        icon = Icons.Outlined.NotificationsOff,
+                        onClick = { viewModel.onAction(ClubSettingsAction.OnMutedChanged(!muted)) },
+                        trailing = { Switch(checked = muted, onCheckedChange = { viewModel.onAction(ClubSettingsAction.OnMutedChanged(it)) }) }
+                    )
+                    Text(
+                        text = stringResource(Res.string.settings_mute_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.extended.textPlaceholder,
+                        modifier = Modifier.padding(start = 46.dp, end = 16.dp, bottom = 12.dp)
+                    )
+                }
             }
         }
         if (isManager) {

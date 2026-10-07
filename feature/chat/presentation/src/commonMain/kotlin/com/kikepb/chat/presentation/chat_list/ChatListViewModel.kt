@@ -2,6 +2,7 @@ package com.kikepb.chat.presentation.chat_list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kikepb.chat.domain.notification.PushNotificationService
 import com.kikepb.chat.domain.usecases.DeleteAllChatsUseCase
 import com.kikepb.chat.domain.usecases.FetchChatsUseCase
 import com.kikepb.chat.domain.usecases.GetChatsUseCase
@@ -26,11 +27,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 class ChatListViewModel(
     private val getChatsUseCase: GetChatsUseCase,
@@ -38,6 +41,7 @@ class ChatListViewModel(
     private val sessionStorage: SessionStorage,
     private val logoutUseCase: LogoutUseCase,
     private val unregisterTokenUseCase: UnregisterTokenUseCase,
+    private val pushNotificationService: PushNotificationService,
     private val deleteAllChatsUseCase: DeleteAllChatsUseCase,
     private val fetchLocalUserProfileUseCase: FetchLocalUserProfileUseCase
 ) : ViewModel() {
@@ -83,7 +87,13 @@ class ChatListViewModel(
             val authInfo = sessionStorage.observeAuthInfo().first()
             val refreshToken = authInfo?.refreshToken
 
-            // 1. Local logout first — always succeeds, even without internet.
+            // 0. Spec 009 (AC-009-01): DELETE /devices/{fcmToken} needs the session, so it goes first,
+            //    bounded so that logging out never hangs without internet.
+            withTimeoutOrNull(DEVICE_UNREGISTER_TIMEOUT_MS) {
+                pushNotificationService.observeDeviceToken().firstOrNull()?.let { unregisterTokenUseCase.unregisterToken(token = it) }
+            }
+
+            // 1. Local logout — always succeeds, even without internet.
             //    Clearing the session makes the app behave as unauthenticated immediately.
             sessionStorage.set(info = null)
             deleteAllChatsUseCase.deleteAllChats()
@@ -93,7 +103,6 @@ class ChatListViewModel(
             //    If offline, the refresh token will expire on the server on its own.
             //    We don't block logout on network availability.
             if (refreshToken != null) {
-                launch { unregisterTokenUseCase.unregisterToken(token = refreshToken) }
                 launch { logoutUseCase.logout(refreshToken = refreshToken) }
             }
         }
@@ -143,3 +152,5 @@ sealed interface ChatListAction {
     data object OnProfileSettingsClick: ChatListAction
     data class OnSelectChat(val chatId: String?): ChatListAction
 }
+
+private const val DEVICE_UNREGISTER_TIMEOUT_MS = 3_000L

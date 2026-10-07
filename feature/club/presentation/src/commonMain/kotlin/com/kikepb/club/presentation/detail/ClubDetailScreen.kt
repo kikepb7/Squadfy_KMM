@@ -38,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailBanner
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailMembersTab
+import com.kikepb.club.presentation.components.NotificationPermissionPrompt
 import com.kikepb.club.presentation.settings.ClubSettingsTab
 import com.kikepb.club.presentation.standings.StandingsTab
 import org.jetbrains.compose.resources.stringResource
@@ -77,6 +78,8 @@ fun ClubDetailRoot(
                 scope.launch { snackbarHostState.showSnackbar(event.message.asStringAsync()) }
         }
     }
+
+    NotificationPermissionPrompt()
 
     ClubDetailScreen(
         state = state,

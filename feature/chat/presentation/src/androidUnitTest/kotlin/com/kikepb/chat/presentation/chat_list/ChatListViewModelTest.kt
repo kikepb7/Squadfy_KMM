@@ -7,6 +7,7 @@ import com.kikepb.chat.domain.usecases.GetChatsUseCase
 import com.kikepb.chat.domain.usecases.LogoutUseCase
 import com.kikepb.chat.domain.usecases.UnregisterTokenUseCase
 import com.kikepb.chat.domain.usecases.profile.FetchLocalUserProfileUseCase
+import com.kikepb.chat.domain.notification.PushNotificationService
 import com.kikepb.chat.presentation.fake.FakeAuthRepository
 import com.kikepb.chat.presentation.fake.FakeChatParticipantRepository
 import com.kikepb.chat.presentation.fake.FakeChatRepository
@@ -16,6 +17,7 @@ import com.kikepb.chat.presentation.util.MainDispatcherRule
 import com.kikepb.core.domain.auth.model.AuthInfoModel
 import com.kikepb.core.domain.auth.model.UserModel
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -65,6 +67,9 @@ class ChatListViewModelTest {
         sessionStorage = sessionStorage,
         logoutUseCase = LogoutUseCase(authRepository = authRepository),
         unregisterTokenUseCase = UnregisterTokenUseCase(deviceTokenService = deviceTokenService),
+        pushNotificationService = object : PushNotificationService {
+            override fun observeDeviceToken() = flowOf("fcm-token")
+        },
         deleteAllChatsUseCase = DeleteAllChatsUseCase(chatRepository = chatRepository),
         fetchLocalUserProfileUseCase = FetchLocalUserProfileUseCase(chatParticipantRepository = participantRepository)
     )
@@ -206,5 +211,19 @@ class ChatListViewModelTest {
             assertFalse(state.isUserMenuOpen)
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    @Test
+    fun `AC-009-01 logout unregisters the FCM token, not the refresh token`() = runTest {
+        sessionStorage.set(FakeAuthRepository.defaultAuthInfoModel())
+        val viewModel = createViewModel()
+
+        viewModel.events.test {
+            viewModel.onAction(ChatListAction.OnConfirmLogout)
+            awaitItem()
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        assertEquals(listOf("fcm-token"), deviceTokenService.unregisteredTokens)
     }
 }

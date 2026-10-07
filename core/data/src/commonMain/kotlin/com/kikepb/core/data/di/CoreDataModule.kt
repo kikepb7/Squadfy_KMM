@@ -4,6 +4,9 @@ import com.kikepb.core.data.auth.KtorAuthRepositoryImpl
 import com.kikepb.core.data.BuildKonfig
 import com.kikepb.core.data.auth.storage.DataStoreSessionStorage
 import com.kikepb.core.data.featureflag.DataStoreFeatureFlagOverrideStore
+import com.kikepb.core.data.notification.DataStoreNotificationPromptStore
+import com.kikepb.core.domain.notification.InAppPushCenter
+import com.kikepb.core.domain.notification.NotificationPromptStore
 import com.kikepb.core.data.featureflag.DefaultFeatureFlags
 import com.kikepb.core.data.featureflag.FeatureFlagOverrideStore
 import com.kikepb.core.data.featureflag.NoOpRemoteFeatureFlagSource
@@ -40,6 +43,9 @@ val coreDataModule = module {
     // Feature flags (spec 013): environment comes from SQUADFY_ENV at build time
     single { AppEnvironment.fromKey(BuildKonfig.ENVIRONMENT) }
     singleOf(::DataStoreFeatureFlagOverrideStore) bind FeatureFlagOverrideStore::class
+    // Push notifications (spec 009)
+    single { InAppPushCenter() }
+    singleOf(::DataStoreNotificationPromptStore) bind NotificationPromptStore::class
     singleOf(::NoOpRemoteFeatureFlagSource) bind RemoteFeatureFlagSource::class
     single {
         DefaultFeatureFlags(environment = get(), overrideStore = get(), remoteSource = get(), scope = get())

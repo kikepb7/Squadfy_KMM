@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.club.domain.usecase.EditClubUseCase
+import com.kikepb.club.domain.usecase.GetClubMutedUseCase
 import com.kikepb.club.domain.usecase.LeaveClubUseCase
+import com.kikepb.club.domain.usecase.SetClubMutedUseCase
 import com.kikepb.club.domain.usecase.RegenerateInvitationCodeUseCase
 import com.kikepb.club.domain.usecase.UploadClubLogoUseCase
 import com.kikepb.club.presentation.mapper.toUiText
@@ -30,6 +32,8 @@ class ClubSettingsViewModel(
     private val regenerateInvitationCodeUseCase: RegenerateInvitationCodeUseCase,
     private val uploadClubLogoUseCase: UploadClubLogoUseCase,
     private val leaveClubUseCase: LeaveClubUseCase,
+    private val getClubMutedUseCase: GetClubMutedUseCase,
+    private val setClubMutedUseCase: SetClubMutedUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -42,6 +46,12 @@ class ClubSettingsViewModel(
     private val eventChannel = Channel<ClubSettingsEvent>(Channel.BUFFERED)
     val events = eventChannel.receiveAsFlow()
 
+    init {
+        viewModelScope.launch {
+            getClubMutedUseCase(clubId).onSuccess { muted -> _state.update { it.copy(muted = muted) } }
+        }
+    }
+
     fun onAction(action: ClubSettingsAction) {
         when (action) {
             is ClubSettingsAction.OnEditClubClick -> openEditDialog(action.club)
@@ -52,6 +62,21 @@ class ClubSettingsViewModel(
             ClubSettingsAction.OnConfirmLeave -> leave()
             is ClubSettingsAction.OnLogoPicked -> uploadLogo(action.bytes, action.mimeType)
             ClubSettingsAction.OnDismissDialog -> _state.update { it.copy(dialog = null, editError = null) }
+            is ClubSettingsAction.OnMutedChanged -> setMuted(action.muted)
+        }
+    }
+
+    /** AC-009-05: optimistic switch, reverted if the backend rejects it. */
+    private fun setMuted(muted: Boolean) {
+        val previous = _state.value.muted
+        _state.update { it.copy(muted = muted) }
+        viewModelScope.launch {
+            setClubMutedUseCase(clubId, muted)
+                .onSuccess { saved -> _state.update { it.copy(muted = saved) } }
+                .onFailure { error ->
+                    _state.update { it.copy(muted = previous) }
+                    eventChannel.send(ClubSettingsEvent.ShowMessage(error.toUiText()))
+                }
         }
     }
 
@@ -123,7 +148,9 @@ data class ClubSettingsState(
     val editName: TextFieldState = TextFieldState(),
     val editDescription: TextFieldState = TextFieldState(),
     val editMaxMembers: TextFieldState = TextFieldState(),
-    val editError: UiText? = null
+    val editError: UiText? = null,
+    /** Null until loaded: the switch is hidden. */
+    val muted: Boolean? = null
 )
 
 sealed interface ClubSettingsAction {
@@ -135,6 +162,7 @@ sealed interface ClubSettingsAction {
     data object OnConfirmLeave : ClubSettingsAction
     data class OnLogoPicked(val bytes: ByteArray, val mimeType: String?) : ClubSettingsAction
     data object OnDismissDialog : ClubSettingsAction
+    data class OnMutedChanged(val muted: Boolean) : ClubSettingsAction
 }
 
 sealed interface ClubSettingsEvent {

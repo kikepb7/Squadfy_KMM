@@ -53,3 +53,11 @@ class UnbanMemberUseCase(private val clubRepository: ClubRepository) {
     suspend operator fun invoke(clubId: String, memberId: String): EmptyResult<ClubError> =
         clubRepository.unbanMember(clubId = clubId, memberId = memberId)
 }
+
+class GetClubMutedUseCase(private val repository: com.kikepb.club.domain.repository.NotificationSettingsRepository) {
+    suspend operator fun invoke(clubId: String) = repository.isMuted(clubId)
+}
+
+class SetClubMutedUseCase(private val repository: com.kikepb.club.domain.repository.NotificationSettingsRepository) {
+    suspend operator fun invoke(clubId: String, muted: Boolean) = repository.setMuted(clubId, muted)
+}

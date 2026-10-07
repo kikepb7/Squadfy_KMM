@@ -2,6 +2,7 @@ package org.kikepb.squadfy
 
 import android.app.Application
 import org.kikepb.squadfy.di.initKoin
+import org.kikepb.squadfy.push.PushNotifier
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 
@@ -13,5 +14,6 @@ class SquadfyApplication: Application() {
             androidContext(this@SquadfyApplication)
             androidLogger()
         }
+        PushNotifier.createChannels(this)
     }
 }

@@ -93,9 +93,9 @@
 | Endpoint v1 | Ruta actual | Spec | Estado |
 |---|---|---|---|
 | `POST /devices {token, platform}` → 201 | `POST /notification/register` | 002 (ruta) y 009 (ciclo) | ✅ |
-| `DELETE /devices/{token}` | `DELETE /notification/{token}` | 002 | ✅ |
-| `GET/PUT /clubs/{id}/notification-settings {muted}` | — | 009 | ➕ |
-| Push `data.type` ∈ `match.announcement.opened`, `match.announcement.closing_soon`, `match.teams.published`, `match.cancelled`, `match.waitlist.promoted`, `new_message` | solo `chatId` | 009 | ➕ |
+| `DELETE /devices/{token}` | `DELETE /notification/{token}` | 002 | ✅ desde la 009 con el token FCM y antes de borrar la sesión (antes se enviaba el refresh token) |
+| `GET/PUT /clubs/{id}/notification-settings {muted}` | — | 009 | ✅ |
+| Push `data.type` ∈ `match.announcement.opened`, `match.announcement.closing_soon`, `match.teams.published`, `match.cancelled`, `match.waitlist.promoted`, `match.rescheduled`, `new_message` | solo `chatId` | 009 | ✅ `PushRouter` (Android e iOS) |
 
 ## DTOs que cambian de forma incompatible en la app (causarían `SERIALIZATION`)
 | DTO de la app | Cambio en v1 | Spec |
@@ -121,3 +121,4 @@
 | 2026-10-07 | Spec 006: `GET /matches/{id}`, `/teams` (AUTO/MANUAL con invitados), `/team-balance` y `GET /matches/{id}/announcement` (✅). `KtorMatchRepository` ya expone también las rutas de la 007 |
 | 2026-10-07 | Spec 007: eventos, minutos, cerrar, reabrir, cancelar, partido extra y marcador manual (✅) |
 | 2026-10-07 | Spec 008: `/ratings`, `/ratings/me`, `/stats?sortBy=` y `/stats/me` (✅); el «rating del partido» sale de `ratingChanges` |
+| 2026-10-07 | Spec 009: enrutado de push por `data.type`, push en primer plano dentro de la app, silenciar club y baja del dispositivo con el token FCM (✅) |

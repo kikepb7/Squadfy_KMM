@@ -1,6 +1,6 @@
 # 009 · Notificaciones push del ciclo de partido
 
-- **Estado:** Draft
+- **Estado:** In progress (implementada en `app-parity-feature`; faltan el E2E y la configuración manual de APNs)
 - **Reglas:** BE-005 RN-1…9, APP-RN-08, APP-RN-14
 - **Backend:** BE-005, `BACKEND.md` §13
 - **Depende de:** 002 (`/devices`), 005, 006
@@ -37,3 +37,10 @@ El backend ya envía push de todo el ciclo de partido. En la app, en cambio:
   - la clave APNs está subida a Firebase (manual).
 - **AC-009-07** Si `FIREBASE_ANDROID_PACKAGE` se define en el backend, coincide con el `applicationId`, incluido `.debug` si existe. Esto se documenta en la spec 012.
 - **AC-009-08** Hay un test unitario del router: el mapa de `data` → ruta, con todos los tipos y con un tipo desconocido.
+
+## Decisiones de implementación
+- **Servicio FCM en `composeApp`**: el `FirebaseMessagingService` pasa de `feature/chat/data` a la app, porque enruta push de varias features. El canal por defecto de FCM es `match_updates`.
+- **Push en primer plano (AC-009-04)**: `InAppPushCenter` (core/domain) sabe qué clubes tienen una pantalla visible (pestaña Partido o detalle del partido). Si la push es de un club visible, se refresca la pantalla y se muestra un snackbar con el texto. En otro caso, sale la notificación del sistema. Las push de chat siempre salen como notificación.
+- **Permiso (AC-009-01)**: la primera vez que se abre un club se muestra una explicación previa al diálogo del sistema. Si ya hay permiso, no se muestra. «Ya preguntado» se guarda en DataStore.
+- **Logout**: corregido el bug que daba de baja el dispositivo con el *refresh token*. Ahora se usa el token FCM, y antes de borrar la sesión, porque `DELETE /devices` necesita autenticación. Tiene un límite de 3 s para no bloquear el logout sin red.
+- **`aps-environment`**: el entitlement queda en `development`. Al exportar para App Store, Xcode lo firma como `production` con el perfil de distribución; se comprueba en la 012.

@@ -33,6 +33,8 @@ import com.kikepb.club.presentation.fake.FakeFeatureFlags
 import com.kikepb.club.presentation.fake.FakeSessionStorage
 import com.kikepb.club.presentation.fake.member
 import com.kikepb.core.domain.featureflag.FeatureFlag
+import com.kikepb.core.domain.notification.InAppPushCenter
+import com.kikepb.core.domain.notification.PushMessage
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.RemoteError
@@ -111,6 +113,7 @@ class AnnouncementViewModelTest {
 
     private val repository = FakeAnnouncementRepository()
     private val clubRepository = FakeClubRepository()
+    private val pushCenter = InAppPushCenter()
 
     @BeforeTest
     fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -132,6 +135,7 @@ class AnnouncementViewModelTest {
             addGuestUseCase = AddGuestToAnnouncementUseCase(repository),
             removeGuestUseCase = RemoveGuestFromAnnouncementUseCase(repository),
             clock = FixedClock,
+            inAppPushCenter = pushCenter,
             savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1"))
         )
     }
@@ -236,5 +240,22 @@ class AnnouncementViewModelTest {
         viewModel.state.launchIn(backgroundScope)
 
         assertFalse(viewModel.state.value.canRemoveGuest(viewModel.state.value.confirmed.single()))
+    }
+
+    @Test
+    fun `AC-009-04 a push of the visible club refreshes the tab and shows its text`() = runTest(UnconfinedTestDispatcher()) {
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+        viewModel.onAction(AnnouncementAction.OnVisibilityChanged(true))
+        val before = repository.currentRequests
+
+        viewModel.events.test {
+            assertTrue(pushCenter.onForegroundMessage(PushMessage(mapOf("type" to "match.announcement.opened", "clubId" to "club-1"), body = "¡Apúntate!")))
+            assertIs<AnnouncementEvent.ShowMessage>(awaitItem())
+        }
+        assertEquals(before + 1, repository.currentRequests)
+
+        viewModel.onAction(AnnouncementAction.OnVisibilityChanged(false))
+        assertFalse(pushCenter.isClubVisible("club-1"))
     }
 }

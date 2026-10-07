@@ -3,6 +3,7 @@ package com.kikepb.club.presentation.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import com.kikepb.club.presentation.bans.ClubBansRoot
 import com.kikepb.club.presentation.detail.ClubDetailRoot
 import com.kikepb.club.presentation.memberdetail.MemberDetailRoot
@@ -46,7 +47,8 @@ sealed interface ClubGraphRoutes {
 }
 
 fun NavGraphBuilder.clubGraph(navController: NavController) {
-    composable<ClubDetailRoute> {
+    // Push deep links (spec 009, AC-009-03): the club opens on its Match tab
+    composable<ClubDetailRoute>(deepLinks = listOf(navDeepLink { uriPattern = "squadfy://club/{clubId}/announcement" })) {
         ClubDetailRoot(
             onBackClick = { navController.navigateUp() },
             onMemberClick = { clubId, memberId ->
@@ -67,7 +69,7 @@ fun NavGraphBuilder.clubGraph(navController: NavController) {
     composable<ClubScheduleRoute> {
         ScheduleRoot(onBackClick = { navController.navigateUp() })
     }
-    composable<MatchDetailRoute> {
+    composable<MatchDetailRoute>(deepLinks = listOf(navDeepLink { uriPattern = "squadfy://match/{matchId}?clubId={clubId}" })) {
         MatchDetailRoot(onBackClick = { navController.navigateUp() })
     }
 }

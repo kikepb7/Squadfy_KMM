@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.club.domain.model.MatchEventModel
 import com.kikepb.club.domain.model.MatchEventType
@@ -154,6 +155,11 @@ fun MatchDetailRoot(
             }
             MatchDetailEvent.Close -> onBackClick()
         }
+    }
+    // AC-009-04: while visible, pushes of this club are shown here instead of as notifications
+    LifecycleStartEffect(Unit) {
+        viewModel.onAction(MatchDetailAction.OnVisibilityChanged(true))
+        onStopOrDispose { viewModel.onAction(MatchDetailAction.OnVisibilityChanged(false)) }
     }
     // APP-RN-08: refresh when coming back to the foreground (e.g. from a push)
     LifecycleResumeEffect(Unit) {

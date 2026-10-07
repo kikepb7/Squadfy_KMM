@@ -27,6 +27,7 @@ import com.kikepb.club.domain.usecase.WithdrawUseCase
 import com.kikepb.club.presentation.mapper.toUiText
 import com.kikepb.core.domain.featureflag.FeatureFlag
 import com.kikepb.core.domain.featureflag.FeatureFlags
+import com.kikepb.core.domain.notification.InAppPushCenter
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.onFailure
@@ -69,6 +70,7 @@ class AnnouncementViewModel(
     private val addGuestUseCase: AddGuestToAnnouncementUseCase,
     private val removeGuestUseCase: RemoveGuestFromAnnouncementUseCase,
     private val clock: Clock,
+    private val inAppPushCenter: InAppPushCenter,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -114,14 +116,25 @@ class AnnouncementViewModel(
         if (window != null) lastWindowState = window
     }
 
+    private var isVisible = false
+
     init {
         refresh()
         loadTimeZone()
+        // AC-009-04: a push of this club while the tab is visible refreshes it and shows its text
+        viewModelScope.launch {
+            inAppPushCenter.messages.collect { message ->
+                if (message.clubId != clubId) return@collect
+                refresh()
+                (message.body ?: message.title)?.let { eventChannel.send(AnnouncementEvent.ShowMessage(UiText.DynamicString(it))) }
+            }
+        }
     }
 
     fun onAction(action: AnnouncementAction) {
         when (action) {
             AnnouncementAction.OnRefresh, AnnouncementAction.OnResume -> refresh()
+            is AnnouncementAction.OnVisibilityChanged -> onVisibilityChanged(action.visible)
             AnnouncementAction.OnEnrollClick -> enroll()
             AnnouncementAction.OnWithdrawClick -> _state.update { it.copy(dialog = AnnouncementDialog.ConfirmWithdraw) }
             AnnouncementAction.OnConfirmWithdraw -> withdraw()
@@ -150,6 +163,17 @@ class AnnouncementViewModel(
             }
             _state.update { it.copy(isRefreshing = false, now = clock.now()) }
         }
+    }
+
+    private fun onVisibilityChanged(visible: Boolean) {
+        if (visible == isVisible) return
+        isVisible = visible
+        if (visible) inAppPushCenter.onClubVisible(clubId) else inAppPushCenter.onClubHidden(clubId)
+    }
+
+    override fun onCleared() {
+        onVisibilityChanged(false)
+        super.onCleared()
     }
 
     private fun loadTimeZone() {
@@ -320,6 +344,7 @@ data class AnnouncementState(
 sealed interface AnnouncementAction {
     data object OnRefresh : AnnouncementAction
     data object OnResume : AnnouncementAction
+    data class OnVisibilityChanged(val visible: Boolean) : AnnouncementAction
     data object OnEnrollClick : AnnouncementAction
     data object OnWithdrawClick : AnnouncementAction
     data object OnConfirmWithdraw : AnnouncementAction

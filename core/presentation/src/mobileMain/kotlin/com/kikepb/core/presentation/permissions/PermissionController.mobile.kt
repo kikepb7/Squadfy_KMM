@@ -27,6 +27,9 @@ actual class PermissionController(
             DENIED
         }
     }
+
+    actual suspend fun isGranted(permission: Permission): Boolean =
+        mokoPermissionsController.isPermissionGranted(permission = permission.toMokoPermission())
 }
 
 fun Permission.toMokoPermission(): dev.icerock.moko.permissions.Permission =

@@ -303,4 +303,10 @@
     <string name="member_stats_cards">🟨 %1$d · 🟥 %2$d · %3$d min</string>
     <string name="member_rating">Rating %1$d · position %2$d</string>
     <string name="member_recent_changes">Last matches: %1$s</string>
+    <string name="settings_mute">Mute notifications</string>
+    <string name="settings_mute_hint">You will still be told when you get a spot.</string>
+    <string name="notifications_permission_title">Turn on notifications</string>
+    <string name="notifications_permission_text">We will tell you when the announcement opens, teams are published or you get a spot.</string>
+    <string name="notifications_permission_allow">Turn on</string>
+    <string name="notifications_permission_later">Not now</string>
 </resources>

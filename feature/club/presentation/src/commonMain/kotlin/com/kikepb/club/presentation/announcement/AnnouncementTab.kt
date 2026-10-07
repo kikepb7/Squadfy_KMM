@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.club.domain.model.AnnouncementEntry
 import com.kikepb.club.domain.model.AnnouncementStatus
@@ -111,6 +112,11 @@ fun AnnouncementTab(
             is AnnouncementEvent.ShowMessage -> scope.launch { snackbarHostState.showSnackbar(event.message.asStringAsync()) }
             AnnouncementEvent.NotMemberAnymore -> onNotMemberAnymore()
         }
+    }
+    // AC-009-04: while visible, pushes of this club refresh the tab instead of showing a notification
+    LifecycleStartEffect(Unit) {
+        viewModel.onAction(AnnouncementAction.OnVisibilityChanged(true))
+        onStopOrDispose { viewModel.onAction(AnnouncementAction.OnVisibilityChanged(false)) }
     }
     // APP-RN-08: refresh when the app comes back to the foreground
     LifecycleResumeEffect(Unit) {

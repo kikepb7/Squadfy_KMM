@@ -40,6 +40,7 @@ import com.kikepb.club.domain.usecase.SetPlayerMinutesUseCase
 import com.kikepb.club.presentation.mapper.toUiText
 import com.kikepb.core.domain.featureflag.FeatureFlag
 import com.kikepb.core.domain.featureflag.FeatureFlags
+import com.kikepb.core.domain.notification.InAppPushCenter
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.onFailure
@@ -84,6 +85,7 @@ class MatchDetailViewModel(
     private val clearManualScoreUseCase: ClearManualScoreUseCase,
     featureFlags: FeatureFlags,
     private val clock: Clock,
+    private val inAppPushCenter: InAppPushCenter,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -116,10 +118,19 @@ class MatchDetailViewModel(
     )
 
     private var balanceRequested = false
+    private var isVisible = false
 
     init {
         refresh()
         loadTimeZone()
+        // AC-009-04: pushes of this club while visible show their text; those of this match also refresh it
+        viewModelScope.launch {
+            inAppPushCenter.messages.collect { message ->
+                if (message.clubId != clubId) return@collect
+                if (message.matchId == matchId) refresh()
+                (message.body ?: message.title)?.let { eventChannel.send(MatchDetailEvent.ShowMessage(UiText.DynamicString(it))) }
+            }
+        }
         // The balance is managers-only: it is requested once the role is known (APP-RN-09)
         viewModelScope.launch {
             observeMyMembershipUseCase(clubId).collect { me ->
@@ -135,6 +146,7 @@ class MatchDetailViewModel(
     fun onAction(action: MatchDetailAction) {
         when (action) {
             MatchDetailAction.OnRefresh -> refresh()
+            is MatchDetailAction.OnVisibilityChanged -> onVisibilityChanged(action.visible)
             MatchDetailAction.OnRedrawClick -> _state.update { it.copy(dialog = MatchDetailDialog.ConfirmRedraw) }
             MatchDetailAction.OnConfirmRedraw -> redraw()
             MatchDetailAction.OnStartManualEdit -> _state.value.match?.let { match ->
@@ -179,6 +191,17 @@ class MatchDetailViewModel(
             }
             MatchDetailAction.OnClearManualScore -> launchWorking { clearManualScoreUseCase(matchId).handleMatchResult() }
         }
+    }
+
+    private fun onVisibilityChanged(visible: Boolean) {
+        if (visible == isVisible) return
+        isVisible = visible
+        if (visible) inAppPushCenter.onClubVisible(clubId) else inAppPushCenter.onClubHidden(clubId)
+    }
+
+    override fun onCleared() {
+        onVisibilityChanged(false)
+        super.onCleared()
     }
 
     private fun refresh() {
@@ -412,6 +435,7 @@ data class MatchDetailState(
 
 sealed interface MatchDetailAction {
     data object OnRefresh : MatchDetailAction
+    data class OnVisibilityChanged(val visible: Boolean) : MatchDetailAction
     data object OnRedrawClick : MatchDetailAction
     data object OnConfirmRedraw : MatchDetailAction
     data object OnStartManualEdit : MatchDetailAction

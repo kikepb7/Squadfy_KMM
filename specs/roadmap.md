@@ -15,7 +15,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 006 | Detalle del partido, equipos y equilibrio | **In progress** (8/9; falta el E2E) | ✅ | — | ✅ | 005 | — |
 | 007 | Acta: eventos, minutos, cerrar, reabrir, cancelar, partido extra | **In progress** (9/10; falta el E2E) | ✅ | — | ✅ | 006 | — |
 | 008 | Clasificaciones de rating y estadísticas | **In progress** (7/8; falta el E2E) | ✅ | — | ✅ | 003 | — |
-| 009 | Push del ciclo de partido + silenciar club | Draft | ✅ | — | — | 002, 005, 006 | 2,5 d |
+| 009 | Push del ciclo de partido + silenciar club | **In progress** (9/11; faltan el E2E con push reales y la clave APNs) | ✅ | — | ✅ | 002, 005, 006 | — |
 | 010 | Inicio con mis clubes y el estado de la convocatoria | Draft | ✅ | — | — | 003, 005 | 1,5 d |
 | 011 | Preparación de la app para producción | Draft | ✅ | — | — | 002 (en paralelo) | 5 d |
 | 012 | Puesta en producción (coordinada con el backend) | Draft | ✅ | — | — | todas, BE-008/009/010 | 3 d + revisión de tiendas |

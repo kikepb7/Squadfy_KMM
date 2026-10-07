@@ -21,6 +21,9 @@ kotlin {
             implementation(libs.core.splashscreen)
 
             implementation(libs.koin.android)
+
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.messaging)
         }
         commonMain.dependencies {
             // CORE

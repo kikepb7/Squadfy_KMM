@@ -46,6 +46,9 @@ import com.kikepb.club.presentation.fake.FakeSessionStorage
 import com.kikepb.club.presentation.fake.match
 import com.kikepb.club.presentation.fake.member
 import com.kikepb.core.domain.featureflag.FeatureFlag
+import com.kikepb.core.domain.notification.InAppPushCenter
+import com.kikepb.core.domain.notification.PushMessage
+import com.kikepb.core.domain.notification.PushRouter
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.RemoteError
@@ -108,6 +111,7 @@ class MatchDetailViewModelTest {
 
     private val repository = FakeMatchRepository()
     private val clubRepository = FakeClubRepository()
+    private val pushCenter = InAppPushCenter()
     private val guest = MatchGuestModel(guestId = "g-1", name = "Luis", position = PlayerPosition.GOALKEEPER, invitedByMemberId = "me")
 
     @BeforeTest
@@ -137,6 +141,7 @@ class MatchDetailViewModelTest {
             clearManualScoreUseCase = ClearManualScoreUseCase(repository),
             featureFlags = flags,
             clock = clock,
+            inAppPushCenter = pushCenter,
             savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1", "matchId" to "match-1"))
         )
     }
@@ -383,5 +388,21 @@ class MatchDetailViewModelTest {
         on.onAction(MatchDetailAction.OnConfirmManualScore)
 
         assertTrue("score:0-3" in repository.calls)
+    }
+
+    @Test
+    fun `AC-009-04 a push for this match while visible reloads it`() = runTest(UnconfinedTestDispatcher()) {
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+        viewModel.onAction(MatchDetailAction.OnVisibilityChanged(true))
+        val gets = repository.calls.count { it == "get" }
+
+        viewModel.events.test {
+            pushCenter.onForegroundMessage(
+                PushMessage(mapOf("type" to PushRouter.TEAMS_PUBLISHED, "clubId" to "club-1", "matchId" to "match-1"), body = "Juegas en el A")
+            )
+            assertIs<MatchDetailEvent.ShowMessage>(awaitItem())
+        }
+        assertEquals(gets + 1, repository.calls.count { it == "get" })
     }
 }
