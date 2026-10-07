@@ -1,6 +1,5 @@
 package com.kikepb.club.data.di
 
-import androidx.room.fallbackToDestructiveMigration
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.kikepb.club.data.datasource.local.OfflineFirstClubRepositoryImpl
 import com.kikepb.club.data.datasource.remote.KtorClubRepositoryImpl

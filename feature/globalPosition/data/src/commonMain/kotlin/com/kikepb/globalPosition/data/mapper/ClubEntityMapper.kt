@@ -22,5 +22,11 @@ fun ClubDto.toEntity() = ClubEntity(
     ownerId = ownerId,
     invitationCode = invitationCode,
     maxMembers = maxMembers,
-    membersCount = membersCount
+    membersCount = membersCount,
+    matchDayOfWeek = matchDayOfWeek,
+    matchStartTime = matchStartTime,
+    matchEndTime = matchEndTime,
+    seasonStartMonth = seasonStartMonth,
+    seasonStartDay = seasonStartDay,
+    drawTime = drawTime
 )
