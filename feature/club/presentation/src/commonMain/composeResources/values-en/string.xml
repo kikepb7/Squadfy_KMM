@@ -358,4 +358,6 @@
     <string name="club_members_of_max">%1$d/%2$d members</string>
     <string name="club_members_one">1 member</string>
     <string name="club_members_many">%1$d members</string>
+    <string name="announcement_upcoming_title">Upcoming announcements</string>
+    <string name="announcement_upcoming_item">Closes %1$s · %2$d / %3$d confirmed</string>
 </resources>

@@ -307,4 +307,14 @@ class AnnouncementViewModelTest {
 
         assertEquals(0, clubRepository.memberFetches)
     }
+
+    @Test
+    fun `AC-005-10 an open announcement of another match is upcoming, not past`() {
+        val open = announcement(closesAt = "2026-10-16T20:00:00Z").copy(id = "weekly")
+        val closed = announcement(closesAt = "2026-10-01T20:00:00Z").copy(id = "old", status = AnnouncementStatus.CLOSED)
+        val state = AnnouncementState(now = NOW, history = listOf(closed, open))
+
+        assertEquals(listOf("weekly"), state.upcoming.map { it.id })
+        assertEquals(listOf("old"), state.past.map { it.id })
+    }
 }

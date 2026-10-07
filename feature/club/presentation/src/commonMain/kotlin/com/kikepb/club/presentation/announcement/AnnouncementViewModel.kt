@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.club.domain.error.ClubError
 import com.kikepb.club.domain.model.AnnouncementEntry
+import com.kikepb.club.domain.model.AnnouncementStatus
 import com.kikepb.club.domain.model.ClubMemberModel
 import com.kikepb.club.domain.model.CurrentAnnouncementModel
 import com.kikepb.club.domain.model.EntryStatus
@@ -337,6 +338,7 @@ data class AnnouncementState(
     val isStale: Boolean = false,
     val lastUpdatedAt: Instant? = null,
     val current: CurrentAnnouncementModel? = null,
+    /** Every other announcement of the club (GET /announcements), split below into upcoming and past. */
     val history: List<MatchAnnouncementModel> = emptyList(),
     val timeZoneId: String = TimeZone.currentSystemDefault().id,
     val members: Map<String, ClubMemberModel> = emptyMap(),
@@ -349,6 +351,13 @@ data class AnnouncementState(
     val windowState: WindowState? get() = current?.let { AnnouncementWindowPolicy.state(it.announcement, now) }
     val timeToNextChange: Duration? get() = current?.let { AnnouncementWindowPolicy.timeToNextChange(it.announcement, now) }
     val isManager: Boolean get() = me?.role?.let(MemberPermissions::canManageClub) == true
+
+    /** AC-005-10: other announcements still open (e.g. the weekly match while an extra match is current). */
+    val upcoming: List<MatchAnnouncementModel>
+        get() = history.filter { it.status == AnnouncementStatus.OPEN || (it.status != AnnouncementStatus.CANCELLED && it.closesAt > now) }
+            .sortedBy { it.closesAt }
+
+    val past: List<MatchAnnouncementModel> get() = history - upcoming.toSet()
 
     val zone: TimeZone get() = runCatching { TimeZone.of(timeZoneId) }.getOrDefault(TimeZone.currentSystemDefault())
 

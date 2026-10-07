@@ -73,6 +73,8 @@ import squadfy_app.feature.club.presentation.generated.resources.announcement_gu
 import squadfy_app.feature.club.presentation.generated.resources.announcement_history_cancelled
 import squadfy_app.feature.club.presentation.generated.resources.announcement_history_item
 import squadfy_app.feature.club.presentation.generated.resources.announcement_history_title
+import squadfy_app.feature.club.presentation.generated.resources.announcement_upcoming_item
+import squadfy_app.feature.club.presentation.generated.resources.announcement_upcoming_title
 import squadfy_app.feature.club.presentation.generated.resources.announcement_leave_waitlist
 import squadfy_app.feature.club.presentation.generated.resources.announcement_match_at
 import squadfy_app.feature.club.presentation.generated.resources.announcement_none
@@ -195,9 +197,23 @@ fun AnnouncementContent(
                 }
             }
             if (state.isManager && !state.isStale && state.hasLoaded) item(key = "manager-actions") { managerActions() }
-            if (onOpenMatch != null && state.history.isNotEmpty()) {
+            if (onOpenMatch != null && state.upcoming.isNotEmpty()) {
+                item(key = "upcoming-title") { SectionTitle(text = stringResource(Res.string.announcement_upcoming_title)) }
+                items(items = state.upcoming, key = { "u-${it.id}" }) { next ->
+                    TextButton(onClick = { onOpenMatch(next.matchId) }, modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = stringResource(Res.string.announcement_upcoming_item, formatDateTime(next.closesAt, state.timeZoneId), next.confirmedCount, next.maxPlayers),
+                            modifier = Modifier.fillMaxWidth(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.extended.textSecondary
+                        )
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+                }
+            }
+            if (onOpenMatch != null && state.past.isNotEmpty()) {
                 item(key = "history-title") { SectionTitle(text = stringResource(Res.string.announcement_history_title)) }
-                items(items = state.history, key = { "h-${it.id}" }) { past ->
+                items(items = state.past, key = { "h-${it.id}" }) { past ->
                     HistoryRow(announcement = past, timeZoneId = state.timeZoneId, onClick = { onOpenMatch(past.matchId) })
                 }
             }
