@@ -11,6 +11,7 @@ import com.kikepb.core.domain.util.onSuccess
 import com.kikepb.core.presentation.mapper.toUiText
 import com.kikepb.core.presentation.util.UiText
 import com.kikepb.domain.usecase.LoginUseCase
+import com.kikepb.domain.usecase.ResendEmailVerificationUseCase
 import com.kikepb.domain.validation.EmailValidator
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,9 +28,11 @@ import kotlinx.coroutines.launch
 import squadfy_app.feature.auth.presentation.generated.resources.Res.string as RString
 import squadfy_app.feature.auth.presentation.generated.resources.error_email_not_verified
 import squadfy_app.feature.auth.presentation.generated.resources.error_invalid_credentials
+import squadfy_app.feature.auth.presentation.generated.resources.resent_verification_email
 
 class LoginViewModel(
     private val loginUseCase: LoginUseCase,
+    private val resendEmailVerificationUseCase: ResendEmailVerificationUseCase,
     private val sessionStorage: SessionStorage
 ) : ViewModel() {
 
@@ -66,7 +69,7 @@ class LoginViewModel(
         if (!state.value.canLogin) return
 
         viewModelScope.launch {
-            _state.update { it.copy(isLoggingIn = true) }
+            _state.update { it.copy(isLoggingIn = true, canResendVerification = false, info = null) }
 
             val email = state.value.emailTextFieldState.text.toString()
             val password = state.value.passwordTextFieldState.text.toString()
@@ -85,7 +88,14 @@ class LoginViewModel(
                         else -> error.toUiText()
                     }
 
-                    _state.update { it.copy(error = errorMessage, isLoggingIn = false) }
+                    _state.update {
+                        it.copy(
+                            error = errorMessage,
+                            isLoggingIn = false,
+                            // 403 EMAIL_NOT_VERIFIED: offer to resend the verification email (AC-002-08)
+                            canResendVerification = error == DataError.Remote.FORBIDDEN
+                        )
+                    }
                 }
         }
     }
@@ -102,9 +112,33 @@ class LoginViewModel(
         }.launchIn(scope = viewModelScope)
     }
 
+    private fun resendVerification() {
+        val email = state.value.emailTextFieldState.text.toString()
+        if (email.isBlank() || state.value.isResendingVerification) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isResendingVerification = true) }
+            resendEmailVerificationUseCase(email = email)
+                .onSuccess {
+                    _state.update {
+                        it.copy(
+                            isResendingVerification = false,
+                            canResendVerification = false,
+                            error = null,
+                            info = UiText.Resource(RString.resent_verification_email)
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _state.update { it.copy(isResendingVerification = false, error = error.toUiText()) }
+                }
+        }
+    }
+
     fun onAction(action: LoginAction) {
         when (action) {
             LoginAction.OnLoginClick -> login()
+            LoginAction.OnResendVerificationClick -> resendVerification()
             LoginAction.OnTogglePasswordVisibility -> {
                 _state.update { it.copy(isPasswordVisible = !it.isPasswordVisible) }
             }
@@ -119,7 +153,10 @@ data class LoginState(
     val isPasswordVisible: Boolean = false,
     val canLogin: Boolean = false,
     val isLoggingIn: Boolean = false,
-    val error: UiText? = null
+    val error: UiText? = null,
+    val info: UiText? = null,
+    val canResendVerification: Boolean = false,
+    val isResendingVerification: Boolean = false
 )
 
 sealed interface LoginEvent {
@@ -131,4 +168,5 @@ sealed interface LoginAction {
     data object OnForgotPasswordClick: LoginAction
     data object OnLoginClick: LoginAction
     data object OnSignUpClick: LoginAction
+    data object OnResendVerificationClick: LoginAction
 }

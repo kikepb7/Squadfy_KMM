@@ -37,7 +37,7 @@ class KtorChatServiceTest {
         assertTrue(result is Result.Success)
         assertEquals("chat-1", (result as Result.Success).data.id)
         assertEquals(HttpMethod.Post, requests.first().method)
-        assertTrue(requests.first().url.encodedPath.contains("/chat"))
+        assertTrue(requests.first().url.encodedPath.endsWith("/chats"))
     }
 
     @Test
@@ -139,8 +139,7 @@ class KtorChatServiceTest {
 
         assertTrue(result is Result.Success)
         assertEquals(HttpMethod.Delete, requests.first().method)
-        assertTrue(requests.first().url.encodedPath.contains("chat-1"))
-        assertTrue(requests.first().url.encodedPath.contains("leave"))
+        assertTrue(requests.first().url.encodedPath.endsWith("/chats/chat-1/participants/me"))
     }
 
     @Test
@@ -180,8 +179,7 @@ class KtorChatServiceTest {
         assertTrue(result is Result.Success)
         assertEquals(2, (result as Result.Success).data.participants.size)
         assertEquals(HttpMethod.Post, requests.first().method)
-        assertTrue(requests.first().url.encodedPath.contains("chat-1"))
-        assertTrue(requests.first().url.encodedPath.contains("add"))
+        assertTrue(requests.first().url.encodedPath.endsWith("/chats/chat-1/participants"))
     }
 
     @Test

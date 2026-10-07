@@ -10,37 +10,45 @@ import com.kikepb.chat.domain.repository.participant.ChatParticipantService
 import com.kikepb.core.data.networking.delete
 import com.kikepb.core.data.networking.get
 import com.kikepb.core.data.networking.post
+import com.kikepb.core.data.networking.put
 import com.kikepb.core.data.networking.safeCall
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.map
+import com.kikepb.core.domain.auth.repository.SessionStorage
 import io.ktor.client.HttpClient
+import kotlinx.coroutines.flow.firstOrNull
 import io.ktor.client.request.header
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 
 class KtorChatParticipantService(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val sessionStorage: SessionStorage
 ): ChatParticipantService {
 
     override suspend fun searchParticipant(query: String): Result<ChatParticipantModel, DataError.Remote> =
         httpClient.get<ChatParticipantDTO>(
-            route = "/participants",
+            route = "/users",
             queryParams = mapOf(
                 "query" to query
             )
         ).map { it.toDomain() }
 
-    override suspend fun getLocalParticipant(): Result<ChatParticipantModel, DataError.Remote> =
-        httpClient.get<ChatParticipantDTO>(
-            route = "/participants"
+    override suspend fun getLocalParticipant(): Result<ChatParticipantModel, DataError.Remote> {
+        // v1 has no "my participant" route: the public profile is read by user id (GET /users/{userId})
+        val userId = sessionStorage.observeAuthInfo().firstOrNull()?.user?.id
+            ?: return Result.Failure(DataError.Remote.UNAUTHORIZED)
+        return httpClient.get<ChatParticipantDTO>(
+            route = "/users/$userId"
         ).map { it.toDomain() }
+    }
 
     override suspend fun getProfilePictureUploadUrl(mimeType: String): Result<ProfilePictureUploadUrlsModel, DataError.Remote> =
         httpClient.post<Unit, ProfilePictureUploadUrlsResponseDTO>(
-            route = "/participants/profile-picture-upload",
+            route = "/me/profile-picture/upload-url",
             queryParams = mapOf(
                 "mimeType" to mimeType
             ),
@@ -63,11 +71,11 @@ class KtorChatParticipantService(
         }
 
     override suspend fun confirmProfilePictureUpload(publicUrl: String): EmptyResult<DataError.Remote> =
-        httpClient.post< ConfirmProfilePictureRequestDTO, Unit>(
-            route = "/participants/confirm-profile-picture",
+        httpClient.put<ConfirmProfilePictureRequestDTO, Unit>(
+            route = "/me/profile-picture",
             body = ConfirmProfilePictureRequestDTO(publicUrl = publicUrl)
         )
 
     override suspend fun deleteProfilePicture(): EmptyResult<DataError.Remote> =
-        httpClient.delete(route = "/participants/profile-picture")
+        httpClient.delete(route = "/me/profile-picture")
 }

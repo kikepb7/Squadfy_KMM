@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class ProfilePictureUploadUrlsResponseDTO(
     val uploadUrl: String,
     val publicUrl: String,
-    val headers: Map<String, String>
+    val headers: Map<String, String> = emptyMap(),
+    val expiresAt: String? = null
 )

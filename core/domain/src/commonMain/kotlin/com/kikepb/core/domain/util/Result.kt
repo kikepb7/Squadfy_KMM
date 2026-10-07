@@ -32,6 +32,13 @@ inline fun <T, E: Error> Result<T, E>.onFailure(action: (E) -> Unit): Result<T, 
     }
 }
 
+inline fun <T, E: Error, F: Error> Result<T, E>.mapError(map: (E) -> F): Result<T, F> {
+    return when (this) {
+        is Result.Failure -> Result.Failure(error = map(error))
+        is Result.Success -> this
+    }
+}
+
 fun <T, E: Error> Result<T, E>.asEmptyResult(): EmptyResult<E> {
     return map {  }
 }

@@ -22,7 +22,7 @@ class KtorChatMessageService(
         before: String?
     ): Result<List<ChatMessageModel>, DataError.Remote> =
         httpClient.get<List<ChatMessageDTO>>(
-            route = "/chat/$chatId/messages",
+            route = "/chats/$chatId/messages",
             queryParams = buildMap {
                 this["pageSize"] = PAGE_SIZE
                 if (before != null) this["before"] = before
@@ -32,5 +32,5 @@ class KtorChatMessageService(
         }
 
     override suspend fun deleteMessage(messageId: String): EmptyResult<DataError.Remote> =
-        httpClient.delete(route = "/message/$messageId")
+        httpClient.delete(route = "/messages/$messageId")
 }

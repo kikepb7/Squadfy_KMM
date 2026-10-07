@@ -27,6 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import squadfy_app.feature.auth.presentation.generated.resources.Res
+import squadfy_app.feature.auth.presentation.generated.resources.resend_verification_email
 import squadfy_app.feature.auth.presentation.generated.resources.create_account
 import squadfy_app.feature.auth.presentation.generated.resources.email
 import squadfy_app.feature.auth.presentation.generated.resources.email_placeholder
@@ -117,6 +118,25 @@ fun LoginScreen(
                 isLoading = state.isLoggingIn,
                 modifier = Modifier.fillMaxWidth()
             )
+            if (state.canResendVerification) {
+                Spacer(modifier = Modifier.height(8.dp))
+                SquadfyButton(
+                    text = stringResource(Res.string.resend_verification_email),
+                    onClick = { onAction(LoginAction.OnResendVerificationClick) },
+                    style = SquadfyButtonStyle.TEXT,
+                    isLoading = state.isResendingVerification,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            state.info?.let { info ->
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = info.asString(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
             SquadfyButton(
                 text = stringResource(Res.string.create_account),

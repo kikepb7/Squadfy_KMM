@@ -14,10 +14,10 @@ class KtorDeviceTokenRepositoryImpl(
 
     override suspend fun registerToken(token: String, platform: String): EmptyResult<DataError.Remote> =
         httpClient.post(
-            route = "/notification/register",
+            route = "/devices",
             body = RegisterDeviceTokenRequestDTO(token = token, platform = platform)
         )
 
     override suspend fun unregisterToken(token: String): EmptyResult<DataError.Remote> =
-        httpClient.delete(route = "/notification/$token")
+        httpClient.delete(route = "/devices/$token")
 }

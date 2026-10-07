@@ -103,11 +103,9 @@ fun NavGraphBuilder.authGraph(
         }
         composable<ResetPassword>(
             deepLinks = listOf(
+                // Backend v1 emails RESET_PASSWORD_URL?token=..., by default squadfy://reset-password (BACKEND.md §6)
                 navDeepLink {
-                    this.uriPattern = "https://squadfy.com/api/auth/reset-password?token={token}"
-                },
-                navDeepLink {
-                    this.uriPattern = "squadfy://squadfy.com/api/auth/reset-password?token={token}"
+                    this.uriPattern = "squadfy://reset-password?token={token}"
                 }
             )
         ) {

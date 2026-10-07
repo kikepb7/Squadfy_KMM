@@ -15,4 +15,16 @@
     <string name="error_service_unavailable">Service unavailable, please try again later</string>
     <string name="error_serialization">Serialization error</string>
     <string name="error_unable_to_send_message">An error happened while sending the message</string>
+    <string name="error_validation">Some fields are not valid</string>
+    <string name="error_invalid_credentials_v1">Wrong email or password</string>
+    <string name="error_email_not_verified_v1">Verify your email before logging in</string>
+    <string name="error_session_expired">Your session has expired. Please log in again</string>
+    <string name="error_rate_limit_v1">Too many attempts. Please try again later</string>
+    <string name="error_user_exists">An account with this email or username already exists</string>
+    <string name="error_same_password_v1">The new password must be different from the current one</string>
+    <string name="error_not_club_member">You are no longer a member of this club</string>
+    <string name="error_banned_from_club">You have been banned from this club</string>
+    <string name="error_invalid_invitation_code">This invitation code is not valid</string>
+    <string name="error_invalid_profile_picture">This image format is not supported</string>
+    <string name="error_storage">The file could not be uploaded. Please try again</string>
 </resources>

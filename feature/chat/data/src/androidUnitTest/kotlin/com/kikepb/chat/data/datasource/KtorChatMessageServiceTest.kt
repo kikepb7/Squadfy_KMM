@@ -43,8 +43,7 @@ class KtorChatMessageServiceTest {
         assertEquals("msg-1", messages.first().id)
         assertEquals("Hello!", messages.first().content)
         assertEquals(HttpMethod.Get, requests.first().method)
-        assertTrue(requests.first().url.encodedPath.contains("chat-1"))
-        assertTrue(requests.first().url.encodedPath.contains("messages"))
+        assertTrue(requests.first().url.encodedPath.endsWith("/chats/chat-1/messages"))
     }
 
     @Test
@@ -138,7 +137,7 @@ class KtorChatMessageServiceTest {
 
         assertTrue(result is Result.Success)
         assertEquals(HttpMethod.Delete, requests.first().method)
-        assertTrue(requests.first().url.encodedPath.contains("msg-42"))
+        assertTrue(requests.first().url.encodedPath.endsWith("/messages/msg-42"))
     }
 
     @Test

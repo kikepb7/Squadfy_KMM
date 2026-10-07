@@ -1,18 +1,37 @@
 package com.kikepb.chat.data.datasource
 
 import com.kikepb.chat.data.datasource.remote.participant.KtorChatParticipantService
+import com.kikepb.chat.data.fake.FakeSessionStorage
 import com.kikepb.chat.data.helper.buildMockHttpClient
+import com.kikepb.core.domain.auth.model.AuthInfoModel
+import com.kikepb.core.domain.auth.model.UserModel
+import io.ktor.client.HttpClient
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.Result
 import io.ktor.client.request.HttpRequestData
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class KtorChatParticipantServiceTest {
+
+    private val sessionStorage = FakeSessionStorage().apply {
+        runBlocking {
+            set(
+                AuthInfoModel(
+                    accessToken = "access",
+                    refreshToken = "refresh",
+                    user = UserModel(id = "user-id", email = "me@example.com", username = "me", hasVerifiedEmail = true, profilePictureUrl = null)
+                )
+            )
+        }
+    }
+
+    private fun createService(client: HttpClient) = KtorChatParticipantService(httpClient = client, sessionStorage = sessionStorage)
 
     private val participantJson = """
         {"userId":"user-1","username":"alice","profilePictureUrl":null}
@@ -21,13 +40,13 @@ class KtorChatParticipantServiceTest {
     // --- searchParticipant ---
 
     @Test
-    fun `GIVEN query WHEN searchParticipant THEN GET to participants route with query param`() = runTest {
+    fun `GIVEN query WHEN searchParticipant THEN GET to users route with query param`() = runTest {
         val requests = mutableListOf<HttpRequestData>()
         val client = buildMockHttpClient(
             responseBody = participantJson,
             capturedRequests = requests
         )
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.searchParticipant(query = "alice")
 
@@ -36,13 +55,14 @@ class KtorChatParticipantServiceTest {
         assertEquals("user-1", participant.userId)
         assertEquals("alice", participant.username)
         assertEquals(HttpMethod.Get, requests.first().method)
+        assertTrue(requests.first().url.encodedPath.endsWith("/users"))
         assertEquals("alice", requests.first().url.parameters["query"])
     }
 
     @Test
     fun `GIVEN no participant matches WHEN searchParticipant THEN returns NOT_FOUND`() = runTest {
         val client = buildMockHttpClient(status = HttpStatusCode.NotFound, responseBody = "")
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.searchParticipant(query = "nobody")
 
@@ -53,26 +73,26 @@ class KtorChatParticipantServiceTest {
     // --- getLocalParticipant ---
 
     @Test
-    fun `WHEN getLocalParticipant THEN GET to participants route and returns participant`() = runTest {
+    fun `WHEN getLocalParticipant THEN GET to users route and returns participant`() = runTest {
         val requests = mutableListOf<HttpRequestData>()
         val client = buildMockHttpClient(
             responseBody = participantJson,
             capturedRequests = requests
         )
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.getLocalParticipant()
 
         assertTrue(result is Result.Success)
         assertEquals("user-1", (result as Result.Success).data.userId)
         assertEquals(HttpMethod.Get, requests.first().method)
-        assertTrue(requests.first().url.encodedPath.contains("participants"))
+        assertTrue(requests.first().url.encodedPath.endsWith("/users/user-id"))
     }
 
     @Test
     fun `GIVEN 401 WHEN getLocalParticipant THEN returns UNAUTHORIZED`() = runTest {
         val client = buildMockHttpClient(status = HttpStatusCode.Unauthorized, responseBody = "")
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.getLocalParticipant()
 
@@ -95,7 +115,7 @@ class KtorChatParticipantServiceTest {
             """.trimIndent(),
             capturedRequests = requests
         )
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.getProfilePictureUploadUrl(mimeType = "image/jpeg")
 
@@ -110,7 +130,7 @@ class KtorChatParticipantServiceTest {
     @Test
     fun `GIVEN server error WHEN getProfilePictureUploadUrl THEN returns SERVER_ERROR`() = runTest {
         val client = buildMockHttpClient(status = HttpStatusCode.InternalServerError, responseBody = "")
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.getProfilePictureUploadUrl(mimeType = "image/png")
 
@@ -124,7 +144,7 @@ class KtorChatParticipantServiceTest {
     fun `GIVEN valid data WHEN uploadProfilePicture THEN PUT to external upload url`() = runTest {
         val requests = mutableListOf<HttpRequestData>()
         val client = buildMockHttpClient(responseBody = "", capturedRequests = requests)
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.uploadProfilePicture(
             uploadUrl = "https://storage.example.com/upload",
@@ -140,7 +160,7 @@ class KtorChatParticipantServiceTest {
     @Test
     fun `GIVEN payload too large WHEN uploadProfilePicture THEN returns PAYLOAD_TOO_LARGE`() = runTest {
         val client = buildMockHttpClient(status = HttpStatusCode.PayloadTooLarge, responseBody = "")
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.uploadProfilePicture(
             uploadUrl = "https://storage.example.com/upload",
@@ -158,13 +178,13 @@ class KtorChatParticipantServiceTest {
     fun `GIVEN public url WHEN confirmProfilePictureUpload THEN POST to confirm route`() = runTest {
         val requests = mutableListOf<HttpRequestData>()
         val client = buildMockHttpClient(responseBody = "", capturedRequests = requests)
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.confirmProfilePictureUpload(publicUrl = "https://cdn.example.com/pic.jpg")
 
         assertTrue(result is Result.Success)
-        assertEquals(HttpMethod.Post, requests.first().method)
-        assertTrue(requests.first().url.encodedPath.contains("confirm-profile-picture"))
+        assertEquals(HttpMethod.Put, requests.first().method)
+        assertTrue(requests.first().url.encodedPath.endsWith("/me/profile-picture"))
     }
 
     // --- deleteProfilePicture ---
@@ -173,7 +193,7 @@ class KtorChatParticipantServiceTest {
     fun `WHEN deleteProfilePicture THEN DELETE to correct route`() = runTest {
         val requests = mutableListOf<HttpRequestData>()
         val client = buildMockHttpClient(responseBody = "", capturedRequests = requests)
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.deleteProfilePicture()
 
@@ -185,11 +205,23 @@ class KtorChatParticipantServiceTest {
     @Test
     fun `GIVEN 500 WHEN deleteProfilePicture THEN returns SERVER_ERROR`() = runTest {
         val client = buildMockHttpClient(status = HttpStatusCode.InternalServerError, responseBody = "")
-        val service = KtorChatParticipantService(httpClient = client)
+        val service = createService(client)
 
         val result = service.deleteProfilePicture()
 
         assertTrue(result is Result.Failure)
         assertEquals(DataError.Remote.SERVER_ERROR, (result as Result.Failure).error)
+    }
+
+    @Test
+    fun `GIVEN no session WHEN getLocalParticipant THEN returns UNAUTHORIZED without calling the API`() = runTest {
+        val requests = mutableListOf<HttpRequestData>()
+        val client = buildMockHttpClient(responseBody = participantJson, capturedRequests = requests)
+        val service = KtorChatParticipantService(httpClient = client, sessionStorage = FakeSessionStorage())
+
+        val result = service.getLocalParticipant()
+
+        assertEquals(DataError.Remote.UNAUTHORIZED, (result as Result.Failure).error)
+        assertTrue(requests.isEmpty())
     }
 }

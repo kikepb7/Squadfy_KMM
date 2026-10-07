@@ -12,7 +12,7 @@ import org.gradle.kotlin.dsl.configure
  * `-PBASE_URL_WS=...` (e.g. from a CI secret) or a `local.properties` entry, otherwise it will
  * silently try to reach an emulator that doesn't exist.
  */
-private const val DEFAULT_BASE_URL_HTTP = "http://10.0.2.2:8080/api"
+private const val DEFAULT_BASE_URL_HTTP = "http://10.0.2.2:8080/api/v1"
 private const val DEFAULT_BASE_URL_WS = "ws://10.0.2.2:8080/ws"
 
 /** Build environment for feature flag defaults (spec 013). CI release jobs for production pass `pro`. */

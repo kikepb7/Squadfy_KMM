@@ -7,5 +7,6 @@ data class ChatDTO(
     val id: String,
     val participants: List<ChatParticipantDTO>,
     val lastActivityAt: String,
-    val lastMessage: ChatMessageDTO?
+    val lastMessage: ChatMessageDTO? = null,
+    val creator: ChatParticipantDTO? = null
 )

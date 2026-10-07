@@ -20,25 +20,25 @@ class KtorChatService(private val httpClient: HttpClient) : ChatService {
 
     override suspend fun createChat(otherUserIds: List<String>): Result<ChatModel, DataError.Remote> =
         httpClient.post<CreateChatRequestDTO, ChatDTO>(
-            route = "/chat",
+            route = "/chats",
             body = CreateChatRequestDTO(otherUserIds = otherUserIds)
         ).map { it.toDomain() }
 
     override suspend fun getChats(): Result<List<ChatModel>, DataError.Remote> =
         httpClient.get<List<ChatDTO>>(
-            route = "/chat"
+            route = "/chats"
         ).map { chatDto ->
             chatDto.map { it.toDomain() }
         }
 
     override suspend fun getChatById(chatId: String): Result<ChatModel, DataError.Remote> =
         httpClient.get<ChatDTO>(
-            route = "/chat/$chatId"
+            route = "/chats/$chatId"
         ).map { it.toDomain() }
 
     override suspend fun leaveChat(chatId: String): EmptyResult<DataError.Remote> =
         httpClient.delete<Unit>(
-            route = "/chat/$chatId/leave"
+            route = "/chats/$chatId/participants/me"
         ).asEmptyResult()
 
     override suspend fun addParticipantsToChat(
@@ -46,7 +46,7 @@ class KtorChatService(private val httpClient: HttpClient) : ChatService {
         userIds: List<String>
     ): Result<ChatModel, DataError.Remote> =
         httpClient.post<ParticipantsRequestDTO, ChatDTO>(
-            route = "/chat/$chatId/add",
+            route = "/chats/$chatId/participants",
             body = ParticipantsRequestDTO(userIds = userIds)
         ).map { it.toDomain() }
 }

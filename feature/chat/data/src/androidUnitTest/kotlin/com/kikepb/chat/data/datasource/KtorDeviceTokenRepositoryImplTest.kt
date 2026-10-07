@@ -26,8 +26,7 @@ class KtorDeviceTokenRepositoryImplTest {
 
         assertTrue(result is Result.Success)
         assertEquals(HttpMethod.Post, requests.first().method)
-        assertTrue(requests.first().url.encodedPath.contains("notification"))
-        assertTrue(requests.first().url.encodedPath.contains("register"))
+        assertTrue(requests.first().url.encodedPath.endsWith("/devices"))
     }
 
     @Test
@@ -64,7 +63,7 @@ class KtorDeviceTokenRepositoryImplTest {
 
         assertTrue(result is Result.Success)
         assertEquals(HttpMethod.Delete, requests.first().method)
-        assertTrue(requests.first().url.encodedPath.contains("device-token-abc"))
+        assertTrue(requests.first().url.encodedPath.endsWith("/devices/device-token-abc"))
     }
 
     @Test

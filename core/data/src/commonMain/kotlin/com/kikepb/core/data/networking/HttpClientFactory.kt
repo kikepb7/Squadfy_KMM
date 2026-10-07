@@ -6,6 +6,7 @@ import com.kikepb.core.data.auth.dto.request.RefreshRequestDTO
 import com.kikepb.core.data.mappers.toDomain
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.logger.SquadfyLogger
+import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
@@ -37,9 +38,7 @@ class HttpClientFactory(
         return HttpClient(engine = engine) {
             install(ContentNegotiation) {
                 json(
-                    json = Json {
-                        ignoreUnknownKeys = true
-                    }
+                    json = squadfyJson
                 )
             }
             install(HttpTimeout) {
@@ -74,7 +73,7 @@ class HttpClientFactory(
                             }
                     }
                     refreshTokens {
-                        if (response.request.url.encodedPath.contains("auth/")) return@refreshTokens null
+                        if (response.request.url.encodedPath.isPublicAuthRoute()) return@refreshTokens null
 
                         val authInfo = sessionStorage
                             .observeAuthInfo()
@@ -86,7 +85,7 @@ class HttpClientFactory(
                         }
 
                         var bearerTokens: BearerTokens? = null
-                        client.post<RefreshRequestDTO, AuthInfoSerializableDTO>(
+                        client.apiPost<RefreshRequestDTO, AuthInfoSerializableDTO>(
                             route = "/auth/refresh",
                             body = RefreshRequestDTO(
                                 refreshToken = authInfo.refreshToken
@@ -95,13 +94,20 @@ class HttpClientFactory(
                                 markAsRefreshTokenRequest()
                             }
                         ).onSuccess { newAuthInfo ->
-                            sessionStorage.set(newAuthInfo.toDomain())
+                            // The refresh token rotates: persist the new pair. v1 UserDto has no picture,
+                            // so keep the one already stored in the session.
+                            val refreshed = newAuthInfo.toDomain()
+                            sessionStorage.set(
+                                refreshed.copy(user = refreshed.user.copy(profilePictureUrl = authInfo.user.profilePictureUrl))
+                            )
                             bearerTokens = BearerTokens(
                                 accessToken = newAuthInfo.accessToken,
                                 refreshToken = newAuthInfo.refreshToken
                             )
                         }.onFailure { error ->
-                            sessionStorage.set(null)
+                            // Only an invalid/expired/used refresh token ends the session (APP-RN-11).
+                            // No connection, timeouts or 429 keep it so the next request can retry.
+                            if (error.status == DataError.Remote.UNAUTHORIZED) sessionStorage.set(null)
                         }
 
                         bearerTokens
@@ -111,3 +117,13 @@ class HttpClientFactory(
         }
     }
 }
+
+/** JSON config shared by the HTTP client: tolerant to new fields and unknown enum values (APP-RN-13). */
+val squadfyJson = Json {
+    ignoreUnknownKeys = true
+    coerceInputValues = true
+    explicitNulls = false
+}
+
+/** Public auth endpoints never trigger a token refresh; `change-password` is authenticated. */
+internal fun String.isPublicAuthRoute(): Boolean = contains("/auth/") && !contains("/auth/change-password")

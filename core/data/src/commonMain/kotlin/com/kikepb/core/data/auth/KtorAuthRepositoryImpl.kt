@@ -1,6 +1,7 @@
 package com.kikepb.core.data.auth
 
 import com.kikepb.core.data.auth.dto.AuthInfoSerializableDTO
+import com.kikepb.core.data.auth.dto.PublicUserSerializableDTO
 import com.kikepb.core.data.auth.dto.request.ChangePasswordRequestDTO
 import com.kikepb.core.data.auth.dto.request.EmailRequestDTO
 import com.kikepb.core.data.auth.dto.request.LoginRequestDTO
@@ -24,6 +25,7 @@ import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.map
 import com.kikepb.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.plugins.auth.authProvider
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 
@@ -42,8 +44,26 @@ class KtorAuthRepositoryImpl(
                 password = password
             )
         ).map { authInfoSerializable ->
-            authInfoSerializable.toDomain()
+            authInfoSerializable.toDomain().withProfilePicture()
         }
+
+    /**
+     * v1 `UserDto` has no picture: it lives in the public profile. A failure here must not fail the
+     * login, so the picture simply stays null until the profile is fetched again.
+     */
+    private suspend fun AuthInfoModel.withProfilePicture(): AuthInfoModel {
+        val pictureUrl = when (
+            val result = httpClient.get<PublicUserSerializableDTO>(
+                route = "/users/${user.id}",
+                // The session is not stored yet, so the bearer plugin has no token to attach
+                builder = { bearerAuth(accessToken) }
+            )
+        ) {
+            is Result.Success -> result.data.profilePictureUrl
+            is Result.Failure -> null
+        }
+        return copy(user = user.copy(profilePictureUrl = pictureUrl))
+    }
 
     override suspend fun register(
         username: String,

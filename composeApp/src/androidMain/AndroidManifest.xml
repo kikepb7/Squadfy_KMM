@@ -32,7 +32,6 @@
                 <data android:host="squadfy.com" />
 
                 <data android:pathPrefix="/api/auth/verify" />
-                <data android:pathPrefix="/api/auth/reset-password" />
             </intent-filter>
 
             <intent-filter>
@@ -45,7 +44,15 @@
                 <data android:host="squadfy.com" />
 
                 <data android:pathPrefix="/api/auth/verify" />
-                <data android:pathPrefix="/api/auth/reset-password" />
+            </intent-filter>
+
+            <!-- Password reset link sent by the backend v1: squadfy://reset-password?token=... -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="squadfy" android:host="reset-password" />
             </intent-filter>
         </activity>
     </application>
