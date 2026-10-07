@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Release: HTTPS only (spec 011, AC-011-03). The debug source set allows the local backend. -->
 <network-security-config>
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">10.0.2.2</domain>
-    </domain-config>
+    <base-config cleartextTrafficPermitted="false" />
 </network-security-config>

@@ -18,7 +18,8 @@ actual class FirebasePushNotificationRepositoryImpl(
     actual override fun observeDeviceToken(): Flow<String?> = flow {
         try {
             val fcmToken = Firebase.messaging.token.await()
-            logger.info(message = "Initial FCM token received: $fcmToken")
+            // AC-011-04: the device token is never logged
+            logger.info(message = "Initial FCM token received")
             emit(value = fcmToken)
         } catch (e: Exception) {
             coroutineContext.ensureActive()

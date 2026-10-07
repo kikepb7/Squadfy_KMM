@@ -45,8 +45,23 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                             "Missing API_KEY: set it in local.properties, as -PAPI_KEY or as an environment variable"
                         )
                     buildConfigField(FieldSpec.Type.STRING, "API_KEY", apiKey)
-                    buildConfigField(FieldSpec.Type.STRING, "BASE_URL_HTTP", resolve("BASE_URL_HTTP", DEFAULT_BASE_URL_HTTP))
-                    buildConfigField(FieldSpec.Type.STRING, "BASE_URL_WS", resolve("BASE_URL_WS", DEFAULT_BASE_URL_WS))
+                    val baseUrlHttp = resolve("BASE_URL_HTTP", DEFAULT_BASE_URL_HTTP)
+                    val baseUrlWs = resolve("BASE_URL_WS", DEFAULT_BASE_URL_WS)
+                    buildConfigField(FieldSpec.Type.STRING, "BASE_URL_HTTP", baseUrlHttp)
+                    buildConfigField(FieldSpec.Type.STRING, "BASE_URL_WS", baseUrlWs)
+
+                    // Spec 011 AC-011-03: a release (Android *Release* tasks or Xcode Release) must use HTTPS/WSS.
+                    // ALLOW_INSECURE_RELEASE=true is only for testing a minified release against a local backend.
+                    val isReleaseBuild = gradle.startParameter.taskNames.any { it.contains("Release") } ||
+                        providers.environmentVariable("CONFIGURATION").orNull == "Release"
+                    val allowInsecure = lookup("ALLOW_INSECURE_RELEASE")?.toBoolean() == true
+                    if (isReleaseBuild && !allowInsecure) {
+                        check(baseUrlHttp.startsWith("https://") && baseUrlWs.startsWith("wss://")) {
+                            "Release builds need BASE_URL_HTTP=https://… and BASE_URL_WS=wss://… (got $baseUrlHttp / $baseUrlWs)"
+                        }
+                    }
+                    // Logging and diagnostics are reduced in release builds (AC-011-04)
+                    buildConfigField(FieldSpec.Type.BOOLEAN, "IS_RELEASE", isReleaseBuild.toString())
 
                     val environment = resolve("SQUADFY_ENV", DEFAULT_ENVIRONMENT).lowercase()
                     check(environment in SUPPORTED_ENVIRONMENTS) {

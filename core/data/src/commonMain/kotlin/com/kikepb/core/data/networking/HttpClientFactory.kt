@@ -20,6 +20,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.HttpHeaders
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.header
 import io.ktor.client.statement.request
@@ -45,11 +46,15 @@ class HttpClientFactory(
                 socketTimeoutMillis = 20_000L
                 requestTimeoutMillis = 20_000L
             }
-            install(Logging) {
-                logger = object : Logger {
-                    override fun log(message: String) = squadfyLogger.debug(message = message)
+            // AC-011-04: no HTTP logging in release; in debug, headers only and without credentials
+            if (!BuildKonfig.IS_RELEASE) {
+                install(Logging) {
+                    logger = object : Logger {
+                        override fun log(message: String) = squadfyLogger.debug(message = message)
+                    }
+                    level = LogLevel.HEADERS
+                    sanitizeHeader { header -> header == HttpHeaders.Authorization || header.equals("x-api-key", ignoreCase = true) }
                 }
-                level = LogLevel.ALL
             }
             install(WebSockets) {
                 pingIntervalMillis = 20_000L

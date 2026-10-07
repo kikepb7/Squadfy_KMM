@@ -1,8 +1,8 @@
 # 011 · Tareas
 
 - [x] **T-001** Retirar `economy` y `onboarding` del build y de Koin (AC-011-10).
-- [ ] **T-002** Release Android: firma, R8 con `proguard-rules.pro`, `versionCode` y `versionName`, guarda HTTPS en release y cleartext solo en debug (AC-011-01/02/03).
-- [ ] **T-003** Logging por tipo de build: `IS_RELEASE`, Ktor, Kermit, Koin y sin log del token FCM (AC-011-04).
+- [x] **T-002** Release Android: firma, R8 con `proguard-rules.pro`, `versionCode` y `versionName`, guarda HTTPS en release y cleartext solo en debug (AC-011-01/02/03). *Verificación:* `assembleRelease` con `http` falla con un mensaje claro; con `-PALLOW_INSECURE_RELEASE=true` (solo QA local) la release minificada (11,9 MB frente a 34 MB en debug) inicia sesión y navega por Inicio, el club, la clasificación y la ficha del miembro contra el backend local, sin errores de R8.
+- [x] **T-003** Logging por tipo de build: `IS_RELEASE`, Ktor, Kermit, Koin y sin log del token FCM (AC-011-04).
 - [ ] **T-004** Sesión cifrada (Keystore/Keychain) con migración, `allowBackup = false` y reglas de extracción (AC-011-05).
 - [ ] **T-005** Branding: nombre, icono adaptativo y splash con el logo de Squadfy (AC-011-06).
 - [ ] **T-006** i18n de auth y chat (ES/EN) + `checkHardcodedStrings` en el CI (AC-011-09).
