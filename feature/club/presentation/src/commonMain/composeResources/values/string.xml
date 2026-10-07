@@ -337,8 +337,6 @@
     <string name="join_shirt_hint">Opcional · Entre 1 y 999</string>
     <string name="join_submit">Unirme al club</string>
     <string name="members_empty">Aún no hay miembros en este equipo.</string>
-    <string name="identity_invitation_code">Código de invitación</string>
-    <string name="identity_squad">Plantilla</string>
     <string name="create_title">Crear un club</string>
     <string name="create_heading">Crea tu club</string>
     <string name="create_subtitle">Define los datos de tu equipo. Solo el nombre es obligatorio.</string>

@@ -337,8 +337,6 @@
     <string name="join_shirt_hint">Optional · Between 1 and 999</string>
     <string name="join_submit">Join the club</string>
     <string name="members_empty">This club has no members yet.</string>
-    <string name="identity_invitation_code">Invitation code</string>
-    <string name="identity_squad">Squad</string>
     <string name="create_title">Create a club</string>
     <string name="create_heading">Create your club</string>
     <string name="create_subtitle">Fill in your club details. Only the name is required.</string>

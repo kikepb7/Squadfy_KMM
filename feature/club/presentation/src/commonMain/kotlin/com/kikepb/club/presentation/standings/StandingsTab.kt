@@ -36,7 +36,6 @@ import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.club.domain.model.StatsSortBy
 import com.kikepb.club.presentation.components.HintText
 import com.kikepb.club.presentation.components.SectionCard
-import com.kikepb.club.presentation.detail.components.SquadfyClubDetailIdentityCard
 import com.kikepb.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -89,7 +88,6 @@ fun StandingsContent(club: ClubModel, state: StandingsState, onAction: (Standing
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item(key = "identity") { SquadfyClubDetailIdentityCard(club = club) }
             if (state.isStale) item(key = "stale") { HintText(text = stringResource(Res.string.standings_offline)) }
             item(key = "mode") {
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {

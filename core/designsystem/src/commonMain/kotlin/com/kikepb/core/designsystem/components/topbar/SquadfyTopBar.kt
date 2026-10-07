@@ -3,6 +3,7 @@ package com.kikepb.core.designsystem.components.topbar
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -81,7 +82,9 @@ fun SquadfyTopBar(
                     Box(modifier = Modifier.size(size = 38.dp))
                 }
             },
-            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+            // The root Scaffold (NavigationRoot) already pads the status bar; adding it again left a gap above every bar
+            windowInsets = WindowInsets(0, 0, 0, 0)
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
     }

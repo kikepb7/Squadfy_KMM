@@ -451,7 +451,7 @@ private fun ReportControls(player: TeamPlayer, state: MatchDetailState, onAction
             }
         }
         TextButton(onClick = { onAction(MatchDetailAction.OnEditMinutesClick(player.id)) }, enabled = !state.isWorking) {
-            Text(text = stringResource(Res.string.match_minutes_value, match.minutesOf(player.id)))
+            Text(text = stringResource(Res.string.match_minutes_value, match.minutesOf(player.id)), maxLines = 1, softWrap = false)
         }
     }
 }
