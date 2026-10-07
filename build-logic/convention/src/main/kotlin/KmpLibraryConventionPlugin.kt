@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.LibraryExtension
 import com.kikepb.squadfy.convention.configureKotlinAndroid
+import com.kikepb.squadfy.convention.configureKmpTestDependencies
 import com.kikepb.squadfy.convention.configureKotlinMultiplatform
 import com.kikepb.squadfy.convention.libs
 import com.kikepb.squadfy.convention.pathToResourcePrefix
@@ -19,6 +20,7 @@ class KmpLibraryConventionPlugin: Plugin<Project> {
             }
 
             configureKotlinMultiplatform()
+            configureKmpTestDependencies()
 
             extensions.configure<LibraryExtension> {
                 configureKotlinAndroid(this)
@@ -31,7 +33,6 @@ class KmpLibraryConventionPlugin: Plugin<Project> {
 
             dependencies {
                 "commonMainImplementation"(libs.findLibrary("kotlinx-serialization-json").get())
-                "commonTestImplementation"(libs.findLibrary("kotlin-test").get())
             }
         }
     }

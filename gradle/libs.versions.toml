@@ -3,7 +3,7 @@
 agp = "8.11.2"
 composeBom = "2025.07.00"
 kotlin = "2.2.20"
-ksp = "2.2.0-2.0.2"
+ksp = "2.2.20-2.0.4"
 google-services = "4.4.3"
 
 androidDesugarJdkLibs = "2.1.5"
@@ -51,6 +51,10 @@ kermit = "2.0.6"
 ktlint-gradle = "12.1.1"
 kover = "0.9.1"
 
+# Testing
+turbine = "1.2.1"
+junit4 = "4.13.2"
+
 projectApplicationId = "com.kikepb.squadfy"
 projectVersionName = "1.0"
 projectMinSdkVersion = "26"
@@ -71,6 +75,10 @@ androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtim
 androidx-material3 = { module = "androidx.compose.material3:material3" }
 androidx-ui = { module = "androidx.compose.ui:ui" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+junit4 = { module = "junit:junit", version.ref = "junit4" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 
 # AndroidX Core

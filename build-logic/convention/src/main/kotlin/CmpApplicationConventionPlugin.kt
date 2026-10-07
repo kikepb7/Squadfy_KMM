@@ -1,6 +1,7 @@
 
 import com.kikepb.squadfy.convention.configureAndroidTarget
 import com.kikepb.squadfy.convention.configureIosTargets
+import com.kikepb.squadfy.convention.configureKmpTestDependencies
 import com.kikepb.squadfy.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -20,6 +21,7 @@ class CmpApplicationConventionPlugin: Plugin<Project> {
 
             configureAndroidTarget()
             configureIosTargets()
+            configureKmpTestDependencies()
 
             dependencies {
                 "debugImplementation"(libs.findLibrary("androidx-compose-ui-tooling").get())
