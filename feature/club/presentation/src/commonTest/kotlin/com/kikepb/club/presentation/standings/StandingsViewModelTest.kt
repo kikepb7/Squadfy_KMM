@@ -14,6 +14,7 @@ import com.kikepb.club.domain.usecase.GetRatingLeaderboardUseCase
 import com.kikepb.club.domain.usecase.GetRecentRatingChangesUseCase
 import com.kikepb.club.domain.usecase.GetStatsLeaderboardUseCase
 import com.kikepb.club.domain.usecase.ObserveMyMembershipUseCase
+import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
 import com.kikepb.club.presentation.fake.FakeClubRepository
 import com.kikepb.club.presentation.fake.FakeMatchRepository
 import com.kikepb.club.presentation.fake.FakeSessionStorage
@@ -59,6 +60,7 @@ class StandingsViewModelTest {
         getRatingLeaderboardUseCase = GetRatingLeaderboardUseCase(repository),
         getMyRatingUseCase = GetMyRatingUseCase(repository),
         getStatsLeaderboardUseCase = GetStatsLeaderboardUseCase(repository),
+        syncClubDetailUseCase = SyncClubDetailUseCase(clubRepository),
         savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1"))
     )
 

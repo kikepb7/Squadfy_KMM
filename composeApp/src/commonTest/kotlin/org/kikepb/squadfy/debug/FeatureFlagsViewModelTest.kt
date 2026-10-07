@@ -74,7 +74,7 @@ class FeatureFlagsViewModelTest {
     @Test
     fun `AC-013-05 reset clears every override`() = runTest {
         val viewModel = FeatureFlagsViewModel(featureFlags = flags, overrides = flags)
-        viewModel.onAction(FeatureFlagsAction.OnToggle(FeatureFlag.HOME_NEWS, enabled = false))
+        viewModel.onAction(FeatureFlagsAction.OnToggle(FeatureFlag.HOME_NEWS, enabled = true))
         viewModel.onAction(FeatureFlagsAction.OnToggle(FeatureFlag.MANUAL_SCORE, enabled = false))
 
         viewModel.onAction(FeatureFlagsAction.OnReset)

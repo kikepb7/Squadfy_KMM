@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailBanner
@@ -78,6 +79,12 @@ fun ClubDetailRoot(
             is ClubDetailEvent.ShowMessage ->
                 scope.launch { snackbarHostState.showSnackbar(event.message.asStringAsync()) }
         }
+    }
+
+    // Members who joined meanwhile (or a renamed club) show up when coming back to the club
+    LifecycleResumeEffect(Unit) {
+        viewModel.onAction(ClubDetailAction.OnRefresh)
+        onPauseOrDispose { }
     }
 
     NotificationPermissionPrompt()

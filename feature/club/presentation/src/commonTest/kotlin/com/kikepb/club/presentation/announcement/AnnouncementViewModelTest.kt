@@ -21,6 +21,7 @@ import com.kikepb.club.domain.model.MemberAbsenceModel
 import com.kikepb.club.domain.repository.AbsenceRepository
 import com.kikepb.club.domain.repository.AnnouncementRepository
 import com.kikepb.club.domain.usecase.GetAbsencesUseCase
+import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
 import com.kikepb.club.domain.repository.ScheduleRepository
 import com.kikepb.club.domain.usecase.AddGuestToAnnouncementUseCase
 import com.kikepb.club.domain.usecase.EnrollUseCase
@@ -146,6 +147,7 @@ class AnnouncementViewModelTest {
             removeGuestUseCase = RemoveGuestFromAnnouncementUseCase(repository),
             clock = FixedClock,
             inAppPushCenter = pushCenter,
+            syncClubDetailUseCase = SyncClubDetailUseCase(clubRepository),
             savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1"))
         )
     }
@@ -282,5 +284,27 @@ class AnnouncementViewModelTest {
         val off = viewModel(flags = FakeFeatureFlags(FeatureFlag.MEMBER_ABSENCES to false))
         off.state.launchIn(backgroundScope)
         assertFalse(off.state.value.hasAbsenceOnMatchDay)
+    }
+
+    @Test
+    fun `APP-RN-06 an entry of a member not cached yet fetches the club members`() = runTest(UnconfinedTestDispatcher()) {
+        repository.current = Result.Success(
+            CurrentAnnouncementModel(announcement(entries = listOf(entry("e-1", "new-member"))), Instant.parse("2026-10-15T18:00:00Z"), MyEnrollmentStatus.NOT_ENROLLED, null)
+        )
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+
+        assertEquals(1, clubRepository.memberFetches)
+    }
+
+    @Test
+    fun `APP-RN-06 known members do not trigger a members fetch`() = runTest(UnconfinedTestDispatcher()) {
+        repository.current = Result.Success(
+            CurrentAnnouncementModel(announcement(entries = listOf(entry("e-1", "me"))), Instant.parse("2026-10-15T18:00:00Z"), MyEnrollmentStatus.CONFIRMED, null)
+        )
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+
+        assertEquals(0, clubRepository.memberFetches)
     }
 }

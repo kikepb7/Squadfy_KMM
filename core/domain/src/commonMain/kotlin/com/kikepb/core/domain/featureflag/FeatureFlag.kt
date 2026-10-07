@@ -53,14 +53,14 @@ enum class FeatureFlag(
     ),
     HOME_RECENT_MATCHES(
         key = "home_recent_matches",
-        description = "Recent matches section on Home (mock data until spec 010)",
-        defaultInPre = true,
+        description = "Recent matches section on Home (sample data; off in PRE too so tests only see real data)",
+        defaultInPre = false,
         defaultInPro = false
     ),
     HOME_NEWS(
         key = "home_news",
         description = "News section on Home (mock data, out of the MVP)",
-        defaultInPre = true,
+        defaultInPre = false,
         defaultInPro = false
     );
 

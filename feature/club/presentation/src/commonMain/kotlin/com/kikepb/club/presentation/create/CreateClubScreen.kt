@@ -1,5 +1,25 @@
 package com.kikepb.club.presentation.create
 
+import squadfy_app.feature.club.presentation.generated.resources.create_title
+import squadfy_app.feature.club.presentation.generated.resources.create_heading
+import squadfy_app.feature.club.presentation.generated.resources.create_subtitle
+import squadfy_app.feature.club.presentation.generated.resources.create_name_label
+import squadfy_app.feature.club.presentation.generated.resources.create_name_placeholder
+import squadfy_app.feature.club.presentation.generated.resources.create_name_hint
+import squadfy_app.feature.club.presentation.generated.resources.create_description_label
+import squadfy_app.feature.club.presentation.generated.resources.create_description_placeholder
+import squadfy_app.feature.club.presentation.generated.resources.create_description_hint
+import squadfy_app.feature.club.presentation.generated.resources.create_max_members_label
+import squadfy_app.feature.club.presentation.generated.resources.create_max_members_placeholder
+import squadfy_app.feature.club.presentation.generated.resources.create_max_members_hint
+import squadfy_app.feature.club.presentation.generated.resources.create_submit
+import squadfy_app.feature.club.presentation.generated.resources.create_logo_selected
+import squadfy_app.feature.club.presentation.generated.resources.create_logo_title
+import squadfy_app.feature.club.presentation.generated.resources.create_logo_change
+import squadfy_app.feature.club.presentation.generated.resources.create_logo_pick
+import squadfy_app.feature.club.presentation.generated.resources.create_logo_remove
+import org.jetbrains.compose.resources.stringResource
+import squadfy_app.feature.club.presentation.generated.resources.Res
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,7 +40,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -102,7 +122,7 @@ fun CreateClubScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { SquadfyTopBar(title = "Crear un club", onBackClick = onBackClick) },
+        topBar = { SquadfyTopBar(title = stringResource(Res.string.create_title), onBackClick = onBackClick) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Column(
@@ -115,7 +135,7 @@ fun CreateClubScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    text = "Crea tu club",
+                    text = stringResource(Res.string.create_heading),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = (-0.5).sp
@@ -123,7 +143,7 @@ fun CreateClubScreen(
                     color = MaterialTheme.colorScheme.extended.textPrimary
                 )
                 Text(
-                    text = "Define los datos de tu equipo. Solo el nombre es obligatorio.",
+                    text = stringResource(Res.string.create_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.extended.textPlaceholder
                 )
@@ -152,11 +172,11 @@ fun CreateClubScreen(
                     SquadfyTextField(
                         state = state.nameState,
                         modifier = Modifier.fillMaxWidth(),
-                        title = "Nombre del club *",
-                        placeholder = "Ej: Los Cracks FC",
+                        title = stringResource(Res.string.create_name_label),
+                        placeholder = stringResource(Res.string.create_name_placeholder),
                         singleLine = true,
                         isError = state.nameError != null,
-                        supportingText = state.nameError?.asString() ?: "Máx. 120 caracteres",
+                        supportingText = state.nameError?.asString() ?: stringResource(Res.string.create_name_hint),
                         keyboardType = KeyboardType.Text
                     )
 
@@ -164,18 +184,18 @@ fun CreateClubScreen(
 
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            text = "Descripción",
+                            text = stringResource(Res.string.create_description_label),
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
                             color = MaterialTheme.colorScheme.extended.textSecondary
                         )
                         SquadfyMultiLineTextField(
                             state = state.descriptionState,
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = "Describe tu club... (opcional)",
+                            placeholder = stringResource(Res.string.create_description_placeholder),
                             maxHeightInLines = 4
                         )
                         Text(
-                            text = state.descriptionError?.asString() ?: "Opcional · Máx. 2000 caracteres",
+                            text = state.descriptionError?.asString() ?: stringResource(Res.string.create_description_hint),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.extended.textPlaceholder
                         )
@@ -186,18 +206,18 @@ fun CreateClubScreen(
                     SquadfyTextField(
                         state = state.maxMembersState,
                         modifier = Modifier.fillMaxWidth(),
-                        title = "Límite de miembros",
-                        placeholder = "Ej: 20",
+                        title = stringResource(Res.string.create_max_members_label),
+                        placeholder = stringResource(Res.string.create_max_members_placeholder),
                         singleLine = true,
                         isError = state.maxMembersError != null,
-                        supportingText = state.maxMembersError?.asString() ?: "Opcional · Sin límite si se deja vacío",
+                        supportingText = state.maxMembersError?.asString() ?: stringResource(Res.string.create_max_members_hint),
                         keyboardType = KeyboardType.Number
                     )
                 }
             }
 
             SquadfyButton(
-                text = "Crear club",
+                text = stringResource(Res.string.create_submit),
                 onClick = { onAction(CreateClubAction.OnCreateClub) },
                 enabled = state.canSubmit,
                 isLoading = state.isLoading,
@@ -248,7 +268,7 @@ private fun ClubLogoPickerCard(
                 if (selectedBytes != null) {
                     AsyncImage(
                         model = selectedBytes,
-                        contentDescription = "Logo seleccionado",
+                        contentDescription = stringResource(Res.string.create_logo_selected),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxSize()
@@ -256,7 +276,7 @@ private fun ClubLogoPickerCard(
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Outlined.Phone,
+                        imageVector = Icons.Outlined.AddPhotoAlternate,
                         contentDescription = null,
                         modifier = Modifier.size(28.dp),
                         tint = MaterialTheme.colorScheme.primary
@@ -269,13 +289,13 @@ private fun ClubLogoPickerCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "Logo del club",
+                    text = stringResource(Res.string.create_logo_title),
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.extended.textPrimary
                 )
                 Text(
-                    text = if (selectedBytes != null) "Imagen seleccionada · Toca para cambiar"
-                    else "Opcional · Toca la imagen para elegir",
+                    text = if (selectedBytes != null) stringResource(Res.string.create_logo_change)
+                    else stringResource(Res.string.create_logo_pick),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.extended.textPlaceholder
                 )
@@ -288,7 +308,7 @@ private fun ClubLogoPickerCard(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Close,
-                        contentDescription = "Eliminar imagen",
+                        contentDescription = stringResource(Res.string.create_logo_remove),
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.extended.textPlaceholder
                     )

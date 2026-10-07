@@ -37,6 +37,7 @@ import com.kikepb.club.domain.usecase.ObserveMyMembershipUseCase
 import com.kikepb.club.domain.usecase.ReopenMatchUseCase
 import com.kikepb.club.domain.usecase.SetManualScoreUseCase
 import com.kikepb.club.domain.usecase.SetPlayerMinutesUseCase
+import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
 import com.kikepb.club.presentation.mapper.toUiText
 import com.kikepb.core.domain.featureflag.FeatureFlag
 import com.kikepb.core.domain.featureflag.FeatureFlags
@@ -50,6 +51,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -67,7 +69,7 @@ import kotlin.time.Instant
 
 /** Match detail: teams and balance (spec 006) plus the report, lifecycle and manual score (spec 007). Network-first (ADR-0006). */
 class MatchDetailViewModel(
-    getClubMembersUseCase: GetClubMembersUseCase,
+    private val getClubMembersUseCase: GetClubMembersUseCase,
     observeMyMembershipUseCase: ObserveMyMembershipUseCase,
     private val getMatchUseCase: GetMatchUseCase,
     private val getMatchAnnouncementUseCase: GetMatchAnnouncementUseCase,
@@ -86,6 +88,7 @@ class MatchDetailViewModel(
     featureFlags: FeatureFlags,
     private val clock: Clock,
     private val inAppPushCenter: InAppPushCenter,
+    private val syncClubDetailUseCase: SyncClubDetailUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -208,7 +211,13 @@ class MatchDetailViewModel(
         _state.update { it.copy(isRefreshing = true) }
         viewModelScope.launch {
             getMatchUseCase(matchId)
-                .onSuccess { match -> _state.update { it.copy(match = match, isStale = false, now = clock.now()) } }
+                .onSuccess { match ->
+                    _state.update { it.copy(match = match, isStale = false, now = clock.now()) }
+                    // APP-RN-06: players who joined after the last members sync
+                    val ids = match.enrolledPlayers + match.teamA + match.teamB
+                    val cached = getClubMembersUseCase(clubId).first().map { it.id }.toSet()
+                    if (ids.any { it !in cached }) syncClubDetailUseCase(clubId)
+                }
                 .onFailure { error -> onLoadError(error) }
             getMatchAnnouncementUseCase(matchId).onSuccess { announcement ->
                 _state.update { it.copy(announcement = announcement) }

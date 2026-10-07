@@ -1,5 +1,10 @@
 package com.kikepb.club.presentation.detail.components
 
+import squadfy_app.feature.club.presentation.generated.resources.club_members_of_max
+import squadfy_app.feature.club.presentation.generated.resources.club_members_one
+import squadfy_app.feature.club.presentation.generated.resources.club_members_many
+import org.jetbrains.compose.resources.stringResource
+import squadfy_app.feature.club.presentation.generated.resources.Res
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -100,7 +105,8 @@ fun SquadfyClubDetailBanner(club: ClubModel, modifier: Modifier = Modifier) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SquadfyClubDetailBadge(
                         icon = Icons.Outlined.Person,
-                        text = "${club.membersCount}${club.maxMembers?.let { "/$it" } ?: ""} miembros"
+                        text = club.maxMembers?.let { max -> stringResource(Res.string.club_members_of_max, club.membersCount, max) }
+                            ?: if (club.membersCount == 1) stringResource(Res.string.club_members_one) else stringResource(Res.string.club_members_many, club.membersCount)
                     )
                     SquadfyClubDetailBadge(
                         icon = Icons.Outlined.Info,

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Squadfy_App</string>
+    <string name="app_name">Squadfy</string>
     <!-- Notification channels (spec 009, AC-009-02) -->
     <string name="channel_match_updates">Partidos</string>
     <string name="channel_match_updates_description">Convocatorias, equipos y cambios de partido</string>

@@ -33,6 +33,7 @@ import com.kikepb.club.domain.usecase.GetClubMatchesUseCase
 import com.kikepb.club.domain.usecase.ReopenMatchUseCase
 import com.kikepb.club.domain.usecase.SetManualScoreUseCase
 import com.kikepb.club.domain.usecase.SetPlayerMinutesUseCase
+import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
 import com.kikepb.club.domain.usecase.GetClubMembersUseCase
 import com.kikepb.club.domain.usecase.GetMatchAnnouncementUseCase
 import com.kikepb.club.domain.usecase.GetMatchUseCase
@@ -142,6 +143,7 @@ class MatchDetailViewModelTest {
             featureFlags = flags,
             clock = clock,
             inAppPushCenter = pushCenter,
+            syncClubDetailUseCase = SyncClubDetailUseCase(clubRepository),
             savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1", "matchId" to "match-1"))
         )
     }

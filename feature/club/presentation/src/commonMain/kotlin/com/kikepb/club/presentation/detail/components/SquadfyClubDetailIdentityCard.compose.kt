@@ -1,5 +1,9 @@
 package com.kikepb.club.presentation.detail.components
 
+import squadfy_app.feature.club.presentation.generated.resources.identity_invitation_code
+import squadfy_app.feature.club.presentation.generated.resources.identity_squad
+import org.jetbrains.compose.resources.stringResource
+import squadfy_app.feature.club.presentation.generated.resources.Res
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,10 +43,10 @@ fun SquadfyClubDetailIdentityCard(club: ClubModel) {
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
             }
-            SquadfyClubDetailInfoRow(label = "Código de invitación", value = club.invitationCode)
+            SquadfyClubDetailInfoRow(label = stringResource(Res.string.identity_invitation_code), value = club.invitationCode)
             HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
             SquadfyClubDetailInfoRow(
-                label = "Plantilla",
+                label = stringResource(Res.string.identity_squad),
                 value = "${club.membersCount}${club.maxMembers?.let { " / $it" } ?: ""}"
             )
         }

@@ -1,5 +1,8 @@
 package com.kikepb.club.presentation.detail.components
 
+import squadfy_app.feature.club.presentation.generated.resources.members_empty
+import org.jetbrains.compose.resources.stringResource
+import squadfy_app.feature.club.presentation.generated.resources.Res
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -28,7 +31,7 @@ import kotlinx.coroutines.delay
 fun SquadfyClubDetailMembersTab(members: List<ClubMemberModel>, onMemberClick: (String) -> Unit) {
     if (members.isEmpty()) {
         EmptyTabMessage(
-            text = "Aún no hay miembros en este equipo.",
+            text = stringResource(Res.string.members_empty),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(32.dp)

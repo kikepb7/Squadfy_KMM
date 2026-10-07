@@ -42,8 +42,8 @@ Poder **activar o desactivar desarrollos en PRE y en PRO** sin borrar código: f
   | `MANUAL_SCORE` | **on** | off | Backend BE-008; app hecha en la spec 007 (activo en PRE para QA) |
   | `MEMBER_ABSENCES` | **on** | off | Backend BE-008; app hecha en la spec 014 (activo en PRE para QA) |
   | `DEV_TEST_MATCH` | **on** | off | Herramienta de QA (crear partido de prueba) |
-  | `HOME_RECENT_MATCHES` | **on** | off | Hoy son mocks (spec 010) |
-  | `HOME_NEWS` | **on** | off | Hoy son mocks; fuera del MVP |
+  | `HOME_RECENT_MATCHES` | off | off | Hoy son mocks (spec 010) |
+  | `HOME_NEWS` | off | off | Hoy son mocks; fuera del MVP |
 
   Al estar en off, los cuatro flags pendientes del backend mantienen la UI y el código actuales ocultos.
 - **AC-013-08** La UI existente queda condicionada por los flags:

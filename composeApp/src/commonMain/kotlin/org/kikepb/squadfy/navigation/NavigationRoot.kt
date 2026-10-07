@@ -25,6 +25,7 @@ import com.kikepb.globalPosition.presentation.navigation.globalPositionGraph
 import org.kikepb.squadfy.debug.FeatureFlagsRoot
 import org.kikepb.squadfy.debug.FeatureFlagsRoute
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.Chat
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.GlobalPosition
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.Setup
@@ -46,7 +47,7 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
             if (showBottomBar) {
                 SquadfyBottomBar(
                     items = bottomBarItems.map { item ->
-                        SquadfyBottomBarItemModel(label = item.title, icon = item.icon)
+                        SquadfyBottomBarItemModel(label = stringResource(item.title), icon = item.icon)
                     },
                     selectedIndex = selectedIndex,
                     onItemClick = { index ->

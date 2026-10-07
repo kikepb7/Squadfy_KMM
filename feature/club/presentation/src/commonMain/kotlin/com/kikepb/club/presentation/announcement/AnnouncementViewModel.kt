@@ -26,6 +26,7 @@ import com.kikepb.club.domain.usecase.GetCurrentAnnouncementUseCase
 import com.kikepb.club.domain.usecase.GetScheduleUseCase
 import com.kikepb.club.domain.usecase.ObserveMyMembershipUseCase
 import com.kikepb.club.domain.usecase.RemoveGuestFromAnnouncementUseCase
+import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
 import com.kikepb.club.domain.usecase.WithdrawUseCase
 import com.kikepb.club.presentation.mapper.toUiText
 import com.kikepb.core.domain.featureflag.FeatureFlag
@@ -41,6 +42,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -63,7 +65,7 @@ import kotlin.time.Instant
 
 /** Current announcement of a club: window, enrollment, waitlist and guests (spec 005, ADR-0006). */
 class AnnouncementViewModel(
-    getClubMembersUseCase: GetClubMembersUseCase,
+    private val getClubMembersUseCase: GetClubMembersUseCase,
     observeMyMembershipUseCase: ObserveMyMembershipUseCase,
     private val featureFlags: FeatureFlags,
     private val getAbsencesUseCase: GetAbsencesUseCase,
@@ -76,6 +78,7 @@ class AnnouncementViewModel(
     private val removeGuestUseCase: RemoveGuestFromAnnouncementUseCase,
     private val clock: Clock,
     private val inAppPushCenter: InAppPushCenter,
+    private val syncClubDetailUseCase: SyncClubDetailUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -160,6 +163,10 @@ class AnnouncementViewModel(
             getCurrentAnnouncementUseCase(clubId)
                 .onSuccess { current ->
                     _state.update { it.copy(current = current, hasLoaded = true, isStale = false, lastUpdatedAt = clock.now()) }
+                    current?.announcement?.let { announcement ->
+                        val ids = (announcement.entries + announcement.waitlist).flatMap { listOfNotNull(it.clubMemberId, it.invitedByMemberId) }
+                        syncMembersIfUnknown(ids)
+                    }
                 }
                 .onFailure { error -> onLoadError(error) }
             // AC-005-15: my absences, only with MEMBER_ABSENCES on (APP-RN-17)
@@ -173,6 +180,13 @@ class AnnouncementViewModel(
             }
             _state.update { it.copy(isRefreshing = false, now = clock.now()) }
         }
+    }
+
+    /** APP-RN-06: someone who joined after the last sync would show as "former player" until the members are fetched. */
+    private suspend fun syncMembersIfUnknown(memberIds: Collection<String>) {
+        // Room, not the UI state: on the first load the state has not received the members yet
+        val cached = getClubMembersUseCase(clubId).first().map { it.id }.toSet()
+        if (memberIds.any { it !in cached }) syncClubDetailUseCase(clubId)
     }
 
     private fun onVisibilityChanged(visible: Boolean) {

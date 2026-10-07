@@ -45,7 +45,11 @@ class FakeClubRepository : ClubRepository {
 
     override suspend fun fetchMyClubs(): EmptyResult<ClubError> = Result.Success(Unit)
     override suspend fun fetchClubById(clubId: String): EmptyResult<ClubError> = Result.Success(Unit)
-    override suspend fun fetchClubMembers(clubId: String): EmptyResult<ClubError> = Result.Success(Unit)
+    var memberFetches = 0
+    override suspend fun fetchClubMembers(clubId: String): EmptyResult<ClubError> {
+        memberFetches++
+        return Result.Success(Unit)
+    }
 
     override suspend fun createClub(name: String, description: String?, maxMembers: Int?) = createResult
     override suspend fun joinClub(invitationCode: String, shirtNumber: Int?, position: PlayerPosition?): Result<ClubModel, ClubError> {

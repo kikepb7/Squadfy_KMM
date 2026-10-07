@@ -1,5 +1,15 @@
 package com.kikepb.club.presentation.join
 
+import squadfy_app.feature.club.presentation.generated.resources.join_title
+import squadfy_app.feature.club.presentation.generated.resources.join_heading
+import squadfy_app.feature.club.presentation.generated.resources.join_subtitle
+import squadfy_app.feature.club.presentation.generated.resources.join_code_label
+import squadfy_app.feature.club.presentation.generated.resources.join_code_placeholder
+import squadfy_app.feature.club.presentation.generated.resources.join_code_hint
+import squadfy_app.feature.club.presentation.generated.resources.join_shirt_label
+import squadfy_app.feature.club.presentation.generated.resources.join_shirt_placeholder
+import squadfy_app.feature.club.presentation.generated.resources.join_shirt_hint
+import squadfy_app.feature.club.presentation.generated.resources.join_submit
 import com.kikepb.club.presentation.components.PositionChips
 import org.jetbrains.compose.resources.stringResource
 import squadfy_app.feature.club.presentation.generated.resources.Res
@@ -80,7 +90,7 @@ fun JoinClubScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { SquadfyTopBar(title = "Unirme a un club", onBackClick = onBackClick) },
+        topBar = { SquadfyTopBar(title = stringResource(Res.string.join_title), onBackClick = onBackClick) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Column(
@@ -93,7 +103,7 @@ fun JoinClubScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    text = "Introduce el código",
+                    text = stringResource(Res.string.join_heading),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = (-0.5).sp
@@ -101,7 +111,7 @@ fun JoinClubScreen(
                     color = MaterialTheme.colorScheme.extended.textPrimary
                 )
                 Text(
-                    text = "Pídele el código de invitación al administrador del club.",
+                    text = stringResource(Res.string.join_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.extended.textPlaceholder
                 )
@@ -123,11 +133,11 @@ fun JoinClubScreen(
                     SquadfyTextField(
                         state = state.invitationCodeState,
                         modifier = Modifier.fillMaxWidth(),
-                        title = "Código de invitación *",
-                        placeholder = "Ej: ABC123",
+                        title = stringResource(Res.string.join_code_label),
+                        placeholder = stringResource(Res.string.join_code_placeholder),
                         singleLine = true,
                         isError = state.invitationCodeError != null,
-                        supportingText = state.invitationCodeError?.asString() ?: "6–12 caracteres alfanuméricos",
+                        supportingText = state.invitationCodeError?.asString() ?: stringResource(Res.string.join_code_hint),
                         keyboardType = KeyboardType.Text
                     )
 
@@ -136,11 +146,11 @@ fun JoinClubScreen(
                     SquadfyTextField(
                         state = state.shirtNumberState,
                         modifier = Modifier.fillMaxWidth(),
-                        title = "Número de camiseta",
-                        placeholder = "Ej: 10",
+                        title = stringResource(Res.string.join_shirt_label),
+                        placeholder = stringResource(Res.string.join_shirt_placeholder),
                         singleLine = true,
                         isError = state.shirtNumberError != null,
-                        supportingText = state.shirtNumberError?.asString() ?: "Opcional · Entre 1 y 999",
+                        supportingText = state.shirtNumberError?.asString() ?: stringResource(Res.string.join_shirt_hint),
                         keyboardType = KeyboardType.Number
                     )
 
@@ -160,7 +170,7 @@ fun JoinClubScreen(
             }
 
             SquadfyButton(
-                text = "Unirme al club",
+                text = stringResource(Res.string.join_submit),
                 onClick = { onAction(OnJoinClub) },
                 enabled = state.canSubmit,
                 isLoading = state.isLoading,

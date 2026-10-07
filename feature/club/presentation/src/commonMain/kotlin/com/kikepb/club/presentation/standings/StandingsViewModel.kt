@@ -14,6 +14,7 @@ import com.kikepb.club.domain.usecase.GetMyRatingUseCase
 import com.kikepb.club.domain.usecase.GetRatingLeaderboardUseCase
 import com.kikepb.club.domain.usecase.GetStatsLeaderboardUseCase
 import com.kikepb.club.domain.usecase.ObserveMyMembershipUseCase
+import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
 import com.kikepb.club.domain.usecase.noCompletedMatches
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.onFailure
@@ -21,17 +22,19 @@ import com.kikepb.core.domain.util.onSuccess
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** Rating and stats classifications of a club (spec 008). Network-first: reloaded on open and on resume (ADR-0006). */
 class StandingsViewModel(
-    getClubMembersUseCase: GetClubMembersUseCase,
+    private val getClubMembersUseCase: GetClubMembersUseCase,
     observeMyMembershipUseCase: ObserveMyMembershipUseCase,
     private val getRatingLeaderboardUseCase: GetRatingLeaderboardUseCase,
     private val getMyRatingUseCase: GetMyRatingUseCase,
     private val getStatsLeaderboardUseCase: GetStatsLeaderboardUseCase,
+    private val syncClubDetailUseCase: SyncClubDetailUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -67,7 +70,12 @@ class StandingsViewModel(
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             getRatingLeaderboardUseCase(clubId)
-                .onSuccess { ratings -> _state.update { it.copy(ratings = ratings, isStale = false) } }
+                .onSuccess { ratings ->
+                    _state.update { it.copy(ratings = ratings, isStale = false) }
+                    // APP-RN-06: rows of members who joined after the last members sync
+                    val cached = getClubMembersUseCase(clubId).first().map { it.id }.toSet()
+                    if (ratings.any { it.clubMemberId !in cached }) syncClubDetailUseCase(clubId)
+                }
                 .onFailure(::onError)
             // 404 when I am not rated yet: the "your position" card is simply hidden
             getMyRatingUseCase(clubId).onSuccess { mine -> _state.update { it.copy(myRating = mine) } }

@@ -7,4 +7,7 @@
     <string name="feature_flags_source_default">Por defecto</string>
     <string name="feature_flags_source_remote">Remoto</string>
     <string name="feature_flags_source_override">Override local</string>
+    <string name="tab_home">Inicio</string>
+    <string name="tab_clubs">Clubs</string>
+    <string name="tab_chat">Chat</string>
 </resources>
