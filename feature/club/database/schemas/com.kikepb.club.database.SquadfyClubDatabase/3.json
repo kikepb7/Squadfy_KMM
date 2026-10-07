@@ -1,0 +1,151 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "5d521618aeb5eb2c5c5d1e243979be56",
+    "entities": [
+      {
+        "tableName": "club",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`clubId` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `clubLogoUrl` TEXT, `ownerId` TEXT NOT NULL, `invitationCode` TEXT NOT NULL, `maxMembers` INTEGER, `membersCount` INTEGER NOT NULL, PRIMARY KEY(`clubId`))",
+        "fields": [
+          {
+            "fieldPath": "clubId",
+            "columnName": "clubId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clubLogoUrl",
+            "columnName": "clubLogoUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "ownerId",
+            "columnName": "ownerId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "invitationCode",
+            "columnName": "invitationCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxMembers",
+            "columnName": "maxMembers",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "membersCount",
+            "columnName": "membersCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "clubId"
+          ]
+        }
+      },
+      {
+        "tableName": "club_member",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`memberId` TEXT NOT NULL, `clubId` TEXT NOT NULL, `userId` TEXT NOT NULL, `username` TEXT NOT NULL, `shirtNumber` INTEGER, `profilePictureUrl` TEXT, `position` TEXT, `role` TEXT NOT NULL, PRIMARY KEY(`memberId`), FOREIGN KEY(`clubId`) REFERENCES `club`(`clubId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "memberId",
+            "columnName": "memberId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clubId",
+            "columnName": "clubId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shirtNumber",
+            "columnName": "shirtNumber",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "profilePictureUrl",
+            "columnName": "profilePictureUrl",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "memberId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_club_member_clubId",
+            "unique": false,
+            "columnNames": [
+              "clubId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_club_member_clubId` ON `${TABLE_NAME}` (`clubId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "club",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "clubId"
+            ],
+            "referencedColumns": [
+              "clubId"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5d521618aeb5eb2c5c5d1e243979be56')"
+    ]
+  }
+}

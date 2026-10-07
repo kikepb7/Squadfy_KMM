@@ -31,7 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kikepb.club.domain.model.ClubModel
-import com.kikepb.club.presentation.utils.initialsOf
+import com.kikepb.club.presentation.mapper.initialsOf
 import com.kikepb.core.designsystem.components.avatar.AvatarSize
 import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
 import com.kikepb.core.designsystem.theme.SquadfyBrand1000

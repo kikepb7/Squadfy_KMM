@@ -17,17 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.core.designsystem.theme.extended
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
-
-/** The calendar year the club's currently running season started in (seasons don't have an end date - they roll into the next year's season on [ClubModel.seasonStartMonth]/[ClubModel.seasonStartDay]). */
-private fun currentSeasonYear(club: ClubModel): Int {
-    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-    val seasonStartThisYear = LocalDate(today.year, club.seasonStartMonth, club.seasonStartDay)
-    return if (today < seasonStartThisYear) today.year - 1 else today.year
-}
 
 @Composable
 fun SquadfyClubDetailIdentityCard(club: ClubModel) {
@@ -56,8 +45,6 @@ fun SquadfyClubDetailIdentityCard(club: ClubModel) {
                 label = "Plantilla",
                 value = "${club.membersCount}${club.maxMembers?.let { " / $it" } ?: ""}"
             )
-            HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-            SquadfyClubDetailInfoRow(label = "Temporada", value = currentSeasonYear(club).toString())
         }
     }
 }

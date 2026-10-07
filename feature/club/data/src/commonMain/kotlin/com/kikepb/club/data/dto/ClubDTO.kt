@@ -2,6 +2,7 @@ package com.kikepb.club.data.dto
 
 import kotlinx.serialization.Serializable
 
+/** `ClubDto` of the backend API v1 (`BACKEND.md` §9). */
 @Serializable
 data class ClubDTO(
     val id: String,
@@ -11,11 +12,11 @@ data class ClubDTO(
     val ownerId: String,
     val invitationCode: String,
     val maxMembers: Int? = null,
-    val membersCount: Int,
-    val matchDayOfWeek: String? = null,
-    val matchStartTime: String? = null,
-    val matchEndTime: String? = null,
-    val seasonStartMonth: Int = 9,
-    val seasonStartDay: Int = 1,
-    val drawTime: String = "18:00:00"
+    val membersCount: Int = 0,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
 )
+
+/** `InvitationCodeDto` returned when a manager regenerates the code. */
+@Serializable
+data class InvitationCodeDTO(val invitationCode: String)

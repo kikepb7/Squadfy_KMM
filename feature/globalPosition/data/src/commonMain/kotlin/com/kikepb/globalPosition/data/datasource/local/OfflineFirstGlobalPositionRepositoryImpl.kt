@@ -29,7 +29,7 @@ class OfflineFirstGlobalPositionRepositoryImpl(
             .map { entities -> entities.map { it.toGlobalPositionDomain() } }
 
     override suspend fun fetchUserClubs(): EmptyResult<DataError.Remote> =
-        httpClient.get<List<ClubDto>>(route = "/club")
+        httpClient.get<List<ClubDto>>(route = "/clubs")
             .onSuccess { clubs ->
                 db.clubDao.syncClubs(clubs = clubs.map { it.toEntity() })
             }

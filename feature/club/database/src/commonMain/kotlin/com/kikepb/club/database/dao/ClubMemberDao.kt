@@ -13,6 +13,9 @@ interface ClubMemberDao {
     @Query("SELECT * FROM club_member WHERE clubId = :clubId ORDER BY username ASC")
     fun observeMembersByClub(clubId: String): Flow<List<ClubMemberEntity>>
 
+    @Query("SELECT * FROM club_member WHERE userId = :userId")
+    fun observeMembershipsOfUser(userId: String): Flow<List<ClubMemberEntity>>
+
     @Query("SELECT * FROM club_member WHERE memberId = :memberId LIMIT 1")
     fun observeMemberById(memberId: String): Flow<ClubMemberEntity?>
 
@@ -22,8 +25,8 @@ interface ClubMemberDao {
     @Query("DELETE FROM club_member WHERE clubId = :clubId")
     suspend fun deleteMembersByClub(clubId: String)
 
-    @Query("DELETE FROM club_member")
-    suspend fun deleteAllMembers()
+    @Query("DELETE FROM club_member WHERE memberId = :memberId")
+    suspend fun deleteMemberById(memberId: String)
 
     @Transaction
     suspend fun syncMembers(clubId: String, members: List<ClubMemberEntity>) {

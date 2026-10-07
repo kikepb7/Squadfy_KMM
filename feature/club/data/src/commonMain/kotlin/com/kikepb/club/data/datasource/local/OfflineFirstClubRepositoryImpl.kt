@@ -1,41 +1,54 @@
 package com.kikepb.club.data.datasource.local
 
+import com.kikepb.club.data.dto.ClubBanDTO
 import com.kikepb.club.data.dto.ClubDTO
 import com.kikepb.club.data.dto.ClubMatchDTO
 import com.kikepb.club.data.dto.ClubMemberDTO
-import com.kikepb.club.data.dto.ClubScheduleExceptionDTO
+import com.kikepb.club.data.dto.InvitationCodeDTO
 import com.kikepb.club.data.dto.MatchSignupDTO
 import com.kikepb.club.data.dto.request.AddGuestRequestDto
-import com.kikepb.club.data.dto.request.AddScheduleExceptionRequestDto
+import com.kikepb.club.data.dto.request.ChangeRoleRequestDto
 import com.kikepb.club.data.dto.request.CreateClubRequestDto
 import com.kikepb.club.data.dto.request.CreateMatchRequestDto
+import com.kikepb.club.data.dto.request.EditClubRequestDto
 import com.kikepb.club.data.dto.request.GenerateTeamsRequestDto
 import com.kikepb.club.data.dto.request.JoinClubRequestDto
 import com.kikepb.club.data.dto.request.PlayerStatRequestDto
 import com.kikepb.club.data.dto.request.RecordMatchResultRequestDto
-import com.kikepb.club.data.dto.request.UpdateScheduleRequestDto
+import com.kikepb.club.data.dto.request.TransferOwnershipRequestDto
+import com.kikepb.club.data.dto.request.UpdateMyMembershipRequestDto
 import com.kikepb.club.data.mappers.toDomain
 import com.kikepb.club.data.mappers.toEntity
 import com.kikepb.club.database.SquadfyClubDatabase
+import com.kikepb.club.domain.error.ClubError
+import com.kikepb.club.domain.error.ClubOperation
+import com.kikepb.club.domain.error.toClubError
+import com.kikepb.club.domain.model.ClubBanModel
 import com.kikepb.club.domain.model.ClubMatchModel
 import com.kikepb.club.domain.model.ClubMemberModel
+import com.kikepb.club.domain.model.ClubMemberRole
 import com.kikepb.club.domain.model.ClubModel
-import com.kikepb.club.domain.model.ClubScheduleExceptionModel
 import com.kikepb.club.domain.model.MatchSignupModel
+import com.kikepb.club.domain.model.PlayerPosition
 import com.kikepb.club.domain.repository.ClubRepository
 import com.kikepb.club.domain.repository.PlayerStatInput
+import com.kikepb.core.data.networking.apiDelete
+import com.kikepb.core.data.networking.apiGet
+import com.kikepb.core.data.networking.apiPatch
+import com.kikepb.core.data.networking.apiPost
+import com.kikepb.core.data.networking.apiPutMultipart
 import com.kikepb.core.data.networking.constructRoute
 import com.kikepb.core.data.networking.delete
 import com.kikepb.core.data.networking.get
-import com.kikepb.core.data.networking.patch
 import com.kikepb.core.data.networking.post
-import com.kikepb.core.data.networking.postMultipart
 import com.kikepb.core.data.networking.safeCall
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.EmptyResult
+import com.kikepb.core.domain.util.RemoteError
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.asEmptyResult
 import com.kikepb.core.domain.util.map
+import com.kikepb.core.domain.util.mapError
 import com.kikepb.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -52,122 +65,166 @@ class OfflineFirstClubRepositoryImpl(
     private val db: SquadfyClubDatabase
 ) : ClubRepository {
 
+    // region Reads (Room)
+
+    override fun observeMyClubs(): Flow<List<ClubModel>> =
+        db.clubDao.observeAllClubs().map { entities -> entities.map { it.toDomain() } }
+
     override fun getClubById(clubId: String): Flow<ClubModel?> =
-        db.clubDao.observeClubById(clubId = clubId)
-            .map { entity -> entity?.toDomain() }
+        db.clubDao.observeClubById(clubId = clubId).map { entity -> entity?.toDomain() }
 
     override fun getClubMembers(clubId: String): Flow<List<ClubMemberModel>> =
-        db.clubMemberDao.observeMembersByClub(clubId = clubId)
-            .map { entities -> entities.map { it.toDomain() } }
+        db.clubMemberDao.observeMembersByClub(clubId = clubId).map { entities -> entities.map { it.toDomain() } }
 
     override fun getClubMemberById(memberId: String): Flow<ClubMemberModel?> =
-        db.clubMemberDao.observeMemberById(memberId = memberId)
-            .map { entity -> entity?.toDomain() }
+        db.clubMemberDao.observeMemberById(memberId = memberId).map { entity -> entity?.toDomain() }
 
-    override suspend fun fetchClubById(clubId: String): EmptyResult<DataError.Remote> =
-        httpClient.get<ClubDTO>(route = "/club/$clubId")
-            .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
+    override fun observeMembershipsOfUser(userId: String): Flow<List<ClubMemberModel>> =
+        db.clubMemberDao.observeMembershipsOfUser(userId = userId).map { entities -> entities.map { it.toDomain() } }
+
+    // endregion
+
+    // region Sync
+
+    override suspend fun fetchMyClubs(): EmptyResult<ClubError> =
+        httpClient.apiGet<List<ClubDTO>>(route = CLUBS)
+            .onSuccess { clubs -> db.clubDao.syncClubs(clubs = clubs.map { it.toEntity() }) }
+            .asClubResult()
             .asEmptyResult()
 
-    override suspend fun fetchClubMembers(clubId: String): EmptyResult<DataError.Remote> =
-        httpClient.get<List<ClubMemberDTO>>(route = "/club/$clubId/members")
-            .onSuccess { members ->
-                db.clubMemberDao.syncMembers(
-                    clubId = clubId,
-                    members = members.map { it.toEntity() }
-                )
-            }
+    override suspend fun fetchClubById(clubId: String): EmptyResult<ClubError> =
+        httpClient.apiGet<ClubDTO>(route = "$CLUBS/$clubId")
+            .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
+            .asClubResult()
             .asEmptyResult()
 
-    override suspend fun joinClub(invitationCode: String, shirtNumber: Int?, position: String?): Result<ClubModel, DataError.Remote> =
-        httpClient.post<JoinClubRequestDto, ClubDTO>(
-            route = "/club/join",
-            body = JoinClubRequestDto(invitationCode = invitationCode, shirtNumber = shirtNumber, position = position)
-        )
-            .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
-            .map { it.toEntity().toDomain() }
+    override suspend fun fetchClubMembers(clubId: String): EmptyResult<ClubError> =
+        httpClient.apiGet<List<ClubMemberDTO>>(route = "$CLUBS/$clubId/members")
+            .onSuccess { members -> db.clubMemberDao.syncMembers(clubId = clubId, members = members.map { it.toEntity() }) }
+            .asClubResult()
+            .asEmptyResult()
 
-    override suspend fun createClub(name: String, description: String?, clubLogoUrl: String?, maxMembers: Int?): Result<ClubModel, DataError.Remote> =
-        httpClient.post<CreateClubRequestDto, ClubDTO>(
-            route = "/club/create",
-            body = CreateClubRequestDto(name = name, description = description, clubLogoUrl = clubLogoUrl, maxMembers = maxMembers)
-        )
-            .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
-            .map { it.toEntity().toDomain() }
+    // endregion
 
-    override suspend fun uploadClubLogo(clubId: String, bytes: ByteArray, mimeType: String): Result<ClubModel, DataError.Remote> =
-        httpClient.postMultipart<ClubDTO>(
-            route = "/club/$clubId/logo",
+    // region Clubs
+
+    override suspend fun createClub(name: String, description: String?, maxMembers: Int?): Result<ClubModel, ClubError> =
+        httpClient.apiPost<CreateClubRequestDto, ClubDTO>(
+            route = CLUBS,
+            body = CreateClubRequestDto(name = name, description = description, maxMembers = maxMembers)
+        ).cacheClub()
+
+    override suspend fun joinClub(invitationCode: String, shirtNumber: Int?, position: PlayerPosition?): Result<ClubModel, ClubError> =
+        httpClient.apiPost<JoinClubRequestDto, ClubDTO>(
+            route = "$CLUBS/join",
+            body = JoinClubRequestDto(invitationCode = invitationCode, shirtNumber = shirtNumber, position = position?.name)
+        ).cacheClub(operation = ClubOperation.JOIN)
+
+    override suspend fun uploadClubLogo(clubId: String, bytes: ByteArray, mimeType: String): Result<ClubModel, ClubError> =
+        httpClient.apiPutMultipart<ClubDTO>(
+            route = "$CLUBS/$clubId/logo",
             content = buildMultipartImage(key = "clubLogo", bytes = bytes, mimeType = mimeType, filename = "logo")
-        )
-            .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
-            .map { it.toEntity().toDomain() }
+        ).cacheClub()
 
-    override suspend fun uploadMemberPhoto(clubId: String, memberId: String, bytes: ByteArray, mimeType: String): Result<ClubMemberModel, DataError.Remote> =
-        httpClient.postMultipart<ClubMemberDTO>(
-            route = "/club/$clubId/members/$memberId/photo",
-            content = buildMultipartImage(key = "memberPhoto", bytes = bytes, mimeType = mimeType, filename = "photo")
-        )
-            .onSuccess { dto -> db.clubMemberDao.upsertMembers(listOf(dto.toEntity())) }
-            .map { it.toEntity().toDomain() }
+    override suspend fun editClub(clubId: String, name: String?, description: String?, maxMembers: Int?): Result<ClubModel, ClubError> =
+        httpClient.apiPatch<EditClubRequestDto, ClubDTO>(
+            route = "$CLUBS/$clubId",
+            body = EditClubRequestDto(name = name, description = description, maxMembers = maxMembers)
+        ).cacheClub(operation = ClubOperation.EDIT_CLUB)
 
-    override suspend fun updateSchedule(
-        clubId: String,
-        matchDayOfWeek: String?,
-        matchStartTime: String?,
-        matchEndTime: String?,
-        seasonStartMonth: Int?,
-        seasonStartDay: Int?,
-        drawTime: String?
-    ): Result<ClubModel, DataError.Remote> =
-        httpClient.patch<UpdateScheduleRequestDto, ClubDTO>(
-            route = "/club/$clubId/schedule",
-            body = UpdateScheduleRequestDto(
-                matchDayOfWeek = matchDayOfWeek,
-                matchStartTime = matchStartTime,
-                matchEndTime = matchEndTime,
-                seasonStartMonth = seasonStartMonth,
-                seasonStartDay = seasonStartDay,
-                drawTime = drawTime
-            )
-        )
-            .onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
-            .map { it.toEntity().toDomain() }
+    override suspend fun regenerateInvitationCode(clubId: String): Result<String, ClubError> =
+        httpClient.apiPost<Unit, InvitationCodeDTO>(route = "$CLUBS/$clubId/invitation-code", body = Unit)
+            .asClubResult()
+            .map { it.invitationCode }
+            .also { result ->
+                // The code is part of the cached club: refresh it so every screen shows the new one
+                if (result is Result.Success) fetchClubById(clubId)
+            }
 
-    override suspend fun listScheduleExceptions(clubId: String): Result<List<ClubScheduleExceptionModel>, DataError.Remote> =
-        httpClient.get<List<ClubScheduleExceptionDTO>>(route = "/club/$clubId/schedule/exceptions").map { exceptions ->
-            exceptions.map { it.toDomain() }
+    override suspend fun transferOwnership(clubId: String, memberId: String): Result<ClubModel, ClubError> =
+        httpClient.apiPost<TransferOwnershipRequestDto, ClubDTO>(
+            route = "$CLUBS/$clubId/transfer-ownership",
+            body = TransferOwnershipRequestDto(memberId = memberId)
+        ).cacheClub().also { result ->
+            // Both members change role (new OWNER, former owner becomes ADMIN)
+            if (result is Result.Success) fetchClubMembers(clubId)
         }
 
-    override suspend fun addScheduleException(clubId: String, date: String, reason: String?): Result<ClubScheduleExceptionModel, DataError.Remote> =
-        httpClient.post<AddScheduleExceptionRequestDto, ClubScheduleExceptionDTO>(
-            route = "/club/$clubId/schedule/exceptions",
-            body = AddScheduleExceptionRequestDto(date = date, reason = reason)
-        ).map { it.toDomain() }
+    // endregion
 
-    override suspend fun removeScheduleException(clubId: String, exceptionId: String): EmptyResult<DataError.Remote> =
-        httpClient.delete<Unit>(route = "/club/$clubId/schedule/exceptions/$exceptionId").asEmptyResult()
+    // region Members
+
+    override suspend fun updateMyMembership(clubId: String, shirtNumber: Int?, position: PlayerPosition?): Result<ClubMemberModel, ClubError> =
+        httpClient.apiPatch<UpdateMyMembershipRequestDto, ClubMemberDTO>(
+            route = "$CLUBS/$clubId/members/me",
+            body = UpdateMyMembershipRequestDto(shirtNumber = shirtNumber, position = position?.name)
+        ).cacheMember()
+
+    override suspend fun changeMemberRole(clubId: String, memberId: String, role: ClubMemberRole): Result<ClubMemberModel, ClubError> =
+        httpClient.apiPatch<ChangeRoleRequestDto, ClubMemberDTO>(
+            route = "$CLUBS/$clubId/members/$memberId/role",
+            body = ChangeRoleRequestDto(role = role.name)
+        ).cacheMember()
+
+    override suspend fun leaveClub(clubId: String): EmptyResult<ClubError> =
+        httpClient.apiDelete<Unit>(route = "$CLUBS/$clubId/members/me")
+            .onSuccess { db.clubDao.deleteClubById(clubId = clubId) }
+            .asClubResult()
+
+    override suspend fun removeMember(clubId: String, memberId: String): EmptyResult<ClubError> =
+        httpClient.apiDelete<Unit>(route = "$CLUBS/$clubId/members/$memberId")
+            .onSuccess { forgetMember(clubId = clubId, memberId = memberId) }
+            .asClubResult()
+
+    override suspend fun getBans(clubId: String): Result<List<ClubBanModel>, ClubError> =
+        httpClient.apiGet<List<ClubBanDTO>>(route = "$CLUBS/$clubId/bans")
+            .asClubResult()
+            .map { bans ->
+                bans.map { ClubBanModel(clubMemberId = it.clubMemberId, userId = it.userId, username = it.username, bannedAt = it.bannedAt) }
+            }
+
+    override suspend fun banMember(clubId: String, memberId: String): EmptyResult<ClubError> =
+        httpClient.apiPost<Unit, Unit>(route = "$CLUBS/$clubId/members/$memberId/ban", body = Unit)
+            .onSuccess { forgetMember(clubId = clubId, memberId = memberId) }
+            .asClubResult()
+
+    override suspend fun unbanMember(clubId: String, memberId: String): EmptyResult<ClubError> =
+        httpClient.apiDelete<Unit>(route = "$CLUBS/$clubId/members/$memberId/ban")
+            .asClubResult()
+
+    /** A removed or banned member disappears from the club and its member count (BE-001 RN-10). */
+    private suspend fun forgetMember(clubId: String, memberId: String) {
+        db.clubMemberDao.deleteMemberById(memberId = memberId)
+        fetchClubById(clubId)
+    }
+
+    // endregion
+
+    private suspend fun Result<ClubDTO, RemoteError>.cacheClub(operation: ClubOperation = ClubOperation.OTHER): Result<ClubModel, ClubError> =
+        onSuccess { dto -> db.clubDao.upsertClub(club = dto.toEntity()) }
+            .asClubResult(operation)
+            .map { it.toDomain() }
+
+    private suspend fun Result<ClubMemberDTO, RemoteError>.cacheMember(): Result<ClubMemberModel, ClubError> =
+        onSuccess { dto -> db.clubMemberDao.upsertMembers(members = listOf(dto.toEntity())) }
+            .asClubResult()
+            .map { it.toDomain() }
+
+    private fun <T> Result<T, RemoteError>.asClubResult(operation: ClubOperation = ClubOperation.OTHER): Result<T, ClubError> =
+        mapError { it.toClubError(operation) }
+
+    // region Legacy match flow (pre-v1 routes), replaced in specs 005-007
 
     override suspend fun getMatchesForClub(clubId: String): Result<List<ClubMatchModel>, DataError.Remote> =
         httpClient.get<List<ClubMatchDTO>>(route = "/club/$clubId/matches").map { matches ->
             matches.map { it.toDomain() }
         }
 
-    override suspend fun getMatch(matchId: String): Result<ClubMatchModel, DataError.Remote> =
-        httpClient.get<ClubMatchDTO>(route = "/club/matches/$matchId").map { it.toDomain() }
-
     override suspend fun createMatch(clubId: String, scheduledAt: String?, signupOpensAt: String?, signupClosesAt: String?): Result<ClubMatchModel, DataError.Remote> =
         httpClient.post<CreateMatchRequestDto, ClubMatchDTO>(
             route = "/club/$clubId/matches",
             body = CreateMatchRequestDto(scheduledAt = scheduledAt, signupOpensAt = signupOpensAt, signupClosesAt = signupClosesAt)
         ).map { it.toDomain() }
-
-    override suspend fun cancelMatch(matchId: String): Result<ClubMatchModel, DataError.Remote> =
-        safeCall<ClubMatchDTO> {
-            httpClient.post {
-                url(constructRoute("/club/matches/$matchId/cancel"))
-            }
-        }.map { it.toDomain() }
 
     override suspend fun listSignups(matchId: String): Result<List<MatchSignupModel>, DataError.Remote> =
         httpClient.get<List<MatchSignupDTO>>(route = "/club/matches/$matchId/signups").map { signups ->
@@ -223,6 +280,8 @@ class OfflineFirstClubRepositoryImpl(
             )
         ).map { it.toDomain() }
 
+    // endregion
+
     private fun buildMultipartImage(key: String, bytes: ByteArray, mimeType: String, filename: String): MultiPartFormDataContent =
         MultiPartFormDataContent(
             formData {
@@ -236,4 +295,8 @@ class OfflineFirstClubRepositoryImpl(
                 )
             }
         )
+
+    private companion object {
+        const val CLUBS = "/clubs"
+    }
 }

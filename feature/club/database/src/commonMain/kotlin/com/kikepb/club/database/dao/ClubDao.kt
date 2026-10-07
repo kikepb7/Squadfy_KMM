@@ -28,8 +28,6 @@ interface ClubDao {
     @Query("DELETE FROM club WHERE clubId = :clubId")
     suspend fun deleteClubById(clubId: String)
 
-    @Query("DELETE FROM club")
-    suspend fun deleteAllClubs()
 
     @Transaction
     suspend fun syncClubs(clubs: List<ClubEntity>) {

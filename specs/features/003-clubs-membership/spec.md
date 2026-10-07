@@ -51,7 +51,7 @@ Toda la administración del club (editar, código, roles, expulsar, vetar, trans
 - **AC-003-14** Logo: `PUT /clubs/{id}/logo` multipart con la parte `clubLogo` (jpeg, png o webp).
 
 **Datos**
-- **AC-003-15** Room v3 (`Migration(2,3)` con test):
+- **AC-003-15** Room v3 (`Migration(2,3)` con test; al ser caché del servidor, la migración recrea las tablas con el esquema v3 y la app resincroniza):
   - `club_member` pierde `email` y las columnas de estadísticas; `role` y `position` se guardan como el nombre del enum;
   - `club` pierde los campos de horario y de temporada, que pasan a la tabla `club_schedule` (spec 004);
   - **se elimina `fallbackToDestructiveMigration`**.

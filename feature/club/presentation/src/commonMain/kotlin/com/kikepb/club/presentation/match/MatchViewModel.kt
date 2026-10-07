@@ -88,7 +88,7 @@ class MatchViewModel(
         current.copy(
             members = members,
             myMemberId = myMembership?.id,
-            isAdmin = myMembership?.role == "OWNER" || myMembership?.role == "ADMIN",
+            isAdmin = myMembership?.role?.isManager == true,
             isGuestsEnabled = FeatureFlag.MATCH_GUESTS in enabledFlags,
             isTestMatchEnabled = FeatureFlag.DEV_TEST_MATCH in enabledFlags,
             isManualScoreEnabled = FeatureFlag.MANUAL_SCORE in enabledFlags

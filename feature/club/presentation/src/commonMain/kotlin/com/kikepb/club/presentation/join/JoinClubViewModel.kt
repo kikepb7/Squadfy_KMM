@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.join
 
+import com.kikepb.club.domain.model.PlayerPosition
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -36,6 +37,7 @@ class JoinClubViewModel(
             OnClearErrors -> _state.update {
                 it.copy(invitationCodeError = null, shirtNumberError = null)
             }
+            is JoinClubAction.OnPositionSelected -> _state.update { it.copy(position = action.position) }
         }
     }
 
@@ -46,11 +48,11 @@ class JoinClubViewModel(
             when (val result = joinClubUseCase(
                 invitationCode = _state.value.invitationCodeState.text.toString().trim(),
                 shirtNumber = _state.value.shirtNumberState.text.toString().trim().ifBlank { null },
-                position = _state.value.positionState.text.toString().trim().ifBlank { null }
+                position = _state.value.position
             )) {
                 is Success -> {
                     _state.update { it.copy(isLoading = false) }
-                    eventChannel.send(JoinClubEvent.Success)
+                    eventChannel.send(JoinClubEvent.Success(clubId = result.data.id))
                 }
                 is Failure -> when (val error = result.error) {
                     InvalidInvitationCodeFormat -> _state.update { it.copy(isLoading = false, invitationCodeError = error.toUiText()) }
@@ -68,7 +70,7 @@ class JoinClubViewModel(
 data class JoinClubState(
     val invitationCodeState: TextFieldState = TextFieldState(),
     val shirtNumberState: TextFieldState = TextFieldState(),
-    val positionState: TextFieldState = TextFieldState(),
+    val position: PlayerPosition? = null,
     val isLoading: Boolean = false,
     val invitationCodeError: UiText? = null,
     val shirtNumberError: UiText? = null
@@ -79,9 +81,10 @@ data class JoinClubState(
 sealed interface JoinClubAction {
     data object OnJoinClub : JoinClubAction
     data object OnClearErrors : JoinClubAction
+    data class OnPositionSelected(val position: PlayerPosition?) : JoinClubAction
 }
 
 sealed interface JoinClubEvent {
-    data object Success : JoinClubEvent
+    data class Success(val clubId: String) : JoinClubEvent
     data class Error(val message: UiText) : JoinClubEvent
 }

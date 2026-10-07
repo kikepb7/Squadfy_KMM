@@ -5,7 +5,9 @@ import com.kikepb.club.data.dto.ClubMemberDTO
 import com.kikepb.club.database.entity.ClubEntity
 import com.kikepb.club.database.entity.ClubMemberEntity
 import com.kikepb.club.domain.model.ClubMemberModel
+import com.kikepb.club.domain.model.ClubMemberRole
 import com.kikepb.club.domain.model.ClubModel
+import com.kikepb.club.domain.model.PlayerPosition
 
 fun ClubDTO.toEntity(): ClubEntity = ClubEntity(
     clubId = id,
@@ -15,32 +17,19 @@ fun ClubDTO.toEntity(): ClubEntity = ClubEntity(
     ownerId = ownerId,
     invitationCode = invitationCode,
     maxMembers = maxMembers,
-    membersCount = membersCount,
-    matchDayOfWeek = matchDayOfWeek,
-    matchStartTime = matchStartTime,
-    matchEndTime = matchEndTime,
-    seasonStartMonth = seasonStartMonth,
-    seasonStartDay = seasonStartDay,
-    drawTime = drawTime
+    membersCount = membersCount
 )
 
+/** Unknown roles and legacy free-text positions are normalized before being cached (APP-RN-13). */
 fun ClubMemberDTO.toEntity(): ClubMemberEntity = ClubMemberEntity(
     memberId = id,
     clubId = clubId,
     userId = userId,
     username = username,
-    email = email,
     shirtNumber = shirtNumber,
     profilePictureUrl = profilePictureUrl,
-    position = position,
-    rating = rating,
-    goalsScored = goalsScored,
-    assists = assists,
-    yellowCards = yellowCards,
-    redCards = redCards,
-    minutesPlayed = minutesPlayed,
-    matchesPlayed = matchesPlayed,
-    role = role
+    position = PlayerPosition.fromRaw(position)?.name,
+    role = ClubMemberRole.fromRaw(role).name
 )
 
 fun ClubEntity.toDomain(): ClubModel = ClubModel(
@@ -51,13 +40,7 @@ fun ClubEntity.toDomain(): ClubModel = ClubModel(
     ownerId = ownerId,
     invitationCode = invitationCode,
     maxMembers = maxMembers,
-    membersCount = membersCount,
-    matchDayOfWeek = matchDayOfWeek,
-    matchStartTime = matchStartTime,
-    matchEndTime = matchEndTime,
-    seasonStartMonth = seasonStartMonth,
-    seasonStartDay = seasonStartDay,
-    drawTime = drawTime
+    membersCount = membersCount
 )
 
 fun ClubMemberEntity.toDomain(): ClubMemberModel = ClubMemberModel(
@@ -65,33 +48,12 @@ fun ClubMemberEntity.toDomain(): ClubMemberModel = ClubMemberModel(
     clubId = clubId,
     userId = userId,
     username = username,
-    email = email,
     profilePictureUrl = profilePictureUrl,
     shirtNumber = shirtNumber,
-    position = position,
-    rating = rating,
-    goalsScored = goalsScored,
-    assists = assists,
-    yellowCards = yellowCards,
-    redCards = redCards,
-    minutesPlayed = minutesPlayed,
-    matchesPlayed = matchesPlayed,
-    role = role
+    position = PlayerPosition.fromRaw(position),
+    role = ClubMemberRole.fromRaw(role)
 )
 
-fun ClubModel.toEntity(): ClubEntity = ClubEntity(
-    clubId = id,
-    name = name,
-    description = description,
-    clubLogoUrl = clubLogoUrl,
-    ownerId = ownerId,
-    invitationCode = invitationCode,
-    maxMembers = maxMembers,
-    membersCount = membersCount,
-    matchDayOfWeek = matchDayOfWeek,
-    matchStartTime = matchStartTime,
-    matchEndTime = matchEndTime,
-    seasonStartMonth = seasonStartMonth,
-    seasonStartDay = seasonStartDay,
-    drawTime = drawTime
-)
+fun ClubDTO.toDomain(): ClubModel = toEntity().toDomain()
+
+fun ClubMemberDTO.toDomain(): ClubMemberModel = toEntity().toDomain()

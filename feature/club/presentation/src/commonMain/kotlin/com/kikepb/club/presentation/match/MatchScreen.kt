@@ -112,8 +112,8 @@ fun MatchScreen(state: MatchState, onAction: (MatchAction) -> Unit) {
                                 val member = signup.clubMemberId?.let { id -> state.members.find { it.id == id } }
                                 SignupRow(
                                     name = signup.guestName ?: member?.username ?: "Jugador",
-                                    position = signup.position ?: member?.position,
-                                    rating = signup.rating ?: member?.rating,
+                                    position = signup.position ?: member?.position?.name,
+                                    rating = signup.rating,
                                     isGuest = signup.clubMemberId == null,
                                     canRemove = state.isAdmin || signup.clubMemberId == state.myMemberId,
                                     onRemove = { onAction(MatchAction.OnRemoveSignup(signup.id)) }

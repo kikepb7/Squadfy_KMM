@@ -1,53 +1,13 @@
 package com.kikepb.club.data.mappers
 
-import com.kikepb.club.data.dto.ClubDTO
 import com.kikepb.club.data.dto.ClubMatchDTO
-import com.kikepb.club.data.dto.ClubMemberDTO
-import com.kikepb.club.data.dto.ClubScheduleExceptionDTO
 import com.kikepb.club.data.dto.MatchParticipantDTO
 import com.kikepb.club.data.dto.MatchSignupDTO
 import com.kikepb.club.domain.model.ClubMatchModel
-import com.kikepb.club.domain.model.ClubMemberModel
-import com.kikepb.club.domain.model.ClubModel
-import com.kikepb.club.domain.model.ClubScheduleExceptionModel
 import com.kikepb.club.domain.model.MatchParticipantModel
 import com.kikepb.club.domain.model.MatchSignupModel
 
-fun ClubDTO.clubToDomain(): ClubModel = ClubModel(
-    id = id,
-    name = name,
-    description = description,
-    clubLogoUrl = clubLogoUrl,
-    ownerId = ownerId,
-    invitationCode = invitationCode,
-    maxMembers = maxMembers,
-    membersCount = membersCount,
-    matchDayOfWeek = matchDayOfWeek,
-    matchStartTime = matchStartTime,
-    matchEndTime = matchEndTime,
-    seasonStartMonth = seasonStartMonth,
-    seasonStartDay = seasonStartDay,
-    drawTime = drawTime
-)
-
-fun ClubMemberDTO.clubMemberToDomain(): ClubMemberModel = ClubMemberModel(
-    id = id,
-    clubId = clubId,
-    userId = userId,
-    username = username,
-    email = email,
-    profilePictureUrl = profilePictureUrl,
-    shirtNumber = shirtNumber,
-    position = position,
-    rating = rating,
-    goalsScored = goalsScored,
-    assists = assists,
-    yellowCards = yellowCards,
-    redCards = redCards,
-    minutesPlayed = minutesPlayed,
-    matchesPlayed = matchesPlayed,
-    role = role
-)
+// Legacy match flow mappers (pre-v1 routes), replaced in specs 005-007.
 
 fun MatchParticipantDTO.toDomain(): MatchParticipantModel = MatchParticipantModel(
     signupId = signupId,
@@ -79,11 +39,4 @@ fun MatchSignupDTO.toDomain(): MatchSignupModel = MatchSignupModel(
     rating = rating,
     status = status,
     signedUpAt = signedUpAt
-)
-
-fun ClubScheduleExceptionDTO.toDomain(): ClubScheduleExceptionModel = ClubScheduleExceptionModel(
-    id = id,
-    clubId = clubId,
-    date = date,
-    reason = reason
 )

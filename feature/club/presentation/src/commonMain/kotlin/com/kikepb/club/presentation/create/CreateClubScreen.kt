@@ -57,7 +57,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun CreateClubRoot(
     onBackClick: () -> Unit,
-    onSuccess: () -> Unit,
+    onSuccess: (clubId: String, logoUploadFailed: Boolean) -> Unit,
     viewModel: CreateClubViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -75,7 +75,7 @@ fun CreateClubRoot(
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
-            CreateClubEvent.Success -> onSuccess()
+            is CreateClubEvent.Success -> onSuccess(event.clubId, event.logoUploadFailed)
             is CreateClubEvent.Error -> scope.launch {
                 snackbarHostState.showSnackbar(event.message.asStringAsync())
             }
@@ -175,7 +175,7 @@ fun CreateClubScreen(
                             maxHeightInLines = 4
                         )
                         Text(
-                            text = "Opcional · Máx. 2000 caracteres",
+                            text = state.descriptionError?.asString() ?: "Opcional · Máx. 2000 caracteres",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.extended.textPlaceholder
                         )

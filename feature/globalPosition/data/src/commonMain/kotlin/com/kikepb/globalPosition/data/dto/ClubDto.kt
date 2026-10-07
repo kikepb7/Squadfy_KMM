@@ -5,24 +5,17 @@ import kotlinx.serialization.Serializable
 typealias ClubId = String
 typealias UserId = String
 
+/** `ClubDto` of the backend API v1 (`GET /clubs`). The weekly schedule is a separate resource (spec 004). */
 @Serializable
 data class ClubDto(
     val id: ClubId,
     val name: String,
-    val description: String?,
-    val clubLogoUrl: String?,
+    val description: String? = null,
+    val clubLogoUrl: String? = null,
     val ownerId: UserId,
     val invitationCode: String,
-    val maxMembers: Int?,
-    val membersCount: Int,
-    // Schedule fields are optional in the contract: defaults keep decoding working against
-    // backends that do not send them yet (kotlinx.serialization treats params without defaults as required).
-    val matchDayOfWeek: String? = null,
-    val matchStartTime: String? = null,
-    val matchEndTime: String? = null,
-    val seasonStartMonth: Int = 9,
-    val seasonStartDay: Int = 1,
-    val drawTime: String = "18:00:00",
-    val createdAt: String,
-    val updatedAt: String
+    val maxMembers: Int? = null,
+    val membersCount: Int = 0,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
 )

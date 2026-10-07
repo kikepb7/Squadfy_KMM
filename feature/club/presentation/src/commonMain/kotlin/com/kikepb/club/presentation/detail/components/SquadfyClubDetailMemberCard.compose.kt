@@ -21,7 +21,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kikepb.club.domain.model.ClubMemberModel
-import com.kikepb.club.presentation.utils.initialsOf
+import com.kikepb.club.presentation.mapper.initialsOf
+import com.kikepb.club.presentation.mapper.label
+import org.jetbrains.compose.resources.stringResource
 import com.kikepb.core.designsystem.components.avatar.AvatarSize
 import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
 import com.kikepb.core.designsystem.theme.extended
@@ -59,9 +61,9 @@ fun SquadfyClubDetailMemberCard(member: ClubMemberModel, onClick: () -> Unit) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (!member.position.isNullOrBlank()) {
+                if (member.position != null) {
                     Text(
-                        text = member.position.orEmpty(),
+                        text = stringResource(member.position.label),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.extended.textPlaceholder,
                         maxLines = 1

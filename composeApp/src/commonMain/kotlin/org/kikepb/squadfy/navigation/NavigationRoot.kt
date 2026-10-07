@@ -95,19 +95,7 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                     }
                 }
             )
-            setupGraph(
-                navController = navController,
-                onSetupComplete = {
-                    navController.navigate(route = GlobalPositionGraph) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            inclusive = false
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
-            )
+            setupGraph(navController = navController)
             clubGraph(navController = navController)
             if (isPreEnvironment) {
                 composable<FeatureFlagsRoute> {

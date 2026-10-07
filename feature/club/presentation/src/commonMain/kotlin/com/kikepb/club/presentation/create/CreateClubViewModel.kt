@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.club.domain.model.CreateClubError.BlankName
+import com.kikepb.club.domain.model.CreateClubError.DescriptionTooLong
 import com.kikepb.club.domain.model.CreateClubError.InvalidMaxMembers
 import com.kikepb.club.domain.model.CreateClubError.NameTooLong
 import com.kikepb.club.domain.model.CreateClubError.Remote
@@ -39,12 +40,12 @@ class CreateClubViewModel(
             OnCreateClub -> createClub()
             is OnLogoSelected -> _state.update { it.copy(logoSelection = PickedImage(bytes = action.bytes, mimeType = action.mimeType)) }
             OnClearLogoSelection -> _state.update { it.copy(logoSelection = null) }
-            OnClearErrors -> _state.update { it.copy(nameError = null, maxMembersError = null) }
+            OnClearErrors -> _state.update { it.copy(nameError = null, descriptionError = null, maxMembersError = null) }
         }
     }
 
     private fun createClub() {
-        _state.update { it.copy(isLoading = true, nameError = null, maxMembersError = null) }
+        _state.update { it.copy(isLoading = true, nameError = null, descriptionError = null, maxMembersError = null) }
 
         viewModelScope.launch {
             when (val result = createClubUseCase(
@@ -56,10 +57,13 @@ class CreateClubViewModel(
             )) {
                 is Success -> {
                     _state.update { it.copy(isLoading = false) }
-                    eventChannel.send(CreateClubEvent.Success)
+                    eventChannel.send(
+                        CreateClubEvent.Success(clubId = result.data.club.id, logoUploadFailed = result.data.logoUploadFailed)
+                    )
                 }
                 is Failure -> when (val error = result.error) {
                     BlankName, NameTooLong -> _state.update { it.copy(isLoading = false, nameError = error.toUiText()) }
+                    DescriptionTooLong -> _state.update { it.copy(isLoading = false, descriptionError = error.toUiText()) }
                     InvalidMaxMembers -> _state.update { it.copy(isLoading = false, maxMembersError = error.toUiText()) }
                     is Remote -> {
                         _state.update { it.copy(isLoading = false) }
@@ -78,6 +82,7 @@ data class CreateClubState(
     val logoSelection: PickedImage? = null,
     val isLoading: Boolean = false,
     val nameError: UiText? = null,
+    val descriptionError: UiText? = null,
     val maxMembersError: UiText? = null
 ) {
     val canSubmit: Boolean get() = nameState.text.isNotBlank() && !isLoading
@@ -91,6 +96,6 @@ sealed interface CreateClubAction {
 }
 
 sealed interface CreateClubEvent {
-    data object Success : CreateClubEvent
+    data class Success(val clubId: String, val logoUploadFailed: Boolean) : CreateClubEvent
     data class Error(val message: UiText) : CreateClubEvent
 }

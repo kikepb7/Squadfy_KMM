@@ -1,15 +1,13 @@
 package com.kikepb.club.domain.usecase
 
-import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.club.domain.model.CreateClubError
-import com.kikepb.club.domain.model.CreateClubError.BlankName
-import com.kikepb.club.domain.model.CreateClubError.NameTooLong
-import com.kikepb.club.domain.model.CreateClubError.Remote
+import com.kikepb.club.domain.model.CreatedClub
 import com.kikepb.club.domain.repository.ClubRepository
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.Result.Failure
 import com.kikepb.core.domain.util.Result.Success
 
+/** BE-001 validation (name ≤ 120, description ≤ 2000, maxMembers > 0) plus the optional logo (AC-003-03). */
 class CreateClubUseCase(private val clubRepository: ClubRepository) {
 
     suspend operator fun invoke(
@@ -18,49 +16,36 @@ class CreateClubUseCase(private val clubRepository: ClubRepository) {
         maxMembersRaw: String?,
         logoBytes: ByteArray?,
         logoMimeType: String?
-    ): Result<ClubModel, CreateClubError> {
-
-        if (name.isBlank()) return Failure(error = BlankName)
-        if (name.length > MAX_NAME_LENGTH) return Failure(error = NameTooLong)
-
-        val maxMembers = when (val result = parseMaxMembers(maxMembersRaw)) {
-            is Success -> result.data
-            is Failure -> return Failure(error = result.error)
+    ): Result<CreatedClub, CreateClubError> {
+        val trimmedName = name.trim()
+        if (trimmedName.isBlank()) return Failure(CreateClubError.BlankName)
+        if (trimmedName.length > ClubValidation.MAX_NAME_LENGTH) return Failure(CreateClubError.NameTooLong)
+        if ((description?.length ?: 0) > ClubValidation.MAX_DESCRIPTION_LENGTH) return Failure(CreateClubError.DescriptionTooLong)
+        val maxMembers = when {
+            maxMembersRaw.isNullOrBlank() -> null
+            else -> maxMembersRaw.trim().toIntOrNull()?.takeIf { it > 0 } ?: return Failure(CreateClubError.InvalidMaxMembers)
         }
 
         val club = when (val result = clubRepository.createClub(
-            name = name,
-            description = description,
-            clubLogoUrl = null,
+            name = trimmedName,
+            description = description?.trim()?.ifBlank { null },
             maxMembers = maxMembers
         )) {
             is Success -> result.data
-            is Failure -> return Failure(error = Remote(dataError = result.error))
+            is Failure -> return Failure(CreateClubError.Remote(result.error))
         }
 
-        if (logoBytes != null && logoMimeType != null) {
-            return when (val result = clubRepository.uploadClubLogo(
-                clubId = club.id,
-                bytes = logoBytes,
-                mimeType = logoMimeType
-            )) {
-                is Success -> Success(data = result.data)
-                is Failure -> Failure(error = Remote(dataError = result.error))
-            }
+        if (logoBytes == null || logoMimeType == null) return Success(CreatedClub(club = club, logoUploadFailed = false))
+
+        // The club already exists: a failed logo must not make the user retry (and duplicate) the creation
+        return when (val logo = clubRepository.uploadClubLogo(clubId = club.id, bytes = logoBytes, mimeType = logoMimeType)) {
+            is Success -> Success(CreatedClub(club = logo.data, logoUploadFailed = false))
+            is Failure -> Success(CreatedClub(club = club, logoUploadFailed = true))
         }
-
-        return Success(club)
     }
+}
 
-    private fun parseMaxMembers(raw: String?): Result<Int?, CreateClubError> {
-        if (raw.isNullOrBlank()) return Success(null)
-        val n = raw.trim().toIntOrNull()
-        return if (n != null && n >= MIN_MEMBERS) Success(n)
-        else Failure(CreateClubError.InvalidMaxMembers)
-    }
-
-    companion object {
-        private const val MAX_NAME_LENGTH = 120
-        private const val MIN_MEMBERS = 1
-    }
+object ClubValidation {
+    const val MAX_NAME_LENGTH = 120
+    const val MAX_DESCRIPTION_LENGTH = 2000
 }

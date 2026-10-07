@@ -39,7 +39,14 @@ import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailBanner
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailClassificationTab
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailMembersTab
-import com.kikepb.club.presentation.detail.components.SquadfyClubDetailSettingsTab
+import com.kikepb.club.presentation.settings.ClubSettingsTab
+import org.jetbrains.compose.resources.stringResource
+import squadfy_app.feature.club.presentation.generated.resources.Res
+import squadfy_app.feature.club.presentation.generated.resources.club_detail_load_error
+import squadfy_app.feature.club.presentation.generated.resources.club_detail_load_error_hint
+import squadfy_app.feature.club.presentation.generated.resources.club_detail_loading
+import squadfy_app.feature.club.presentation.generated.resources.club_detail_title
+import squadfy_app.feature.club.presentation.generated.resources.common_retry
 import com.kikepb.club.presentation.detail.components.SquadfyClubDetailTabRow
 import com.kikepb.club.presentation.match.MatchRoot
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
@@ -53,6 +60,8 @@ import org.koin.compose.viewmodel.koinViewModel
 fun ClubDetailRoot(
     onBackClick: () -> Unit,
     onMemberClick: (clubId: String, memberId: String) -> Unit,
+    onOpenBans: (clubId: String) -> Unit,
+    onLeftClub: () -> Unit,
     viewModel: ClubDetailViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -71,6 +80,8 @@ fun ClubDetailRoot(
         onAction = viewModel::onAction,
         onBackClick = onBackClick,
         onMemberClick = onMemberClick,
+        onOpenBans = onOpenBans,
+        onLeftClub = onLeftClub,
         snackbarHostState = snackbarHostState
     )
 }
@@ -82,6 +93,8 @@ fun ClubDetailScreen(
     onAction: (ClubDetailAction) -> Unit,
     onBackClick: () -> Unit,
     onMemberClick: (clubId: String, memberId: String) -> Unit,
+    onOpenBans: (clubId: String) -> Unit,
+    onLeftClub: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     val club = state.club
@@ -89,7 +102,7 @@ fun ClubDetailScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
-        topBar = { SquadfyTopBar(title = "Detalles del club", onBackClick = onBackClick) },
+        topBar = { SquadfyTopBar(title = club?.name ?: stringResource(Res.string.club_detail_title), onBackClick = onBackClick) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         when {
@@ -106,6 +119,8 @@ fun ClubDetailScreen(
                 selectedTabIndex = selectedTabIndex,
                 onTabSelected = { selectedTabIndex = it },
                 onMemberClick = { memberId -> onMemberClick(club.id, memberId) },
+                onOpenBans = { onOpenBans(club.id) },
+                onLeftClub = onLeftClub,
                 snackbarHostState = snackbarHostState,
                 modifier = Modifier.padding(padding)
             )
@@ -120,6 +135,8 @@ private fun ClubContent(
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
     onMemberClick: (String) -> Unit,
+    onOpenBans: () -> Unit,
+    onLeftClub: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
@@ -140,7 +157,13 @@ private fun ClubContent(
                 0 -> SquadfyClubDetailClassificationTab(club = club, members = state.members, onMemberClick = onMemberClick)
                 1 -> SquadfyClubDetailMembersTab(members = state.members, onMemberClick = onMemberClick)
                 2 -> MatchRoot(snackbarHostState = snackbarHostState)
-                3 -> SquadfyClubDetailSettingsTab(club = club)
+                3 -> ClubSettingsTab(
+                    club = club,
+                    myMembership = state.myMembership,
+                    snackbarHostState = snackbarHostState,
+                    onOpenBans = onOpenBans,
+                    onLeftClub = onLeftClub
+                )
             }
         }
     }
@@ -159,7 +182,7 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
                 strokeWidth = 3.dp
             )
             Text(
-                text = "Cargando club...",
+                text = stringResource(Res.string.club_detail_loading),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.extended.textPlaceholder
             )
@@ -186,18 +209,18 @@ private fun EmptyContent(modifier: Modifier = Modifier, onRetry: () -> Unit) {
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
             )
             Text(
-                text = "No se pudo cargar el club",
+                text = stringResource(Res.string.club_detail_load_error),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.extended.textSecondary,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Comprueba tu conexión e inténtalo de nuevo.",
+                text = stringResource(Res.string.club_detail_load_error_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.extended.textPlaceholder,
                 textAlign = TextAlign.Center
             )
-            SquadfyButton(text = "Reintentar", onClick = onRetry)
+            SquadfyButton(text = stringResource(Res.string.common_retry), onClick = onRetry)
         }
     }
 }

@@ -1,5 +1,10 @@
 package com.kikepb.club.presentation.join
 
+import com.kikepb.club.presentation.components.PositionChips
+import org.jetbrains.compose.resources.stringResource
+import squadfy_app.feature.club.presentation.generated.resources.Res
+import squadfy_app.feature.club.presentation.generated.resources.join_position_title
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -41,7 +46,7 @@ import com.kikepb.club.presentation.join.JoinClubEvent.Success
 @Composable
 fun JoinClubRoot(
     onBackClick: () -> Unit,
-    onSuccess: () -> Unit,
+    onSuccess: (clubId: String) -> Unit,
     viewModel: JoinClubViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -50,7 +55,7 @@ fun JoinClubRoot(
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
-            Success -> onSuccess()
+            is Success -> onSuccess(event.clubId)
             is Error -> scope.launch {
                 snackbarHostState.showSnackbar(event.message.asStringAsync())
             }
@@ -135,20 +140,21 @@ fun JoinClubScreen(
                         placeholder = "Ej: 10",
                         singleLine = true,
                         isError = state.shirtNumberError != null,
-                        supportingText = state.shirtNumberError?.asString() ?: "Opcional · Entre 1 y 99",
+                        supportingText = state.shirtNumberError?.asString() ?: "Opcional · Entre 1 y 999",
                         keyboardType = KeyboardType.Number
                     )
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
 
-                    SquadfyTextField(
-                        state = state.positionState,
-                        modifier = Modifier.fillMaxWidth(),
-                        title = "Posición",
-                        placeholder = "Ej: Delantero centro",
-                        singleLine = true,
-                        supportingText = "Opcional · Máx. 120 caracteres",
-                        keyboardType = KeyboardType.Text
+                    Text(
+                        text = stringResource(Res.string.join_position_title),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.extended.textSecondary
+                    )
+                    PositionChips(
+                        selected = state.position,
+                        onSelected = { onAction(JoinClubAction.OnPositionSelected(it)) },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

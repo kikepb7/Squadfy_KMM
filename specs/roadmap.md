@@ -9,7 +9,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 |---|---|---|---|---|---|---|---|
 | 001 | Base de calidad (build, tests, CI) | **In progress** (9/16) | ✅ | — | ✅ | — | 1 d restante |
 | 002 | Base de la API v1: red, errores, auth, perfil, chat, dispositivos | **In progress** (14/16; falta el E2E con el backend y `Clock`, que pasa a la 005) | ✅ | ✅ | ✅ | 001 | 4 d |
-| 003 | Clubes y membresía (roles, vetos, transferencia, Room v3) | **In progress** (fase 1 de dominio hecha) | ✅ | ✅ | ✅ | 002 | 5 d |
+| 003 | Clubes y membresía (roles, vetos, transferencia, Room v3) | **In progress** (15/16; falta el E2E) | ✅ | ✅ | ✅ | 002 | 5 d |
 | 004 | Horario semanal | Draft | ✅ | — | — | 003 | 1,5 d |
 | 005 | Convocatoria vigente y lista de espera | Draft | ✅ | ✅ | ✅ | 003 | 3 d |
 | 006 | Detalle del partido, equipos y equilibrio | Draft | ✅ | — | — | 005 | 3 d |

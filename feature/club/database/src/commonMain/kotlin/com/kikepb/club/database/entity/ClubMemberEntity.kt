@@ -22,16 +22,10 @@ data class ClubMemberEntity(
     val clubId: String,
     val userId: String,
     val username: String,
-    val email: String,
     val shirtNumber: Int?,
     val profilePictureUrl: String?,
+    /** `PlayerPosition` name or null. */
     val position: String?,
-    val rating: Int,
-    val goalsScored: Int,
-    val assists: Int,
-    val yellowCards: Int,
-    val redCards: Int,
-    val minutesPlayed: Int,
-    val matchesPlayed: Int,
+    /** `ClubMemberRole` name. */
     val role: String
 )
