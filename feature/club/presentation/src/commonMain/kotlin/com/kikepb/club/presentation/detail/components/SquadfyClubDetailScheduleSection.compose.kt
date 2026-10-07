@@ -134,17 +134,19 @@ fun SquadfyClubDetailScheduleSection(
                         )
                     }
 
-                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+                    if (state.isDrawTimeEnabled) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
 
-                    SquadfyTextField(
-                        state = drawTimeState,
-                        modifier = Modifier.fillMaxWidth(),
-                        title = "Hora del sorteo (sábado)",
-                        placeholder = "18:00",
-                        singleLine = true,
-                        keyboardType = KeyboardType.Text,
-                        supportingText = "El sorteo automático de equipos se hace el sábado a esta hora"
-                    )
+                        SquadfyTextField(
+                            state = drawTimeState,
+                            modifier = Modifier.fillMaxWidth(),
+                            title = "Hora del sorteo (sábado)",
+                            placeholder = "18:00",
+                            singleLine = true,
+                            keyboardType = KeyboardType.Text,
+                            supportingText = "El sorteo automático de equipos se hace el sábado a esta hora"
+                        )
+                    }
 
                     state.message?.let { message ->
                         Text(text = message.asString(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
@@ -169,7 +171,7 @@ fun SquadfyClubDetailScheduleSection(
             }
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (state.isExceptionsEnabled) Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SquadfyClubDetailTabSectionTitle("Días excepcionales (vacaciones, festivos)")
             Surface(
                 modifier = Modifier.fillMaxWidth(),

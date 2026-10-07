@@ -96,26 +96,30 @@ fun GlobalPositionScreen(
                 )
             }
 
-            item(key = "spacer_matches") { Spacer(modifier = Modifier.height(8.dp)) }
-            item(key = "header_matches") {
-                SectionHeader(title = stringResource(RString.squadfy_global_position_last_matches), modifier = Modifier.fillMaxWidth())
-            }
-            items(
-                items = state.matches,
-                key = { "match_${it.id}" }
-            ) { match ->
-                MatchCard(match = match)
+            if (state.showRecentMatches) {
+                item(key = "spacer_matches") { Spacer(modifier = Modifier.height(8.dp)) }
+                item(key = "header_matches") {
+                    SectionHeader(title = stringResource(RString.squadfy_global_position_last_matches), modifier = Modifier.fillMaxWidth())
+                }
+                items(
+                    items = state.matches,
+                    key = { "match_${it.id}" }
+                ) { match ->
+                    MatchCard(match = match)
+                }
             }
 
-            item(key = "spacer_news") { Spacer(modifier = Modifier.height(8.dp)) }
-            item(key = "header_news") {
-                SectionHeader(title = stringResource(RString.squadfy_global_position_last_news), modifier = Modifier.fillMaxWidth())
-            }
-            items(
-                items = state.news,
-                key = { "news_${it.id}" }
-            ) { newsItem ->
-                NewsCard(news = newsItem)
+            if (state.showNews) {
+                item(key = "spacer_news") { Spacer(modifier = Modifier.height(8.dp)) }
+                item(key = "header_news") {
+                    SectionHeader(title = stringResource(RString.squadfy_global_position_last_news), modifier = Modifier.fillMaxWidth())
+                }
+                items(
+                    items = state.news,
+                    key = { "news_${it.id}" }
+                ) { newsItem ->
+                    NewsCard(news = newsItem)
+                }
             }
         }
     }

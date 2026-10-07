@@ -21,6 +21,8 @@ permissions:
 #   GOOGLE_SERVICES_JSON   → full contents of composeApp/google-services.json (gitignored)
 env:
   API_KEY: ${{ secrets.SQUADFY_API_KEY }}
+  # Feature flag environment (spec 013). CI validates PRE; the production release job will set `pro`.
+  SQUADFY_ENV: pre
 
 jobs:
   unit-tests:

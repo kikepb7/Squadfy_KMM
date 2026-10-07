@@ -90,7 +90,7 @@ fun MatchScreen(state: MatchState, onAction: (MatchAction) -> Unit) {
 
         when {
             state.match == null -> item {
-                NoMatchContent(isAdmin = state.isAdmin, isLoading = state.isPerformingAction, onCreateMatch = { onAction(MatchAction.OnCreateTestMatch) })
+                NoMatchContent(isAdmin = state.isAdmin && state.isTestMatchEnabled, isLoading = state.isPerformingAction, onCreateMatch = { onAction(MatchAction.OnCreateTestMatch) })
             }
             else -> {
                 val match = state.match
@@ -124,7 +124,7 @@ fun MatchScreen(state: MatchState, onAction: (MatchAction) -> Unit) {
                     "TEAMS_GENERATED" -> {
                         item { TeamSection(title = "Equipo A", participants = match.teamA, state = state, onAction = onAction) }
                         item { TeamSection(title = "Equipo B", participants = match.teamB, state = state, onAction = onAction) }
-                        if (state.isAdmin) {
+                        if (state.isAdmin && state.isManualScoreEnabled) {
                             item {
                                 SquadfyButton(
                                     text = "Registrar resultado",
@@ -145,10 +145,10 @@ fun MatchScreen(state: MatchState, onAction: (MatchAction) -> Unit) {
         }
     }
 
-    if (state.showAddGuestDialog) {
+    if (state.showAddGuestDialog && state.isGuestsEnabled) {
         AddGuestDialog(state = state, onAction = onAction)
     }
-    if (state.showResultDialog) {
+    if (state.showResultDialog && state.isManualScoreEnabled) {
         ResultDialog(state = state, onAction = onAction)
     }
 }
@@ -248,12 +248,14 @@ private fun SignupActionsRow(state: MatchState, onAction: (MatchAction) -> Unit)
 
         if (state.isAdmin) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                SquadfyButton(
-                    text = "Añadir invitado",
-                    onClick = { onAction(MatchAction.OnShowAddGuestDialog) },
-                    style = SquadfyButtonStyle.SECONDARY,
-                    modifier = Modifier.weight(1f)
-                )
+                if (state.isGuestsEnabled) {
+                    SquadfyButton(
+                        text = "Añadir invitado",
+                        onClick = { onAction(MatchAction.OnShowAddGuestDialog) },
+                        style = SquadfyButtonStyle.SECONDARY,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
                 SquadfyButton(
                     text = "Sortear equipos",
                     onClick = { onAction(MatchAction.OnGenerateTeams) },

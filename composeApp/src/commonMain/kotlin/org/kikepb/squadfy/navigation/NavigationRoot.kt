@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.authGraph
@@ -18,14 +19,20 @@ import com.kikepb.club.presentation.navigation.clubGraph
 import com.kikepb.club.presentation.navigation.setupGraph
 import com.kikepb.core.designsystem.components.navigation.SquadfyBottomBar
 import com.kikepb.core.designsystem.components.navigation.SquadfyBottomBarItemModel
+import com.kikepb.core.domain.featureflag.AppEnvironment
 import com.kikepb.globalPosition.presentation.navigation.GlobalPositionGraphRoutes.GlobalPositionGraph
 import com.kikepb.globalPosition.presentation.navigation.globalPositionGraph
+import org.kikepb.squadfy.debug.FeatureFlagsRoot
+import org.kikepb.squadfy.debug.FeatureFlagsRoute
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.Chat
+import org.koin.compose.koinInject
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.GlobalPosition
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.Setup
 
 @Composable
 fun NavigationRoot(navController: NavHostController, startDestination: Any) {
+    // Feature flags debug screen only exists in PRE builds (spec 013, AC-013-06)
+    val isPreEnvironment = koinInject<AppEnvironment>() == AppEnvironment.PRE
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -73,6 +80,9 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
             globalPositionGraph(
                 onNavigateToClub = { clubId ->
                     navController.navigate(ClubDetailRoute(clubId = clubId))
+                },
+                onNavigateToSettings = {
+                    if (isPreEnvironment) navController.navigate(FeatureFlagsRoute)
                 }
             )
             chatGraph(
@@ -99,6 +109,11 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                 }
             )
             clubGraph(navController = navController)
+            if (isPreEnvironment) {
+                composable<FeatureFlagsRoute> {
+                    FeatureFlagsRoot(onBackClick = { navController.navigateUp() })
+                }
+            }
         }
     }
 }

@@ -35,6 +35,8 @@ import com.kikepb.club.presentation.match.MatchAction.OnShowResultDialog
 import com.kikepb.club.presentation.match.MatchAction.OnSignUp
 import com.kikepb.club.presentation.match.MatchEvent.ShowMessage
 import com.kikepb.core.domain.auth.repository.SessionStorage
+import com.kikepb.core.domain.featureflag.FeatureFlag
+import com.kikepb.core.domain.featureflag.FeatureFlags
 import com.kikepb.core.domain.util.Result.Failure
 import com.kikepb.core.domain.util.Result.Success
 import com.kikepb.core.presentation.mapper.toUiText
@@ -63,6 +65,7 @@ class MatchViewModel(
     private val recordMatchResultUseCase: RecordMatchResultUseCase,
     private val getClubMembersUseCase: GetClubMembersUseCase,
     private val sessionStorage: SessionStorage,
+    private val featureFlags: FeatureFlags,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -77,13 +80,18 @@ class MatchViewModel(
     val state = combine(
         flow = _state,
         flow2 = getClubMembersUseCase(clubId = clubId),
-        flow3 = sessionStorage.observeAuthInfo()
-    ) { current, members, authInfo ->
+        flow3 = sessionStorage.observeAuthInfo(),
+        flow4 = featureFlags.observeAll()
+    ) { current, members, authInfo, flags ->
         val myMembership = members.find { it.userId == authInfo?.user?.id }
+        val enabledFlags = flags.filter { it.enabled }.map { it.flag }.toSet()
         current.copy(
             members = members,
             myMemberId = myMembership?.id,
-            isAdmin = myMembership?.role == "OWNER" || myMembership?.role == "ADMIN"
+            isAdmin = myMembership?.role == "OWNER" || myMembership?.role == "ADMIN",
+            isGuestsEnabled = FeatureFlag.MATCH_GUESTS in enabledFlags,
+            isTestMatchEnabled = FeatureFlag.DEV_TEST_MATCH in enabledFlags,
+            isManualScoreEnabled = FeatureFlag.MANUAL_SCORE in enabledFlags
         )
     }
         .onStart { refresh() }
@@ -137,6 +145,7 @@ class MatchViewModel(
     }
 
     private fun createTestMatch() {
+        if (!featureFlags.isEnabled(FeatureFlag.DEV_TEST_MATCH)) return
         _state.update { it.copy(isPerformingAction = true) }
         viewModelScope.launch {
             val now = Clock.System.now()
@@ -202,6 +211,7 @@ class MatchViewModel(
     }
 
     private fun confirmAddGuest() {
+        if (!featureFlags.isEnabled(FeatureFlag.MATCH_GUESTS)) return
         val matchId = _state.value.match?.id ?: return
         val guestName = _state.value.guestNameState.text.toString().trim()
         if (guestName.isBlank()) return
@@ -269,6 +279,7 @@ class MatchViewModel(
     }
 
     private fun confirmResult() {
+        if (!featureFlags.isEnabled(FeatureFlag.MANUAL_SCORE)) return
         val match = _state.value.match ?: return
         val teamAScore = _state.value.teamAScoreState.text.toString().trim().toIntOrNull()
         val teamBScore = _state.value.teamBScoreState.text.toString().trim().toIntOrNull()
@@ -323,7 +334,11 @@ data class MatchState(
     val showAddGuestDialog: Boolean = false,
     val teamAScoreState: TextFieldState = TextFieldState(),
     val teamBScoreState: TextFieldState = TextFieldState(),
-    val showResultDialog: Boolean = false
+    val showResultDialog: Boolean = false,
+    // Feature flags (spec 013): pending backend features and QA tooling
+    val isGuestsEnabled: Boolean = false,
+    val isTestMatchEnabled: Boolean = false,
+    val isManualScoreEnabled: Boolean = false
 ) {
     val mySignup: MatchSignupModel?
         get() = signups.find { it.clubMemberId == myMemberId && it.status == "CONFIRMED" }

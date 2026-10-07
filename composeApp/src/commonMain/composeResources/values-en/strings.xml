@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feature_flags_title">Feature flags</string>
+    <string name="feature_flags_environment">Environment: %1$s</string>
+    <string name="feature_flags_pre_only_hint">Changes only affect this device and only in PRE builds.</string>
+    <string name="feature_flags_reset">Reset to defaults</string>
+    <string name="feature_flags_source_default">Default</string>
+    <string name="feature_flags_source_remote">Remote</string>
+    <string name="feature_flags_source_override">Local override</string>
+</resources>

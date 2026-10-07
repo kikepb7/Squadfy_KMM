@@ -2,6 +2,8 @@ package com.kikepb.globalPosition.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kikepb.core.domain.featureflag.FeatureFlag
+import com.kikepb.core.domain.featureflag.FeatureFlags
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
 import com.kikepb.globalPosition.domain.usecase.FetchUserClubsUseCase
@@ -33,6 +35,7 @@ class GlobalPositionViewModel(
     private val fetchUserClubsUseCase: FetchUserClubsUseCase,
     private val getRecentMatchesUseCase: GetRecentMatchesUseCase,
     private val getLatestNewsUseCase: GetLatestNewsUseCase,
+    private val featureFlags: FeatureFlags
 ) : ViewModel() {
     private var hasLoadedInitialData = false
 
@@ -40,11 +43,15 @@ class GlobalPositionViewModel(
 
     val state = combine(
         flow = _state,
-        flow2 = getUserClubsUseCase()
-    ) { current, clubs ->
+        flow2 = getUserClubsUseCase(),
+        flow3 = featureFlags.observe(FeatureFlag.HOME_RECENT_MATCHES),
+        flow4 = featureFlags.observe(FeatureFlag.HOME_NEWS)
+    ) { current, clubs, showMatches, showNews ->
         current.copy(
             clubs = clubs.map { it.toUiModel() },
-            isLoadingClubs = false
+            isLoadingClubs = false,
+            showRecentMatches = showMatches,
+            showNews = showNews
         )
     }
         .onStart {
@@ -77,15 +84,16 @@ class GlobalPositionViewModel(
         }
     }
 
+    // Both sections are mock data until spec 010; with their flag off nothing is requested (APP-RN-17)
     private fun loadMatchesAndNews() {
-        viewModelScope.launch {
+        if (featureFlags.isEnabled(FeatureFlag.HOME_RECENT_MATCHES)) viewModelScope.launch {
             getRecentMatchesUseCase()
                 .onSuccess { matches ->
                     _state.update { it.copy(matches = matches.map { m -> m.toUiModel() }, isLoadingMatches = false) }
                 }
                 .onFailure { _state.update { it.copy(isLoadingMatches = false) } }
         }
-        viewModelScope.launch {
+        if (featureFlags.isEnabled(FeatureFlag.HOME_NEWS)) viewModelScope.launch {
             getLatestNewsUseCase()
                 .onSuccess { news ->
                     _state.update { it.copy(news = news.map { n -> n.toUiModel() }, isLoadingNews = false) }
@@ -101,7 +109,9 @@ data class GlobalPositionUiState(
     val news: List<NewsUiModel> = emptyList(),
     val isLoadingClubs: Boolean = true,
     val isLoadingMatches: Boolean = true,
-    val isLoadingNews: Boolean = true
+    val isLoadingNews: Boolean = true,
+    val showRecentMatches: Boolean = false,
+    val showNews: Boolean = false
 )
 
 sealed interface GlobalPositionAction {

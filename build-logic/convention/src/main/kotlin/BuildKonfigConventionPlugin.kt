@@ -15,6 +15,10 @@ import org.gradle.kotlin.dsl.configure
 private const val DEFAULT_BASE_URL_HTTP = "http://10.0.2.2:8080/api"
 private const val DEFAULT_BASE_URL_WS = "ws://10.0.2.2:8080/ws"
 
+/** Build environment for feature flag defaults (spec 013). CI release jobs for production pass `pro`. */
+private const val DEFAULT_ENVIRONMENT = "pre"
+private val SUPPORTED_ENVIRONMENTS = setOf("pre", "pro")
+
 class BuildKonfigConventionPlugin: Plugin<Project> {
 
     override fun apply(target: Project) {
@@ -43,6 +47,12 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                     buildConfigField(FieldSpec.Type.STRING, "API_KEY", apiKey)
                     buildConfigField(FieldSpec.Type.STRING, "BASE_URL_HTTP", resolve("BASE_URL_HTTP", DEFAULT_BASE_URL_HTTP))
                     buildConfigField(FieldSpec.Type.STRING, "BASE_URL_WS", resolve("BASE_URL_WS", DEFAULT_BASE_URL_WS))
+
+                    val environment = resolve("SQUADFY_ENV", DEFAULT_ENVIRONMENT).lowercase()
+                    check(environment in SUPPORTED_ENVIRONMENTS) {
+                        "Invalid SQUADFY_ENV '$environment'. Expected one of $SUPPORTED_ENVIRONMENTS"
+                    }
+                    buildConfigField(FieldSpec.Type.STRING, "ENVIRONMENT", environment)
                 }
             }
         }
