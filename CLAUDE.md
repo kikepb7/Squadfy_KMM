@@ -47,10 +47,11 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 - **Ramas**: `main` es la principal (el CI se dispara en `main`). Las features van en `feature/NNN-slug`.
 
 ## Trampas conocidas
-- **La app todavía usa las rutas antiguas** (`/api/club`, `/participants`, `/notification`…), que el backend v1 ya no tiene, así que hoy todo da 404. La migración está en las specs 002 a 009; ver `specs/contracts/api-v1.md`.
-- `ClubMemberDto` v1 ya **no** trae `email` ni estadísticas, y el `UserDto` no trae foto. Los DTOs actuales de la app los exigen y fallarían con `SERIALIZATION`.
+- Desde la rama `app-parity-feature`, la app consume la **API v1** (BE-001…BE-008): clubes, horario, convocatorias, partidos, clasificaciones, push y ausencias (specs 002–010 y 014; ver `specs/contracts/api-v1.md`). Lo que el backend aún no tiene (borrado de cuenta, despliegue) está en `specs/contracts/gap-analysis.md`.
+- Las funciones de BE-008 (invitados, semanas especiales, cierre y sorteo configurables, marcador manual y ausencias) están tras feature flags: activas en PRE y apagadas en PRO.
+- `ClubMemberDto` v1 **no** trae `email` ni estadísticas, y el `UserDto` no trae foto: las estadísticas salen de `/stats` y `/ratings` (spec 008). Todo DTO nuevo lleva valores por defecto en los campos opcionales.
 - Los equipos, convocatorias, ratings y estadísticas usan `clubMemberId`, no `userId`.
-- **Feature flags** (spec 013): el trabajo sin terminar o pendiente del backend se oculta tras un `FeatureFlag` con valores por defecto para PRE y PRO; no se borra. Invitados, excepciones de calendario, `drawTime` y marcador manual se mantienen tras sus flags hasta que el backend los implemente (D-1). La valoración es siempre automática (rating).
+- **Feature flags** (spec 013): el trabajo sin terminar o pendiente del backend se oculta tras un `FeatureFlag` con valores por defecto para PRE y PRO; no se borra. Invitados, excepciones de calendario, `drawTime`, marcador manual y ausencias ya están en el backend (BE-008) y en la app, pero siguen tras sus flags (on en PRE y off en PRO) hasta que se den por buenos (D-1). La valoración es siempre automática (rating).
 - Entorno: `-PSQUADFY_ENV=pre|pro` (o la variable de entorno, o `local.properties`); por defecto `pre`.
-- `globalPosition` comparte la base de datos Room de `club` (`SquadfyClubDatabase`).
+- Inicio (`globalPosition`) usa el dominio de `club` y ya no toca Room. Solo conserva los mocks de partidos y noticias, tras `HOME_RECENT_MATCHES`/`HOME_NEWS`.
 - El backend tiene su propio SDD. No lo modifiques salvo que el usuario lo incluya en el alcance; propón specs del backend en `specs/roadmap.md`.
