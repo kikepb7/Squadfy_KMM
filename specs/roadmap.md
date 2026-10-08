@@ -68,8 +68,8 @@ BE-008, BE-009, BE-010 (en paralelo en el backend) ──────▶ 012
 | D-9 | ¿Se muestra el rol `CAPTAIN` con un distintivo? | Sí, solo como etiqueta | 003 |
 | D-10 | Capa remota de flags: ¿Firebase Remote Config o endpoint del backend? | Firebase Remote Config | 013 |
 | D-11 | ¿Instalar PRE junto a PRO (`applicationIdSuffix = ".pre"`)? | Sí, cuando haya backend de PRE | 011, 013 |
-| D-13 | Chat con contenido generado por usuarios: Apple (guideline 1.2) pide denunciar contenido, bloquear usuarios y un contacto publicado. ¿Se añaden denuncia y bloqueo antes de enviar a App Store, o se oculta el chat en la primera versión? | Ocultar el chat tras un flag en la v1 de iOS y añadir denuncia y bloqueo después (necesita una spec del backend) | 012 |
 | D-12 | Tema claro: el verde de marca (`primary`, Brand500) se usa como color de texto en ~40 sitios y sobre blanco da 1,70:1 (no cumple AA). ¿Se cambia el texto de marca en claro a Brand900 (6,96:1) o se fija la app en tema oscuro? | Texto de marca en claro con Brand900 (rol propio), sin tocar los botones | 011 |
+| D-13 | Chat con contenido generado por usuarios: Apple (guideline 1.2) pide denunciar contenido, bloquear usuarios y un contacto publicado. ¿Se añaden denuncia y bloqueo antes de enviar a App Store, o se oculta el chat en la primera versión? | Ocultar el chat tras un flag en la v1 de iOS y añadir denuncia y bloqueo después (necesita una spec del backend) | 012 |
 
 ## Backlog post-MVP
 - Estadísticas por temporada.
