@@ -29,6 +29,14 @@ val SquadfyBase1000Alpha14 = Color(0x140A2E22) // 8% alpha for light mode surfac
 val SquadfyBase100Alpha10Alt = Color(0x1AF3F5EF) // 10% alpha for dark mode surface outline
 val SquadfyBase0 = Color(0xFFFFFFFF)
 
+// Dark theme surfaces: the original Squadfy blue-slate tones, kept at the owner's request (spec 016).
+// Brand accents (lime, Squad Green) and the light theme follow the brand kit.
+val SquadfyDark1000 = Color(0xFF101C28) // background, surfaceLower
+val SquadfyDark1000Alpha80 = Color(0xCC101C28) // scrim
+val SquadfyDark950 = Color(0xFF1C2A39) // surface
+val SquadfyDark900 = Color(0xFF2F3F4F) // raised surface, containers
+val SquadfyDark800 = Color(0xFF475767) // outline variant
+
 // Red Colors (kit "red card" #D93636)
 val SquadfyRed600 = Color(0xFFB02A2A)
 val SquadfyRed500 = Color(0xFFCC3131) // kit red card #D93636 darkened for AA: 4.72:1 on Chalk, 5.18:1 with white content

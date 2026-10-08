@@ -17,4 +17,5 @@ Aplicar la identidad del kit en toda la app: iconos, splash, logo en la interfaz
 ## Decisiones
 - Los nombres de los tokens (`SquadfyBrand*`, `SquadfyBase*`, `SquadfyRed*`) se mantienen y solo cambian sus valores, así que todos los usos adoptan la paleta sin tocar las pantallas.
 - El rojo del kit (`#D93636`) se oscurece a `#CC3131` en el tema claro para cumplir AA sobre Chalk. En el oscuro se usa `#F9A3A3`.
+- **Tema oscuro (petición del owner, 2026-10-08):** los fondos y superficies vuelven a los tonos azul pizarra originales (`#101C28`, `#1C2A39`, `#2F3F4F`) mediante los tokens `SquadfyDark*`. Los acentos de marca (lima y Squad Green), el tema claro y el splash siguen el kit. La auditoría de contraste sigue en verde: el peor par del tema oscuro está en 5,21:1.
 - El degradado del banner del club queda Night Pitch → Squad Green, para que el texto blanco cumpla AA.

@@ -128,12 +128,12 @@ val DarkExtendedColors = ExtendedColors(
     primaryHover = SquadfyBrand600,
     destructiveHover = SquadfyRed600,
     destructiveSecondaryOutline = SquadfyRed200,
-    disabledOutline = SquadfyBase900,
-    disabledFill = SquadfyBase1000,
+    disabledOutline = SquadfyDark900,
+    disabledFill = SquadfyDark1000,
     successOutline = SquadfyBrand500Alpha40,
     success = SquadfyBrand500,
     onSuccess = SquadfyBase1000,
-    secondaryFill = SquadfyBase900,
+    secondaryFill = SquadfyDark900,
 
     textPrimary = SquadfyBase100, // Chalk: text on dark (brand kit)
     textTertiary = SquadfyBase200,
@@ -141,10 +141,10 @@ val DarkExtendedColors = ExtendedColors(
     textPlaceholder = SquadfyBase400,
     textDisabled = SquadfyBase500,
 
-    surfaceLower = SquadfyBase1000,
-    surfaceHigher = SquadfyBase900,
+    surfaceLower = SquadfyDark1000,
+    surfaceHigher = SquadfyDark900,
     surfaceOutline = SquadfyBase100Alpha10Alt,
-    overlay = SquadfyBase1000Alpha80,
+    overlay = SquadfyDark1000Alpha80,
 
     accentBlue = SquadfyBlue,
     accentPurple = SquadfyPurple,
@@ -216,7 +216,7 @@ val DarkColorScheme = darkColorScheme(
 
     secondary = SquadfyBase400,
     onSecondary = SquadfyBase1000,
-    secondaryContainer = SquadfyBase900,
+    secondaryContainer = SquadfyDark900,
     onSecondaryContainer = SquadfyBase150,
 
     tertiary = SquadfyBrand500,
@@ -231,13 +231,13 @@ val DarkColorScheme = darkColorScheme(
     errorContainer = SquadfyRed600,
     onErrorContainer = SquadfyRed200,
 
-    background = SquadfyBase1000,
+    background = SquadfyDark1000,
     onBackground = SquadfyBase0,
-    surface = SquadfyBase950,
+    surface = SquadfyDark950,
     onSurface = SquadfyBase0,
-    surfaceVariant = SquadfyBase900,
+    surfaceVariant = SquadfyDark900,
     onSurfaceVariant = SquadfyBase150,
 
     outline = SquadfyBase100Alpha10,
-    outlineVariant = SquadfyBase800,
+    outlineVariant = SquadfyDark800,
 )
