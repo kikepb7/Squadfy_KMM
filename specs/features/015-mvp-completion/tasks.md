@@ -8,6 +8,6 @@
 - [x] **T-006** Tiempo real: `CLUB_DATA_CHANGED` → refresco de Partido, horario y ausencias (AC-015-06). `ClubLiveUpdates` en `core/domain` y `WebSocketClubLiveUpdates` en `chat/data`, sobre el mismo socket. El flujo del conector pasa a compartido (`shareIn`): antes, cada colector habría abierto su propio WebSocket. Partido se refresca con cualquier cambio del club; el detalle, solo con su partido; Horario con `SCHEDULE` y Ausencias con `ABSENCES`. Tests: parseo (3), Partido y detalle de partido.
 - [x] **T-007** Estadísticas por periodo (AC-015-07). `StatsPeriod` (todo, este año y últimos 30 días; «hoy» en la zona horaria del club) → `from`/`to` inclusivos en `GET /stats`; chips en Clasificación › Estadísticas. Tests: VM (rangos) y MockEngine (parámetros).
 - [x] **T-008** Workflow de release: staging para `release/*`, producción para los tags (AC-015-08). Los candidatos se llaman `X.Y.Z-rc.N` (`-PversionNameSuffix`) y usan `STAGING_BASE_URL_*`; los tags `vX.Y.Z` usan `PRO_BASE_URL_*`. Verificado: el APK con el sufijo sale como `1.0.0-rc.7`.
-- [ ] **T-009** Eliminar los mocks de Inicio y sus flags (AC-015-09).
+- [x] **T-009** Eliminar los mocks de Inicio y sus flags (AC-015-09). Se retiran `HOME_RECENT_MATCHES` y `HOME_NEWS`, los componentes, mappers y modelos de ejemplo, sus textos y los módulos `feature:globalPosition:domain`/`data`, que solo contenían datos de ejemplo.
 - [ ] **T-010** Contrato y gap analysis (AC-015-10).
 - [ ] **T-011** Verificación: tests, builds, iOS y E2E contra el backend local actualizado.

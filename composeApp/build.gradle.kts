@@ -49,8 +49,6 @@ kotlin {
             implementation(projects.feature.chat.presentation)
 
             // GLOBAL POSITION
-            implementation(projects.feature.globalPosition.data)
-            implementation(projects.feature.globalPosition.domain)
             implementation(projects.feature.globalPosition.presentation)
 
 

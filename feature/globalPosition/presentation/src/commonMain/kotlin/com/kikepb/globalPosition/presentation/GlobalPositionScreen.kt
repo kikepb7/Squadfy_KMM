@@ -39,14 +39,10 @@ import com.kikepb.globalPosition.presentation.GlobalPositionEvent.CopyToClipboar
 import com.kikepb.globalPosition.presentation.GlobalPositionEvent.NavigateToClub
 import com.kikepb.globalPosition.presentation.GlobalPositionEvent.NavigateToSettings
 import com.kikepb.globalPosition.presentation.components.HomeClubCard
-import com.kikepb.globalPosition.presentation.components.MatchCard
-import com.kikepb.globalPosition.presentation.components.NewsCard
 import com.kikepb.globalPosition.presentation.components.SectionHeader
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import squadfy_app.feature.globalposition.presentation.generated.resources.squadfy_global_position_home
-import squadfy_app.feature.globalposition.presentation.generated.resources.squadfy_global_position_last_matches
-import squadfy_app.feature.globalposition.presentation.generated.resources.squadfy_global_position_last_news
 import squadfy_app.feature.globalposition.presentation.generated.resources.squadfy_global_position_my_clubs
 import squadfy_app.feature.globalposition.presentation.generated.resources.Res.string as RString
 
@@ -127,32 +123,6 @@ fun GlobalPositionScreen(
                     onEnroll = { onAction(GlobalPositionAction.OnEnrollClick(card.club.id)) },
                     onRetry = { onAction(GlobalPositionAction.OnRetryClub(card.club.id)) }
                 )
-            }
-
-            if (state.showRecentMatches) {
-                item(key = "spacer_matches") { Spacer(modifier = Modifier.height(8.dp)) }
-                item(key = "header_matches") {
-                    SectionHeader(title = stringResource(RString.squadfy_global_position_last_matches), modifier = Modifier.fillMaxWidth())
-                }
-                items(
-                    items = state.matches,
-                    key = { "match_${it.id}" }
-                ) { match ->
-                    MatchCard(match = match)
-                }
-            }
-
-            if (state.showNews) {
-                item(key = "spacer_news") { Spacer(modifier = Modifier.height(8.dp)) }
-                item(key = "header_news") {
-                    SectionHeader(title = stringResource(RString.squadfy_global_position_last_news), modifier = Modifier.fillMaxWidth())
-                }
-                items(
-                    items = state.news,
-                    key = { "news_${it.id}" }
-                ) { newsItem ->
-                    NewsCard(news = newsItem)
-                }
             }
         }
         }

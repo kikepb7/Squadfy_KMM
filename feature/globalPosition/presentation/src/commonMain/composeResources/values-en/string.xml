@@ -2,8 +2,6 @@
 <resources>
     <string name="squadfy_global_position_home">Home</string>
     <string name="squadfy_global_position_my_clubs">My clubs</string>
-    <string name="squadfy_global_position_last_matches">Latest matches</string>
-    <string name="squadfy_global_position_last_news">Latest news</string>
     <string name="home_no_clubs">You are not in any club yet. Join one with a code or create yours from the Clubs tab.</string>
     <string name="home_next_match">Next match · %1$s</string>
     <string name="home_no_match">No scheduled match</string>
@@ -19,6 +17,4 @@
     <string name="home_free_seats">%1$d free spots</string>
     <string name="home_enroll">Sign me up</string>
     <string name="home_enroll_failed">Sign-up failed. Try again from the club.</string>
-    <string name="match_card_vs">VS</string>
-    <string name="match_card_live">LIVE</string>
 </resources>

@@ -58,5 +58,5 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 - Los equipos, convocatorias, ratings y estadísticas usan `clubMemberId`, no `userId`.
 - **Feature flags** (spec 013): el trabajo sin terminar o pendiente del backend se oculta tras un `FeatureFlag` con valores por defecto para PRE y PRO; no se borra. Invitados, excepciones de calendario, `drawTime`, marcador manual y ausencias ya están en el backend (BE-008) y en la app, pero siguen tras sus flags (on en PRE y off en PRO) hasta que se den por buenos (D-1). La valoración es siempre automática (rating).
 - Entorno: `-PSQUADFY_ENV=pre|pro` (o la variable de entorno, o `local.properties`); por defecto `pre`.
-- Inicio (`globalPosition`) usa el dominio de `club` y ya no toca Room. Solo conserva los mocks de partidos y noticias, tras `HOME_RECENT_MATCHES`/`HOME_NEWS`.
+- Inicio (`globalPosition`) solo tiene la capa `presentation`: usa el dominio de `club` y no tiene mocks. Sus módulos `domain` y `data`, que solo servían datos de ejemplo, se retiraron en la spec 015.
 - El backend tiene su propio SDD. No lo modifiques salvo que el usuario lo incluya en el alcance; propón specs del backend en `specs/roadmap.md`.

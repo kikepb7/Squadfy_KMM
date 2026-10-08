@@ -70,19 +70,7 @@ enum class FeatureFlag(
         description = "Button to create a test match with an immediate sign-up window",
         defaultInPre = true,
         defaultInPro = false
-    ),
-    HOME_RECENT_MATCHES(
-        key = "home_recent_matches",
-        description = "Recent matches section on Home (sample data; off in PRE too so tests only see real data)",
-        defaultInPre = false,
-        defaultInPro = false
-    ),
-    HOME_NEWS(
-        key = "home_news",
-        description = "News section on Home (mock data, out of the MVP)",
-        defaultInPre = false,
-        defaultInPro = false
-    );
+    ),;
 
     fun defaultFor(environment: AppEnvironment, platform: AppPlatform = AppPlatform.ANDROID): Boolean = when (environment) {
         AppEnvironment.PRE -> defaultInPre

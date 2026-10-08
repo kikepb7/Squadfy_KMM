@@ -8,13 +8,8 @@ import com.kikepb.club.domain.usecase.FetchMyClubsUseCase
 import com.kikepb.club.domain.usecase.GetCurrentAnnouncementUseCase
 import com.kikepb.club.domain.usecase.GetScheduleUseCase
 import com.kikepb.club.domain.usecase.ObserveMyClubsUseCase
-import com.kikepb.core.domain.featureflag.FeatureFlag
-import com.kikepb.core.domain.featureflag.FeatureFlags
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.onFailure
-import com.kikepb.core.domain.util.onSuccess
-import com.kikepb.globalPosition.domain.usecase.GetLatestNewsUseCase
-import com.kikepb.globalPosition.domain.usecase.GetRecentMatchesUseCase
 import com.kikepb.globalPosition.presentation.GlobalPositionAction.OnClubClick
 import com.kikepb.globalPosition.presentation.GlobalPositionAction.OnCopyInviteCode
 import com.kikepb.globalPosition.presentation.GlobalPositionAction.OnSettingsClick
@@ -24,9 +19,6 @@ import com.kikepb.globalPosition.presentation.GlobalPositionEvent.NavigateToSett
 import com.kikepb.globalPosition.presentation.home.HomeAnnouncementStatus
 import com.kikepb.globalPosition.presentation.home.HomeClubCardModel
 import com.kikepb.globalPosition.presentation.home.sortedForHome
-import com.kikepb.globalPosition.presentation.mapper.toUiModel
-import com.kikepb.globalPosition.presentation.model.MatchUiModel
-import com.kikepb.globalPosition.presentation.model.NewsUiModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -47,9 +39,6 @@ class GlobalPositionViewModel(
     private val getCurrentAnnouncementUseCase: GetCurrentAnnouncementUseCase,
     private val getScheduleUseCase: GetScheduleUseCase,
     private val enrollUseCase: EnrollUseCase,
-    private val getRecentMatchesUseCase: GetRecentMatchesUseCase,
-    private val getLatestNewsUseCase: GetLatestNewsUseCase,
-    private val featureFlags: FeatureFlags,
     private val clock: Clock
 ) : ViewModel() {
 
@@ -65,18 +54,15 @@ class GlobalPositionViewModel(
         _state,
         observeMyClubsUseCase(),
         statuses,
-        enrolling,
-        combine(featureFlags.observe(FeatureFlag.HOME_RECENT_MATCHES), featureFlags.observe(FeatureFlag.HOME_NEWS), ::Pair)
-    ) { current, myClubs, statusByClub, enrollingIds, (showMatches, showNews) ->
+        enrolling
+    ) { current, myClubs, statusByClub, enrollingIds ->
         val clubs = myClubs.map { it.club }
         onClubsChanged(clubs)
         current.copy(
             cards = clubs
                 .map { club -> HomeClubCardModel(club, statusByClub[club.id] ?: HomeAnnouncementStatus.Loading, club.id in enrollingIds) }
                 .sortedForHome(current.now),
-            isLoadingClubs = false,
-            showRecentMatches = showMatches,
-            showNews = showNews
+            isLoadingClubs = false
         )
     }.stateIn(
         scope = viewModelScope,
@@ -89,7 +75,6 @@ class GlobalPositionViewModel(
 
     init {
         refresh()
-        loadMatchesAndNews()
     }
 
     fun onAction(action: GlobalPositionAction) {
@@ -149,18 +134,6 @@ class GlobalPositionViewModel(
         }
     }
 
-    // Both sections are sample data; with their flag off nothing is requested (APP-RN-17)
-    private fun loadMatchesAndNews() {
-        if (featureFlags.isEnabled(FeatureFlag.HOME_RECENT_MATCHES)) viewModelScope.launch {
-            getRecentMatchesUseCase()
-                .onSuccess { matches -> _state.update { it.copy(matches = matches.map { m -> m.toUiModel() }) } }
-        }
-        if (featureFlags.isEnabled(FeatureFlag.HOME_NEWS)) viewModelScope.launch {
-            getLatestNewsUseCase()
-                .onSuccess { news -> _state.update { it.copy(news = news.map { n -> n.toUiModel() }) } }
-        }
-    }
-
     private companion object {
         const val MAX_PARALLEL = 4
     }
@@ -169,12 +142,8 @@ class GlobalPositionViewModel(
 data class GlobalPositionUiState(
     val now: Instant,
     val cards: List<HomeClubCardModel> = emptyList(),
-    val matches: List<MatchUiModel> = emptyList(),
-    val news: List<NewsUiModel> = emptyList(),
     val isLoadingClubs: Boolean = true,
-    val isRefreshing: Boolean = false,
-    val showRecentMatches: Boolean = false,
-    val showNews: Boolean = false
+    val isRefreshing: Boolean = false
 )
 
 sealed interface GlobalPositionAction {

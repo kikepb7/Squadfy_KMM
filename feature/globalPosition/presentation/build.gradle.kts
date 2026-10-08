@@ -9,7 +9,6 @@ kotlin {
                 implementation(libs.kotlin.stdlib)
 
                 implementation(projects.feature.auth.domain)
-                implementation(projects.feature.globalPosition.domain)
                 // Home shows my clubs and their current announcement (spec 010)
                 implementation(projects.feature.club.domain)
                 implementation(libs.kotlinx.datetime)

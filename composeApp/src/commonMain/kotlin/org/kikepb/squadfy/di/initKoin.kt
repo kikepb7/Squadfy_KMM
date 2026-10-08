@@ -10,8 +10,6 @@ import com.kikepb.domain.di.authDomainModule
 import com.kikepb.club.data.di.clubDataModule
 import com.kikepb.club.domain.di.clubDomainModule
 import com.kikepb.club.presentation.di.clubPresentationModule
-import com.kikepb.globalPosition.data.di.globalPositionDataModule
-import com.kikepb.globalPosition.domain.di.globalPositionDomainModule
 import com.kikepb.global_position.presentation.di.globalPositionPresentationModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
@@ -27,8 +25,6 @@ fun initKoin(config: KoinAppDeclaration? = null) {
             chatDataModule,
             chatDomainModule,
             chatPresentationModule,
-            globalPositionDataModule,
-            globalPositionDomainModule,
             globalPositionPresentationModule,
             clubDataModule,
             clubDomainModule,
