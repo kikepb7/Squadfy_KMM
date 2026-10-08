@@ -1,6 +1,7 @@
 package com.kikepb.core.data.featureflag
 
 import com.kikepb.core.domain.featureflag.AppEnvironment
+import com.kikepb.core.domain.featureflag.AppPlatform
 import com.kikepb.core.domain.featureflag.FeatureFlag
 import com.kikepb.core.domain.featureflag.FeatureFlagOverrides
 import com.kikepb.core.domain.featureflag.FeatureFlagResolver
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.stateIn
 
 class DefaultFeatureFlags(
     override val environment: AppEnvironment,
+    override val platform: AppPlatform,
     private val overrideStore: FeatureFlagOverrideStore,
     remoteSource: RemoteFeatureFlagSource,
     scope: CoroutineScope
@@ -28,11 +30,11 @@ class DefaultFeatureFlags(
         overrideStore.observe(),
         remoteSource.observe()
     ) { overrides, remote ->
-        FeatureFlagResolver.resolveAll(environment = environment, remote = remote, overrides = overrides)
+        FeatureFlagResolver.resolveAll(environment = environment, remote = remote, overrides = overrides, platform = platform)
     }.stateIn(
         scope = scope,
         started = SharingStarted.Eagerly,
-        initialValue = FeatureFlagResolver.resolveAll(environment = environment)
+        initialValue = FeatureFlagResolver.resolveAll(environment = environment, platform = platform)
     )
 
     override fun isEnabled(flag: FeatureFlag): Boolean =

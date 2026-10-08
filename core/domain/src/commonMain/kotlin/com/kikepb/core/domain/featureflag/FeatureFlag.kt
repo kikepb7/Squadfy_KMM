@@ -10,7 +10,9 @@ enum class FeatureFlag(
     val key: String,
     val description: String,
     val defaultInPre: Boolean,
-    val defaultInPro: Boolean
+    val defaultInPro: Boolean,
+    /** PRO default on iOS when it differs from [defaultInPro] (store-review constraints, D-13). */
+    val defaultInProOnIos: Boolean? = null
 ) {
     // App-parity features (decision D-1, backend spec BE-008)
     MATCH_GUESTS(
@@ -44,6 +46,16 @@ enum class FeatureFlag(
         defaultInPro = false
     ),
 
+    // User-to-user chat (D-13): Apple guideline 1.2 asks for report/block on user-generated content, which
+    // needs a backend spec. Until then the chat is hidden on iOS in PRO; Android keeps it.
+    CHAT(
+        key = "chat",
+        description = "User-to-user chat (hidden on iOS in PRO until report/block exist, D-13)",
+        defaultInPre = true,
+        defaultInPro = true,
+        defaultInProOnIos = false
+    ),
+
     // Release readiness (spec 011)
     ACCOUNT_DELETION(
         key = "account_deletion",
@@ -72,8 +84,8 @@ enum class FeatureFlag(
         defaultInPro = false
     );
 
-    fun defaultFor(environment: AppEnvironment): Boolean = when (environment) {
+    fun defaultFor(environment: AppEnvironment, platform: AppPlatform = AppPlatform.ANDROID): Boolean = when (environment) {
         AppEnvironment.PRE -> defaultInPre
-        AppEnvironment.PRO -> defaultInPro
+        AppEnvironment.PRO -> if (platform == AppPlatform.IOS) defaultInProOnIos ?: defaultInPro else defaultInPro
     }
 }

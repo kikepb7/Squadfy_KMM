@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 /** Read access to feature flags. Inject it in ViewModels and expose the values through their State. */
 interface FeatureFlags {
     val environment: AppEnvironment
+    val platform: AppPlatform get() = AppPlatform.ANDROID
     fun isEnabled(flag: FeatureFlag): Boolean
     fun observe(flag: FeatureFlag): Flow<Boolean>
     fun observeAll(): Flow<List<ResolvedFeatureFlag>>

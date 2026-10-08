@@ -29,7 +29,7 @@ class FeatureFlagsViewModel(
         when (action) {
             is FeatureFlagsAction.OnToggle -> viewModelScope.launch {
                 // Back to the environment default clears the override instead of pinning the same value
-                val enabled = action.enabled.takeIf { it != action.flag.defaultFor(featureFlags.environment) }
+                val enabled = action.enabled.takeIf { it != action.flag.defaultFor(featureFlags.environment, featureFlags.platform) }
                 overrides.setOverride(flag = action.flag, enabled = enabled)
             }
             FeatureFlagsAction.OnReset -> viewModelScope.launch { overrides.clearOverrides() }

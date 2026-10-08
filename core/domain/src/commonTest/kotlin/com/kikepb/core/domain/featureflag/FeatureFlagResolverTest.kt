@@ -81,4 +81,12 @@ class FeatureFlagResolverTest {
         assertEquals(PRO, AppEnvironment.fromKey("PRO"))
         assertFailsWith<IllegalArgumentException> { AppEnvironment.fromKey("staging") }
     }
+
+    @Test
+    fun `AC-015-02 a per-platform PRO default only changes iOS`() {
+        assertEquals(true, FeatureFlag.CHAT.defaultFor(PRO, AppPlatform.ANDROID))
+        assertEquals(false, FeatureFlag.CHAT.defaultFor(PRO, AppPlatform.IOS))
+        assertEquals(false, FeatureFlag.MATCH_GUESTS.defaultFor(PRO, AppPlatform.IOS))
+        assertEquals(true, FeatureFlag.MATCH_GUESTS.defaultFor(PRE, AppPlatform.IOS))
+    }
 }

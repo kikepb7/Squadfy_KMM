@@ -2,6 +2,7 @@ package com.kikepb.core.data.featureflag
 
 import app.cash.turbine.test
 import com.kikepb.core.domain.featureflag.AppEnvironment
+import com.kikepb.core.domain.featureflag.AppPlatform
 import com.kikepb.core.domain.featureflag.FeatureFlag
 import com.kikepb.core.domain.featureflag.FlagValueSource
 import com.kikepb.core.domain.featureflag.RemoteFeatureFlagSource
@@ -34,8 +35,9 @@ class DefaultFeatureFlagsTest {
     private val overrideStore = FakeOverrideStore()
     private val remoteSource = FakeRemoteSource()
 
-    private fun TestScope.createFlags(environment: AppEnvironment) = DefaultFeatureFlags(
+    private fun TestScope.createFlags(environment: AppEnvironment, platform: AppPlatform = AppPlatform.ANDROID) = DefaultFeatureFlags(
         environment = environment,
+        platform = platform,
         overrideStore = overrideStore,
         remoteSource = remoteSource,
         scope = backgroundScope
@@ -96,5 +98,12 @@ class DefaultFeatureFlagsTest {
         flags.observeAll().test {
             assertEquals(FlagValueSource.REMOTE, awaitItem().first { it.flag == FeatureFlag.MANUAL_SCORE }.source)
         }
+    }
+
+    @Test
+    fun `AC-015-02 chat is hidden on iOS in PRO and shown on Android and in PRE`() = runTest(UnconfinedTestDispatcher()) {
+        assertTrue(createFlags(AppEnvironment.PRO, AppPlatform.ANDROID).isEnabled(FeatureFlag.CHAT))
+        assertFalse(createFlags(AppEnvironment.PRO, AppPlatform.IOS).isEnabled(FeatureFlag.CHAT))
+        assertTrue(createFlags(AppEnvironment.PRE, AppPlatform.IOS).isEnabled(FeatureFlag.CHAT))
     }
 }

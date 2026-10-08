@@ -10,6 +10,7 @@ import com.kikepb.core.domain.notification.NotificationPromptStore
 import com.kikepb.core.data.featureflag.DefaultFeatureFlags
 import com.kikepb.core.data.featureflag.FeatureFlagOverrideStore
 import com.kikepb.core.data.featureflag.NoOpRemoteFeatureFlagSource
+import com.kikepb.core.data.util.currentAppPlatform
 import com.kikepb.core.data.logger.KermitLogger
 import com.kikepb.core.data.networking.HttpClientFactory
 import com.kikepb.core.domain.auth.repository.AuthRepository
@@ -54,6 +55,6 @@ val coreDataModule = module {
     singleOf(::DataStoreCrashReportingConsent) bind CrashReportingConsent::class
     singleOf(::NoOpRemoteFeatureFlagSource) bind RemoteFeatureFlagSource::class
     single {
-        DefaultFeatureFlags(environment = get(), overrideStore = get(), remoteSource = get(), scope = get())
+        DefaultFeatureFlags(environment = get(), platform = currentAppPlatform, overrideStore = get(), remoteSource = get(), scope = get())
     } binds arrayOf(FeatureFlags::class, FeatureFlagOverrides::class)
 }
