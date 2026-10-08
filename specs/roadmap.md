@@ -21,7 +21,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 012 | Puesta en producción (coordinada con el backend) | Draft (lado app documentado) | ✅ | ✅ | ✅ | todas, BE-008/009/010 | 3 d + revisión de tiendas |
 | 013 | Feature flags por entorno (PRE / PRO) | **Done** | ✅ | ✅ | ✅ | 001 | — |
 | 014 | Ausencias de jugadores | **Done** (7/7) | ✅ | — | ✅ | 003, 005 | — |
-| 015 | Cierre del MVP y paridad con el backend 011–013 | **In progress** (3/11) | ✅ | — | ✅ | 002–014 | 3 d |
+| 015 | Cierre del MVP y paridad con el backend 011–013 | **Done** (11/11) | ✅ | — | ✅ | 002–014 | 3 d |
 
 \* Días ideales de una persona. Son orientativos, para priorizar, no un compromiso.
 

@@ -1,6 +1,6 @@
 # 015 · Cierre del MVP y paridad con el backend (BE 011–013)
 
-- **Estado:** Approved (el owner lo delega el 2026-10-08: «elige tú D-12 y D-13 y continúa hasta finalizar el MVP»)
+- **Estado:** Done (2026-10-08) (el owner lo delega el 2026-10-08: «elige tú D-12 y D-13 y continúa hasta finalizar el MVP»)
 - **Depende de:** 002–014. Backend: specs 011 (flags y verificación), 012 (tiempo real, estadísticas por periodo, foto por club, búsqueda) y 013 (Render), ya en `master` del backend.
 
 ## Problema / objetivo
