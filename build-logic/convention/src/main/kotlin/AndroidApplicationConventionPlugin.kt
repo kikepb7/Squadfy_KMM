@@ -36,7 +36,9 @@ class AndroidApplicationConventionPlugin: Plugin<Project> {
                     targetSdk = libs.findVersion("projectTargetSdkVersion").get().toString().toInt()
                     versionCode = providers.gradleProperty("versionCode").orNull?.toInt()
                         ?: libs.findVersion("projectVersionCode").get().toString().toInt()
-                    versionName = libs.findVersion("projectVersionName").get().toString()
+                    // QA candidates from release/* carry "-rc.N" (spec 015 AC-015-08); store builds from tags do not
+                    versionName = libs.findVersion("projectVersionName").get().toString() +
+                        providers.gradleProperty("versionNameSuffix").orNull.orEmpty()
                     manifestPlaceholders["networkSecurityConfig"] = "@xml/network_security_config"
                 }
                 packaging {

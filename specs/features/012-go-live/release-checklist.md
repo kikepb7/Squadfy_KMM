@@ -17,8 +17,10 @@ No hay API key de cliente. El CI normal no necesita ningún secreto: sin `GOOGLE
 | Nombre | Valor |
 |---|---|
 | `GOOGLE_SERVICES_JSON` | `google-services.json` del proyecto Firebase de producción. Tiene prioridad sobre el del repositorio |
-| `PRO_BASE_URL_HTTP` | `https://<api>/api/v1` |
-| `PRO_BASE_URL_WS` | `wss://<api>/ws` |
+| `PRO_BASE_URL_HTTP` | `https://<api>/api/v1` de producción (backend `master` en Render) |
+| `PRO_BASE_URL_WS` | `wss://<api>/ws` de producción |
+| `STAGING_BASE_URL_HTTP` | `https://<api-staging>/api/v1` (backend `release` en Render): lo usan los candidatos `X.Y.Z-rc.N` de `release/*` y `hotfix/*` |
+| `STAGING_BASE_URL_WS` | `wss://<api-staging>/ws` |
 | `SIGNING_KEYSTORE_BASE64` | `base64 -i upload.jks` |
 | `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD` | los de la clave de subida |
 | `PLAY_SERVICE_ACCOUNT_JSON` | cuenta de servicio con permiso de publicar en Play Console |

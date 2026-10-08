@@ -25,8 +25,11 @@ permissions:
 # Secrets of the `production` environment (Settings → Environments → production), so a release needs an
 # approval from the required reviewers before the job can read them (ADR-0008):
 #   GOOGLE_SERVICES_JSON         → google-services.json of the production Firebase project
-#   PRO_BASE_URL_HTTP            → https://<host>/api/v1
-#   PRO_BASE_URL_WS              → wss://<host>/ws
+#   PRO_BASE_URL_HTTP            → https://<api>/api/v1 of production (backend `master` on Render)
+#   PRO_BASE_URL_WS              → wss://<api>/ws of production
+#   STAGING_BASE_URL_HTTP        → https://<staging-api>/api/v1 (backend `release` on Render, spec 013 of the backend)
+#   STAGING_BASE_URL_WS          → wss://<staging-api>/ws
+# QA candidates (release/*, hotfix/*) talk to staging and are named X.Y.Z-rc.N; vX.Y.Z tags talk to production.
 #   SIGNING_KEYSTORE_BASE64      → upload keystore (.jks) encoded with `base64 -i upload.jks`
 #   SIGNING_STORE_PASSWORD, SIGNING_KEY_ALIAS, SIGNING_KEY_PASSWORD
 #   PLAY_SERVICE_ACCOUNT_JSON    → Play Console service account with release rights on com.kikepb.squadfy
@@ -69,8 +72,10 @@ jobs:
     environment: production
     env:
       SQUADFY_ENV: pro
-      BASE_URL_HTTP: ${{ secrets.PRO_BASE_URL_HTTP }}
-      BASE_URL_WS: ${{ secrets.PRO_BASE_URL_WS }}
+      # Spec 015 AC-015-08: tags build against production, release/hotfix candidates against staging
+      BASE_URL_HTTP: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.PRO_BASE_URL_HTTP || secrets.STAGING_BASE_URL_HTTP }}
+      BASE_URL_WS: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.PRO_BASE_URL_WS || secrets.STAGING_BASE_URL_WS }}
+      VERSION_NAME_SUFFIX: ${{ !startsWith(github.ref, 'refs/tags/v') && format('-rc.{0}', github.run_number) || '' }}
       PRIVACY_POLICY_URL: ${{ vars.PRIVACY_POLICY_URL }}
       CRASHLYTICS_MAPPING_UPLOAD: "true"
     steps:
@@ -118,7 +123,7 @@ jobs:
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: ./gradlew :composeApp:bundleRelease -PversionCode=${{ github.run_number }}
+        run: ./gradlew :composeApp:bundleRelease -PversionCode=${{ github.run_number }} -PversionNameSuffix="$VERSION_NAME_SUFFIX"
 
       - name: Upload AAB and mapping
         uses: actions/upload-artifact@v4
