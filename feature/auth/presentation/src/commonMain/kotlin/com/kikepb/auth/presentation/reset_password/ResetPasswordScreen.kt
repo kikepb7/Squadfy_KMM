@@ -16,6 +16,7 @@ import com.kikepb.auth.presentation.reset_password.ResetPasswordAction.OnToggleP
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveFormLayout
 import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
+import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.components.textfields.SquadfyPasswordTextField
 import com.kikepb.core.designsystem.theme.SquadfyTheme
@@ -54,7 +55,7 @@ fun ResetPasswordScreen(
         SquadfyAdaptiveFormLayout(
             headerText = stringResource(RString.set_new_password),
             errorText = state.errorText?.asString(),
-            logo = {}
+            logo = { SquadfyBrandLogo(onDarkBackground = true) }
         ) {
             SquadfyPasswordTextField(
                 state = state.passwordTextState,

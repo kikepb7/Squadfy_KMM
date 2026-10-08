@@ -2,6 +2,11 @@ package com.kikepb.core.designsystem.components.layouts
 
 import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,7 +51,9 @@ fun SquadfySurface(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp)
-                        .verticalScroll(rememberScrollState()),
+                        .verticalScroll(rememberScrollState())
+                        // Spec 017: edge to edge, the surface color reaches the bottom and the content clears the bar
+                        .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     content()

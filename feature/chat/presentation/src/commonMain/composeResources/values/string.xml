@@ -66,4 +66,5 @@
     <string name="crash_reports">Enviar informes de errores</string>
     <string name="crash_reports_desc">Si la app falla, envía datos técnicos del fallo (sin tus mensajes) para ayudarnos a corregirlo. Puedes desactivarlo cuando quieras.</string>
     <string name="feature_flags">Feature flags (PRE)</string>
+    <string name="chat_list_title">Mis chats</string>
 </resources>

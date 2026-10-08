@@ -19,7 +19,9 @@ kotlin {
         }
 
         androidMain {
-            dependencies {}
+            dependencies {
+                implementation(libs.androidx.core.ktx)
+            }
         }
 
         iosMain {

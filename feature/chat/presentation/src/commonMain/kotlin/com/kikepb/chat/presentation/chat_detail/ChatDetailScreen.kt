@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -69,7 +71,6 @@ import com.kikepb.chat.presentation.chat_detail.components.ChatDetailHeader
 import com.kikepb.chat.presentation.chat_detail.components.MessageBox
 import com.kikepb.chat.presentation.chat_detail.components.MessageList
 import com.kikepb.chat.presentation.chat_detail.components.SquadfyDate
-import com.kikepb.chat.presentation.components.ChatHeader
 import com.kikepb.chat.presentation.components.EmptySection
 import com.kikepb.chat.presentation.components.MessageBannerListener
 import com.kikepb.chat.presentation.components.PaginationScrollListener
@@ -206,8 +207,9 @@ fun ChatDetailScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        // System bars come from the root Scaffold; only the keyboard is handled here
-        contentWindowInsets = WindowInsets.ime,
+        // Spec 017: the header pads the status bar; here the keyboard and the navigation bar (consumed when the
+        // bottom bar is shown)
+        contentWindowInsets = WindowInsets.ime.union(WindowInsets.navigationBars),
         containerColor =
             if (!configuration.isWideScreen) MaterialTheme.colorScheme.surface
             else MaterialTheme.colorScheme.extended.surfaceLower,
@@ -235,25 +237,23 @@ fun ChatDetailScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
                     } else {
-                        ChatHeader(
-                            modifier = Modifier.onSizeChanged {
-                                headerHeight = with(receiver = density) {
-                                    it.height.toDp()
+                        ChatDetailHeader(
+                            chatUi = state.chatUi,
+                            isDetailPresent = isDetailPresent,
+                            isChatOptionsDropDownOpen = state.isChatOptionsOpen,
+                            onChatOptionsClick = { onAction(OnChatOptionsClick) },
+                            onDismissChatOptions = { onAction(OnDismissChatOptions) },
+                            onManageChatClick = { onAction(OnChatMembersClick) },
+                            onLeaveChatClick = { onAction(OnLeaveChatClick) },
+                            onBackClick = { onAction(OnBackClick) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onSizeChanged {
+                                    headerHeight = with(receiver = density) {
+                                        it.height.toDp()
+                                    }
                                 }
-                            }
-                        ) {
-                            ChatDetailHeader(
-                                chatUi = state.chatUi,
-                                isDetailPresent = isDetailPresent,
-                                isChatOptionsDropDownOpen = state.isChatOptionsOpen,
-                                onChatOptionsClick = { onAction(OnChatOptionsClick) },
-                                onDismissChatOptions = { onAction(OnDismissChatOptions) },
-                                onManageChatClick = { onAction(OnChatMembersClick) },
-                                onLeaveChatClick = { onAction(OnLeaveChatClick) },
-                                onBackClick = { onAction(OnBackClick) },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
+                        )
 
                         MessageList(
                             messages = state.messages,

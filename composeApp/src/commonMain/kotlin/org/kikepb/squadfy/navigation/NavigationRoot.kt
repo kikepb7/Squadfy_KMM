@@ -1,6 +1,10 @@
 package org.kikepb.squadfy.navigation
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import com.kikepb.core.designsystem.theme.extended
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -57,6 +61,10 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
+        // Spec 017, edge to edge: each screen paints behind the system bars (its top bar behind the status bar) and
+        // pads them itself, so the status bar always matches the screen. Only the bottom bar's space is reserved here.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (showBottomBar) {
                 SquadfyBottomBar(
@@ -80,7 +88,7 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
         NavHost(
             navController = navController,
             startDestination = startDestination,
-            modifier = Modifier.fillMaxSize().padding(paddingValues)
+            modifier = Modifier.fillMaxSize().padding(paddingValues).consumeWindowInsets(paddingValues)
         ) {
             authGraph(
                 navController = navController,

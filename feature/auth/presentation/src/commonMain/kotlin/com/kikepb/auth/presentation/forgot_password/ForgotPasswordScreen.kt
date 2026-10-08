@@ -17,6 +17,7 @@ import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveFormLayout
 import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
 import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
+import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
@@ -56,7 +57,7 @@ fun ForgotPasswordScreen(
         SquadfyAdaptiveFormLayout(
             headerText = stringResource(RString.forgot_password),
             errorText = state.errorText?.asString(),
-            logo = {}
+            logo = { SquadfyBrandLogo(onDarkBackground = true) }
         ) {
             SquadfyTextField(
                 state = state.emailTextFieldState,

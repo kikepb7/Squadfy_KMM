@@ -1,5 +1,10 @@
 package com.kikepb.core.designsystem.components.layouts
 
+import com.kikepb.core.designsystem.components.systembars.StatusBarIconsEffect
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,8 +40,11 @@ fun SquadfyAdaptiveResultLayout(
 ) {
     val configuration = currentDeviceConfiguration()
 
+    StatusBarIconsEffect(background = MaterialTheme.colorScheme.background)
     Scaffold(
-        modifier = modifier
+        modifier = modifier,
+        // Spec 017: the bottom edge belongs to the surface (it pads the navigation bar itself)
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
         if(configuration == MOBILE_PORTRAIT) {
             SquadfySurface(

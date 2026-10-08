@@ -3,7 +3,6 @@ package com.kikepb.chat.presentation.chat_list
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,7 +31,7 @@ import com.kikepb.chat.presentation.chat_list.ChatListAction.OnProfileSettingsCl
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnSelectChat
 import com.kikepb.chat.presentation.chat_list.ChatListEvent.OnLogoutError
 import com.kikepb.chat.presentation.chat_list.ChatListEvent.OnLogoutSuccess
-import com.kikepb.chat.presentation.chat_list.components.ChatListHeader
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.chat.presentation.chat_list.components.ChatListItemUi
 import com.kikepb.chat.presentation.components.EmptySection
 import com.kikepb.core.designsystem.components.buttons.SquadfyFloatingActionButton
@@ -52,6 +51,7 @@ import squadfy_app.feature.chat.presentation.generated.resources.create_chat
 import squadfy_app.feature.chat.presentation.generated.resources.do_you_want_to_logout
 import squadfy_app.feature.chat.presentation.generated.resources.do_you_want_to_logout_desc
 import squadfy_app.feature.chat.presentation.generated.resources.logout
+import squadfy_app.feature.chat.presentation.generated.resources.chat_list_title
 import squadfy_app.feature.chat.presentation.generated.resources.no_chats
 import squadfy_app.feature.chat.presentation.generated.resources.no_chats_subtitle
 import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
@@ -114,8 +114,13 @@ fun ChatListScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
-        // The root Scaffold (NavigationRoot) already pads the system bars
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        // Spec 017: the same top bar as the rest of the app; the gear opens the profile (sign out lives there)
+        topBar = {
+            SquadfyTopBar(
+                title = stringResource(RString.chat_list_title),
+                onSettingsClick = { onAction(OnProfileSettingsClick) }
+            )
+        },
         snackbarHost = { SnackbarHost(snackBarHostState) },
         floatingActionButton = {
             SquadfyFloatingActionButton(
@@ -137,14 +142,6 @@ fun ChatListScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ChatListHeader(
-                localParticipant = state.localParticipant,
-                isUserMenuOpen = state.isUserMenuOpen,
-                onUserAvatarClick = { onAction(ChatListAction.OnUserAvatarClick) },
-                onLogoutClick = { onAction(ChatListAction.OnLogoutClick) },
-                onDismissMenu = { onAction(ChatListAction.OnDismissUserMenu) },
-                onProfileSettingsClick = { onAction(OnProfileSettingsClick) }
-            )
             when {
                 state.isLoading -> {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
