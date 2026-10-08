@@ -1,5 +1,7 @@
 package com.kikepb.club.presentation.schedule
 
+import com.kikepb.core.domain.realtime.ClubLiveUpdates
+import com.kikepb.core.domain.realtime.ClubDataScope
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.lifecycle.SavedStateHandle
@@ -56,6 +58,7 @@ class ScheduleViewModel(
     private val getScheduleExceptionsUseCase: GetScheduleExceptionsUseCase,
     private val addScheduleExceptionUseCase: AddScheduleExceptionUseCase,
     private val deleteScheduleExceptionUseCase: DeleteScheduleExceptionUseCase,
+    private val clubLiveUpdates: ClubLiveUpdates,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -92,6 +95,14 @@ class ScheduleViewModel(
         viewModelScope.launch {
             featureFlags.observe(FeatureFlag.SCHEDULE_EXCEPTIONS).collect { enabled ->
                 if (enabled && !exceptionsLoaded) loadExceptions()
+            }
+        }
+        // AC-015-06: another manager changed the schedule or its special weeks
+        viewModelScope.launch {
+            clubLiveUpdates.observe(clubId).collect { change ->
+                if (change.scope != ClubDataScope.SCHEDULE) return@collect
+                load()
+                if (exceptionsLoaded) loadExceptions()
             }
         }
     }

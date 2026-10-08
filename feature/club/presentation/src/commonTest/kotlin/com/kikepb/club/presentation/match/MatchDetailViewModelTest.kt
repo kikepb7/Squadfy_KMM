@@ -1,5 +1,8 @@
 package com.kikepb.club.presentation.match
 
+import com.kikepb.core.domain.realtime.ClubDataScope
+import com.kikepb.core.domain.realtime.ClubDataChange
+import com.kikepb.club.presentation.fake.FakeClubLiveUpdates
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.kikepb.club.domain.error.ClubError
@@ -113,6 +116,7 @@ class MatchDetailViewModelTest {
     private val repository = FakeMatchRepository()
     private val clubRepository = FakeClubRepository()
     private val pushCenter = InAppPushCenter()
+    private val liveUpdates = FakeClubLiveUpdates()
     private val guest = MatchGuestModel(guestId = "g-1", name = "Luis", position = PlayerPosition.GOALKEEPER, invitedByMemberId = "me")
 
     @BeforeTest
@@ -143,6 +147,7 @@ class MatchDetailViewModelTest {
             featureFlags = flags,
             clock = clock,
             inAppPushCenter = pushCenter,
+            clubLiveUpdates = liveUpdates,
             syncClubDetailUseCase = SyncClubDetailUseCase(clubRepository),
             savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1", "matchId" to "match-1"))
         )
@@ -417,5 +422,19 @@ class MatchDetailViewModelTest {
         viewModel.state.launchIn(backgroundScope)
 
         assertNull(viewModel.state.value.visibleBalance)
+    }
+
+    @Test
+    fun `AC-015-06 a live change of this match reloads it and other matches are ignored`() = runTest(UnconfinedTestDispatcher()) {
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+        val gets = repository.calls.count { it == "get" }
+
+        liveUpdates.emit(ClubDataChange(clubId = "club-1", scope = ClubDataScope.MATCH, matchId = "other-match"))
+        liveUpdates.emit(ClubDataChange(clubId = "club-1", scope = ClubDataScope.ABSENCES))
+        assertEquals(gets, repository.calls.count { it == "get" })
+
+        liveUpdates.emit(ClubDataChange(clubId = "club-1", scope = ClubDataScope.MATCH, matchId = "match-1"))
+        assertEquals(gets + 1, repository.calls.count { it == "get" })
     }
 }

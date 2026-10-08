@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.announcement
 
+import com.kikepb.core.domain.realtime.ClubLiveUpdates
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -79,6 +80,7 @@ class AnnouncementViewModel(
     private val removeGuestUseCase: RemoveGuestFromAnnouncementUseCase,
     private val clock: Clock,
     private val inAppPushCenter: InAppPushCenter,
+    private val clubLiveUpdates: ClubLiveUpdates,
     private val syncClubDetailUseCase: SyncClubDetailUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -138,6 +140,8 @@ class AnnouncementViewModel(
                 (message.body ?: message.title)?.let { eventChannel.send(AnnouncementEvent.ShowMessage(UiText.DynamicString(it))) }
             }
         }
+        // AC-015-06: matches, schedule and absences all shape the current announcement
+        viewModelScope.launch { clubLiveUpdates.observe(clubId).collect { refresh() } }
     }
 
     fun onAction(action: AnnouncementAction) {

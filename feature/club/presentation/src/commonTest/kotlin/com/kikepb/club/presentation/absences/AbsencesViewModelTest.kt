@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.absences
 
+import com.kikepb.club.presentation.fake.FakeClubLiveUpdates
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.kikepb.club.domain.error.ClubError
@@ -73,6 +74,7 @@ class AbsencesViewModelTest {
 
     private val repository = FakeAbsenceRepository()
     private val clubRepository = FakeClubRepository()
+    private val liveUpdates = FakeClubLiveUpdates()
     private val clock = object : Clock {
         override fun now(): Instant = Instant.parse("2026-10-07T12:00:00Z")
     }
@@ -94,6 +96,7 @@ class AbsencesViewModelTest {
         deleteMyAbsenceUseCase = DeleteMyAbsenceUseCase(repository),
         getScheduleUseCase = GetScheduleUseCase(NoSchedule()),
         clock = clock,
+        clubLiveUpdates = liveUpdates,
         savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1"))
     )
 

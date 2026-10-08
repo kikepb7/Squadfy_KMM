@@ -47,6 +47,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -90,7 +91,11 @@ class KtorWebSocketConnector(
             false
         )
 
-    val messages = combine(
+    /**
+     * One socket for every consumer (chat and club live updates, spec 015): collecting this flow directly
+     * would open a new connection per collector, so it is only exposed through the shared [messages].
+     */
+    private val socketMessages = combine(
         sessionStorage.observeAuthInfo(),
         isConnected,
         isInForeground
@@ -164,6 +169,11 @@ class KtorWebSocketConnector(
                 }
         }
     }
+
+    val messages = socketMessages.shareIn(
+        scope = applicationScope,
+        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = STOP_TIMEOUT_MILLIS)
+    )
 
     private fun createWebSocketFlow(accessToken: String) = callbackFlow {
         _connectionState.value = CONNECTING

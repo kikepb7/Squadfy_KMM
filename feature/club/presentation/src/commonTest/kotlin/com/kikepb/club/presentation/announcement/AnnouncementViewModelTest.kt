@@ -1,5 +1,8 @@
 package com.kikepb.club.presentation.announcement
 
+import com.kikepb.core.domain.realtime.ClubDataScope
+import com.kikepb.core.domain.realtime.ClubDataChange
+import com.kikepb.club.presentation.fake.FakeClubLiveUpdates
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.kikepb.club.domain.error.ClubError
@@ -118,6 +121,7 @@ class AnnouncementViewModelTest {
     private val repository = FakeAnnouncementRepository()
     private val clubRepository = FakeClubRepository()
     private val pushCenter = InAppPushCenter()
+    private val liveUpdates = FakeClubLiveUpdates()
     private val absenceRepository = object : AbsenceRepository {
         var absences = emptyList<MemberAbsenceModel>()
         override suspend fun getAbsences(clubId: String, from: LocalDate?, to: LocalDate?): Result<List<MemberAbsenceModel>, ClubError> = Result.Success(absences)
@@ -147,6 +151,7 @@ class AnnouncementViewModelTest {
             removeGuestUseCase = RemoveGuestFromAnnouncementUseCase(repository),
             clock = FixedClock,
             inAppPushCenter = pushCenter,
+            clubLiveUpdates = liveUpdates,
             syncClubDetailUseCase = SyncClubDetailUseCase(clubRepository),
             savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1"))
         )
@@ -316,5 +321,18 @@ class AnnouncementViewModelTest {
 
         assertEquals(listOf("weekly"), state.upcoming.map { it.id })
         assertEquals(listOf("old"), state.past.map { it.id })
+    }
+
+    @Test
+    fun `AC-015-06 a live change in the club refreshes the announcement, other clubs do not`() = runTest(UnconfinedTestDispatcher()) {
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+        val before = repository.currentRequests
+
+        liveUpdates.emit(ClubDataChange(clubId = "other-club", scope = ClubDataScope.MATCH))
+        assertEquals(before, repository.currentRequests)
+
+        liveUpdates.emit(ClubDataChange(clubId = "club-1", scope = ClubDataScope.MATCH, matchId = "m-1"))
+        assertEquals(before + 1, repository.currentRequests)
     }
 }

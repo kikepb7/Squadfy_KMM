@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.schedule
 
+import com.kikepb.club.presentation.fake.FakeClubLiveUpdates
 import androidx.lifecycle.SavedStateHandle
 import com.kikepb.club.domain.error.ClubError
 import com.kikepb.club.domain.model.ClubMemberRole
@@ -74,6 +75,7 @@ class ScheduleViewModelTest {
 
     private val scheduleRepository = FakeScheduleRepository()
     private val clubRepository = FakeClubRepository()
+    private val liveUpdates = FakeClubLiveUpdates()
 
     @BeforeTest
     fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -91,6 +93,7 @@ class ScheduleViewModelTest {
             getScheduleExceptionsUseCase = GetScheduleExceptionsUseCase(scheduleRepository),
             addScheduleExceptionUseCase = AddScheduleExceptionUseCase(scheduleRepository),
             deleteScheduleExceptionUseCase = DeleteScheduleExceptionUseCase(scheduleRepository),
+            clubLiveUpdates = liveUpdates,
             savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1"))
         )
     }

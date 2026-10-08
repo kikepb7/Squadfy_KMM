@@ -1,5 +1,7 @@
 package com.kikepb.club.presentation.absences
 
+import com.kikepb.core.domain.realtime.ClubLiveUpdates
+import com.kikepb.core.domain.realtime.ClubDataScope
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -46,6 +48,7 @@ class AbsencesViewModel(
     private val deleteMyAbsenceUseCase: DeleteMyAbsenceUseCase,
     private val getScheduleUseCase: GetScheduleUseCase,
     private val clock: Clock,
+    private val clubLiveUpdates: ClubLiveUpdates,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -70,6 +73,10 @@ class AbsencesViewModel(
             // APP-RN-03: "today" and the dates are those of the club
             getScheduleUseCase(clubId).onSuccess { schedule -> schedule?.let { _state.update { state -> state.copy(timeZoneId = it.timeZone) } } }
             load()
+        }
+        // AC-015-06: absences of other members
+        viewModelScope.launch {
+            clubLiveUpdates.observe(clubId).collect { change -> if (change.scope == ClubDataScope.ABSENCES) load() }
         }
     }
 

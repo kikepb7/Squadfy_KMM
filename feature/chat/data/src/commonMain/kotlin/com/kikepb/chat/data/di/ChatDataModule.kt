@@ -8,6 +8,8 @@ import com.kikepb.chat.data.datasource.remote.KtorChatService
 import com.kikepb.chat.data.datasource.remote.participant.OfflineFirstChatParticipantRepositoryImpl
 import com.kikepb.chat.data.network.ConnectionRetryHandler
 import com.kikepb.chat.data.network.KtorWebSocketConnector
+import com.kikepb.chat.data.websocket.remote.WebSocketClubLiveUpdates
+import com.kikepb.core.domain.realtime.ClubLiveUpdates
 import com.kikepb.chat.data.notification.KtorDeviceTokenRepositoryImpl
 import com.kikepb.chat.data.websocket.local.OfflineFirstMessageRepositoryImpl
 import com.kikepb.chat.data.websocket.remote.WebSocketChatConnectionClient
@@ -40,6 +42,8 @@ val chatDataModule = module {
     singleOf(::KtorDeviceTokenRepositoryImpl) bind DeviceTokenService::class
     singleOf(::ConnectionRetryHandler)
     singleOf(::KtorWebSocketConnector)
+    // Spec 015: club live updates share the chat socket
+    singleOf(::WebSocketClubLiveUpdates) bind ClubLiveUpdates::class
     single {
         Json { ignoreUnknownKeys = true }
     }

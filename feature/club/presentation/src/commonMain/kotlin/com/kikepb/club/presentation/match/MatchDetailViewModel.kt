@@ -1,5 +1,7 @@
 package com.kikepb.club.presentation.match
 
+import com.kikepb.core.domain.realtime.ClubLiveUpdates
+import com.kikepb.core.domain.realtime.ClubDataScope
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -88,6 +90,7 @@ class MatchDetailViewModel(
     featureFlags: FeatureFlags,
     private val clock: Clock,
     private val inAppPushCenter: InAppPushCenter,
+    private val clubLiveUpdates: ClubLiveUpdates,
     private val syncClubDetailUseCase: SyncClubDetailUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -132,6 +135,12 @@ class MatchDetailViewModel(
                 if (message.clubId != clubId) return@collect
                 if (message.matchId == matchId) refresh()
                 (message.body ?: message.title)?.let { eventChannel.send(MatchDetailEvent.ShowMessage(UiText.DynamicString(it))) }
+            }
+        }
+        // AC-015-06: teams, events, score or minutes of this match changed somewhere else
+        viewModelScope.launch {
+            clubLiveUpdates.observe(clubId).collect { change ->
+                if (change.scope == ClubDataScope.MATCH && (change.matchId == null || change.matchId == matchId)) refresh()
             }
         }
         // The balance is managers-only: it is requested once the role is known (APP-RN-09)
