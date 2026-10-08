@@ -19,6 +19,7 @@ permissions:
 # Build secrets (Settings → Secrets and variables → Actions):
 #   SQUADFY_API_KEY        → value of API_KEY (read by BuildKonfigConventionPlugin from the environment)
 #   GOOGLE_SERVICES_JSON   → full contents of composeApp/google-services.json (gitignored)
+#   GOOGLE_SERVICE_INFO_PLIST → full contents of iosApp/iosApp/GoogleService-Info.plist (gitignored; for the iOS job)
 env:
   API_KEY: ${{ secrets.SQUADFY_API_KEY }}
   # Feature flag environment (spec 013). CI validates PRE; the production release job will set `pro`.

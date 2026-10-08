@@ -23,7 +23,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     }
     
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        #if DEBUG
         print("iOS: Failed to register for push notifications: \(error.localizedDescription)")
+        #endif
     }
     
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
@@ -65,7 +67,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                 UserDefaults.standard.set(fcmToken, forKey: "FCM_TOKEN")
                 IosDeviceTokenHolderBridge.shared.updateToken(token: fcmToken)
             } catch {
+                #if DEBUG
                 print("iOS: Error getting FCM token: \(error.localizedDescription)")
+                #endif
             }
         }
     }
