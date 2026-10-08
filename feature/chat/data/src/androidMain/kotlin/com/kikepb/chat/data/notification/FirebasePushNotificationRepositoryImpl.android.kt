@@ -16,15 +16,18 @@ actual class FirebasePushNotificationRepositoryImpl(
 ) :
     PushNotificationService {
     actual override fun observeDeviceToken(): Flow<String?> = flow {
-        try {
-            val fcmToken = Firebase.messaging.token.await()
-            // AC-011-04: the device token is never logged
-            logger.info(message = "Initial FCM token received")
-            emit(value = fcmToken)
+        // Only the Firebase call is guarded: wrapping emit() would also catch the abort of a collector that
+        // stops early (e.g. firstOrNull() when signing out) and emit again, which crashes (flow transparency).
+        val fcmToken = try {
+            Firebase.messaging.token.await().also {
+                // AC-011-04: the device token is never logged
+                logger.info(message = "Initial FCM token received")
+            }
         } catch (e: Exception) {
             coroutineContext.ensureActive()
             logger.error(message = "Failed to get FCM token", e)
-            emit(value = null)
+            null
         }
+        emit(value = fcmToken)
     }
 }
