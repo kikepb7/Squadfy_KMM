@@ -21,6 +21,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 012 | Puesta en producción (coordinada con el backend) | Draft (lado app documentado) | ✅ | ✅ | ✅ | todas, BE-008/009/010 | 3 d + revisión de tiendas |
 | 013 | Feature flags por entorno (PRE / PRO) | **Done** | ✅ | ✅ | ✅ | 001 | — |
 | 014 | Ausencias de jugadores | **Done** (7/7) | ✅ | — | ✅ | 003, 005 | — |
+| 015 | Cierre del MVP y paridad con el backend 011–013 | **In progress** (3/11) | ✅ | — | ✅ | 002–014 | 3 d |
 
 \* Días ideales de una persona. Son orientativos, para priorizar, no un compromiso.
 
@@ -114,8 +115,8 @@ BE-008, BE-009, BE-010 (en paralelo en el backend) ──────▶ 012
 | D-9 | ¿Se muestra el rol `CAPTAIN` con un distintivo? | Sí, solo como etiqueta | 003 |
 | D-10 | Capa remota de flags: ¿Firebase Remote Config o endpoint del backend? | Firebase Remote Config | 013 |
 | D-11 | ¿Instalar PRE junto a PRO (`applicationIdSuffix = ".pre"`)? | Sí, cuando haya backend de PRE | 011, 013 |
-| D-12 | Tema claro: el verde de marca (`primary`, Brand500) se usa como color de texto en ~40 sitios y sobre blanco da 1,70:1 (no cumple AA). ¿Se cambia el texto de marca en claro a Brand900 (6,96:1) o se fija la app en tema oscuro? | Texto de marca en claro con Brand900 (rol propio), sin tocar los botones | 011 |
-| D-13 | Chat con contenido generado por usuarios: Apple (guideline 1.2) pide denunciar contenido, bloquear usuarios y un contacto publicado. ¿Se añaden denuncia y bloqueo antes de enviar a App Store, o se oculta el chat en la primera versión? | Ocultar el chat tras un flag en la v1 de iOS y añadir denuncia y bloqueo después (necesita una spec del backend) | 012 |
+| ~~D-12~~ | **Resuelta el 2026-10-08 (spec 015 T-001):** `primary` del tema claro = Brand900. Antes: tema claro: el verde de marca (`primary`, Brand500) se usa como color de texto en ~40 sitios y sobre blanco da 1,70:1 (no cumple AA). ¿Se cambia el texto de marca en claro a Brand900 (6,96:1) o se fija la app en tema oscuro? | Texto de marca en claro con Brand900 (rol propio), sin tocar los botones | 011 |
+| ~~D-13~~ | **Resuelta el 2026-10-08 (spec 015 T-002):** chat oculto en iOS en PRO tras el flag `CHAT`; el Perfil sale del chat. Antes: chat con contenido generado por usuarios: Apple (guideline 1.2) pide denunciar contenido, bloquear usuarios y un contacto publicado. ¿Se añaden denuncia y bloqueo antes de enviar a App Store, o se oculta el chat en la primera versión? | Ocultar el chat tras un flag en la v1 de iOS y añadir denuncia y bloqueo después (necesita una spec del backend) | 012 |
 
 ## Backlog post-MVP
 - Estadísticas por temporada.
