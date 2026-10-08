@@ -1,5 +1,7 @@
 package com.kikepb.club.presentation.match
 
+import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
+import com.kikepb.club.presentation.components.LoadErrorCard
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -194,7 +196,11 @@ fun MatchDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 if (state.isStale) item(key = "stale") { HintText(text = stringResource(Res.string.match_offline)) }
-                state.match ?: return@LazyColumn
+                if (state.match == null) {
+                    if (state.loadFailed) item(key = "error") { LoadErrorCard(onRetry = { onAction(MatchDetailAction.OnRefresh) }) }
+                    else item(key = "loading") { SquadfyLoadingIndicator() }
+                    return@LazyColumn
+                }
                 item(key = "header") { MatchHeader(state = state) }
                 if (state.match.hasTeams || state.match.status == MatchStatus.COMPLETED) {
                     item(key = "score") { ScoreCard(state = state, onAction = onAction) }

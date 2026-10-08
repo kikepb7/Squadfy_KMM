@@ -1,5 +1,6 @@
 package com.kikepb.globalPosition.presentation
 
+import kotlinx.coroutines.Job
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.club.domain.model.ClubModel
@@ -43,6 +44,8 @@ class GlobalPositionViewModel(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(GlobalPositionUiState(now = clock.now()))
+    // Declared before init: an initializer placed after it would reset the job started there (spec 017)
+    private var refreshJob: Job? = null
 
     /** Per club: announcement status, loaded at most [MAX_PARALLEL] at a time (AC-010-01). */
     private val statuses = MutableStateFlow<Map<String, HomeAnnouncementStatus>>(emptyMap())
@@ -62,7 +65,8 @@ class GlobalPositionViewModel(
             cards = clubs
                 .map { club -> HomeClubCardModel(club, statusByClub[club.id] ?: HomeAnnouncementStatus.Loading, club.id in enrollingIds) }
                 .sortedForHome(current.now),
-            isLoadingClubs = false
+            // An empty cache only means "no clubs" once the first fetch answered (spec 017)
+            isLoadingClubs = clubs.isEmpty() && !current.hasFetchedClubs
         )
     }.stateIn(
         scope = viewModelScope,
@@ -82,7 +86,8 @@ class GlobalPositionViewModel(
             is OnCopyInviteCode -> viewModelScope.launch { eventChannel.send(element = CopyToClipboard(action.code)) }
             OnSettingsClick -> viewModelScope.launch { eventChannel.send(element = NavigateToSettings) }
             is OnClubClick -> viewModelScope.launch { eventChannel.send(element = NavigateToClub(action.clubId)) }
-            GlobalPositionAction.OnRefresh, GlobalPositionAction.OnResume -> refresh()
+            GlobalPositionAction.OnRefresh -> refresh(userInitiated = true)
+            GlobalPositionAction.OnResume -> refresh()
             is GlobalPositionAction.OnRetryClub -> knownClubs.firstOrNull { it.id == action.clubId }?.let(::loadAnnouncement)
             is GlobalPositionAction.OnEnrollClick -> enroll(action.clubId)
         }
@@ -95,13 +100,17 @@ class GlobalPositionViewModel(
         newClubs.forEach(::loadAnnouncement)
     }
 
-    /** AC-010-07: pull-to-refresh and coming back to the foreground. */
-    private fun refresh() {
-        _state.update { it.copy(isRefreshing = true, now = clock.now()) }
-        viewModelScope.launch {
-            fetchMyClubsUseCase()
-            knownClubs.forEach(::loadAnnouncement)
-            _state.update { it.copy(isRefreshing = false) }
+    /** AC-010-07: pull-to-refresh and coming back to the foreground. Only the pull shows the indicator (spec 017). */
+    private fun refresh(userInitiated: Boolean = false) {
+        refreshJob?.cancel()
+        _state.update { it.copy(isRefreshing = userInitiated, now = clock.now()) }
+        refreshJob = viewModelScope.launch {
+            try {
+                fetchMyClubsUseCase()
+                knownClubs.forEach(::loadAnnouncement)
+            } finally {
+                _state.update { it.copy(isRefreshing = false, hasFetchedClubs = true) }
+            }
         }
     }
 
@@ -143,6 +152,8 @@ data class GlobalPositionUiState(
     val now: Instant,
     val cards: List<HomeClubCardModel> = emptyList(),
     val isLoadingClubs: Boolean = true,
+    /** The first fetch of my clubs answered (success or not), so an empty list is real. */
+    val hasFetchedClubs: Boolean = false,
     val isRefreshing: Boolean = false
 )
 

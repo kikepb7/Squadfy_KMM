@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.absences
 
+import kotlinx.coroutines.Job
 import com.kikepb.core.domain.realtime.ClubLiveUpdates
 import com.kikepb.core.domain.realtime.ClubDataScope
 import androidx.compose.foundation.text.input.TextFieldState
@@ -59,6 +60,8 @@ class AbsencesViewModel(
     val events = eventChannel.receiveAsFlow()
 
     private val _state = MutableStateFlow(AbsencesState())
+    // Declared before init: an initializer placed after it would reset the job started there (spec 017)
+    private var loadJob: Job? = null
 
     val state = combine(_state, getClubMembersUseCase(clubId), observeMyMembershipUseCase(clubId)) { current, members, me ->
         current.copy(members = members.associateBy { it.id }, myMemberId = me?.id)
@@ -72,17 +75,17 @@ class AbsencesViewModel(
         viewModelScope.launch {
             // APP-RN-03: "today" and the dates are those of the club
             getScheduleUseCase(clubId).onSuccess { schedule -> schedule?.let { _state.update { state -> state.copy(timeZoneId = it.timeZone) } } }
-            load()
+            reload()
         }
         // AC-015-06: absences of other members
         viewModelScope.launch {
-            clubLiveUpdates.observe(clubId).collect { change -> if (change.scope == ClubDataScope.ABSENCES) load() }
+            clubLiveUpdates.observe(clubId).collect { change -> if (change.scope == ClubDataScope.ABSENCES) reload() }
         }
     }
 
     fun onAction(action: AbsencesAction) {
         when (action) {
-            AbsencesAction.OnRefresh -> viewModelScope.launch { load() }
+            AbsencesAction.OnRefresh -> reload(userInitiated = true)
             AbsencesAction.OnAddClick -> _state.update { it.copy(form = AbsenceForm(fromDate = today(), toDate = today())) }
             AbsencesAction.OnDismissForm -> _state.update { it.copy(form = null, picker = null) }
             is AbsencesAction.OnOpenPicker -> _state.update { it.copy(picker = action.target) }
@@ -101,12 +104,21 @@ class AbsencesViewModel(
         }
     }
 
-    private suspend fun load() {
-        _state.update { it.copy(isLoading = true) }
-        getAbsencesUseCase(clubId, from = today())
-            .onSuccess { absences -> _state.update { it.copy(absences = absences) } }
-            .onFailure { error -> eventChannel.send(AbsencesEvent.ShowMessage(error.toUiText())) }
-        _state.update { it.copy(isLoading = false) }
+    /** Spec 017: only a pull shows the indicator, automatic reloads are silent and the newest request wins. */
+    private fun reload(userInitiated: Boolean = false) {
+        loadJob?.cancel()
+        if (userInitiated) _state.update { it.copy(isRefreshing = true) }
+        loadJob = viewModelScope.launch { load(showErrors = userInitiated || _state.value.isLoading) }
+    }
+
+    private suspend fun load(showErrors: Boolean = true) {
+        try {
+            getAbsencesUseCase(clubId, from = today())
+                .onSuccess { absences -> _state.update { it.copy(absences = absences) } }
+                .onFailure { error -> if (showErrors) eventChannel.send(AbsencesEvent.ShowMessage(error.toUiText())) }
+        } finally {
+            _state.update { it.copy(isLoading = false, isRefreshing = false) }
+        }
     }
 
     private fun save() {
@@ -162,7 +174,10 @@ data class AbsenceForm(
 )
 
 data class AbsencesState(
+    /** First load only. */
     val isLoading: Boolean = true,
+    /** Pull-to-refresh started by the user. */
+    val isRefreshing: Boolean = false,
     val isWorking: Boolean = false,
     val timeZoneId: String = TimeZone.currentSystemDefault().id,
     val absences: List<MemberAbsenceModel> = emptyList(),

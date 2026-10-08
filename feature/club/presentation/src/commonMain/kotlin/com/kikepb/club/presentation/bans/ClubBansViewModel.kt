@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.bans
 
+import kotlinx.coroutines.Job
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,6 +31,8 @@ class ClubBansViewModel(
         ?: throw IllegalStateException("clubId is required")
 
     private val _state = MutableStateFlow(ClubBansState())
+    // Declared before init: an initializer placed after it would reset the job started there (spec 017)
+    private var loadJob: Job? = null
     val state = _state.asStateFlow()
 
     private val eventChannel = Channel<ClubBansEvent>(Channel.BUFFERED)
@@ -41,18 +44,23 @@ class ClubBansViewModel(
 
     fun onAction(action: ClubBansAction) {
         when (action) {
-            ClubBansAction.OnRefresh -> load()
+            ClubBansAction.OnRefresh -> load(userInitiated = true)
             is ClubBansAction.OnUnban -> unban(action.ban)
         }
     }
 
-    private fun load() {
-        _state.update { it.copy(isLoading = true) }
-        viewModelScope.launch {
-            getClubBansUseCase(clubId)
-                .onSuccess { bans -> _state.update { it.copy(bans = bans) } }
-                .onFailure { error -> eventChannel.send(ClubBansEvent.ShowMessage(error.toUiText())) }
-            _state.update { it.copy(isLoading = false) }
+    /** Spec 017: only a pull shows the indicator; the newest request wins. */
+    private fun load(userInitiated: Boolean = false) {
+        loadJob?.cancel()
+        if (userInitiated) _state.update { it.copy(isRefreshing = true) }
+        loadJob = viewModelScope.launch {
+            try {
+                getClubBansUseCase(clubId)
+                    .onSuccess { bans -> _state.update { it.copy(bans = bans) } }
+                    .onFailure { error -> eventChannel.send(ClubBansEvent.ShowMessage(error.toUiText())) }
+            } finally {
+                _state.update { it.copy(isLoading = false, isRefreshing = false) }
+            }
         }
     }
 
@@ -72,7 +80,10 @@ class ClubBansViewModel(
 
 data class ClubBansState(
     val bans: List<ClubBanModel> = emptyList(),
+    /** First load only. */
     val isLoading: Boolean = true,
+    /** Pull-to-refresh started by the user. */
+    val isRefreshing: Boolean = false,
     val unbanningIds: Set<String> = emptySet()
 )
 

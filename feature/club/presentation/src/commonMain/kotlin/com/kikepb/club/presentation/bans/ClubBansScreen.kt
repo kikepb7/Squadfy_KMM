@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.bans
 
+import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -75,7 +76,7 @@ fun ClubBansScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         PullToRefreshBox(
-            isRefreshing = state.isLoading,
+            isRefreshing = state.isRefreshing,
             onRefresh = { onAction(ClubBansAction.OnRefresh) },
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
@@ -84,6 +85,7 @@ fun ClubBansScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                if (state.bans.isEmpty() && state.isLoading) item(key = "loading") { SquadfyLoadingIndicator() }
                 if (state.bans.isEmpty() && !state.isLoading) {
                     item {
                         Text(

@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.detail
 
+import kotlinx.coroutines.Job
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -40,6 +41,8 @@ class ClubDetailViewModel(
     val events = eventChannel.receiveAsFlow()
 
     private val _state = MutableStateFlow(ClubDetailState())
+    // Declared before init: an initializer placed after it would reset the job started there (spec 017)
+    private var syncJob: Job? = null
 
     val state = combine(
         flow = _state,
@@ -64,16 +67,26 @@ class ClubDetailViewModel(
 
     fun onAction(action: ClubDetailAction) {
         when (action) {
-            OnRefresh -> syncFromNetwork()
+            OnRefresh -> syncFromNetwork(userInitiated = true)
+            ClubDetailAction.OnResume -> syncFromNetwork(userInitiated = false)
         }
     }
 
-    private fun syncFromNetwork() {
+    /**
+     * Spec 017: the latest sync wins. A resume refreshes silently; its error is only shown when there is nothing
+     * cached to display (otherwise the cached club stays and a snackbar on every resume would be noise).
+     */
+    private fun syncFromNetwork(userInitiated: Boolean) {
+        syncJob?.cancel()
         _state.update { it.copy(isLoading = true) }
-        viewModelScope.launch {
-            syncClubDetailUseCase(clubId = clubId)
-                .onFailure { error -> eventChannel.send(ShowMessage(error.toUiText())) }
-            _state.update { it.copy(isLoading = false) }
+        syncJob = viewModelScope.launch {
+            try {
+                syncClubDetailUseCase(clubId = clubId).onFailure { error ->
+                    if (userInitiated || state.value.club == null) eventChannel.send(ShowMessage(error.toUiText()))
+                }
+            } finally {
+                _state.update { it.copy(isLoading = false) }
+            }
         }
     }
 }
@@ -88,6 +101,7 @@ data class ClubDetailState(
 
 sealed interface ClubDetailAction {
     data object OnRefresh : ClubDetailAction
+    data object OnResume : ClubDetailAction
 }
 
 sealed interface ClubDetailEvent {

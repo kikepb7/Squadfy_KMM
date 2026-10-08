@@ -1,5 +1,7 @@
 package com.kikepb.club.presentation.announcement
 
+import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
+import com.kikepb.club.presentation.components.LoadErrorCard
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -173,7 +175,11 @@ fun AnnouncementContent(
                 }
             }
             if (current == null) {
-                if (state.hasLoaded) item(key = "none") { NoMatchCard(isManager = state.isManager, onOpenSchedule = onOpenSchedule) }
+                when {
+                    state.hasLoaded -> item(key = "none") { NoMatchCard(isManager = state.isManager, onOpenSchedule = onOpenSchedule) }
+                    state.loadFailed -> item(key = "error") { LoadErrorCard(onRetry = { onAction(AnnouncementAction.OnRefresh) }) }
+                    else -> item(key = "loading") { SquadfyLoadingIndicator() }
+                }
             } else {
                 item(key = "header") { HeaderCard(state = state, onOpenMatch = onOpenMatch) }
                 item(key = "actions") { PrimaryActions(state = state, onAction = onAction) }

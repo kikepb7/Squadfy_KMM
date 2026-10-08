@@ -1,5 +1,6 @@
 package com.kikepb.globalPosition.presentation
 
+import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -103,6 +104,7 @@ fun GlobalPositionScreen(
             item(key = "header_clubs") {
                 SectionHeader(title = stringResource(RString.squadfy_global_position_my_clubs), modifier = Modifier.fillMaxWidth())
             }
+            if (state.isLoadingClubs) item(key = "loading_clubs") { SquadfyLoadingIndicator() }
             if (!state.isLoadingClubs && state.cards.isEmpty()) {
                 item(key = "no_clubs") {
                     Text(

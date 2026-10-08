@@ -9,6 +9,7 @@ import com.kikepb.club.domain.model.PlayerPosition
 import com.kikepb.club.domain.repository.ClubRepository
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -43,7 +44,15 @@ class FakeClubRepository : ClubRepository {
     override fun getClubMemberById(memberId: String): Flow<ClubMemberModel?> = members.map { list -> list.firstOrNull { it.id == memberId } }
     override fun observeMembershipsOfUser(userId: String): Flow<List<ClubMemberModel>> = members.map { list -> list.filter { it.userId == userId } }
 
-    override suspend fun fetchMyClubs(): EmptyResult<ClubError> = Result.Success(Unit)
+    var fetchMyClubsResult: EmptyResult<ClubError> = Result.Success(Unit)
+    /** When set, `fetchMyClubs` waits for it: lets a test observe the state while the fetch is in flight. */
+    var fetchMyClubsGate: CompletableDeferred<Unit>? = null
+    var myClubsFetches = 0
+    override suspend fun fetchMyClubs(): EmptyResult<ClubError> {
+        myClubsFetches++
+        fetchMyClubsGate?.await()
+        return fetchMyClubsResult
+    }
     override suspend fun fetchClubById(clubId: String): EmptyResult<ClubError> = Result.Success(Unit)
     var memberFetches = 0
     override suspend fun fetchClubMembers(clubId: String): EmptyResult<ClubError> {

@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.schedule
 
+import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -145,7 +146,7 @@ fun ScheduleScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         PullToRefreshBox(
-            isRefreshing = state.isLoading,
+            isRefreshing = state.isRefreshing,
             onRefresh = { onAction(ScheduleAction.OnRefresh) },
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
@@ -169,7 +170,8 @@ private fun ScheduleSummaryCard(state: ScheduleState) {
     Card {
         val schedule = state.schedule
         when {
-            schedule == null && !state.isLoading -> Text(
+            schedule == null && state.isLoading -> SquadfyLoadingIndicator()
+            schedule == null -> Text(
                 text = stringResource(if (state.canEdit) Res.string.schedule_none_manager else Res.string.schedule_none),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.extended.textSecondary

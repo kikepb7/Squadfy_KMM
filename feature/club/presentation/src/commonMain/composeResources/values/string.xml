@@ -370,4 +370,5 @@
     <string name="standings_period_all">Todo</string>
     <string name="standings_period_year">Este año</string>
     <string name="standings_period_30d">Últimos 30 días</string>
+    <string name="common_load_error">No se ha podido cargar</string>
 </resources>

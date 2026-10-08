@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.match
 
+import kotlinx.coroutines.Job
 import com.kikepb.core.domain.realtime.ClubLiveUpdates
 import com.kikepb.core.domain.realtime.ClubDataScope
 import androidx.compose.foundation.text.input.TextFieldState
@@ -104,6 +105,8 @@ class MatchDetailViewModel(
     val events = eventChannel.receiveAsFlow()
 
     private val _state = MutableStateFlow(MatchDetailState())
+    // Declared before init: an initializer placed after it would reset the job started there (spec 017)
+    private var refreshJob: Job? = null
 
     val state = combine(
         _state,
@@ -157,7 +160,7 @@ class MatchDetailViewModel(
 
     fun onAction(action: MatchDetailAction) {
         when (action) {
-            MatchDetailAction.OnRefresh -> refresh()
+            MatchDetailAction.OnRefresh -> refresh(userInitiated = true)
             is MatchDetailAction.OnVisibilityChanged -> onVisibilityChanged(action.visible)
             MatchDetailAction.OnRedrawClick -> _state.update { it.copy(dialog = MatchDetailDialog.ConfirmRedraw) }
             MatchDetailAction.OnConfirmRedraw -> redraw()
@@ -216,32 +219,40 @@ class MatchDetailViewModel(
         super.onCleared()
     }
 
-    private fun refresh() {
-        _state.update { it.copy(isRefreshing = true) }
-        viewModelScope.launch {
-            getMatchUseCase(matchId)
-                .onSuccess { match ->
-                    _state.update { it.copy(match = match, isStale = false, now = clock.now()) }
-                    // APP-RN-06: players who joined after the last members sync
-                    val ids = match.enrolledPlayers + match.teamA + match.teamB
-                    val cached = getClubMembersUseCase(clubId).first().map { it.id }.toSet()
-                    if (ids.any { it !in cached }) syncClubDetailUseCase(clubId)
+    /** Spec 017: only a pull shows the indicator; pushes and live updates reload silently and the newest wins. */
+    private fun refresh(userInitiated: Boolean = false) {
+        refreshJob?.cancel()
+        _state.update { it.copy(isRefreshing = userInitiated, loadFailed = false) }
+        refreshJob = viewModelScope.launch {
+            try {
+                getMatchUseCase(matchId)
+                    .onSuccess { match ->
+                        _state.update { it.copy(match = match, isStale = false, now = clock.now()) }
+                        // APP-RN-06: players who joined after the last members sync
+                        val ids = match.enrolledPlayers + match.teamA + match.teamB
+                        val cached = getClubMembersUseCase(clubId).first().map { it.id }.toSet()
+                        if (ids.any { it !in cached }) syncClubDetailUseCase(clubId)
+                    }
+                    .onFailure { error -> onLoadError(error, userInitiated) }
+                getMatchAnnouncementUseCase(matchId).onSuccess { announcement ->
+                    _state.update { it.copy(announcement = announcement) }
                 }
-                .onFailure { error -> onLoadError(error) }
-            getMatchAnnouncementUseCase(matchId).onSuccess { announcement ->
-                _state.update { it.copy(announcement = announcement) }
+                if (balanceRequested) {
+                    loadBalance()
+                    loadLatestCompleted()
+                }
+            } finally {
+                _state.update { it.copy(isRefreshing = false, hasLoaded = true) }
             }
-            if (balanceRequested) {
-                loadBalance()
-                loadLatestCompleted()
-            }
-            _state.update { it.copy(isRefreshing = false, hasLoaded = true) }
         }
     }
 
-    private suspend fun onLoadError(error: ClubError) {
+    private suspend fun onLoadError(error: ClubError, userInitiated: Boolean) {
+        val firstLoad = _state.value.match == null
         if (error is ClubError.Remote && error.error.status == DataError.Remote.NO_INTERNET) _state.update { it.copy(isStale = true) }
-        eventChannel.send(MatchDetailEvent.ShowMessage(error.toUiText()))
+        _state.update { it.copy(loadFailed = firstLoad) }
+        // Silent reloads (pushes, live updates) do not repeat the same error
+        if (userInitiated || firstLoad) eventChannel.send(MatchDetailEvent.ShowMessage(error.toUiText()))
         if (error == ClubError.NotFound || error == ClubError.NotClubMember) eventChannel.send(MatchDetailEvent.Close)
     }
 
@@ -397,6 +408,9 @@ sealed interface MatchDetailDialog {
 
 data class MatchDetailState(
     val hasLoaded: Boolean = false,
+    /** The first load failed and there is no match to show (spec 017). */
+    val loadFailed: Boolean = false,
+    /** Pull-to-refresh started by the user (spec 017). */
     val isRefreshing: Boolean = false,
     val isWorking: Boolean = false,
     val isStale: Boolean = false,

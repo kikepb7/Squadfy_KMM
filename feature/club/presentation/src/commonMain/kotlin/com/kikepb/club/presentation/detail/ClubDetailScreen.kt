@@ -83,7 +83,7 @@ fun ClubDetailRoot(
 
     // Members who joined meanwhile (or a renamed club) show up when coming back to the club
     LifecycleResumeEffect(Unit) {
-        viewModel.onAction(ClubDetailAction.OnRefresh)
+        viewModel.onAction(ClubDetailAction.OnResume)
         onPauseOrDispose { }
     }
 

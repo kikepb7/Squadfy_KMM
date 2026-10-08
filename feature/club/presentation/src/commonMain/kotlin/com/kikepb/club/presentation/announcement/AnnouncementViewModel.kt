@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.announcement
 
+import kotlinx.coroutines.Job
 import com.kikepb.core.domain.realtime.ClubLiveUpdates
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle
@@ -93,6 +94,8 @@ class AnnouncementViewModel(
     val events = eventChannel.receiveAsFlow()
 
     private val _state = MutableStateFlow(AnnouncementState(now = clock.now()))
+    // Declared before init: an initializer placed after it would reset the job started there (spec 017)
+    private var refreshJob: Job? = null
 
     /** Wall clock that only ticks while the screen collects the state (AC-005-03). */
     private val ticker = flow {
@@ -123,7 +126,7 @@ class AnnouncementViewModel(
     /** Once a window boundary is crossed (opens, closes) the backend state changed too: refresh. */
     private fun refreshIfWindowChanged(state: AnnouncementState) {
         val window = state.windowState
-        if (lastWindowState != null && window != null && window != lastWindowState && !state.isRefreshing) refresh()
+        if (lastWindowState != null && window != null && window != lastWindowState && refreshJob?.isActive != true) refresh()
         if (window != null) lastWindowState = window
     }
 
@@ -146,7 +149,8 @@ class AnnouncementViewModel(
 
     fun onAction(action: AnnouncementAction) {
         when (action) {
-            AnnouncementAction.OnRefresh, AnnouncementAction.OnResume -> refresh()
+            AnnouncementAction.OnRefresh -> refresh(userInitiated = true)
+            AnnouncementAction.OnResume -> refresh()
             is AnnouncementAction.OnVisibilityChanged -> onVisibilityChanged(action.visible)
             AnnouncementAction.OnEnrollClick -> enroll()
             AnnouncementAction.OnWithdrawClick -> _state.update { it.copy(dialog = AnnouncementDialog.ConfirmWithdraw) }
@@ -162,28 +166,36 @@ class AnnouncementViewModel(
         }
     }
 
-    private fun refresh() {
-        _state.update { it.copy(isRefreshing = true) }
-        viewModelScope.launch {
-            getCurrentAnnouncementUseCase(clubId)
-                .onSuccess { current ->
-                    _state.update { it.copy(current = current, hasLoaded = true, isStale = false, lastUpdatedAt = clock.now()) }
-                    current?.announcement?.let { announcement ->
-                        val ids = (announcement.entries + announcement.waitlist).flatMap { listOfNotNull(it.clubMemberId, it.invitedByMemberId) }
-                        syncMembersIfUnknown(ids)
+    /**
+     * Spec 017: the pull indicator only follows a user's pull; opening the tab, resuming, pushes, live updates and
+     * window changes reload silently. The newest refresh cancels the previous one so a slow answer never wins.
+     */
+    private fun refresh(userInitiated: Boolean = false) {
+        refreshJob?.cancel()
+        _state.update { it.copy(isRefreshing = userInitiated, loadFailed = false) }
+        refreshJob = viewModelScope.launch {
+            try {
+                getCurrentAnnouncementUseCase(clubId)
+                    .onSuccess { current ->
+                        _state.update { it.copy(current = current, hasLoaded = true, isStale = false, lastUpdatedAt = clock.now()) }
+                        current?.announcement?.let { announcement ->
+                            val ids = (announcement.entries + announcement.waitlist).flatMap { listOfNotNull(it.clubMemberId, it.invitedByMemberId) }
+                            syncMembersIfUnknown(ids)
+                        }
                     }
+                    .onFailure { error -> onLoadError(error, userInitiated) }
+                // AC-005-15: my absences, only with MEMBER_ABSENCES on (APP-RN-17)
+                if (featureFlags.isEnabled(FeatureFlag.MEMBER_ABSENCES)) {
+                    val today = clock.now().toLocalDateTime(_state.value.zone).date
+                    getAbsencesUseCase(clubId, from = today).onSuccess { absences -> _state.update { it.copy(absences = absences) } }
                 }
-                .onFailure { error -> onLoadError(error) }
-            // AC-005-15: my absences, only with MEMBER_ABSENCES on (APP-RN-17)
-            if (featureFlags.isEnabled(FeatureFlag.MEMBER_ABSENCES)) {
-                val today = clock.now().toLocalDateTime(_state.value.zone).date
-                getAbsencesUseCase(clubId, from = today).onSuccess { absences -> _state.update { it.copy(absences = absences) } }
+                getAnnouncementHistoryUseCase(clubId).onSuccess { history ->
+                    // The current one is shown on top, the rest are past announcements (AC-005-10)
+                    _state.update { state -> state.copy(history = history.filterNot { it.id == state.current?.announcement?.id }) }
+                }
+            } finally {
+                _state.update { it.copy(isRefreshing = false, now = clock.now()) }
             }
-            getAnnouncementHistoryUseCase(clubId).onSuccess { history ->
-                // The current one is shown on top, the rest are past announcements (AC-005-10)
-                _state.update { state -> state.copy(history = history.filterNot { it.id == state.current?.announcement?.id }) }
-            }
-            _state.update { it.copy(isRefreshing = false, now = clock.now()) }
         }
     }
 
@@ -285,14 +297,16 @@ class AnnouncementViewModel(
         return result
     }
 
-    private suspend fun onLoadError(error: ClubError) {
+    private suspend fun onLoadError(error: ClubError, userInitiated: Boolean) {
         if (error == ClubError.NotClubMember) {
             eventChannel.send(AnnouncementEvent.NotMemberAnymore)
             return
         }
         val offline = error is ClubError.Remote && error.error.status == DataError.Remote.NO_INTERNET
-        _state.update { it.copy(isStale = offline && it.current != null) }
-        eventChannel.send(AnnouncementEvent.ShowMessage(error.toUiText()))
+        // Nothing loaded yet: the tab shows a retry instead of staying blank
+        _state.update { it.copy(isStale = offline && it.current != null, loadFailed = !it.hasLoaded) }
+        // Silent reloads (resume, pushes, live updates) do not repeat the same error
+        if (userInitiated || !_state.value.hasLoaded) eventChannel.send(AnnouncementEvent.ShowMessage(error.toUiText()))
     }
 
     /** AC-005-07: specific texts for the business errors, then refresh to show the real state. */
@@ -338,6 +352,9 @@ sealed interface AnnouncementDialog {
 data class AnnouncementState(
     val now: Instant,
     val hasLoaded: Boolean = false,
+    /** The first load failed: nothing to show, offer a retry (spec 017). */
+    val loadFailed: Boolean = false,
+    /** Pull-to-refresh started by the user (spec 017). */
     val isRefreshing: Boolean = false,
     val isStale: Boolean = false,
     val lastUpdatedAt: Instant? = null,

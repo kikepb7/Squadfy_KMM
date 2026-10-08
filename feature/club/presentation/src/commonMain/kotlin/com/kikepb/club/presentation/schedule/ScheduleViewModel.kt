@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.schedule
 
+import kotlinx.coroutines.Job
 import com.kikepb.core.domain.realtime.ClubLiveUpdates
 import com.kikepb.core.domain.realtime.ClubDataScope
 import androidx.compose.foundation.text.input.TextFieldState
@@ -69,6 +70,8 @@ class ScheduleViewModel(
     val events = eventChannel.receiveAsFlow()
 
     private val _state = MutableStateFlow(ScheduleState())
+    // Declared before init: an initializer placed after it would reset the job started there (spec 017)
+    private var loadJob: Job? = null
 
     val state = combine(
         _state,
@@ -110,7 +113,7 @@ class ScheduleViewModel(
     fun onAction(action: ScheduleAction) {
         when (action) {
             ScheduleAction.OnRefresh -> {
-                load()
+                load(userInitiated = true)
                 if (state.value.exceptionsEnabled) loadExceptions()
             }
             is ScheduleAction.OnDaySelected -> updateForm { it.copy(dayOfWeek = action.day) }
@@ -137,24 +140,39 @@ class ScheduleViewModel(
         }
     }
 
-    private fun load() {
-        _state.update { it.copy(isLoading = true) }
-        viewModelScope.launch {
-            getScheduleUseCase(clubId)
-                .onSuccess { schedule ->
-                    _state.update {
-                        it.copy(schedule = schedule, form = schedule?.let(ScheduleDraft::from) ?: it.form ?: defaultDraft(), isOffline = false)
+    /**
+     * Spec 017: only a pull shows the refresh indicator; the first load uses [ScheduleState.isLoading] and automatic
+     * reloads (live updates) are silent. The newest request wins, and unsaved edits are never overwritten.
+     */
+    private fun load(userInitiated: Boolean = false) {
+        loadJob?.cancel()
+        if (userInitiated) _state.update { it.copy(isRefreshing = true) }
+        loadJob = viewModelScope.launch {
+            try {
+                getScheduleUseCase(clubId)
+                    .onSuccess { schedule ->
+                        val previous = _state.value
+                        val hasUnsavedEdits = previous.schedule != null && previous.form != ScheduleDraft.from(previous.schedule)
+                        _state.update {
+                            it.copy(
+                                schedule = schedule,
+                                form = if (hasUnsavedEdits) it.form else schedule?.let(ScheduleDraft::from) ?: it.form ?: defaultDraft(),
+                                isOffline = false
+                            )
+                        }
+                        if (!hasUnsavedEdits) schedule?.let {
+                            _state.value.timeZone.setTextAndPlaceCursorAtEnd(it.timeZone)
+                            _state.value.duration.setTextAndPlaceCursorAtEnd(it.durationMinutes.toString())
+                        }
                     }
-                    schedule?.let {
-                        _state.value.timeZone.setTextAndPlaceCursorAtEnd(it.timeZone)
-                        _state.value.duration.setTextAndPlaceCursorAtEnd(it.durationMinutes.toString())
+                    .onFailure { error ->
+                        if (error is ClubError.Remote && error.error.status == DataError.Remote.NO_INTERNET) _state.update { it.copy(isOffline = true) }
+                        // Silent reloads do not repeat the same error message
+                        if (userInitiated || _state.value.isLoading) eventChannel.send(ScheduleEvent.ShowMessage(error.toUiText()))
                     }
-                }
-                .onFailure { error ->
-                    if (error is ClubError.Remote && error.error.status == DataError.Remote.NO_INTERNET) _state.update { it.copy(isOffline = true) }
-                    eventChannel.send(ScheduleEvent.ShowMessage(error.toUiText()))
-                }
-            _state.update { it.copy(isLoading = false) }
+            } finally {
+                _state.update { it.copy(isLoading = false, isRefreshing = false) }
+            }
         }
     }
 
@@ -321,7 +339,10 @@ data class ExceptionForm(
 }
 
 data class ScheduleState(
+    /** First load only (nothing to show yet). */
     val isLoading: Boolean = true,
+    /** Pull-to-refresh started by the user. */
+    val isRefreshing: Boolean = false,
     val isWorking: Boolean = false,
     val isOffline: Boolean = false,
     val canEdit: Boolean = false,

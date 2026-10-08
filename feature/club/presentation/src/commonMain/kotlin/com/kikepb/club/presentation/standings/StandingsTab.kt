@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.standings
 
+import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import squadfy_app.feature.club.presentation.generated.resources.standings_period_year
 import squadfy_app.feature.club.presentation.generated.resources.standings_period_all
 import squadfy_app.feature.club.presentation.generated.resources.standings_period_30d
@@ -92,6 +93,7 @@ fun StandingsContent(club: ClubModel, state: StandingsState, onAction: (Standing
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (!state.hasLoaded) item(key = "loading") { SquadfyLoadingIndicator() }
             if (state.isStale) item(key = "stale") { HintText(text = stringResource(Res.string.standings_offline)) }
             item(key = "mode") {
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {

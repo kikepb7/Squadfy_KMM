@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.clubs
 
+import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -109,6 +110,7 @@ fun ClubsListScreen(
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                if (state.clubs.isEmpty() && state.isLoading) item(key = "loading") { SquadfyLoadingIndicator() }
                 if (state.clubs.isEmpty() && !state.isLoading) {
                     item(key = "empty") {
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(bottom = 8.dp)) {

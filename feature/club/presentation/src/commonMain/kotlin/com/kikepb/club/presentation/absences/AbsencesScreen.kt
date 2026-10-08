@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.absences
 
+import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -84,7 +85,7 @@ fun AbsencesScreen(state: AbsencesState, onAction: (AbsencesAction) -> Unit, onB
         topBar = { SquadfyTopBar(title = stringResource(Res.string.absences_title), onBackClick = onBackClick) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
-        PullToRefreshBox(isRefreshing = state.isLoading, onRefresh = { onAction(AbsencesAction.OnRefresh) }, modifier = Modifier.fillMaxSize().padding(padding)) {
+        PullToRefreshBox(isRefreshing = state.isRefreshing, onRefresh = { onAction(AbsencesAction.OnRefresh) }, modifier = Modifier.fillMaxSize().padding(padding)) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
@@ -93,6 +94,7 @@ fun AbsencesScreen(state: AbsencesState, onAction: (AbsencesAction) -> Unit, onB
                 item(key = "add") {
                     SquadfyButton(text = stringResource(Res.string.absences_add), onClick = { onAction(AbsencesAction.OnAddClick) }, modifier = Modifier.fillMaxWidth())
                 }
+                if (state.isLoading && state.absences.isEmpty()) item(key = "loading") { SquadfyLoadingIndicator() }
                 if (!state.isLoading && state.absences.isEmpty()) item(key = "empty") { HintText(text = stringResource(Res.string.absences_empty)) }
                 items(items = state.absences, key = { it.id }) { absence -> AbsenceRow(absence = absence, state = state, onAction = onAction) }
             }

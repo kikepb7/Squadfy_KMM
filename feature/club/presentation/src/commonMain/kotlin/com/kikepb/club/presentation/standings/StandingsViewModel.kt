@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.standings
 
+import kotlinx.coroutines.Job
 import kotlin.time.Clock
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.TimeZone
@@ -49,6 +50,9 @@ class StandingsViewModel(
         ?: throw IllegalStateException("clubId is required")
 
     private val _state = MutableStateFlow(StandingsState())
+    // Declared before init: an initializer placed after it would reset the job started there (spec 017)
+    private var refreshJob: Job? = null
+    private var statsJob: Job? = null
 
     val state = combine(_state, getClubMembersUseCase(clubId), observeMyMembershipUseCase(clubId)) { current, members, me ->
         current.copy(members = members.associateBy { it.id }, myMemberId = me?.id)
@@ -72,7 +76,7 @@ class StandingsViewModel(
 
     fun onAction(action: StandingsAction) {
         when (action) {
-            StandingsAction.OnRefresh -> refresh()
+            StandingsAction.OnRefresh -> refresh(userInitiated = true)
             is StandingsAction.OnModeSelected -> _state.update { it.copy(mode = action.mode) }
             is StandingsAction.OnSortSelected -> {
                 _state.update { it.copy(sortBy = action.sortBy) }
@@ -85,26 +89,33 @@ class StandingsViewModel(
         }
     }
 
-    private fun refresh() {
-        _state.update { it.copy(isLoading = true) }
-        viewModelScope.launch {
-            getRatingLeaderboardUseCase(clubId)
-                .onSuccess { ratings ->
-                    _state.update { it.copy(ratings = ratings, isStale = false) }
-                    // APP-RN-06: rows of members who joined after the last members sync
-                    val cached = getClubMembersUseCase(clubId).first().map { it.id }.toSet()
-                    if (ratings.any { it.clubMemberId !in cached }) syncClubDetailUseCase(clubId)
-                }
-                .onFailure(::onError)
-            // 404 when I am not rated yet: the "your position" card is simply hidden
-            getMyRatingUseCase(clubId).onSuccess { mine -> _state.update { it.copy(myRating = mine) } }
-            loadStatsNow()
-            _state.update { it.copy(isLoading = false, hasLoaded = true) }
+    /** Spec 017: only a pull shows the indicator ([StandingsState.isLoading]); the first load uses `hasLoaded`. */
+    private fun refresh(userInitiated: Boolean = false) {
+        refreshJob?.cancel()
+        if (userInitiated) _state.update { it.copy(isLoading = true) }
+        refreshJob = viewModelScope.launch {
+            try {
+                getRatingLeaderboardUseCase(clubId)
+                    .onSuccess { ratings ->
+                        _state.update { it.copy(ratings = ratings, isStale = false) }
+                        // APP-RN-06: rows of members who joined after the last members sync
+                        val cached = getClubMembersUseCase(clubId).first().map { it.id }.toSet()
+                        if (ratings.any { it.clubMemberId !in cached }) syncClubDetailUseCase(clubId)
+                    }
+                    .onFailure(::onError)
+                // 404 when I am not rated yet: the "your position" card is simply hidden
+                getMyRatingUseCase(clubId).onSuccess { mine -> _state.update { it.copy(myRating = mine) } }
+                loadStatsNow()
+            } finally {
+                _state.update { it.copy(isLoading = false, hasLoaded = true) }
+            }
         }
     }
 
+    /** Changing sort or period quickly: only the newest request may write the table. */
     private fun loadStats() {
-        viewModelScope.launch { loadStatsNow() }
+        statsJob?.cancel()
+        statsJob = viewModelScope.launch { loadStatsNow() }
     }
 
     private suspend fun loadStatsNow() {

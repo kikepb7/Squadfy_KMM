@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.announcement
 
+import kotlinx.coroutines.CompletableDeferred
 import com.kikepb.core.domain.realtime.ClubDataScope
 import com.kikepb.core.domain.realtime.ClubDataChange
 import com.kikepb.club.presentation.fake.FakeClubLiveUpdates
@@ -92,8 +93,11 @@ class AnnouncementViewModelTest {
         )
         var enrollResult: Result<MatchAnnouncementModel, ClubError> = Result.Success(announcement(entries = listOf(entry("e-1", "me"))))
         var currentRequests = 0
+        /** When set, `getCurrent` waits for it: lets a test observe the state while a load is in flight. */
+        var gate: CompletableDeferred<Unit>? = null
         override suspend fun getCurrent(clubId: String): Result<CurrentAnnouncementModel?, ClubError> {
             currentRequests++
+            gate?.await()
             return current
         }
         override suspend fun getHistory(clubId: String): Result<List<MatchAnnouncementModel>, ClubError> = Result.Success(emptyList())
@@ -334,5 +338,48 @@ class AnnouncementViewModelTest {
 
         liveUpdates.emit(ClubDataChange(clubId = "club-1", scope = ClubDataScope.MATCH, matchId = "m-1"))
         assertEquals(before + 1, repository.currentRequests)
+    }
+
+    @Test
+    fun `AC-017-01 automatic reloads never show the pull indicator`() = runTest(UnconfinedTestDispatcher()) {
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+        repository.gate = CompletableDeferred()
+
+        viewModel.onAction(AnnouncementAction.OnResume)
+        assertFalse(viewModel.state.value.isRefreshing)
+        liveUpdates.emit(ClubDataChange(clubId = "club-1", scope = ClubDataScope.MATCH))
+        assertFalse(viewModel.state.value.isRefreshing)
+
+        repository.gate?.complete(Unit)
+        assertFalse(viewModel.state.value.isRefreshing)
+    }
+
+    @Test
+    fun `AC-017-01 a pull shows the indicator until the answer arrives`() = runTest(UnconfinedTestDispatcher()) {
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+        repository.gate = CompletableDeferred()
+
+        viewModel.onAction(AnnouncementAction.OnRefresh)
+        assertTrue(viewModel.state.value.isRefreshing)
+
+        repository.gate?.complete(Unit)
+        assertFalse(viewModel.state.value.isRefreshing)
+    }
+
+    @Test
+    fun `AC-017-02 a failed first load offers a retry instead of a blank tab`() = runTest(UnconfinedTestDispatcher()) {
+        repository.current = Result.Failure(ClubError.Remote(RemoteError(DataError.Remote.NO_INTERNET)))
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+        assertTrue(viewModel.state.value.loadFailed)
+        assertFalse(viewModel.state.value.hasLoaded)
+
+        repository.current = Result.Success(null)
+        viewModel.onAction(AnnouncementAction.OnRefresh)
+
+        assertFalse(viewModel.state.value.loadFailed)
+        assertTrue(viewModel.state.value.hasLoaded)
     }
 }
