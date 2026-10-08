@@ -1,5 +1,10 @@
 package com.kikepb.club.presentation.standings
 
+import kotlin.time.Instant
+import com.kikepb.club.domain.model.StatsPeriod
+import com.kikepb.club.presentation.fake.FixedTestClock
+import com.kikepb.club.presentation.fake.StubScheduleRepository
+import com.kikepb.club.domain.usecase.GetScheduleUseCase
 import androidx.lifecycle.SavedStateHandle
 import com.kikepb.club.domain.model.MatchModel
 import com.kikepb.club.domain.model.MatchStatus
@@ -54,6 +59,9 @@ class StandingsViewModelTest {
     @AfterTest
     fun tearDown() = Dispatchers.resetMain()
 
+    private val scheduleRepository = StubScheduleRepository()
+    private val fixedClock = FixedTestClock(Instant.parse("2026-10-08T10:00:00Z"))
+
     private fun viewModel() = StandingsViewModel(
         getClubMembersUseCase = GetClubMembersUseCase(clubRepository),
         observeMyMembershipUseCase = ObserveMyMembershipUseCase(clubRepository, FakeSessionStorage("me")),
@@ -61,6 +69,8 @@ class StandingsViewModelTest {
         getMyRatingUseCase = GetMyRatingUseCase(repository),
         getStatsLeaderboardUseCase = GetStatsLeaderboardUseCase(repository),
         syncClubDetailUseCase = SyncClubDetailUseCase(clubRepository),
+        getScheduleUseCase = GetScheduleUseCase(scheduleRepository),
+        clock = fixedClock,
         savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1"))
     )
 
@@ -144,4 +154,19 @@ class StandingsViewModelTest {
 
     private fun completed(id: String, at: String, change: Int): MatchModel =
         match(status = MatchStatus.COMPLETED, scheduledAt = at).copy(id = id, ratingChanges = mapOf("m-2" to change))
+
+    @Test
+    fun `AC-015-07 choosing a period reloads the stats with inclusive from and to`() = runTest(UnconfinedTestDispatcher()) {
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+
+        viewModel.onAction(StandingsAction.OnStatsPeriodSelected(StatsPeriod.THIS_YEAR))
+        assertEquals("stats:GOALS:2026-01-01..2026-10-08", repository.calls.last())
+
+        viewModel.onAction(StandingsAction.OnStatsPeriodSelected(StatsPeriod.LAST_30_DAYS))
+        assertEquals("stats:GOALS:2026-09-09..2026-10-08", repository.calls.last())
+
+        viewModel.onAction(StandingsAction.OnStatsPeriodSelected(StatsPeriod.ALL_TIME))
+        assertEquals("stats:GOALS", repository.calls.last())
+    }
 }

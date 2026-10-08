@@ -367,4 +367,7 @@
     <string name="member_club_picture_updated">Club photo updated</string>
     <string name="member_club_picture_removed">Club photo removed: your profile photo is shown</string>
     <string name="member_club_picture_invalid">Unsupported format: use JPG, PNG or WebP</string>
+    <string name="standings_period_all">All time</string>
+    <string name="standings_period_year">This year</string>
+    <string name="standings_period_30d">Last 30 days</string>
 </resources>

@@ -39,6 +39,12 @@ kotlin {
         iosMain {
             dependencies {}
         }
+
+        commonTest {
+            dependencies {
+                implementation(libs.ktor.client.mock)
+            }
+        }
     }
 
     targets.withType<KotlinNativeTarget> {

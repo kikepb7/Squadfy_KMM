@@ -1,5 +1,7 @@
 package com.kikepb.club.domain.usecase
 
+import kotlinx.datetime.LocalDate
+import com.kikepb.club.domain.model.StatsPeriod
 import com.kikepb.club.domain.error.ClubError
 import com.kikepb.club.domain.model.MatchRatingChange
 import com.kikepb.club.domain.model.MatchStatus
@@ -22,8 +24,14 @@ class GetMyRatingUseCase(private val repository: StandingsRepository) {
 }
 
 class GetStatsLeaderboardUseCase(private val repository: StandingsRepository) {
-    suspend operator fun invoke(clubId: String, sortBy: StatsSortBy = StatsSortBy.GOALS): Result<List<StatsEntry>, ClubError> =
-        repository.getStats(clubId, sortBy)
+    /** AC-015-07: [today] is the current date in the club time zone (APP-RN-03). */
+    suspend operator fun invoke(
+        clubId: String,
+        sortBy: StatsSortBy = StatsSortBy.GOALS,
+        period: StatsPeriod = StatsPeriod.ALL_TIME,
+        today: LocalDate? = null
+    ): Result<List<StatsEntry>, ClubError> =
+        repository.getStats(clubId, sortBy, today?.let { period.rangeFor(it) })
 }
 
 class GetMyStatsUseCase(private val repository: StandingsRepository) {

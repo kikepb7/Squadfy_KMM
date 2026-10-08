@@ -1,5 +1,6 @@
 package com.kikepb.club.data.datasource.remote
 
+import kotlinx.datetime.LocalDate
 import com.kikepb.club.data.dto.PlayerRatingDTO
 import com.kikepb.club.data.dto.PlayerStatsDTO
 import com.kikepb.club.data.dto.RatingLeaderboardEntryDTO
@@ -29,8 +30,18 @@ class KtorStandingsRepository(private val httpClient: HttpClient) : StandingsRep
     override suspend fun getMyRating(clubId: String): Result<MyRating, ClubError> =
         httpClient.apiGet<PlayerRatingDTO>(route = "/clubs/$clubId/ratings/me").mapError { it.toClubError() }.map { it.toDomain() }
 
-    override suspend fun getStats(clubId: String, sortBy: StatsSortBy): Result<List<StatsEntry>, ClubError> =
-        httpClient.apiGet<List<PlayerStatsDTO>>(route = "/clubs/$clubId/stats", queryParams = mapOf("sortBy" to sortBy.name))
+    override suspend fun getStats(clubId: String, sortBy: StatsSortBy, period: ClosedRange<LocalDate>?): Result<List<StatsEntry>, ClubError> =
+        httpClient.apiGet<List<PlayerStatsDTO>>(
+            route = "/clubs/$clubId/stats",
+            // Backend spec 012 RN-B: `YYYY-MM-DD`, inclusive, in the club time zone
+            queryParams = buildMap {
+                put("sortBy", sortBy.name)
+                period?.let {
+                    put("from", it.start.toString())
+                    put("to", it.endInclusive.toString())
+                }
+            }
+        )
             .mapError { it.toClubError() }.map { it.toStatsEntries() }
 
     override suspend fun getMyStats(clubId: String): Result<PlayerStats, ClubError> =

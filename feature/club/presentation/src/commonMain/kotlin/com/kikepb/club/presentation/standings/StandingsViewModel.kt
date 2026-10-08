@@ -1,5 +1,10 @@
 package com.kikepb.club.presentation.standings
 
+import kotlin.time.Clock
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.TimeZone
+import com.kikepb.club.domain.usecase.GetScheduleUseCase
+import com.kikepb.club.domain.model.StatsPeriod
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,6 +40,8 @@ class StandingsViewModel(
     private val getMyRatingUseCase: GetMyRatingUseCase,
     private val getStatsLeaderboardUseCase: GetStatsLeaderboardUseCase,
     private val syncClubDetailUseCase: SyncClubDetailUseCase,
+    private val getScheduleUseCase: GetScheduleUseCase,
+    private val clock: Clock,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -51,7 +58,15 @@ class StandingsViewModel(
         initialValue = _state.value
     )
 
+    /** APP-RN-03: the periods are those of the club time zone (from its schedule), the device one meanwhile. */
+    private var clubTimeZone: TimeZone = TimeZone.currentSystemDefault()
+
     init {
+        viewModelScope.launch {
+            getScheduleUseCase(clubId).onSuccess { schedule ->
+                schedule?.let { clubTimeZone = runCatching { TimeZone.of(it.timeZone) }.getOrDefault(clubTimeZone) }
+            }
+        }
         refresh()
     }
 
@@ -61,6 +76,10 @@ class StandingsViewModel(
             is StandingsAction.OnModeSelected -> _state.update { it.copy(mode = action.mode) }
             is StandingsAction.OnSortSelected -> {
                 _state.update { it.copy(sortBy = action.sortBy) }
+                loadStats()
+            }
+            is StandingsAction.OnStatsPeriodSelected -> {
+                _state.update { it.copy(statsPeriod = action.period) }
                 loadStats()
             }
         }
@@ -89,7 +108,8 @@ class StandingsViewModel(
     }
 
     private suspend fun loadStatsNow() {
-        getStatsLeaderboardUseCase(clubId, _state.value.sortBy)
+        val today = clock.now().toLocalDateTime(clubTimeZone).date
+        getStatsLeaderboardUseCase(clubId, _state.value.sortBy, _state.value.statsPeriod, today)
             .onSuccess { stats -> _state.update { it.copy(stats = stats) } }
             .onFailure(::onError)
     }
@@ -107,6 +127,7 @@ data class StandingsState(
     val isStale: Boolean = false,
     val mode: StandingsMode = StandingsMode.RATING,
     val sortBy: StatsSortBy = StatsSortBy.GOALS,
+    val statsPeriod: StatsPeriod = StatsPeriod.ALL_TIME,
     val ratings: List<RatingEntry> = emptyList(),
     val myRating: MyRating? = null,
     val stats: List<StatsEntry> = emptyList(),
@@ -121,4 +142,5 @@ sealed interface StandingsAction {
     data object OnRefresh : StandingsAction
     data class OnModeSelected(val mode: StandingsMode) : StandingsAction
     data class OnSortSelected(val sortBy: StatsSortBy) : StandingsAction
+    data class OnStatsPeriodSelected(val period: StatsPeriod) : StandingsAction
 }

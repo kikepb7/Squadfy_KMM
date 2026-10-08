@@ -1,5 +1,9 @@
 package com.kikepb.club.presentation.standings
 
+import squadfy_app.feature.club.presentation.generated.resources.standings_period_year
+import squadfy_app.feature.club.presentation.generated.resources.standings_period_all
+import squadfy_app.feature.club.presentation.generated.resources.standings_period_30d
+import com.kikepb.club.domain.model.StatsPeriod
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -121,6 +125,8 @@ fun StandingsContent(club: ClubModel, state: StandingsState, onAction: (Standing
                     item(key = "ratings") { RatingTable(state = state, onMemberClick = onMemberClick) }
                 }
                 StandingsMode.STATS -> {
+                    // AC-015-07: period of the stats (the rating is cumulative and is never filtered)
+                    item(key = "period") { PeriodChips(selected = state.statsPeriod, onSelected = { onAction(StandingsAction.OnStatsPeriodSelected(it)) }) }
                     item(key = "sort") { SortChips(selected = state.sortBy, onSelected = { onAction(StandingsAction.OnSortSelected(it)) }) }
                     item(key = "stats") { StatsTable(state = state, onMemberClick = onMemberClick) }
                 }
@@ -137,6 +143,22 @@ private val StatsSortBy.label: StringResource
         StatsSortBy.MINUTES -> Res.string.standings_sort_minutes
         StatsSortBy.WINS -> Res.string.standings_sort_wins
     }
+
+private val StatsPeriod.label: StringResource
+    get() = when (this) {
+        StatsPeriod.ALL_TIME -> Res.string.standings_period_all
+        StatsPeriod.THIS_YEAR -> Res.string.standings_period_year
+        StatsPeriod.LAST_30_DAYS -> Res.string.standings_period_30d
+    }
+
+@Composable
+private fun PeriodChips(selected: StatsPeriod, onSelected: (StatsPeriod) -> Unit) {
+    Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        StatsPeriod.entries.forEach { period ->
+            FilterChip(selected = period == selected, onClick = { onSelected(period) }, label = { Text(text = stringResource(period.label)) })
+        }
+    }
+}
 
 @Composable
 private fun SortChips(selected: StatsSortBy, onSelected: (StatsSortBy) -> Unit) {

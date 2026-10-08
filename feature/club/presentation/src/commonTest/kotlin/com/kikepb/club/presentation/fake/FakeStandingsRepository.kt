@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.fake
 
+import kotlinx.datetime.LocalDate
 import com.kikepb.club.domain.error.ClubError
 import com.kikepb.club.domain.model.MyRating
 import com.kikepb.club.domain.model.PlayerStats
@@ -29,8 +30,8 @@ class FakeStandingsRepository : StandingsRepository {
         calls += "ratings/me"
         return myRating
     }
-    override suspend fun getStats(clubId: String, sortBy: StatsSortBy): Result<List<StatsEntry>, ClubError> {
-        calls += "stats:$sortBy"
+    override suspend fun getStats(clubId: String, sortBy: StatsSortBy, period: ClosedRange<LocalDate>?): Result<List<StatsEntry>, ClubError> {
+        calls += if (period == null) "stats:$sortBy" else "stats:$sortBy:${period.start}..${period.endInclusive}"
         return Result.Success(stats)
     }
     override suspend fun getMyStats(clubId: String): Result<PlayerStats, ClubError> {
