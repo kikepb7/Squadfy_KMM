@@ -42,28 +42,28 @@
 ## Clubes y miembros
 | Endpoint v1 | Ruta actual | Consumidor | Spec | Estado |
 |---|---|---|---|---|
-| `GET /clubs` | `GET /club` | globalPosition + club | 003 | 🔁 |
-| `POST /clubs` → 201 | `POST /club/create` | `CreateClubUseCase` | 003 | 🔁 |
-| `POST /clubs/join` | `POST /club/join` | `JoinClubUseCase` | 003 | 🔁 errores 400 `INVALID_INVITATION_CODE`, 403 `BANNED_FROM_CLUB`, 409 |
-| `GET /clubs/{id}` | `GET /club/{id}` | ClubDetail | 003 | 🔁 |
-| `PATCH /clubs/{id}` | — | Ajustes (gestor) | 003 | ➕ |
-| `PUT /clubs/{id}/logo` multipart `clubLogo` | `POST /club/{id}/logo` | Crear club y Ajustes | 003 | 🔁 cambia el método |
-| `POST /clubs/{id}/invitation-code` | — | Ajustes (gestor) | 003 | ➕ |
-| `POST /clubs/{id}/transfer-ownership {memberId}` | — | Ficha de miembro (owner) | 003 | ➕ |
-| `GET /clubs/{id}/members` | `GET /club/{id}/members` | Miembros, resolución de nombres | 003 | 🔁 el DTO pierde `email` y las estadísticas |
-| `PATCH /clubs/{id}/members/me {shirtNumber?, position?}` | `PATCH /club/{id}/members/{memberId}` (`ClubService`, código muerto) | Mi ficha | 003 | 🔁 |
-| `DELETE /clubs/{id}/members/me` → 204 | — | Ajustes («Salir») | 003 | ➕ |
-| `DELETE /clubs/{id}/members/{memberId}` → 204 | — | Ficha de miembro (gestor) | 003 | ➕ |
-| `PATCH /clubs/{id}/members/{memberId}/role {role}` | — | Ficha de miembro (gestor) | 003 | ➕ |
-| `GET /clubs/{id}/bans`, `POST/DELETE /clubs/{id}/members/{memberId}/ban` | — | Ajustes › Vetados | 003 | ➕ |
+| `GET /clubs` | `GET /club` | globalPosition + club | 003 | ✅ |
+| `POST /clubs` → 201 | `POST /club/create` | `CreateClubUseCase` | 003 | ✅ |
+| `POST /clubs/join` | `POST /club/join` | `JoinClubUseCase` | 003 | ✅ errores 400 `INVALID_INVITATION_CODE`, 403 `BANNED_FROM_CLUB`, 409 |
+| `GET /clubs/{id}` | `GET /club/{id}` | ClubDetail | 003 | ✅ |
+| `PATCH /clubs/{id}` | — | Ajustes (gestor) | 003 | ✅ |
+| `PUT /clubs/{id}/logo` multipart `clubLogo` | `POST /club/{id}/logo` | Crear club y Ajustes | 003 | ✅ cambia el método |
+| `POST /clubs/{id}/invitation-code` | — | Ajustes (gestor) | 003 | ✅ |
+| `POST /clubs/{id}/transfer-ownership {memberId}` | — | Ficha de miembro (owner) | 003 | ✅ |
+| `GET /clubs/{id}/members` | `GET /club/{id}/members` | Miembros, resolución de nombres | 003 | ✅ el DTO pierde `email` y las estadísticas |
+| `PATCH /clubs/{id}/members/me {shirtNumber?, position?}` | `PATCH /club/{id}/members/{memberId}` (`ClubService`, código muerto) | Mi ficha | 003 | ✅ |
+| `DELETE /clubs/{id}/members/me` → 204 | — | Ajustes («Salir») | 003 | ✅ |
+| `DELETE /clubs/{id}/members/{memberId}` → 204 | — | Ficha de miembro (gestor) | 003 | ✅ |
+| `PATCH /clubs/{id}/members/{memberId}/role {role}` | — | Ficha de miembro (gestor) | 003 | ✅ |
+| `GET /clubs/{id}/bans`, `POST/DELETE /clubs/{id}/members/{memberId}/ban` | — | Ajustes › Vetados | 003 | ✅ |
 | — | `POST /club/{id}/members/{memberId}/photo` | Foto por club | 003 | 🗑 se usa la foto de perfil global (`/me/profile-picture`) |
 
 ## Horario y partidos
 | Endpoint v1 | Ruta actual | Spec | Estado |
 |---|---|---|---|
-| `GET/POST/PATCH /clubs/{id}/schedule` | `PATCH /club/{id}/schedule` → `ClubDTO` | 004 | 🔁 nuevo DTO `ClubMatchScheduleDto` |
-| `GET/POST /clubs/{id}/schedule/exceptions` `{date, type: CANCELLED\|RESCHEDULED, newScheduledAt?, reason?}` → 201, `DELETE …/exceptions/{exceptionId}` → 204 | `GET/POST/DELETE /club/{id}/schedule/exceptions[/{id}]` | 004 | 🔁 flag `SCHEDULE_EXCEPTIONS` (BE-008) |
-| Horario: `closeDaysBefore`, `closeTime`, `drawDaysBefore`, `drawTime` en `ClubMatchScheduleDto` y en sus peticiones | `drawTime` en `PATCH /club/{id}/schedule` | 004 | 🔁 flag `CUSTOM_DRAW_TIME` (BE-008) |
+| `GET/POST/PATCH /clubs/{id}/schedule` | `PATCH /club/{id}/schedule` → `ClubDTO` | 004 | ✅ nuevo DTO `ClubMatchScheduleDto` |
+| `GET/POST /clubs/{id}/schedule/exceptions` `{date, type: CANCELLED\|RESCHEDULED, newScheduledAt?, reason?}` → 201, `DELETE …/exceptions/{exceptionId}` → 204 | `GET/POST/DELETE /club/{id}/schedule/exceptions[/{id}]` | 004 | ✅ flag `SCHEDULE_EXCEPTIONS` (BE-008) |
+| Horario: `closeDaysBefore`, `closeTime`, `drawDaysBefore`, `drawTime` en `ClubMatchScheduleDto` y en sus peticiones | `drawTime` en `PATCH /club/{id}/schedule` | 004 | ✅ flag `CUSTOM_DRAW_TIME` (BE-008) |
 | `GET /clubs/{id}/absences?from=&to=`, `POST /clubs/{id}/members/me/absences` → 201, `DELETE …/members/me/absences/{id}` → 204 | — | 014 | ✅ flag `MEMBER_ABSENCES` (BE-008), `KtorAbsenceRepository` |
 | `PUT /matches/{id}/score {teamAScore, teamBScore}`, `DELETE /matches/{id}/score` | `POST /club/matches/{id}/result` | 007 | ✅ flag `MANUAL_SCORE` (BE-008) |
 | `GET /clubs/{id}/matches?status=` | `GET /club/{id}/matches` | 006/007 | ✅ `?status=COMPLETED` decide si se puede reabrir |
@@ -79,11 +79,11 @@
 ## Convocatorias
 | Endpoint v1 | Ruta actual | Spec | Estado |
 |---|---|---|---|
-| `GET /clubs/{id}/announcements/current` (404 = sin partido) | — | 005, 010 | ➕ pantalla principal |
-| `GET /clubs/{id}/announcements`, `GET /announcements/{id}`, `GET /matches/{id}/announcement` | `GET /club/matches/{id}/signups` | 005/006 | 🔁 |
-| `POST /announcements/{id}/enrollment` | `POST /club/matches/{id}/signups` | 005 | 🔁 |
-| `DELETE /announcements/{id}/enrollment` | `DELETE /club/matches/{id}/signups/me` | 005 | 🔁 |
-| `POST /announcements/{id}/guests {name, position?}`, `DELETE /announcements/{id}/guests/{guestId}` → `MatchAnnouncementDto` | `POST /club/matches/{id}/guests`, `DELETE /club/matches/{id}/signups/{signupId}` | 005 | 🔁 flag `MATCH_GUESTS` (BE-008: máximo 2 por miembro; los miembros tienen prioridad) |
+| `GET /clubs/{id}/announcements/current` (404 = sin partido) | — | 005, 010 | ✅ pantalla principal |
+| `GET /clubs/{id}/announcements`, `GET /announcements/{id}`, `GET /matches/{id}/announcement` | `GET /club/matches/{id}/signups` | 005/006 | ✅ |
+| `POST /announcements/{id}/enrollment` | `POST /club/matches/{id}/signups` | 005 | ✅ |
+| `DELETE /announcements/{id}/enrollment` | `DELETE /club/matches/{id}/signups/me` | 005 | ✅ |
+| `POST /announcements/{id}/guests {name, position?}`, `DELETE /announcements/{id}/guests/{guestId}` → `MatchAnnouncementDto` | `POST /club/matches/{id}/guests`, `DELETE /club/matches/{id}/signups/{signupId}` | 005 | ✅ flag `MATCH_GUESTS` (BE-008: máximo 2 por miembro; los miembros tienen prioridad) |
 
 ## Rating y estadísticas
 | Endpoint v1 | Spec | Estado |
@@ -125,4 +125,5 @@
 | 2026-10-07 | Spec 008: `/ratings`, `/ratings/me`, `/stats?sortBy=` y `/stats/me` (✅); el «rating del partido» sale de `ratingChanges` |
 | 2026-10-07 | Spec 009: enrutado de push por `data.type`, push en primer plano dentro de la app, silenciar club y baja del dispositivo con el token FCM (✅) |
 | 2026-10-07 | Spec 014: ausencias (✅); `MANUAL_SCORE` y `MEMBER_ABSENCES` pasan a estar activos en PRE |
+| 2026-10-08 | Clubes, horario y convocatoria (003–005) marcados ✅: ya consumidos en v1, sin rutas antiguas en el código |
 | 2026-10-08 | Spec 011: `DELETE /me {password}` (✅, flag `ACCOUNT_DELETION`) y la página web `/account/delete` del backend (spec 010) |

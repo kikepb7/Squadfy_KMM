@@ -15,4 +15,4 @@
 - [ ] **T-013 (P)** Kover agregado en la raíz con `kover(project(...))` para cada módulo, y un gate en el CI.
 - [ ] ~~**T-014**~~ Se ha movido a la spec 003 (AC-003-16): el código muerto de club y globalPosition se elimina durante la migración a v1.
 - [ ] ~~**T-015**~~ Se ha movido a la spec 011 (AC-011-04).
-- [ ] **T-016** Quitar `iosApp/iosApp/GoogleService-Info.plist` del tracking (`git rm --cached`) y restringir la API key de Firebase iOS por bundle ID en la consola de Google Cloud (se relaciona con AC-011-12).
+- [~] **T-016** Quitar `iosApp/iosApp/GoogleService-Info.plist` del tracking (`git rm --cached`) y restringir la API key de Firebase iOS por bundle ID en la consola de Google Cloud (se relaciona con AC-011-12). El plist ya no se versiona (spec 011 T-009). Falta la parte manual: restringir la clave, que sigue en el historial de git (owner, spec 011 T-013).

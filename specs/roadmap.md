@@ -1,6 +1,6 @@
 # Roadmap hasta producción
 
-> Revisado el 2026-10-07 a partir de `Squadfy_Backend/docs/BACKEND.md`. El backend v1 está **completo** (BE-001…BE-007) y es la fuente de verdad (ADR-0005). El trabajo restante es sobre todo **migrar y completar la app**, junto con 3 piezas de backend necesarias para publicar.
+> Revisado el 2026-10-08 (antes, el 2026-10-07) a partir de `Squadfy_Backend/docs/BACKEND.md`. El backend v1 está **completo** (BE-001…BE-007) y es la fuente de verdad (ADR-0005). El trabajo restante es sobre todo **migrar y completar la app**, junto con 3 piezas de backend necesarias para publicar.
 
 Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner del producto pasa una spec a `Approved`.
 
@@ -9,26 +9,26 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 |---|---|---|---|---|---|---|---|
 | 001 | Base de calidad (build, tests, CI) | **In progress** (9/16) | ✅ | — | ✅ | — | 1 d restante |
 | 002 | Base de la API v1: red, errores, auth, perfil, chat, dispositivos | **In progress** (14/16; falta el E2E con el backend y `Clock`, que pasa a la 005) | ✅ | ✅ | ✅ | 001 | 4 d |
-| 003 | Clubes y membresía (roles, vetos, transferencia, Room v3) | **In progress** (15/16; falta el E2E) | ✅ | ✅ | ✅ | 002 | 5 d |
+| 003 | Clubes y membresía (roles, vetos, transferencia, Room v3) | **In progress** (15/16; falta el E2E con dos usuarios) | ✅ | ✅ | ✅ | 002 | 5 d |
 | 004 | Horario semanal (+ cierre/sorteo y semanas especiales) | **In progress** (7/8; falta el E2E) | ✅ | — | ✅ | 003 | — |
-| 005 | Convocatoria vigente, lista de espera e invitados | **In progress** (9/11) | ✅ | ✅ | ✅ | 003 | — |
-| 006 | Detalle del partido, equipos y equilibrio | **In progress** (8/9; falta el E2E) | ✅ | — | ✅ | 005 | — |
-| 007 | Acta: eventos, minutos, cerrar, reabrir, cancelar, partido extra | **In progress** (9/10; falta el E2E) | ✅ | — | ✅ | 006 | — |
-| 008 | Clasificaciones de rating y estadísticas | **In progress** (7/8; falta el E2E) | ✅ | — | ✅ | 003 | — |
+| 005 | Convocatoria vigente, lista de espera e invitados | **Done** (11/11) | ✅ | ✅ | ✅ | 003 | — |
+| 006 | Detalle del partido, equipos y equilibrio | **Done** (9/9) | ✅ | — | ✅ | 005 | — |
+| 007 | Acta: eventos, minutos, cerrar, reabrir, cancelar, partido extra | **Done** (10/10) | ✅ | — | ✅ | 006 | — |
+| 008 | Clasificaciones de rating y estadísticas | **Done** (8/8) | ✅ | — | ✅ | 003 | — |
 | 009 | Push del ciclo de partido + silenciar club | **In progress** (9/11; faltan el E2E con push reales y la clave APNs) | ✅ | — | ✅ | 002, 005, 006 | — |
 | 010 | Inicio con mis clubes y el estado de la convocatoria | **In progress** (6/7; falta el E2E) | ✅ | — | ✅ | 003, 005 | — |
-| 011 | Preparación de la app para producción | **In progress** (0/13) | ✅ | ✅ | ✅ | 002 (en paralelo) | 5 d |
-| 012 | Puesta en producción (coordinada con el backend) | Draft | ✅ | — | — | todas, BE-008/009/010 | 3 d + revisión de tiendas |
+| 011 | Preparación de la app para producción | **In progress** (12/13; falta T-013, manual del owner) | ✅ | ✅ | ✅ | 002 (en paralelo) | 5 d |
+| 012 | Puesta en producción (coordinada con el backend) | Draft (lado app documentado) | ✅ | ✅ | ✅ | todas, BE-008/009/010 | 3 d + revisión de tiendas |
 | 013 | Feature flags por entorno (PRE / PRO) | **Done** | ✅ | ✅ | ✅ | 001 | — |
-| 014 | Ausencias de jugadores | **In progress** (6/7; falta el E2E) | ✅ | — | ✅ | 003, 005 | — |
+| 014 | Ausencias de jugadores | **Done** (7/7) | ✅ | — | ✅ | 003, 005 | — |
 
 \* Días ideales de una persona. Son orientativos, para priorizar, no un compromiso.
 
 ## Specs que se necesitan en el backend (a abrir en `Squadfy_Backend/specs/`)
 | Propuesta | Origen | Bloquea |
 |---|---|---|
-| **BE-008 Borrado de cuenta**: endpoint `DELETE /me` con contraseña, anonimización del historial y página web de borrado | BE-GAP-1 (requisito de Apple y Google) | 011, 012 |
-| **BE-009 Rate limit del refresh** por usuario o token en lugar de por IP | BE-GAP-2 | 012 (sesiones estables) |
+| ~~**Borrado de cuenta**~~ **Hecho en el backend (spec 010, rama `account-deletion-feature`)**: `DELETE /me` con contraseña, anonimización y página web `/account/delete`. La app lo consume tras `ACCOUNT_DELETION` | BE-GAP-1 | 012 (fusionar y desplegar) |
+| ~~**Rate limit del refresh**~~ **Hecho en el backend (spec 010)**: límites por cuenta y 429 con `Retry-After` | BE-GAP-2 | 012 (fusionar y desplegar) |
 | **BE-010 Despliegue**: hosting, dominio, CD, backups (cierra BE-006) | BE-GAP-3 | 012 |
 | ~~Invitados, excepciones, ausencias, `drawTime`, marcador manual~~ **Hecho en el backend (BE-008, 2026-10-07)** | D-1 | La app los conecta en 004, 005, 006, 007 y 014 |
 | ~~Merge de `backend-documentation` → `master`~~ ✅ | BE-GAP-7 | — |

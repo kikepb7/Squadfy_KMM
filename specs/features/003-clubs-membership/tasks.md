@@ -19,7 +19,7 @@
 - [x] **T-012** Ficha del miembro: acciones según los permisos y confirmaciones; mi ficha editable (AC-003-07/08). *Verificación:* `MemberDetailStateTest`.
 - [x] **T-013** Ajustes por rol: compartir o copiar el código, editar, logo, regenerar, vetados y salir (AC-003-10/11/13/14). La transferencia está en la ficha del miembro.
 - [x] **T-014** Pantalla de vetados (AC-003-12).
-- [~] **T-015** Strings ES/EN de las pantallas nuevas o reescritas. Quedan textos escritos a mano en crear, unirse y el banner, que pasan a la spec 011.
+- [x] **T-015** Strings ES/EN de las pantallas nuevas o reescritas. Lo que quedaba escrito a mano se cerró en la spec 011 (T-006), y `checkHardcodedStrings` lo vigila en el CI.
 
 ## Fase 4 · Verificación
 - [ ] **T-016** E2E con dos usuarios contra el backend local: crear, unirse, cambiar rol, expulsar, volver, vetar, que el vetado no pueda unirse, levantar el veto, transferir y que el owner antiguo salga.
