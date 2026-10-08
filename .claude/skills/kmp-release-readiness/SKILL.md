@@ -12,7 +12,7 @@ Tracked as feature `specs/features/011-release-readiness` (app) and `012-go-live
 - Gradle uses the JDK 17 that `gradle/gradle-daemon-jvm.properties` pins. Machines with an EA JDK (e.g. `23-valhalla`) break KSP if the pin is removed.
 - KSP must match Kotlin: `ksp = "<kotlinVersion>-2.0.x"` in `gradle/libs.versions.toml`.
 - Secrets come from `-P` properties, then env vars, then `local.properties`. See `BuildKonfigConventionPlugin`.
-  - `API_KEY` is required at configuration time.
+  - There is **no client API key** (ADR-0008). Never add one back: anything compiled into the app can be extracted. Users authenticate with JWT; client attestation (Play Integrity / App Attest) is the option if it is ever needed.
   - `BASE_URL_HTTP` (must end in `/api/v1`) and `BASE_URL_WS` (`…/ws`) default to the Android emulator (`10.0.2.2`). **That default is debug-only.**
   - `composeApp/google-services.json` is gitignored. CI writes it from the `GOOGLE_SERVICES_JSON` secret.
 
@@ -51,7 +51,8 @@ Tracked as feature `specs/features/011-release-readiness` (app) and `012-go-live
 
 ## CI (`.github/workflows/squadfy-ci.yml`)
 - Runs on push and PR to `main` (unit tests for all modules, assembleDebug, ktlint report-only).
-- Required repo secrets: `SQUADFY_API_KEY`, `GOOGLE_SERVICES_JSON`.
+- CI needs no secrets: without `GOOGLE_SERVICES_JSON` it uses `.github/ci/google-services.placeholder.json`.
+- Release secrets (signing, Play service account, PRO URLs, production `google-services.json`) live in the protected `production` Environment, which needs approval from its required reviewers (`.github/workflows/squadfy-release.yml`).
 - To add a release job: decode the keystore from a base64 secret, then run `./gradlew :composeApp:bundleRelease -PversionCode=${{ github.run_number }}` and upload the AAB.
 
 ## Verification commands

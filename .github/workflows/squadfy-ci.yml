@@ -16,15 +16,12 @@ permissions:
   checks: write
   pull-requests: write
 
-# Build secrets (Settings → Secrets and variables → Actions):
-#   SQUADFY_API_KEY        → value of API_KEY (read by BuildKonfigConventionPlugin from the environment)
-#   GOOGLE_SERVICES_JSON   → full contents of composeApp/google-services.json (gitignored)
-#   Both are optional here: without them CI builds with placeholders (.github/ci/google-services.placeholder.json).
-#   GOOGLE_SERVICE_INFO_PLIST → full contents of iosApp/iosApp/GoogleService-Info.plist (gitignored; for the iOS job)
+# Repository secrets (Settings → Secrets and variables → Actions), all optional for this workflow:
+#   GOOGLE_SERVICES_JSON      → contents of composeApp/google-services.json (gitignored). Without it CI builds
+#                               with .github/ci/google-services.placeholder.json (Firebase disabled in the APK).
+#   GOOGLE_SERVICE_INFO_PLIST → contents of iosApp/iosApp/GoogleService-Info.plist (gitignored; future iOS job)
+# There is no client API key (ADR-0008); production secrets live in the `production` environment (release workflow).
 env:
-  # Debug builds and unit tests don't call the backend: without the secret, CI uses a placeholder key.
-  # The release workflow requires the real production secrets.
-  API_KEY: ${{ secrets.SQUADFY_API_KEY || 'ci-placeholder-api-key' }}
   # Feature flag environment (spec 013). CI validates PRE; the production release job will set `pro`.
   SQUADFY_ENV: pre
 

@@ -45,11 +45,8 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
             extensions.configure<BuildKonfigExtension> {
                 packageName = target.pathToPackageName()
                 defaultConfigs {
-                    val apiKey = lookup("API_KEY")
-                        ?: throw IllegalStateException(
-                            "Missing API_KEY: set it in local.properties, as -PAPI_KEY or as an environment variable"
-                        )
-                    buildConfigField(FieldSpec.Type.STRING, "API_KEY", apiKey)
+                    // No client API key (ADR-0008, D-2): the backend authenticates users with JWT, and any key
+                    // compiled into the app could be extracted from the APK anyway.
                     val baseUrlHttp = resolve("BASE_URL_HTTP", DEFAULT_BASE_URL_HTTP)
                     val baseUrlWs = resolve("BASE_URL_WS", DEFAULT_BASE_URL_WS)
                     buildConfigField(FieldSpec.Type.STRING, "BASE_URL_HTTP", baseUrlHttp)

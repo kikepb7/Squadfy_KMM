@@ -22,7 +22,6 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.HttpHeaders
 import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.client.request.header
 import io.ktor.client.statement.request
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -53,14 +52,13 @@ class HttpClientFactory(
                         override fun log(message: String) = squadfyLogger.debug(message = message)
                     }
                     level = LogLevel.HEADERS
-                    sanitizeHeader { header -> header == HttpHeaders.Authorization || header.equals("x-api-key", ignoreCase = true) }
+                    sanitizeHeader { header -> header == HttpHeaders.Authorization }
                 }
             }
             install(WebSockets) {
                 pingIntervalMillis = 20_000L
             }
             defaultRequest {
-                header("x-api-key", BuildKonfig.API_KEY)
                 contentType(ContentType.Application.Json)
             }
 

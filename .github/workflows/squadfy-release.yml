@@ -20,8 +20,9 @@ concurrency:
 permissions:
   contents: read
 
-# Repository secrets (Settings → Secrets and variables → Actions), besides the CI ones:
-#   SQUADFY_API_KEY_PRO          → API_KEY of the production backend
+# Secrets of the `production` environment (Settings → Environments → production), so a release needs an
+# approval from the required reviewers before the job can read them (ADR-0008):
+#   GOOGLE_SERVICES_JSON         → google-services.json of the production Firebase project
 #   PRO_BASE_URL_HTTP            → https://<host>/api/v1
 #   PRO_BASE_URL_WS              → wss://<host>/ws
 #   SIGNING_KEYSTORE_BASE64      → upload keystore (.jks) encoded with `base64 -i upload.jks`
@@ -33,9 +34,9 @@ jobs:
     name: 🚀 Android release (Play Internal)
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    environment: production
     env:
       SQUADFY_ENV: pro
-      API_KEY: ${{ secrets.SQUADFY_API_KEY_PRO }}
       BASE_URL_HTTP: ${{ secrets.PRO_BASE_URL_HTTP }}
       BASE_URL_WS: ${{ secrets.PRO_BASE_URL_WS }}
       PRIVACY_POLICY_URL: ${{ vars.PRIVACY_POLICY_URL }}
@@ -47,9 +48,10 @@ jobs:
         env:
           KEYSTORE: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
           PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           missing=""
-          for name in API_KEY BASE_URL_HTTP BASE_URL_WS KEYSTORE PLAY_JSON; do
+          for name in BASE_URL_HTTP BASE_URL_WS KEYSTORE PLAY_JSON GOOGLE_JSON; do
             [ -n "${!name}" ] || missing="$missing $name"
           done
           if [ -n "$missing" ]; then

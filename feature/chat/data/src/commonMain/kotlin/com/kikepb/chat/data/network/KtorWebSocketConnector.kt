@@ -18,7 +18,6 @@ import com.kikepb.core.domain.util.DataError.ConnectionModel.MESSAGE_SEND_FAILED
 import com.kikepb.core.domain.util.DataError.ConnectionModel.NOT_CONNECTED
 import com.kikepb.core.domain.util.EmptyResult
 import com.kikepb.core.domain.util.Result
-import com.kikepb.feature.chat.data.BuildKonfig.API_KEY
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.header
@@ -173,7 +172,6 @@ class KtorWebSocketConnector(
             urlString = "${BASE_URL_WS}/chat"
         ) {
             header("Authorization", "Bearer $accessToken")
-            header("X-API-Key", API_KEY)
         }
 
         currentSession?.let { session ->

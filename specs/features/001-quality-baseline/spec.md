@@ -18,7 +18,7 @@ No se puede trabajar en modo SDD si el build no es reproducible, los tests no co
 - **AC-001-01** *Given* cualquier JDK en la máquina *When* se ejecuta `./gradlew` *Then* el daemon usa el JDK 17 (`gradle/gradle-daemon-jvm.properties`). ✅
 - **AC-001-02** *Given* un test nuevo en `commonTest` o `androidUnitTest` de cualquier módulo KMP *Then* compila sin declarar dependencias de test por módulo (`configureKmpTestDependencies`). ✅
 - **AC-001-03** `./gradlew testDebugUnitTest` termina en verde (151 tests a 2026-10-05). ✅
-- **AC-001-04** El CI se ejecuta en push y PR a `main` con los secretos `SQUADFY_API_KEY` y `GOOGLE_SERVICES_JSON`, y ejecuta los tests de **todos** los módulos. ✅ (falta dar de alta los secretos en GitHub)
+- **AC-001-04** El CI se ejecuta en push y PR a `main` con el secreto `GOOGLE_SERVICES_JSON` (opcional; sin él se usa un relleno; la API key se eliminó en ADR-0008), y ejecuta los tests de **todos** los módulos. ✅ (falta dar de alta los secretos en GitHub)
 - **AC-001-05** Un `GET /club` sin campos de calendario se deserializa correctamente. ✅
 - **AC-001-06** Los deep links de push de chat y de reset de contraseña navegan a su pantalla. ✅ (falta la verificación manual)
 - **AC-001-07** ktlint pasa con `ignoreFailures = false` en todos los módulos.

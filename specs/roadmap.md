@@ -33,6 +33,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | ~~Invitados, excepciones, ausencias, `drawTime`, marcador manual~~ **Hecho en el backend (BE-008, 2026-10-07)** | D-1 | La app los conecta en 004, 005, 006, 007 y 014 |
 | ~~Merge de `backend-documentation` → `master`~~ ✅ | BE-GAP-7 | — |
 | (Opcional) Página de confirmación de la verificación de email | BE-GAP-4 | — |
+| (Opcional, post-MVP) **Atestación de la app**: Play Integrity y App Attest verificados en el servidor, si hace falta frenar clientes que no sean la app (ADR-0008) | — | — |
 
 ## Hitos
 | Hito | Contenido | Criterio de salida |
@@ -58,7 +59,7 @@ BE-008, BE-009, BE-010 (en paralelo en el backend) ──────▶ 012
 | # | Pregunta | Propuesta | Afecta a |
 |---|---|---|---|
 | ~~D-1~~ | **Resuelta el 2026-10-07:** se **mantienen** invitados (los añade el jugador responsable), excepciones, `drawTime` y marcador manual; el backend los implementa y la app los oculta tras feature flags hasta entonces. La valoración es automática (rating) | — | 003–008, 013 |
-| D-2 | ¿Se mantiene la cabecera `x-api-key`? | Eliminarla si el backend v1 no la exige | 002 |
+| ~~D-2~~ | **Resuelta el 2026-10-08 (ADR-0008):** se elimina `x-api-key`/`API_KEY`, porque el backend no la lee y no puede ser secreta en una app. Los secretos de release van en el Environment `production` | — | 002, 011 |
 | D-3 | ¿Se abre BE-008 (borrado de cuenta) en el backend? | **Sí**, porque es obligatorio para publicar | 011, 012 |
 | D-4 | Hosting del backend | Una opción gestionada con Docker que encaje con los servicios ya elegidos (Supabase, CloudAMQP, Redis Cloud): Fly.io, Railway o Render, en una región de la UE | 012 |
 | D-5 | Bundle ID y `applicationId` canónicos (`com.kikepb.squadfy` frente a `org.kikepb.squadfy`) | `com.kikepb.squadfy` en las dos plataformas | 011, 012 |

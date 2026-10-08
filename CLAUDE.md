@@ -23,7 +23,7 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 ./gradlew checkHardcodedStrings                     # falla si hay textos de UI escritos a mano (bloquea el CI)
 ```
 - El JDK 17 está fijado en `gradle/gradle-daemon-jvm.properties`. **No lo quites**: el JDK por defecto de esta máquina es un EA (`23-valhalla`) que rompe KSP.
-- `local.properties` necesita `API_KEY`. Opcionalmente admite `BASE_URL_HTTP` (tiene que terminar en `/api/v1`) y `BASE_URL_WS` (`…/ws`); por defecto apuntan al emulador, `10.0.2.2:8080`.
+- `local.properties` admite, de forma opcional, `BASE_URL_HTTP` (tiene que terminar en `/api/v1`) y `BASE_URL_WS` (`…/ws`); por defecto apuntan al emulador, `10.0.2.2:8080`. **No hay API key de cliente** (ADR-0008): no la reintroduzcas, porque cualquier clave compilada en la app se puede extraer.
 - Backend local para E2E: `cd ../Squadfy_Backend && docker compose up -d`, y después `JWT_SECRET_BASE64=$(openssl rand -base64 32) FIREBASE_ENABLED=false ./gradlew :app:bootRun --args='--spring.profiles.active=dev'` (Swagger en `localhost:8080/swagger-ui.html`, emails en Mailpit `localhost:8025`).
 - `composeApp/google-services.json` está en `.gitignore` y hace falta para compilar Android. Lo mismo pasa con `iosApp/iosApp/GoogleService-Info.plist` en iOS, que corresponde al bundle `com.kikepb.squadfy`.
 

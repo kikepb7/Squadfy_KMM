@@ -23,7 +23,7 @@ Principios no negociables. Todo `plan.md` debe declarar que los cumple, o justif
 5. Todo texto visible sale de `composeResources/values*/strings.xml`. Los idiomas son ES (por defecto) y EN.
 
 ## IV. Seguridad y privacidad
-1. No hay secretos en el repositorio. `API_KEY`, `google-services.json` y los keystores se inyectan desde `local.properties` o desde variables de entorno o secrets del CI.
+1. No hay secretos en el repositorio. `google-services.json`, los keystores y las URLs de producción se inyectan desde `local.properties`, desde variables de entorno o desde los secrets del CI (los de release, en el Environment protegido `production`). No se compilan claves «secretas» en la app, porque se pueden extraer del binario (ADR-0008).
 2. Las builds release usan HTTPS/WSS, minify con R8 y logging de red desactivado. Los tokens se guardan cifrados.
 3. Se aplica la minimización de datos: el backend no expone los emails de otros usuarios y la app no los pide ni los guarda.
 4. Requisitos de tienda: borrado de cuenta dentro de la app, política de privacidad y declaración de datos (Data Safety y Privacy Nutrition Labels).

@@ -1,18 +1,29 @@
 # 012 · Checklist de lanzamiento (lado app)
 
-## 1. GitHub › Secrets and variables › Actions (AC-012-07)
-| Nombre | Tipo | Valor | Lo usa |
-|---|---|---|---|
-| `SQUADFY_API_KEY` | secreto | API key de PRE/CI | `squadfy-ci.yml` |
-| `GOOGLE_SERVICES_JSON` | secreto | `google-services.json` del proyecto Firebase de producción (mismo proyecto que el backend) | los dos workflows |
-| `SQUADFY_API_KEY_PRO` | secreto | `API_KEY` del backend de producción | `squadfy-release.yml` |
-| `PRO_BASE_URL_HTTP` | secreto | `https://<api>/api/v1` | release |
-| `PRO_BASE_URL_WS` | secreto | `wss://<api>/ws` | release |
-| `SIGNING_KEYSTORE_BASE64` | secreto | `base64 -i upload.jks` | release |
-| `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD` | secretos | los de la clave de subida | release |
-| `PLAY_SERVICE_ACCOUNT_JSON` | secreto | cuenta de servicio con permiso de publicar en Play Console | release |
-| `GOOGLE_SERVICE_INFO_PLIST` | secreto | `GoogleService-Info.plist` de la app iOS `com.kikepb.squadfy` | futuro job de iOS |
-| `PRIVACY_POLICY_URL` | variable | URL pública de la política | release (opcional) |
+## 1. GitHub: secretos (AC-012-07, ADR-0008)
+No hay API key de cliente. El CI normal no necesita ningún secreto: sin `GOOGLE_SERVICES_JSON` compila con un relleno.
+
+**Secretos del repositorio** (Settings › Secrets and variables › Actions), opcionales:
+| Nombre | Valor | Lo usa |
+|---|---|---|
+| `GOOGLE_SERVICES_JSON` | `google-services.json` de desarrollo/PRE | `squadfy-ci.yml` (sin él, usa el relleno) |
+| `GOOGLE_SERVICE_INFO_PLIST` | `GoogleService-Info.plist` de la app iOS `com.kikepb.squadfy` | futuro job de iOS |
+
+**Environment `production`** (Settings › Environments › New environment `production`):
+- *Required reviewers*: el owner. Cada release se queda esperando su aprobación antes de leer los secretos.
+- *Deployment branches and tags*: «Selected», con la regla de tag `v*` y la rama `main`.
+- Secretos del entorno:
+
+| Nombre | Valor |
+|---|---|
+| `GOOGLE_SERVICES_JSON` | `google-services.json` del proyecto Firebase de producción. Tiene prioridad sobre el del repositorio |
+| `PRO_BASE_URL_HTTP` | `https://<api>/api/v1` |
+| `PRO_BASE_URL_WS` | `wss://<api>/ws` |
+| `SIGNING_KEYSTORE_BASE64` | `base64 -i upload.jks` |
+| `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS`, `SIGNING_KEY_PASSWORD` | los de la clave de subida |
+| `PLAY_SERVICE_ACCOUNT_JSON` | cuenta de servicio con permiso de publicar en Play Console |
+
+Variable opcional del entorno o del repositorio: `PRIVACY_POLICY_URL`.
 
 Clave de subida (una sola vez, guardada fuera del repo y con copia de seguridad):
 ```bash

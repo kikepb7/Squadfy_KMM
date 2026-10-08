@@ -61,4 +61,4 @@ Todas las demás features dependen de esta.
 | Error 500 con body HTML | `code = null` y el texto genérico de 5xx |
 
 ## Preguntas abiertas
-- ❓ **D-2** ¿Se mantiene la cabecera `x-api-key`? Verificado el 2026-10-07: el backend v1 **no la lee** (no aparece en ningún controlador ni filtro). Se sigue enviando, sin efecto, hasta que se decida; quitarla implica eliminar `API_KEY` de la convention, del CI y de `local.properties`.
+- ✅ **D-2** (resuelta el 2026-10-08, ADR-0008: se elimina) ¿Se mantiene la cabecera `x-api-key`? Verificado el 2026-10-07: el backend v1 **no la lee** (no aparece en ningún controlador ni filtro). Se sigue enviando, sin efecto, hasta que se decida; quitarla implica eliminar `API_KEY` de la convention, del CI y de `local.properties`.
