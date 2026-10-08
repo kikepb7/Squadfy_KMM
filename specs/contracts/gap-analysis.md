@@ -39,12 +39,13 @@ Se retiran: la valoración manual 1–99, el `PATCH` de miembro por un admin, el
 ## 3. Lo que falta en el backend para ir a producción (propuestas de specs BE)
 | # | Brecha | Impacto | Prioridad |
 |---|---|---|---|
-| ~~BE-GAP-1~~ | Resuelto en el backend (spec 010, rama `account-deletion-feature`): `DELETE /me {password}` y la página web `/account/delete`. La app lo consume tras `ACCOUNT_DELETION` (spec 011). Falta fusionarlo y desplegarlo. | Apple 5.1.1(v) y Google Play | ✅ (pendiente de despliegue) |
-| BE-GAP-2 | **Rate limit de `/auth/refresh`**: 10 por hora y por IP en `prod`, con access tokens de 15 min. Un solo usuario activo más de 2,5 h, o varios en la misma wifi, recibe 429 y se le cierra la sesión. Está reconocido en el §16 de `BACKEND.md`. | Sesiones caídas en producción | 🔴 Alta |
-| BE-GAP-3 | El despliegue está sin hacer: hosting, dominio HTTPS, registro de imágenes, CD (BE-006). | Sin backend público no hay release | 🔴 Bloqueante |
-| BE-GAP-4 | `GET /auth/verify` responde 200 vacío en el navegador, sin página de confirmación. | UX pobre en el primer contacto | 🟡 Media |
+| ~~BE-GAP-1~~ | Resuelto en el backend (spec 010, ya en `master`): `DELETE /me {password}` y la página web `/account/delete`. La app lo consume tras `ACCOUNT_DELETION` (spec 011). Falta desplegarlo. | Apple 5.1.1(v) y Google Play | ✅ (pendiente de despliegue) |
+| ~~BE-GAP-2~~ | Resuelto en el backend (spec 010): límites por cuenta, con la IP como red de seguridad, y 429 con `Retry-After`. Flag `rate-limit` activo en `prod` (spec 011). | — | ✅ |
+| BE-GAP-3 | Despliegue en curso en el backend (spec 013): Render con staging (`release`) y producción (`master`), CD con CI en verde, CORS y health checks. La app ya separa los candidatos (staging) de los tags (producción) (spec 015 T-008). Faltan las cuentas y los secretos (manual). | Sin backend público no hay release | 🔴 Bloqueante (en curso) |
+| ~~BE-GAP-4~~ | Resuelto (spec 011 del backend): página pública `/account/verify-email`. | — | ✅ |
 | BE-GAP-5 | Hay que servir `/.well-known/assetlinks.json` y `apple-app-site-association` si se quieren App Links o Universal Links (por ejemplo, para el enlace de verificación). | Opcional en el MVP (se puede usar `squadfy://`) | 🟢 Baja |
-| BE-GAP-6 | `DELETE /devices/{token}` no comprueba quién es el dueño del token. | Riesgo bajo, reconocido | 🟢 Baja |
+| ~~BE-GAP-6~~ | Resuelto (spec 011 del backend): solo se dan de baja los dispositivos propios (404 con los ajenos). | — | ✅ |
 | ~~BE-GAP-7~~ | Resuelto: `master` incluye la documentación, los arreglos de chat, V7 y BE-008. | — | ✅ |
-| BE-GAP-8 | Errata `USER_EXITS`. | La app tolera `USER_EXITS` y `USER_EXISTS` | 🟢 Baja |
-| BE-GAP-9 | Estadísticas sin filtro por temporada. | Post-MVP | 🟢 Baja |
+| ~~BE-GAP-8~~ | Resuelto (spec 012 del backend): `409 USER_EXISTS`. La app acepta los dos códigos. | — | ✅ |
+| ~~BE-GAP-9~~ | Resuelto (spec 012 del backend): `from`/`to` en las estadísticas, que la app ya consume (spec 015). | — | ✅ |
+| BE-GAP-10 | Contenido generado por usuarios en el chat: denunciar mensajes y bloquear usuarios (Apple 1.2). La app oculta el chat en iOS en PRO mientras no exista (D-13). | Necesario para tener chat en iOS | 🟡 Media |

@@ -21,7 +21,10 @@
 | `POST /auth/{register,login,refresh,logout,resend-verification,forgot-password,reset-password,change-password}` | `/auth/...` (sin v1) | `core/data/auth/KtorAuthRepositoryImpl`, `HttpClientFactory` (refresh) | 002 | ✅ |
 | `GET /auth/verify?token=` | `VERIFY_EMAIL_ROUTE` (la app lo llama desde un deep link) | `AuthGraph` | 002 | 🔁 el enlace del email abre el **navegador** (§6), y el deep link de verificación de la app deja de tener sentido |
 | `GET /me` | — | Sesión y perfil | 002 | ➕ no hace falta todavía: el login devuelve el mismo `UserDto` |
-| `GET /users?query=` | `GET /participants?query=` | chat `KtorChatParticipantService` | 002 | ✅ |
+| `GET /users?query=` | `GET /participants?query=` | chat `KtorChatParticipantService` | 002 | 🗑 sustituida por `/users/search` (015); el backend la mantiene |
+| `GET /users/search?q=` → `ChatParticipantDto[]` (≤ 20; nombre parcial o email exacto; `q` ≥ 2) | — | Crear chat y Añadir miembros (`SearchChatParticipantsUseCase`) | 015 | ✅ (BE-012 RN-D) |
+| `GET /features` (público) → `{"email-verification": false, "rate-limit": true}` | — | — | 015 | ➕ no hace falta: el registro ya dice si la cuenta queda verificada (BE-011 RN-A4) |
+| `GET /account/verify-email?token=` (HTML, fuera de `/api/v1`) | — | Enlace del email de verificación, que abre el navegador | 015 | ✅ no lo consume la app (BE-011 RN-B) |
 | `GET /users/{userId}` | `GET /participants` (mi perfil) | chat y perfil | 002 | ✅ |
 | `POST /me/profile-picture/upload-url?mimeType=` | `POST /participants/profile-picture-upload` | perfil | 002 | ✅ |
 | `PUT /me/profile-picture {publicUrl}` | `POST /participants/confirm-profile-picture` | perfil | 002 | ✅ |
@@ -50,7 +53,8 @@
 | `PUT /clubs/{id}/logo` multipart `clubLogo` | `POST /club/{id}/logo` | Crear club y Ajustes | 003 | ✅ cambia el método |
 | `POST /clubs/{id}/invitation-code` | — | Ajustes (gestor) | 003 | ✅ |
 | `POST /clubs/{id}/transfer-ownership {memberId}` | — | Ficha de miembro (owner) | 003 | ✅ |
-| `GET /clubs/{id}/members` | `GET /club/{id}/members` | Miembros, resolución de nombres | 003 | ✅ el DTO pierde `email` y las estadísticas |
+| `GET /clubs/{id}/members` | `GET /club/{id}/members` | Miembros, resolución de nombres | 003 | ✅ el DTO pierde `email` y las estadísticas; desde la 015 trae `clubPictureUrl` y `pictureUrl` (Room v4) |
+| `PUT /clubs/{id}/members/me/picture` (multipart `picture`: jpeg, png o webp), `DELETE …/members/me/picture` → `ClubMemberDto` | — | Mi ficha › foto en este club | 015 | ✅ (BE-012 RN-C) |
 | `PATCH /clubs/{id}/members/me {shirtNumber?, position?}` | `PATCH /club/{id}/members/{memberId}` (`ClubService`, código muerto) | Mi ficha | 003 | ✅ |
 | `DELETE /clubs/{id}/members/me` → 204 | — | Ajustes («Salir») | 003 | ✅ |
 | `DELETE /clubs/{id}/members/{memberId}` → 204 | — | Ficha de miembro (gestor) | 003 | ✅ |
@@ -90,12 +94,14 @@
 |---|---|---|
 | `GET /clubs/{id}/ratings`, `GET /clubs/{id}/ratings/me` | 008 | ✅ `KtorStandingsRepository` (sustituye a `performanceIndex`) |
 | `GET /clubs/{id}/stats?sortBy=`, `GET /clubs/{id}/stats/me` | 008 | ✅ |
+| `GET /clubs/{id}/stats?sortBy=&from=&to=` (fechas inclusivas `YYYY-MM-DD` en la zona del club; `from > to` → 400) | 015 | ✅ periodos «todo», «este año» y «últimos 30 días» (BE-012 RN-B); `stats/me` también admite el rango, pero la app aún no lo usa |
 
 ## Notificaciones
 | Endpoint v1 | Ruta actual | Spec | Estado |
 |---|---|---|---|
 | `POST /devices {token, platform}` → 201 | `POST /notification/register` | 002 (ruta) y 009 (ciclo) | ✅ |
-| `DELETE /devices/{token}` | `DELETE /notification/{token}` | 002 | ✅ desde la 009 con el token FCM y antes de borrar la sesión (antes se enviaba el refresh token) |
+| WS `/ws/chat` → `{type: "CLUB_DATA_CHANGED", payload: "{clubId, scope: MATCH\|SCHEDULE\|ABSENCES, matchId?}"}` | — | 015 | ✅ `ClubLiveUpdates`: refresca Partido, el detalle del partido, Horario y Ausencias (BE-012 RN-A) |
+| `DELETE /devices/{token}` | `DELETE /notification/{token}` | 002 | ✅ desde BE-011 solo da de baja los dispositivos propios (404 con los ajenos), y desde la 009 con el token FCM y antes de borrar la sesión (antes se enviaba el refresh token) |
 | `GET/PUT /clubs/{id}/notification-settings {muted}` | — | 009 | ✅ |
 | Push `data.type` ∈ `match.announcement.opened`, `match.announcement.closing_soon`, `match.teams.published`, `match.cancelled`, `match.waitlist.promoted`, `match.rescheduled`, `new_message` | solo `chatId` | 009 | ✅ `PushRouter` (Android e iOS) |
 
@@ -126,4 +132,5 @@
 | 2026-10-07 | Spec 009: enrutado de push por `data.type`, push en primer plano dentro de la app, silenciar club y baja del dispositivo con el token FCM (✅) |
 | 2026-10-07 | Spec 014: ausencias (✅); `MANUAL_SCORE` y `MEMBER_ABSENCES` pasan a estar activos en PRE |
 | 2026-10-08 | Clubes, horario y convocatoria (003–005) marcados ✅: ya consumidos en v1, sin rutas antiguas en el código |
+| 2026-10-08 | Spec 015 (backend 011–013): `/users/search`, foto por club, `from`/`to` en estadísticas y `CLUB_DATA_CHANGED` (✅); `/features` sin uso |
 | 2026-10-08 | Spec 011: `DELETE /me {password}` (✅, flag `ACCOUNT_DELETION`) y la página web `/account/delete` del backend (spec 010) |

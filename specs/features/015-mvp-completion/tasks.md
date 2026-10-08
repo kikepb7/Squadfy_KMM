@@ -9,5 +9,5 @@
 - [x] **T-007** Estadísticas por periodo (AC-015-07). `StatsPeriod` (todo, este año y últimos 30 días; «hoy» en la zona horaria del club) → `from`/`to` inclusivos en `GET /stats`; chips en Clasificación › Estadísticas. Tests: VM (rangos) y MockEngine (parámetros).
 - [x] **T-008** Workflow de release: staging para `release/*`, producción para los tags (AC-015-08). Los candidatos se llaman `X.Y.Z-rc.N` (`-PversionNameSuffix`) y usan `STAGING_BASE_URL_*`; los tags `vX.Y.Z` usan `PRO_BASE_URL_*`. Verificado: el APK con el sufijo sale como `1.0.0-rc.7`.
 - [x] **T-009** Eliminar los mocks de Inicio y sus flags (AC-015-09). Se retiran `HOME_RECENT_MATCHES` y `HOME_NEWS`, los componentes, mappers y modelos de ejemplo, sus textos y los módulos `feature:globalPosition:domain`/`data`, que solo contenían datos de ejemplo.
-- [ ] **T-010** Contrato y gap analysis (AC-015-10).
+- [x] **T-010** Contrato y gap analysis (AC-015-10). En `api-v1.md`: `/users/search`, la foto por club, `from`/`to`, `CLUB_DATA_CHANGED`, `/features` (sin uso) y la página de verificación. En el gap analysis: BE-GAP-2/4/6/8/9 resueltos, BE-GAP-3 en curso (Render) y BE-GAP-10 nuevo (moderación del chat).
 - [ ] **T-011** Verificación: tests, builds, iOS y E2E contra el backend local actualizado.
