@@ -61,7 +61,8 @@ enum class FeatureFlag(
         key = "account_deletion",
         description = "Delete the account from Profile with the password (spec 011, backend spec 010)",
         defaultInPre = true,
-        defaultInPro = false
+        // Backend spec 010 is on master (production) and the flow passed E2E (spec 015 T-011); kept as a kill switch
+        defaultInPro = true
     ),
 
     // QA tooling and unfinished screens

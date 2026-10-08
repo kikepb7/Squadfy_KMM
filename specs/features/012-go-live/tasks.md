@@ -7,7 +7,7 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` hecha · `(B)` backend · `(
 - [x] **T-002** Inventario de datos para Data Safety y las etiquetas de privacidad (`privacy-data.md`), sacado del árbol de dependencias de la release y de los permisos. Verificación: `:composeApp:dependencies` muestra solo FCM y Crashlytics de Firebase, sin analítica.
 - [x] **T-003** Fichas ES/EN, categoría, clasificación y recursos (`store-listing.md`).
 - [x] **T-004** Checklist de secretos, Firebase, cuenta de demo y smoke test (`release-checklist.md`).
-- [ ] **T-005** Activar `ACCOUNT_DELETION` en PRO (`defaultInPro = true`) cuando `DELETE /me` esté desplegado en producción.
+- [x] **T-005** Activar `ACCOUNT_DELETION` en PRO (`defaultInPro = true`). Hecho el 2026-10-08: la spec 010 del backend está en `master` y el borrado pasó el E2E (spec 015 T-011). El flag se mantiene como interruptor de emergencia.
 - [ ] **T-006** Decisión D-13 (denunciar y bloquear en el chat, Apple 1.2) y, si procede, su spec en la app y en el backend.
 
 ## Backend (su propio SDD)

@@ -89,4 +89,11 @@ class FeatureFlagResolverTest {
         assertEquals(false, FeatureFlag.MATCH_GUESTS.defaultFor(PRO, AppPlatform.IOS))
         assertEquals(true, FeatureFlag.MATCH_GUESTS.defaultFor(PRE, AppPlatform.IOS))
     }
+
+    @Test
+    fun `AC-011-07 account deletion is on in every environment (Apple 5_1_1, Google Play)`() {
+        assertEquals(true, FeatureFlag.ACCOUNT_DELETION.defaultFor(PRO, AppPlatform.ANDROID))
+        assertEquals(true, FeatureFlag.ACCOUNT_DELETION.defaultFor(PRO, AppPlatform.IOS))
+        assertEquals(true, FeatureFlag.ACCOUNT_DELETION.defaultFor(PRE))
+    }
 }
