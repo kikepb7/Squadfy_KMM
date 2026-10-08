@@ -1,10 +1,11 @@
 name: CI
 
+# Branch model (ADR-0009): main = production, develop = integration, release/X.Y.Z and hotfix/X.Y.Z = stabilization.
 on:
   push:
-    branches: [main]
+    branches: [main, develop, "release/**", "hotfix/**"]
   pull_request:
-    branches: [main]
+    branches: [main, develop, "release/**"]
   workflow_dispatch:
 
 concurrency:
@@ -26,6 +27,40 @@ env:
   SQUADFY_ENV: pre
 
 jobs:
+  branch-policy:
+    name: 🌿 Branch policy
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      # ADR-0009: main <- release/* | hotfix/*; release/* <- fix/*; develop <- feature/* | fix/* | chore/* | release/* | hotfix/*
+      - name: Check source and target branches
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+        run: |
+          fail() { echo "::error::$1" >&2; exit 1; }
+          case "$BASE" in
+            main)
+              [[ "$HEAD" =~ ^(release|hotfix)/[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+                || fail "Only release/X.Y.Z and hotfix/X.Y.Z can be merged into main (got '$HEAD')" ;;
+            release/*)
+              [[ "$HEAD" == fix/* ]] || fail "A release branch only takes fixes: open the PR from fix/* (got '$HEAD')" ;;
+            develop)
+              [[ "$HEAD" =~ ^(feature|fix|chore|release|hotfix)/ ]] \
+                || fail "PRs into develop come from feature/*, fix/*, chore/*, release/* or hotfix/* (got '$HEAD')" ;;
+          esac
+          echo "✅ $HEAD → $BASE"
+
+      # A release or hotfix branch must already carry its version (scripts/start-release.sh bumps it)
+      - name: Check the version of a release or hotfix branch
+        if: startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'hotfix/')
+        env:
+          HEAD: ${{ github.head_ref }}
+        run: ./scripts/check-version.sh "${HEAD#*/}"
+
   unit-tests:
     name: 🧪 Unit tests (all modules)
     runs-on: ubuntu-latest
@@ -138,7 +173,7 @@ jobs:
   summary:
     name: "🧾 CI Summary - ${{ github.event.repository.name }}"
     runs-on: ubuntu-latest
-    needs: [static-analysis, unit-tests, build]
+    needs: [branch-policy, static-analysis, unit-tests, build]
     if: always()
     steps:
       - name: Pipeline Summary
@@ -148,6 +183,7 @@ jobs:
             echo ""
             echo "| Stage | Result |"
             echo "|---|---|"
+            echo "| 🌿 Branch policy | ${{ needs.branch-policy.result == 'success' && '✅ pass' || (needs.branch-policy.result == 'skipped' && '— (push)' || format('❌ {0}', needs.branch-policy.result)) }} |"
             echo "| 🔍 Static analysis (ktlint, i18n) | ${{ needs.static-analysis.result == 'success' && '✅ pass' || format('❌ {0}', needs.static-analysis.result) }} |"
             echo "| 🧪 Unit tests (all modules) | ${{ needs.unit-tests.result == 'success' && '✅ pass' || format('❌ {0}', needs.unit-tests.result) }} |"
             echo "| 🏗️ Assemble debug | ${{ needs.build.result == 'success' && '✅ pass' || format('❌ {0}', needs.build.result) }} |"

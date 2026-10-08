@@ -55,6 +55,51 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 BE-008, BE-009, BE-010 (en paralelo en el backend) ──────▶ 012
 ```
 
+## Plan hasta la 1.0.0 (revisado el 2026-10-08)
+**Estado:** el código del MVP está completo en `main`, con el CI en verde: specs 002–010, 013 y 014, más la 011 salvo su tarea manual T-013. Lo que falta es cerrar la calidad, tomar unas pocas decisiones, que el backend esté en producción y hacer el trabajo de consolas y tiendas. Las ramas siguen el ADR-0009, y la 1.0.0 se corta con `scripts/start-release.sh release 1.0.0` cuando el bloque A esté hecho.
+
+**A · Código en `develop`** (ramas `feature/*`, `fix/*` y `chore/*`)
+| # | Trabajo | Origen | Tamaño |
+|---|---|---|---|
+| A1 | ktlint en todos los módulos: `ktlintFormat` en un commit aislado y `ignoreFailures = false` | 001 T-012 | ½ d |
+| A2 | Kover agregado con un gate de cobertura en el CI | 001 T-013 | ½ d |
+| A3 | Según D-13: ocultar el chat en iOS tras un flag (rápido) o una spec 015 de denunciar y bloquear (más una spec del backend) | 012 T-006 | ½ d o 3 d |
+| A4 | Según D-12: rol de texto de marca en tema claro (Brand900) | 011 AC-011-11 | ½ d |
+| A5 | Borrar los mocks de Inicio (`HOME_RECENT_MATCHES`, `HOME_NEWS`) o mantenerlos ocultos | 010 T-006 | ¼ d |
+| A6 | (Opcional) PRE instalable junto a PRO con `applicationIdSuffix = ".pre"` | D-11 | ¼ d |
+
+**B · Backend** (`Squadfy_Backend`, su propio SDD; **bloquea la 1.0.0**)
+| # | Trabajo |
+|---|---|
+| B1 | Fusionar la spec 010 del backend (borrado de cuenta y rate limit por cuenta) |
+| B2 | Despliegue en producción (D-4): HTTPS en un dominio propio, servicios gestionados, backups y runbook (012 AC-012-01…06) |
+
+**C · Rama `release/1.0.0`** (solo `fix/*`)
+| # | Trabajo | Origen |
+|---|---|---|
+| C1 | Activar `ACCOUNT_DELETION` en PRO, en cuanto B1 y B2 estén desplegados | 012 T-005 |
+| C2 | E2E del candidato contra PRE o producción: auth y chat (002 T-016), clubes con dos usuarios (003 T-016), horario (004 T-008) y push reales (009 T-011) | QA |
+| C3 | Smoke test en producción con dos dispositivos | 012 T-012 |
+
+**D · Manual en consolas** (owner; en paralelo con A y B)
+| # | Trabajo | Origen |
+|---|---|---|
+| D1 | GitHub: rama por defecto `develop`, protección de `main` y `develop`, Environment `production` con sus secretos | ADR-0008/0009, 012 T-008 |
+| D2 | Firebase de producción: app iOS con el bundle nuevo, clave APNs, huellas SHA y restricción de las API keys | 009 T-010, 011 T-013, 012 T-009 |
+| D3 | Apple: `TEAM_ID`, app en App Store Connect, TestFlight | 011 T-013 |
+| D4 | Política de privacidad publicada, Data Safety, etiquetas de privacidad, clasificación, fichas, capturas y cuenta de demo | 012 T-010/T-011 |
+| D5 | Closed testing en Play (12 testers, 14 días), TestFlight externo y beta de 4 semanas con un club real | 012 T-013 |
+
+**Salida de la 1.0.0:** PR `release/1.0.0` → `main` → tag `v1.0.0` → se promociona en Play (y en App Store, según D-7) → back-merge a `develop`.
+
+**Candidatos para la 1.1.0 y siguientes:**
+- graduar los flags de BE-008 a PRO (invitados, excepciones, `drawTime`, marcador manual y ausencias; D-1);
+- Crashlytics y Keychain en iOS;
+- flags remotos (D-10);
+- job de CI para iOS;
+- atestación de la app (ADR-0008);
+- el backlog post-MVP de abajo.
+
 ## Decisiones abiertas (bloquean el paso a `Approved`)
 | # | Pregunta | Propuesta | Afecta a |
 |---|---|---|---|

@@ -11,7 +11,7 @@ No hay API key de cliente. El CI normal no necesita ningún secreto: sin `GOOGLE
 
 **Environment `production`** (Settings › Environments › New environment `production`):
 - *Required reviewers*: el owner. Cada release se queda esperando su aprobación antes de leer los secretos.
-- *Deployment branches and tags*: «Selected», con la regla de tag `v*` y la rama `main`.
+- *Deployment branches and tags*: «Selected», con las ramas `release/*` y `hotfix/*` (builds de QA) y el tag `v*` (producción). Ver ADR-0009.
 - Secretos del entorno:
 
 | Nombre | Valor |

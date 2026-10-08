@@ -10,7 +10,7 @@
 - [x] **T-008** Deep links: `chat_details` (Android e iOS) y `reset-password` (manifest).
 - [x] **T-009** `.gitignore`: versionar `.claude/skills` e ignorar `settings.local.json`, keystores, `google-services.json` y `.env`.
 - [ ] **T-010** Dar de alta el secreto `GOOGLE_SERVICES_JSON` en GitHub (opcional) y verificar el primer run verde. *(manual, owner)* `SQUADFY_API_KEY` ya no existe (ADR-0008). Mientras no existan, el CI ya no falla: usa una API key y un `google-services.json` de relleno (`.github/ci/google-services.placeholder.json`) y avisa con un warning. Antes, el CI de `main` fallaba en `processDebugGoogleServices` («Malformed root json») porque el secreto estaba vacío.
-- [ ] **T-011** Commitear los esquemas de Room (`feature/club/database/schemas`, `feature/chat/database/schemas`).
+- [x] **T-011** Commitear los esquemas de Room (`feature/club/database/schemas`, `feature/chat/database/schemas`).
 - [ ] **T-012 (P)** Aplicar ktlint a todos los módulos desde la convention, ejecutar `ktlintFormat` en un commit aislado y poner `ignoreFailures = false`.
 - [ ] **T-013 (P)** Kover agregado en la raíz con `kover(project(...))` para cada módulo, y un gate en el CI.
 - [ ] ~~**T-014**~~ Se ha movido a la spec 003 (AC-003-16): el código muerto de club y globalPosition se elimina durante la migración a v1.

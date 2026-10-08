@@ -45,7 +45,11 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
   - se usan fakes, no mocks;
   - el nombre del test cita el criterio de aceptación (`AC-NNN-xx`).
 - **Commits**: `ÁREA | NNN · T-xxx descripción`, por ejemplo `CLUB | 003 · T-002 SignupWindowPolicy`. Solo se commitea cuando el usuario lo pide.
-- **Ramas**: `main` es la principal (el CI se dispara en `main`). Las features van en `feature/NNN-slug`.
+- **Ramas** (ADR-0009):
+  - `main` es producción: solo recibe `release/X.Y.Z` y `hotfix/X.Y.Z`, y cada merge se etiqueta `vX.Y.Z`.
+  - `develop` es la integración: el trabajo nuevo sale de `develop` en `feature/NNN-slug`, `fix/slug` o `chore/slug` y vuelve por PR.
+  - Las releases se cortan con `scripts/start-release.sh release X.Y.Z`, que sube la versión en Android e iOS.
+  - El CI rechaza los PRs que no siguen el modelo (job `branch-policy`).
 
 ## Trampas conocidas
 - Desde la rama `app-parity-feature`, la app consume la **API v1** (BE-001…BE-008): clubes, horario, convocatorias, partidos, clasificaciones, push y ausencias (specs 002–010 y 014; ver `specs/contracts/api-v1.md`). Lo que el backend aún no tiene (borrado de cuenta, despliegue) está en `specs/contracts/gap-analysis.md`.

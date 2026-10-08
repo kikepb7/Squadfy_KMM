@@ -1,7 +1,9 @@
 name: Release
 
 # Spec 011 AC-011-14: signed, minified AAB with the production config, uploaded to Play Internal testing.
-# Runs by hand (Actions → Release → Run workflow) or when a `v*` tag is pushed (e.g. `v1.0.0`).
+# Branch model (ADR-0009):
+#   - by hand (Actions → Release → Run workflow) from release/X.Y.Z or hotfix/X.Y.Z: QA build of the candidate;
+#   - when a vX.Y.Z tag is pushed on main: the build that is promoted to production in Play Console.
 on:
   workflow_dispatch:
     inputs:
@@ -30,8 +32,38 @@ permissions:
 #   PLAY_SERVICE_ACCOUNT_JSON    → Play Console service account with release rights on com.kikepb.squadfy
 # Optional repository variable: PRIVACY_POLICY_URL (defaults to https://squadfy.app/privacy).
 jobs:
+  verify:
+    name: 🔎 Release ref and version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # Fails before asking for the `production` approval, so a wrong ref never reaches the secrets
+      - name: Check the ref and the version
+        id: version
+        run: |
+          fail() { echo "::error::$1" >&2; exit 1; }
+          version=$(sed -nE 's/^projectVersionName = "([^"]+)"/\1/p' gradle/libs.versions.toml)
+          case "$GITHUB_REF" in
+            refs/tags/v*)
+              [ "${GITHUB_REF#refs/tags/v}" = "$version" ] || fail "Tag ${GITHUB_REF#refs/tags/} does not match version $version"
+              git merge-base --is-ancestor "$GITHUB_SHA" origin/main || fail "Tag ${GITHUB_REF#refs/tags/} is not on main" ;;
+            refs/heads/release/*|refs/heads/hotfix/*)
+              [ "${GITHUB_REF#refs/heads/*/}" = "$version" ] || fail "Branch ${GITHUB_REF#refs/heads/} does not match version $version" ;;
+            *)
+              fail "Release builds run from release/X.Y.Z, hotfix/X.Y.Z or a vX.Y.Z tag on main (got $GITHUB_REF)" ;;
+          esac
+          ./scripts/check-version.sh "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
   android-release:
-    name: 🚀 Android release (Play Internal)
+    name: 🚀 Android release ${{ needs.verify.outputs.version }} (Play Internal)
+    needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: production
@@ -91,7 +123,7 @@ jobs:
       - name: Upload AAB and mapping
         uses: actions/upload-artifact@v4
         with:
-          name: release-aab-${{ github.run_number }}
+          name: release-aab-${{ needs.verify.outputs.version }}-${{ github.run_number }}
           path: |
             composeApp/build/outputs/bundle/release/composeApp-release.aab
             composeApp/build/outputs/mapping/release/mapping.txt
