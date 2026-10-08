@@ -6,7 +6,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.chat.domain.models.ChatModel
-import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
+import com.kikepb.chat.domain.usecases.SearchChatParticipantsUseCase
 import com.kikepb.chat.domain.usecases.CreateChatUseCase
 import com.kikepb.chat.presentation.mappers.toUi
 import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
@@ -33,7 +33,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @OptIn(FlowPreview::class)
 class CreateChatViewModel(
-    private val getChatParticipantUseCase: GetChatParticipantUseCase,
+    private val searchChatParticipantsUseCase: SearchChatParticipantsUseCase,
     private val createChatUseCase: CreateChatUseCase,
 ) : ViewModel() {
 
@@ -61,22 +61,23 @@ class CreateChatViewModel(
 
 
     private fun CreateChatViewModel.performSearch(query: String) {
-        if (query.isBlank()) {
-            _state.update { it.copy(currentSearchResult = null, canAddParticipant = false, searchError = null) }
+        if (query.trim().length < SearchChatParticipantsUseCase.MIN_QUERY_LENGTH) {
+            _state.update { it.copy(searchResults = emptyList(), canAddParticipant = false, searchError = null) }
             return
         }
 
         viewModelScope.launch {
             _state.update { it.copy(isSearching = true, canAddParticipant = false) }
 
-            getChatParticipantUseCase.invoke(query = query)
-                .onSuccess { participant ->
+            searchChatParticipantsUseCase.invoke(query = query)
+                .onSuccess { participants ->
+                    val results = participants.map { it.toUi() }
                     _state.update {
                         it.copy(
-                            currentSearchResult = participant.toUi(),
+                            searchResults = results,
                             isSearching = false,
-                            canAddParticipant = true,
-                            searchError = null
+                            canAddParticipant = results.isNotEmpty(),
+                            searchError = if (results.isEmpty()) UiText.Resource(RString.error_participant_not_found) else null
                         )
                     }
                 }
@@ -91,15 +92,16 @@ class CreateChatViewModel(
                             searchError = errorMessage,
                             isSearching = false,
                             canAddParticipant = false,
-                            currentSearchResult = null
+                            searchResults = emptyList()
                         )
                     }
                 }
         }
     }
 
-    private fun addParticipant() {
-        state.value.currentSearchResult?.let { participant ->
+    /** [OnAddClick] adds the best match (the backend lists prefix matches first); tapping a result adds that one. */
+    private fun addParticipant(participant: ChatParticipantModelUi? = state.value.searchResults.firstOrNull()) {
+        participant?.let { participant ->
             val isAlreadyPartOfChat = state.value.selectedChatParticipants.any {
                 it.id == participant.id
             }
@@ -109,7 +111,7 @@ class CreateChatViewModel(
                     it.copy(
                         selectedChatParticipants = it.selectedChatParticipants + participant,
                         canAddParticipant = false,
-                        currentSearchResult = null
+                        searchResults = emptyList()
                     )
                 }
 
@@ -134,7 +136,7 @@ class CreateChatViewModel(
                 .onFailure { error ->
                     _state.update { it.copy(
                         submitError = error.toUiText(),
-                        canAddParticipant = it.currentSearchResult != null && !it.isSearching
+                        canAddParticipant = it.searchResults.isNotEmpty() && !it.isSearching
                     ) }
                 }
         }
@@ -143,6 +145,7 @@ class CreateChatViewModel(
     fun onAction(action: ManageChatAction) {
         when (action) {
             ManageChatAction.OnAddClick -> addParticipant()
+            is ManageChatAction.OnSearchResultClick -> addParticipant(participant = action.participant)
             ManageChatAction.OnPrimaryActionClick -> createChat()
             else -> Unit
         }
@@ -155,7 +158,7 @@ data class ManageChatState(
     val selectedChatParticipants: List<ChatParticipantModelUi> = emptyList(),
     val isSearching: Boolean = false,
     val canAddParticipant: Boolean = false,
-    val currentSearchResult: ChatParticipantModelUi? = null,
+    val searchResults: List<ChatParticipantModelUi> = emptyList(),
     val searchError: UiText? = null,
     val isSubmitting: Boolean = false,
     val submitError: UiText? = null
@@ -167,6 +170,7 @@ sealed interface CreateChatEvent {
 
 sealed interface ManageChatAction {
     data object OnAddClick: ManageChatAction
+    data class OnSearchResultClick(val participant: ChatParticipantModelUi): ManageChatAction
     data object OnDismissDialog: ManageChatAction
     data object OnPrimaryActionClick: ManageChatAction
 

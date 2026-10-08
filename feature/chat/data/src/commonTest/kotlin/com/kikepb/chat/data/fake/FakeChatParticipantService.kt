@@ -9,8 +9,7 @@ import com.kikepb.core.domain.util.Result
 
 class FakeChatParticipantService : ChatParticipantService {
 
-    var searchParticipantResult: Result<ChatParticipantModel, DataError.Remote> =
-        Result.Success(defaultParticipant())
+    var searchParticipantsResult: Result<List<ChatParticipantModel>, DataError.Remote> = Result.Success(emptyList())
 
     var getLocalParticipantResult: Result<ChatParticipantModel, DataError.Remote> =
         Result.Success(defaultParticipant())
@@ -28,7 +27,7 @@ class FakeChatParticipantService : ChatParticipantService {
     var lastConfirmedPublicUrl: String? = null
     var lastGetUploadUrlMimeType: String? = null
 
-    override suspend fun searchParticipant(query: String) = searchParticipantResult
+    override suspend fun searchParticipants(query: String) = searchParticipantsResult
 
     override suspend fun getLocalParticipant() = getLocalParticipantResult
 

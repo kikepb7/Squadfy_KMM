@@ -2,6 +2,7 @@ package com.kikepb.chat.presentation.components
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
@@ -33,7 +34,8 @@ fun ColumnScope.ChatParticipantsSelectionSection(
     existingParticipants: List<ChatParticipantModelUi>,
     selectedParticipants: List<ChatParticipantModelUi>,
     modifier: Modifier = Modifier,
-    searchResult: ChatParticipantModelUi? = null
+    searchResults: List<ChatParticipantModelUi> = emptyList(),
+    onSearchResultClick: (ChatParticipantModelUi) -> Unit = {}
 ) {
     val deviceConfiguration = currentDeviceConfiguration()
     val rootHeightModifier = when(deviceConfiguration) {
@@ -63,16 +65,20 @@ fun ColumnScope.ChatParticipantsSelectionSection(
 
             if (existingParticipants.isNotEmpty()) item { SquadfyHorizontalDivider() }
 
-            searchResult?.let {
-                item {
-                    ChatParticipantListItem(
-                        participantUi = searchResult,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+            // AC-015-04: every match of the partial search; tapping one adds it
+            items(
+                items = searchResults,
+                key = { "result_${it.id}" }
+            ) { participant ->
+                ChatParticipantListItem(
+                    participantUi = participant,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onSearchResultClick(participant) }
+                )
             }
 
-            if(selectedParticipants.isNotEmpty() && searchResult == null) {
+            if (selectedParticipants.isNotEmpty() && searchResults.isEmpty()) {
                 items(
                     items = selectedParticipants,
                     key = { it.id }

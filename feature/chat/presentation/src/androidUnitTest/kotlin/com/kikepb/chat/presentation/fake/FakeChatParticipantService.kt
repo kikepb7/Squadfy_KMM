@@ -9,16 +9,9 @@ import com.kikepb.core.domain.util.Result
 
 class FakeChatParticipantService : ChatParticipantService {
 
-    var searchParticipantResult: Result<ChatParticipantModel, DataError.Remote> =
-        Result.Success(
-            ChatParticipantModel(
-                userId = "found-user",
-                username = "founduser",
-                profilePictureUrl = null
-            )
-        )
+    var searchParticipantsResult: Result<List<ChatParticipantModel>, DataError.Remote> = Result.Success(emptyList())
 
-    override suspend fun searchParticipant(query: String) = searchParticipantResult
+    override suspend fun searchParticipants(query: String) = searchParticipantsResult
 
     override suspend fun getLocalParticipant(): Result<ChatParticipantModel, DataError.Remote> =
         Result.Success(ChatParticipantModel("user-1", "testuser", null))

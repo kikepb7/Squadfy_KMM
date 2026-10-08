@@ -10,14 +10,8 @@ import com.kikepb.core.domain.util.Result.Success
 
 class FakeChatParticipantService : ChatParticipantService {
 
-    var searchParticipantResult: Result<ChatParticipantModel, DataError.Remote> =
-        Success(
-            ChatParticipantModel(
-                userId = "found-user",
-                username = "founduser",
-                profilePictureUrl = null
-            )
-        )
+    var searchParticipantsResult: Result<List<ChatParticipantModel>, DataError.Remote> = Success(emptyList())
+    var lastSearchQuery: String? = null
 
     var getLocalParticipantResult: Result<ChatParticipantModel, DataError.Remote> =
         Success(
@@ -35,8 +29,10 @@ class FakeChatParticipantService : ChatParticipantService {
     var confirmProfilePictureUploadResult: EmptyResult<DataError.Remote> = Success(Unit)
     var deleteProfilePictureResult: EmptyResult<DataError.Remote> = Success(Unit)
 
-    override suspend fun searchParticipant(query: String): Result<ChatParticipantModel, DataError.Remote> =
-        searchParticipantResult
+    override suspend fun searchParticipants(query: String): Result<List<ChatParticipantModel>, DataError.Remote> {
+        lastSearchQuery = query
+        return searchParticipantsResult
+    }
 
     override suspend fun getLocalParticipant(): Result<ChatParticipantModel, DataError.Remote> =
         getLocalParticipantResult

@@ -37,37 +37,35 @@ class KtorChatParticipantServiceTest {
         {"userId":"user-1","username":"alice","profilePictureUrl":null}
     """.trimIndent()
 
-    // --- searchParticipant ---
+    // --- searchParticipants (backend spec 012 RN-D) ---
 
     @Test
-    fun `GIVEN query WHEN searchParticipant THEN GET to users route with query param`() = runTest {
+    fun `AC-015-04 search sends GET users-search with q and maps every result`() = runTest {
         val requests = mutableListOf<HttpRequestData>()
         val client = buildMockHttpClient(
-            responseBody = participantJson,
+            responseBody = """[{"userId":"user-1","username":"carlos","profilePictureUrl":null},{"userId":"user-2","username":"marcos","profilePictureUrl":"https://cdn/m.png"}]""",
             capturedRequests = requests
         )
         val service = createService(client)
 
-        val result = service.searchParticipant(query = "alice")
+        val result = service.searchParticipants(query = "ar")
 
         assertTrue(result is Result.Success)
-        val participant = (result as Result.Success).data
-        assertEquals("user-1", participant.userId)
-        assertEquals("alice", participant.username)
+        val participants = (result as Result.Success).data
+        assertEquals(listOf("carlos", "marcos"), participants.map { it.username })
+        assertEquals("https://cdn/m.png", participants[1].profilePictureUrl)
         assertEquals(HttpMethod.Get, requests.first().method)
-        assertTrue(requests.first().url.encodedPath.endsWith("/users"))
-        assertEquals("alice", requests.first().url.parameters["query"])
+        assertTrue(requests.first().url.encodedPath.endsWith("/users/search"))
+        assertEquals("ar", requests.first().url.parameters["q"])
     }
 
     @Test
-    fun `GIVEN no participant matches WHEN searchParticipant THEN returns NOT_FOUND`() = runTest {
-        val client = buildMockHttpClient(status = HttpStatusCode.NotFound, responseBody = "")
-        val service = createService(client)
+    fun `AC-015-04 no matches is an empty list`() = runTest {
+        val service = createService(buildMockHttpClient(responseBody = "[]"))
 
-        val result = service.searchParticipant(query = "nobody")
+        val result = service.searchParticipants(query = "zz")
 
-        assertTrue(result is Result.Failure)
-        assertEquals(DataError.Remote.NOT_FOUND, (result as Result.Failure).error)
+        assertTrue((result as Result.Success).data.isEmpty())
     }
 
     // --- getLocalParticipant ---

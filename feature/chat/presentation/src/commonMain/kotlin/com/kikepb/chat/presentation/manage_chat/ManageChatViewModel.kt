@@ -8,11 +8,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.chat.domain.usecases.AddParticipantsToChatUseCase
 import com.kikepb.chat.domain.usecases.GetActiveParticipantsByChatIdUseCase
-import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
+import com.kikepb.chat.domain.usecases.SearchChatParticipantsUseCase
 import com.kikepb.chat.presentation.create_chat.ManageChatAction
 import com.kikepb.chat.presentation.create_chat.ManageChatState
 import com.kikepb.chat.presentation.manage_chat.ManageChatEvent.OnMembersAdded
 import com.kikepb.chat.presentation.mappers.toUi
+import com.kikepb.core.designsystem.components.avatar.ChatParticipantModelUi
 import com.kikepb.core.domain.util.DataError
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
@@ -40,7 +41,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class ManageChatViewModel(
     private val addParticipantsToChatUseCase: AddParticipantsToChatUseCase,
-    private val getChatParticipantUseCase: GetChatParticipantUseCase,
+    private val searchChatParticipantsUseCase: SearchChatParticipantsUseCase,
     private val getActiveParticipantsByChatIdUseCase: GetActiveParticipantsByChatIdUseCase
 ) : ViewModel() {
 
@@ -77,22 +78,23 @@ class ManageChatViewModel(
         }
 
     private fun ManageChatViewModel.performSearch(query: String) {
-        if (query.isBlank()) {
-            _state.update { it.copy(currentSearchResult = null, canAddParticipant = false, searchError = null) }
+        if (query.trim().length < SearchChatParticipantsUseCase.MIN_QUERY_LENGTH) {
+            _state.update { it.copy(searchResults = emptyList(), canAddParticipant = false, searchError = null) }
             return
         }
 
         viewModelScope.launch {
             _state.update { it.copy(isSearching = true, canAddParticipant = false) }
 
-            getChatParticipantUseCase.invoke(query = query)
-                .onSuccess { participant ->
+            searchChatParticipantsUseCase.invoke(query = query)
+                .onSuccess { participants ->
+                    val results = participants.map { it.toUi() }
                     _state.update {
                         it.copy(
-                            currentSearchResult = participant.toUi(),
+                            searchResults = results,
                             isSearching = false,
-                            canAddParticipant = true,
-                            searchError = null
+                            canAddParticipant = results.isNotEmpty(),
+                            searchError = if (results.isEmpty()) UiText.Resource(RString.error_participant_not_found) else null
                         )
                     }
                 }
@@ -107,15 +109,15 @@ class ManageChatViewModel(
                             searchError = errorMessage,
                             isSearching = false,
                             canAddParticipant = false,
-                            currentSearchResult = null
+                            searchResults = emptyList()
                         )
                     }
                 }
         }
     }
 
-    private fun addParticipant() {
-        state.value.currentSearchResult?.let { participantFromSearch ->
+    private fun addParticipant(participant: ChatParticipantModelUi? = state.value.searchResults.firstOrNull()) {
+        participant?.let { participantFromSearch ->
             val isAlreadySelected = state.value.selectedChatParticipants.any {
                 it.id == participantFromSearch.id
             }
@@ -132,7 +134,7 @@ class ManageChatViewModel(
             _state.update { it.copy(
                 selectedChatParticipants = updatedParticipants,
                 canAddParticipant = false,
-                currentSearchResult = null
+                searchResults = emptyList()
             ) }
         }
     }
@@ -156,6 +158,7 @@ class ManageChatViewModel(
     fun onAction(action: ManageChatAction) {
         when (action) {
             ManageChatAction.OnAddClick -> addParticipant()
+            is ManageChatAction.OnSearchResultClick -> addParticipant(participant = action.participant)
             ManageChatAction.OnPrimaryActionClick -> addParticipantsToChat()
             is ManageChatAction.ChatParticipants.OnSelectChat -> {
                 _chatId.update { action.chatId }

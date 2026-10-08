@@ -3,7 +3,7 @@
 - [x] **T-001** D-12: `primary` del tema claro pasa a Brand900, con contenido blanco (AC-015-01).
 - [x] **T-002** D-13: flags por plataforma (`AppPlatform`, `defaultInProOnIos`), flag `CHAT` y pestaña condicionada (AC-015-02).
 - [x] **T-003** `SignOutUseCase` compartido; el Perfil se abre desde Inicio, con cierre de sesión y acceso a los flags en PRE (AC-015-03).
-- [ ] **T-004** Búsqueda parcial de usuarios en Crear chat (AC-015-04).
+- [x] **T-004** Búsqueda parcial de usuarios en Crear chat (AC-015-04). `SearchChatParticipantsUseCase` (mínimo 2 caracteres) → `GET /users/search?q=`; Crear chat y Añadir miembros muestran todas las coincidencias y se añaden con un toque. Tests: use case (3), MockEngine (2) y `CreateChatViewModelTest`.
 - [ ] **T-005** Foto por club: `pictureUrl` en las listas de miembros, más subir y quitar la foto en «Mi ficha» (AC-015-05).
 - [ ] **T-006** Tiempo real: `CLUB_DATA_CHANGED` → refresco de Partido, horario y ausencias (AC-015-06).
 - [ ] **T-007** Estadísticas por periodo (AC-015-07).

@@ -4,7 +4,7 @@ import androidx.compose.runtime.snapshots.Snapshot
 import app.cash.turbine.test
 import com.kikepb.chat.domain.models.ChatParticipantModel
 import com.kikepb.chat.domain.usecases.CreateChatUseCase
-import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
+import com.kikepb.chat.domain.usecases.SearchChatParticipantsUseCase
 import com.kikepb.chat.presentation.fake.FakeChatParticipantService
 import com.kikepb.chat.presentation.fake.FakeChatRepository
 import com.kikepb.chat.presentation.util.MainDispatcherRule
@@ -35,7 +35,7 @@ class CreateChatViewModelTest {
         participantService = FakeChatParticipantService()
         chatRepository = FakeChatRepository()
         viewModel = CreateChatViewModel(
-            getChatParticipantUseCase = GetChatParticipantUseCase(chatParticipantService = participantService),
+            searchChatParticipantsUseCase = SearchChatParticipantsUseCase(chatParticipantService = participantService),
             createChatUseCase = CreateChatUseCase(chatRepository = chatRepository)
         )
     }
@@ -69,7 +69,7 @@ class CreateChatViewModelTest {
             username = "founduser",
             profilePictureUrl = null
         )
-        participantService.searchParticipantResult = Result.Success(participant)
+        participantService.searchParticipantsResult = Result.Success(listOf(participant))
 
         viewModel.state.test {
             awaitItem()
@@ -80,14 +80,14 @@ class CreateChatViewModelTest {
 
             val state = awaitItem()
             assertTrue(state.canAddParticipant)
-            assertNotNull(state.currentSearchResult)
+            assertTrue(state.searchResults.isNotEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
     fun `GIVEN search fails with NOT_FOUND WHEN query entered THEN searchError is set`() = runTest {
-        participantService.searchParticipantResult = Result.Failure(error = DataError.Remote.NOT_FOUND)
+        participantService.searchParticipantsResult = Result.Failure(error = DataError.Remote.NOT_FOUND)
 
         viewModel.state.test {
             awaitItem()
@@ -99,7 +99,7 @@ class CreateChatViewModelTest {
             val state = awaitItem()
             assertFalse(state.canAddParticipant)
             assertNotNull(state.searchError)
-            assertNull(state.currentSearchResult)
+            assertTrue(state.searchResults.isEmpty())
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -111,7 +111,7 @@ class CreateChatViewModelTest {
             username = "founduser",
             profilePictureUrl = null
         )
-        participantService.searchParticipantResult = Result.Success(participant)
+        participantService.searchParticipantsResult = Result.Success(listOf(participant))
 
         viewModel.state.test {
             awaitItem()
@@ -139,7 +139,7 @@ class CreateChatViewModelTest {
             username = "founduser",
             profilePictureUrl = null
         )
-        participantService.searchParticipantResult = Result.Success(participant)
+        participantService.searchParticipantsResult = Result.Success(listOf(participant))
 
         viewModel.state.test {
             awaitItem()
@@ -178,7 +178,7 @@ class CreateChatViewModelTest {
             username = "founduser",
             profilePictureUrl = null
         )
-        participantService.searchParticipantResult = Result.Success(participant)
+        participantService.searchParticipantsResult = Result.Success(listOf(participant))
         chatRepository.createChatResult = Result.Success(FakeChatRepository.defaultChatModel())
 
         viewModel.events.test {
@@ -209,7 +209,7 @@ class CreateChatViewModelTest {
             username = "founduser",
             profilePictureUrl = null
         )
-        participantService.searchParticipantResult = Result.Success(participant)
+        participantService.searchParticipantsResult = Result.Success(listOf(participant))
         chatRepository.createChatResult = Result.Failure(error = DataError.Remote.SERVER_ERROR)
 
         viewModel.state.test {

@@ -92,7 +92,8 @@ fun ManageChatScreen(
             selectedParticipants = state.selectedChatParticipants,
             modifier = Modifier
                 .fillMaxWidth(),
-            searchResult = state.currentSearchResult
+            searchResults = state.searchResults,
+            onSearchResultClick = { onAction(ManageChatAction.OnSearchResultClick(participant = it)) }
         )
         SquadfyHorizontalDivider()
         ManageChatButtonSection(

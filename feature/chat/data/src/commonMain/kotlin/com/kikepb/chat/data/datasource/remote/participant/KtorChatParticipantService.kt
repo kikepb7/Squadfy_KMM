@@ -29,13 +29,11 @@ class KtorChatParticipantService(
     private val sessionStorage: SessionStorage
 ): ChatParticipantService {
 
-    override suspend fun searchParticipant(query: String): Result<ChatParticipantModel, DataError.Remote> =
-        httpClient.get<ChatParticipantDTO>(
-            route = "/users",
-            queryParams = mapOf(
-                "query" to query
-            )
-        ).map { it.toDomain() }
+    override suspend fun searchParticipants(query: String): Result<List<ChatParticipantModel>, DataError.Remote> =
+        httpClient.get<List<ChatParticipantDTO>>(
+            route = "/users/search",
+            queryParams = mapOf("q" to query)
+        ).map { participants -> participants.map { it.toDomain() } }
 
     override suspend fun getLocalParticipant(): Result<ChatParticipantModel, DataError.Remote> {
         // v1 has no "my participant" route: the public profile is read by user id (GET /users/{userId})
