@@ -64,21 +64,22 @@ BE-008, BE-009, BE-010 (en paralelo en el backend) ──────▶ 012
 |---|---|---|---|
 | A1 | ktlint en todos los módulos: `ktlintFormat` en un commit aislado y `ignoreFailures = false` | 001 T-012 | ½ d |
 | A2 | Kover agregado con un gate de cobertura en el CI | 001 T-013 | ½ d |
-| A3 | Según D-13: ocultar el chat en iOS tras un flag (rápido) o una spec 015 de denunciar y bloquear (más una spec del backend) | 012 T-006 | ½ d o 3 d |
-| A4 | Según D-12: rol de texto de marca en tema claro (Brand900) | 011 AC-011-11 | ½ d |
-| A5 | Borrar los mocks de Inicio (`HOME_RECENT_MATCHES`, `HOME_NEWS`) o mantenerlos ocultos | 010 T-006 | ¼ d |
+| ~~A3~~ | ✅ D-13: chat oculto en iOS en PRO (flag `CHAT`); el Perfil sale del chat (spec 015) | 012 T-006 | — |
+| ~~A4~~ | ✅ D-12: `primary` del tema claro = Brand900 (spec 015) | 011 AC-011-11 | — |
+| ~~A5~~ | ✅ Mocks de Inicio eliminados, junto con sus módulos (spec 015) | 010 T-006 | — |
+| A7 | ✅ Paridad con el backend 011–013: búsqueda parcial, foto por club, tiempo real, estadísticas por periodo y staging/producción (spec 015) | 015 | — |
 | A6 | (Opcional) PRE instalable junto a PRO con `applicationIdSuffix = ".pre"` | D-11 | ¼ d |
 
 **B · Backend** (`Squadfy_Backend`, su propio SDD; **bloquea la 1.0.0**)
 | # | Trabajo |
 |---|---|
-| B1 | Fusionar la spec 010 del backend (borrado de cuenta y rate limit por cuenta) |
+| ~~B1~~ | ✅ La spec 010 del backend está en `master`, junto con las 011 y 012 |
 | B2 | Despliegue en producción (D-4): HTTPS en un dominio propio, servicios gestionados, backups y runbook (012 AC-012-01…06) |
 
 **C · Rama `release/1.0.0`** (solo `fix/*`)
 | # | Trabajo | Origen |
 |---|---|---|
-| C1 | Activar `ACCOUNT_DELETION` en PRO, en cuanto B1 y B2 estén desplegados | 012 T-005 |
+| ~~C1~~ | ✅ `ACCOUNT_DELETION` activo en PRO (spec 010 del backend en `master`; E2E en verde) | 012 T-005 |
 | C2 | E2E del candidato contra PRE o producción: auth y chat (002 T-016), clubes con dos usuarios (003 T-016), horario (004 T-008) y push reales (009 T-011) | QA |
 | C3 | Smoke test en producción con dos dispositivos | 012 T-012 |
 
