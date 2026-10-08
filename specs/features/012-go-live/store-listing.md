@@ -52,8 +52,8 @@ Los textos son una propuesta. Lo marcado con **[owner]** lo decide o lo aporta e
 ## Recursos gráficos
 | Recurso | Tamaño | Estado |
 |---|---|---|
-| Icono Play | 512×512 PNG | Exportar desde `composeApp/src/androidMain/res/mipmap-xxxhdpi/ic_launcher.png` en alta resolución **[owner: fuente vectorial]** |
-| Imagen destacada Play | 1024×500 | **[owner]** |
+| Icono Play | 512×512 PNG | ✅ `docs/brand/store/playstore-icon-512.png` (kit de marca, spec 016) |
+| Imagen destacada Play | 1024×500 | ✅ `docs/brand/store/google-play-feature-1024x500.png` (kit de marca) |
 | Capturas de teléfono | 2–8, 1080×2400 | Sacarlas de la release con la cuenta de demo: Inicio, Partido (convocatoria abierta), Equipos, Clasificación, Chat |
 | Capturas de iPhone | 6,9" (1320×2868) y 6,5" (1284×2778) | Las mismas pantallas en el simulador |
 

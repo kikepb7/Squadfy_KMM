@@ -39,6 +39,7 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 - **domain**: Kotlin puro. Los estados, roles y posiciones son `enum`, nunca `String`.
 - **data**: los DTOs `@Serializable` llevan **valores por defecto en todo campo opcional**. Las rutas no llevan el prefijo `/api`, porque la base URL ya lo incluye.
 - **Room**: el esquema se exporta en `*/schemas` y se versiona. Cada cambio lleva una `Migration` explícita (está prohibido `fallbackToDestructiveMigration` de cara a la release).
+- **Marca** (spec 016): el kit está en `docs/brand/` (LEEME, `tokens.json`, SVG). Los colores van por los tokens de `core/designsystem/theme` (nunca hex sueltos), la tipografía es Poppins y el logo es `SquadfyBrandLogo` (isotipo color/reverse). La lima (Peto Lime) nunca se usa como texto sobre fondo claro.
 - **UI**: no hay strings escritos a mano; van en `composeResources/values*/strings.xml` (ES por defecto, EN).
 - **Tests**:
   - `kotlin.test` + `kotlinx-coroutines-test` + Turbine en `commonTest`, y JUnit4 en `androidUnitTest`;
