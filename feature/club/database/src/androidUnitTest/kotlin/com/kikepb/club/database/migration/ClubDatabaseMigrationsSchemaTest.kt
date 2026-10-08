@@ -15,16 +15,18 @@ import kotlin.test.assertEquals
  */
 class ClubDatabaseMigrationsSchemaTest {
 
-    private val schema = Json.parseToJsonElement(
-        File("schemas/com.kikepb.club.database.SquadfyClubDatabase/3.json").readText()
+    private fun schema(version: Int) = Json.parseToJsonElement(
+        File("schemas/com.kikepb.club.database.SquadfyClubDatabase/$version.json").readText()
     ).jsonObject.getValue("database").jsonObject
 
-    private fun entity(table: String) = schema.getValue("entities").jsonArray
+    private val schema = schema(version = 3)
+
+    private fun entity(table: String, version: Int = 3) = schema(version).getValue("entities").jsonArray
         .map { it.jsonObject }
         .first { it.getValue("tableName").jsonPrimitive.content == table }
 
-    private fun createSql(table: String) =
-        entity(table).getValue("createSql").jsonPrimitive.content.replace("\${TABLE_NAME}", table)
+    private fun createSql(table: String, version: Int = 3) =
+        entity(table, version).getValue("createSql").jsonPrimitive.content.replace("\${TABLE_NAME}", table)
 
     @Test
     fun `AC-003-15 migration creates the club table exactly as schema v3`() {
@@ -40,7 +42,17 @@ class ClubDatabaseMigrationsSchemaTest {
     }
 
     @Test
-    fun `AC-003-15 every pre-v3 version has a migration path`() {
-        assertEquals(listOf(1 to 3, 2 to 3), ClubDatabaseMigrations.ALL.map { it.startVersion to it.endVersion })
+    fun `AC-003-15 every old version has a migration path to the current schema`() {
+        assertEquals(listOf(1 to 3, 2 to 3, 3 to 4), ClubDatabaseMigrations.ALL.map { it.startVersion to it.endVersion })
+    }
+
+    @Test
+    fun `AC-015-05 v3 plus the added clubPictureUrl column is exactly schema v4`() {
+        // SQLite appends ADD COLUMN at the end of the column list, before the table constraints
+        val v3PlusColumn = ClubDatabaseMigrations.CREATE_CLUB_MEMBER_V3
+            .replace("`role` TEXT NOT NULL, ", "`role` TEXT NOT NULL, `clubPictureUrl` TEXT, ")
+        assertEquals(createSql("club_member", version = 4), v3PlusColumn)
+        assertEquals("ALTER TABLE `club_member` ADD COLUMN `clubPictureUrl` TEXT", ClubDatabaseMigrations.ADD_CLUB_PICTURE_V4)
+        assertEquals(createSql("club", version = 3), createSql("club", version = 4))
     }
 }

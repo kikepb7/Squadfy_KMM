@@ -10,6 +10,9 @@ data class ClubMemberDTO(
     val userId: String,
     val username: String,
     val profilePictureUrl: String? = null,
+    /** Backend spec 012 RN-C2: the member's own picture for this club, and the one to show (club, else profile). */
+    val clubPictureUrl: String? = null,
+    val pictureUrl: String? = null,
     val shirtNumber: Int? = null,
     /** Enum name or null; legacy free text is treated as "no position" (APP-RN-13). */
     val position: String? = null,

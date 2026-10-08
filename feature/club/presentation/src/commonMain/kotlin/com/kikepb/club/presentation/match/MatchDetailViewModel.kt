@@ -441,7 +441,7 @@ data class MatchDetailState(
             return TeamPlayer(id, guest?.name, null, null, guest?.position, isGuest = true, isMe = false)
         }
         val member = members[id]
-        return TeamPlayer(id, member?.username, member?.profilePictureUrl, member?.shirtNumber, member?.position, isGuest = false, isMe = id == myMemberId)
+        return TeamPlayer(id, member?.username, member?.pictureUrl, member?.shirtNumber, member?.position, isGuest = false, isMe = id == myMemberId)
     }
 }
 

@@ -29,6 +29,7 @@ import com.kikepb.club.domain.usecase.RemoveMemberUseCase
 import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
 import com.kikepb.club.domain.usecase.TransferOwnershipUseCase
 import com.kikepb.club.domain.usecase.UnbanMemberUseCase
+import com.kikepb.club.domain.usecase.UpdateMyClubPictureUseCase
 import com.kikepb.club.domain.usecase.UpdateMyMembershipUseCase
 import com.kikepb.club.domain.usecase.UploadClubLogoUseCase
 import com.kikepb.club.domain.usecase.GetMatchUseCase
@@ -73,6 +74,7 @@ val clubDomainModule = module {
     singleOf(::EditClubUseCase)
     singleOf(::RegenerateInvitationCodeUseCase)
     singleOf(::UpdateMyMembershipUseCase)
+    singleOf(::UpdateMyClubPictureUseCase)
     singleOf(::LeaveClubUseCase)
     singleOf(::RemoveMemberUseCase)
     singleOf(::ChangeMemberRoleUseCase)

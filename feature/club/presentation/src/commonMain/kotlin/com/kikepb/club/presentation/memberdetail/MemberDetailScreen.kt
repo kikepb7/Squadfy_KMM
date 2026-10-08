@@ -14,6 +14,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.HideImage
+import com.kikepb.core.presentation.mediapicker.rememberImagePickerLauncher
+import squadfy_app.feature.club.presentation.generated.resources.member_club_picture_change
+import squadfy_app.feature.club.presentation.generated.resources.member_club_picture_remove
 import androidx.compose.material.icons.outlined.ManageAccounts
 import androidx.compose.material.icons.outlined.PersonRemove
 import androidx.compose.material.icons.outlined.WorkspacePremium
@@ -83,6 +88,9 @@ fun MemberDetailRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val picturePicker = rememberImagePickerLauncher { picked ->
+        viewModel.onAction(MemberDetailAction.OnClubPicturePicked(bytes = picked.bytes, mimeType = picked.mimeType))
+    }
 
     ObserveAsEvents(viewModel.events) { event ->
         when (event) {
@@ -93,7 +101,10 @@ fun MemberDetailRoot(
 
     MemberDetailScreen(
         state = state,
-        onAction = viewModel::onAction,
+        onAction = { action ->
+            if (action == MemberDetailAction.OnChangeClubPictureClick) picturePicker.launch()
+            viewModel.onAction(action)
+        },
         onBackClick = onBackClick,
         snackbarHostState = snackbarHostState,
         statsSection = { MemberStatsSection() }
@@ -147,7 +158,7 @@ private fun MemberHeader(member: ClubMemberModel) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        SquadfyAvatarPhoto(displayText = initialsOf(member.username), imageUrl = member.profilePictureUrl, size = AvatarSize.LARGE)
+        SquadfyAvatarPhoto(displayText = initialsOf(member.username), imageUrl = member.pictureUrl, size = AvatarSize.LARGE)
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = member.username,
@@ -202,6 +213,19 @@ private fun MemberActions(state: MemberDetailState, onAction: (MemberDetailActio
                 icon = Icons.Outlined.Edit,
                 onClick = { onAction(MemberDetailAction.OnShowDialog(MemberDialog.EDIT_MINE)) }
             )
+            // AC-015-05: own picture for this club (backend spec 012 RN-C)
+            SettingsRow(
+                label = stringResource(Res.string.member_club_picture_change),
+                icon = Icons.Outlined.PhotoCamera,
+                onClick = { onAction(MemberDetailAction.OnChangeClubPictureClick) }
+            )
+            if (state.member?.clubPictureUrl != null) {
+                SettingsRow(
+                    label = stringResource(Res.string.member_club_picture_remove),
+                    icon = Icons.Outlined.HideImage,
+                    onClick = { onAction(MemberDetailAction.OnRemoveClubPicture) }
+                )
+            }
         }
         return
     }

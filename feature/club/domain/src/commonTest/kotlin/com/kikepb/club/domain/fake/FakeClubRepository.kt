@@ -62,6 +62,8 @@ class FakeClubRepository : ClubRepository {
     }
     override suspend fun regenerateInvitationCode(clubId: String): Result<String, ClubError> = Result.Success("NEWCODE1")
     override suspend fun updateMyMembership(clubId: String, shirtNumber: Int?, position: PlayerPosition?) = TODO("not used")
+    override suspend fun uploadMyClubPicture(clubId: String, bytes: ByteArray, mimeType: String) = TODO("not used")
+    override suspend fun removeMyClubPicture(clubId: String) = TODO("not used")
     override suspend fun leaveClub(clubId: String): EmptyResult<ClubError> = Result.Success(Unit)
     override suspend fun removeMember(clubId: String, memberId: String): EmptyResult<ClubError> = Result.Success(Unit)
     override suspend fun changeMemberRole(clubId: String, memberId: String, role: ClubMemberRole) = TODO("not used")

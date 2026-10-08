@@ -21,6 +21,14 @@ class UpdateMyMembershipUseCase(private val clubRepository: ClubRepository) {
         clubRepository.updateMyMembership(clubId = clubId, shirtNumber = shirtNumber, position = position)
 }
 
+/** Backend spec 012 RN-C: the player's own picture in one club. */
+class UpdateMyClubPictureUseCase(private val clubRepository: ClubRepository) {
+    suspend fun upload(clubId: String, bytes: ByteArray, mimeType: String): Result<ClubMemberModel, ClubError> =
+        clubRepository.uploadMyClubPicture(clubId = clubId, bytes = bytes, mimeType = mimeType)
+
+    suspend fun remove(clubId: String): Result<ClubMemberModel, ClubError> = clubRepository.removeMyClubPicture(clubId = clubId)
+}
+
 class LeaveClubUseCase(private val clubRepository: ClubRepository) {
     suspend operator fun invoke(clubId: String): EmptyResult<ClubError> = clubRepository.leaveClub(clubId)
 }

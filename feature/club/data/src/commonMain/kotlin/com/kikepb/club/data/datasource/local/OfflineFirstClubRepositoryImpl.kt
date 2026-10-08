@@ -142,6 +142,15 @@ class OfflineFirstClubRepositoryImpl(
             body = UpdateMyMembershipRequestDto(shirtNumber = shirtNumber, position = position?.name)
         ).cacheMember()
 
+    override suspend fun uploadMyClubPicture(clubId: String, bytes: ByteArray, mimeType: String): Result<ClubMemberModel, ClubError> =
+        httpClient.apiPutMultipart<ClubMemberDTO>(
+            route = "$CLUBS/$clubId/members/me/picture",
+            content = buildMultipartImage(key = "picture", bytes = bytes, mimeType = mimeType, filename = "picture")
+        ).cacheMember()
+
+    override suspend fun removeMyClubPicture(clubId: String): Result<ClubMemberModel, ClubError> =
+        httpClient.apiDelete<ClubMemberDTO>(route = "$CLUBS/$clubId/members/me/picture").cacheMember()
+
     override suspend fun changeMemberRole(clubId: String, memberId: String, role: ClubMemberRole): Result<ClubMemberModel, ClubError> =
         httpClient.apiPatch<ChangeRoleRequestDto, ClubMemberDTO>(
             route = "$CLUBS/$clubId/members/$memberId/role",

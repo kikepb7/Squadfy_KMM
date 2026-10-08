@@ -15,6 +15,7 @@ import com.kikepb.club.domain.usecase.JoinClubUseCase
 import com.kikepb.club.domain.usecase.ObserveMyMembershipUseCase
 import com.kikepb.club.domain.usecase.RemoveMemberUseCase
 import com.kikepb.club.domain.usecase.TransferOwnershipUseCase
+import com.kikepb.club.domain.usecase.UpdateMyClubPictureUseCase
 import com.kikepb.club.domain.usecase.UpdateMyMembershipUseCase
 import com.kikepb.club.presentation.mapper.toUiText
 import com.kikepb.core.domain.util.onFailure
@@ -32,6 +33,9 @@ import squadfy_app.feature.club.presentation.generated.resources.Res
 import squadfy_app.feature.club.presentation.generated.resources.club_error_shirt_number
 import squadfy_app.feature.club.presentation.generated.resources.member_role_changed
 import squadfy_app.feature.club.presentation.generated.resources.member_updated
+import squadfy_app.feature.club.presentation.generated.resources.member_club_picture_removed
+import squadfy_app.feature.club.presentation.generated.resources.member_club_picture_updated
+import squadfy_app.feature.club.presentation.generated.resources.member_club_picture_invalid
 
 /** Member profile with the actions the current member may perform (spec 003, AC-003-06…09). */
 class MemberDetailViewModel(
@@ -42,6 +46,7 @@ class MemberDetailViewModel(
     private val banMemberUseCase: BanMemberUseCase,
     private val transferOwnershipUseCase: TransferOwnershipUseCase,
     private val updateMyMembershipUseCase: UpdateMyMembershipUseCase,
+    private val updateMyClubPictureUseCase: UpdateMyClubPictureUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -77,6 +82,9 @@ class MemberDetailViewModel(
             MemberDetailAction.OnConfirmTransfer -> transferOwnership()
             is MemberDetailAction.OnEditPositionSelected -> _state.update { it.copy(editPosition = action.position) }
             MemberDetailAction.OnSaveMyMembership -> saveMyMembership()
+            is MemberDetailAction.OnClubPicturePicked -> uploadClubPicture(action.bytes, action.mimeType)
+            MemberDetailAction.OnRemoveClubPicture -> removeClubPicture()
+            MemberDetailAction.OnChangeClubPictureClick -> Unit // the screen opens the picker
         }
     }
 
@@ -130,6 +138,25 @@ class MemberDetailViewModel(
         }
     }
 
+    /** AC-015-05: the backend accepts jpeg, png or webp (spec 012 RN-C1). */
+    private fun uploadClubPicture(bytes: ByteArray, mimeType: String?) {
+        if (mimeType !in ALLOWED_PICTURE_TYPES) {
+            viewModelScope.launch { eventChannel.send(MemberDetailEvent.ShowMessage(UiText.Resource(Res.string.member_club_picture_invalid))) }
+            return
+        }
+        launchWorking {
+            updateMyClubPictureUseCase.upload(clubId = clubId, bytes = bytes, mimeType = mimeType!!)
+                .onSuccess { eventChannel.send(MemberDetailEvent.ShowMessage(UiText.Resource(Res.string.member_club_picture_updated))) }
+                .onFailure { error -> eventChannel.send(MemberDetailEvent.ShowMessage(error.toUiText())) }
+        }
+    }
+
+    private fun removeClubPicture() = launchWorking {
+        updateMyClubPictureUseCase.remove(clubId = clubId)
+            .onSuccess { eventChannel.send(MemberDetailEvent.ShowMessage(UiText.Resource(Res.string.member_club_picture_removed))) }
+            .onFailure { error -> eventChannel.send(MemberDetailEvent.ShowMessage(error.toUiText())) }
+    }
+
     private fun launchWorking(block: suspend () -> Unit) {
         if (_state.value.isWorking) return
         viewModelScope.launch {
@@ -142,6 +169,8 @@ class MemberDetailViewModel(
         }
     }
 }
+
+private val ALLOWED_PICTURE_TYPES = setOf("image/jpeg", "image/png", "image/webp")
 
 enum class MemberDialog { CHANGE_ROLE, REMOVE, BAN, TRANSFER, EDIT_MINE }
 
@@ -175,6 +204,9 @@ sealed interface MemberDetailAction {
     data object OnConfirmTransfer : MemberDetailAction
     data class OnEditPositionSelected(val position: PlayerPosition?) : MemberDetailAction
     data object OnSaveMyMembership : MemberDetailAction
+    data object OnChangeClubPictureClick : MemberDetailAction
+    class OnClubPicturePicked(val bytes: ByteArray, val mimeType: String?) : MemberDetailAction
+    data object OnRemoveClubPicture : MemberDetailAction
 }
 
 sealed interface MemberDetailEvent {

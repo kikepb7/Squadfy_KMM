@@ -39,5 +39,14 @@ object ClubDatabaseMigrations {
     val MIGRATION_1_3: Migration = recreateCacheTables(from = 1)
     val MIGRATION_2_3: Migration = recreateCacheTables(from = 2)
 
-    val ALL: Array<Migration> = arrayOf(MIGRATION_1_3, MIGRATION_2_3)
+    internal const val ADD_CLUB_PICTURE_V4 = "ALTER TABLE `club_member` ADD COLUMN `clubPictureUrl` TEXT"
+
+    /** v4 (spec 015): per-club member picture. Additive, so the cached rows are kept. */
+    val MIGRATION_3_4: Migration = object : Migration(3, 4) {
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL(ADD_CLUB_PICTURE_V4)
+        }
+    }
+
+    val ALL: Array<Migration> = arrayOf(MIGRATION_1_3, MIGRATION_2_3, MIGRATION_3_4)
 }

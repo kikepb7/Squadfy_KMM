@@ -48,6 +48,7 @@ fun SquadfyClubDetailMemberCard(member: ClubMemberModel, onClick: () -> Unit) {
         ) {
             SquadfyAvatarPhoto(
                 displayText = initialsOf(member.username),
+                imageUrl = member.pictureUrl,
                 size = AvatarSize.SMALL
             )
             Column(

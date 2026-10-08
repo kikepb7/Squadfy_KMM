@@ -27,5 +27,7 @@ data class ClubMemberEntity(
     /** `PlayerPosition` name or null. */
     val position: String?,
     /** `ClubMemberRole` name. */
-    val role: String
+    val role: String,
+    /** Spec 015 (backend spec 012 RN-C), added in schema v4. */
+    val clubPictureUrl: String? = null
 )

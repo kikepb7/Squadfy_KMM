@@ -358,7 +358,7 @@ private fun EntryRow(entry: AnnouncementEntry, state: AnnouncementState, index: 
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             index?.let { Text(text = "$it.", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.extended.textPlaceholder) }
-            SquadfyAvatarPhoto(displayText = initialsOf(entry.guestName ?: member?.username.orEmpty()), imageUrl = member?.profilePictureUrl)
+            SquadfyAvatarPhoto(displayText = initialsOf(entry.guestName ?: member?.username.orEmpty()), imageUrl = member?.pictureUrl)
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = name, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
                 val details = listOfNotNull(member?.shirtNumber?.let { "#$it" }, position?.let { stringResource(it.label) }).joinToString(" · ")

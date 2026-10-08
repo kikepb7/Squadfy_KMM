@@ -362,4 +362,9 @@
     <string name="announcement_upcoming_item">Cierra %1$s · %2$d / %3$d convocados</string>
     <string name="members_count_one">%1$d miembro</string>
     <string name="members_count_other">%1$d miembros</string>
+    <string name="member_club_picture_change">Cambiar mi foto en este club</string>
+    <string name="member_club_picture_remove">Quitar mi foto de este club</string>
+    <string name="member_club_picture_updated">Foto del club actualizada</string>
+    <string name="member_club_picture_removed">Foto del club quitada: se muestra la de tu perfil</string>
+    <string name="member_club_picture_invalid">Formato no válido: usa JPG, PNG o WebP</string>
 </resources>

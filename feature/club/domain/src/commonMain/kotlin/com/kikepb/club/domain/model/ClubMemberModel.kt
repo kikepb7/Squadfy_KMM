@@ -12,8 +12,13 @@ data class ClubMemberModel(
     val profilePictureUrl: String?,
     val shirtNumber: Int?,
     val position: PlayerPosition?,
-    val role: ClubMemberRole
-)
+    val role: ClubMemberRole,
+    /** The member's own picture for this club (backend spec 012 RN-C1), if any. */
+    val clubPictureUrl: String? = null
+) {
+    /** Picture to show (RN-C2): the club one if it exists, otherwise the profile one. */
+    val pictureUrl: String? get() = clubPictureUrl ?: profilePictureUrl
+}
 
 /** A banned member (`ClubBanDto`), only visible to managers. */
 data class ClubBanModel(

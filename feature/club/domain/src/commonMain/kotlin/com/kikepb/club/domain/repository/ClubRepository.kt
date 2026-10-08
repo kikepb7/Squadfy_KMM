@@ -30,6 +30,10 @@ interface ClubRepository {
     suspend fun regenerateInvitationCode(clubId: String): Result<String, ClubError>
 
     suspend fun updateMyMembership(clubId: String, shirtNumber: Int?, position: PlayerPosition?): Result<ClubMemberModel, ClubError>
+    /** `PUT /clubs/{id}/members/me/picture` (backend spec 012 RN-C1): jpeg, png or webp. */
+    suspend fun uploadMyClubPicture(clubId: String, bytes: ByteArray, mimeType: String): Result<ClubMemberModel, ClubError>
+    /** `DELETE /clubs/{id}/members/me/picture`: back to the profile picture. */
+    suspend fun removeMyClubPicture(clubId: String): Result<ClubMemberModel, ClubError>
     suspend fun leaveClub(clubId: String): EmptyResult<ClubError>
     suspend fun removeMember(clubId: String, memberId: String): EmptyResult<ClubError>
     suspend fun changeMemberRole(clubId: String, memberId: String, role: ClubMemberRole): Result<ClubMemberModel, ClubError>

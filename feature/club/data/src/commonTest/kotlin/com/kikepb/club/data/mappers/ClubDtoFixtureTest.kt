@@ -56,4 +56,21 @@ class ClubDtoFixtureTest {
         assertEquals("PLAYER", entity.role)
         assertNull(entity.position)
     }
+
+    @Test
+    fun `AC-015-05 member pictures from backend spec 012 map to the club picture and the one to show`() {
+        val json = """
+            {"id":"m-1","clubId":"c-1","userId":"u-1","username":"kike","profilePictureUrl":"https://cdn/p.jpg",
+             "clubPictureUrl":"https://cdn/c.jpg","pictureUrl":"https://cdn/c.jpg","shirtNumber":7,"position":"FORWARD","role":"OWNER"}
+        """.trimIndent()
+        val member = squadfyJson.decodeFromString<ClubMemberDTO>(json).toDomain()
+
+        assertEquals("https://cdn/c.jpg", member.clubPictureUrl)
+        assertEquals("https://cdn/c.jpg", member.pictureUrl)
+        assertEquals("https://cdn/p.jpg", member.profilePictureUrl)
+
+        val withoutClubPicture = squadfyJson.decodeFromString<ClubMemberDTO>(json.replace("\"clubPictureUrl\":\"https://cdn/c.jpg\",", "")).toDomain()
+        assertNull(withoutClubPicture.clubPictureUrl)
+        assertEquals("https://cdn/p.jpg", withoutClubPicture.pictureUrl)
+    }
 }

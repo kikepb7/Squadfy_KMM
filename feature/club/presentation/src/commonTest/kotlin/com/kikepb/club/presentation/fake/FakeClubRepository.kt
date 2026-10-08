@@ -66,6 +66,26 @@ class FakeClubRepository : ClubRepository {
     }
     override suspend fun regenerateInvitationCode(clubId: String): Result<String, ClubError> = Result.Success("NEWCODE1")
     override suspend fun updateMyMembership(clubId: String, shirtNumber: Int?, position: PlayerPosition?) = TODO("not used")
+
+    /** Picture calls act on the member of [myUserId] in that club, like the backend's `members/me`. */
+    var myUserId: String = "me"
+    var pictureResultError: ClubError? = null
+    val pictureUploads = mutableListOf<String>()
+
+    private fun updateMyMember(clubId: String, clubPictureUrl: String?): Result<ClubMemberModel, ClubError> {
+        pictureResultError?.let { return Result.Failure(it) }
+        val mine = members.value.first { it.clubId == clubId && it.userId == myUserId }.copy(clubPictureUrl = clubPictureUrl)
+        members.value = members.value.map { if (it.id == mine.id) mine else it }
+        return Result.Success(mine)
+    }
+
+    override suspend fun uploadMyClubPicture(clubId: String, bytes: ByteArray, mimeType: String): Result<ClubMemberModel, ClubError> {
+        pictureUploads += mimeType
+        return updateMyMember(clubId, clubPictureUrl = "https://cdn/club/$clubId/$myUserId.jpg")
+    }
+
+    override suspend fun removeMyClubPicture(clubId: String): Result<ClubMemberModel, ClubError> =
+        updateMyMember(clubId, clubPictureUrl = null)
     override suspend fun leaveClub(clubId: String): EmptyResult<ClubError> = Result.Success(Unit)
     override suspend fun removeMember(clubId: String, memberId: String): EmptyResult<ClubError> = Result.Success(Unit)
     override suspend fun changeMemberRole(clubId: String, memberId: String, role: ClubMemberRole) = TODO("not used")

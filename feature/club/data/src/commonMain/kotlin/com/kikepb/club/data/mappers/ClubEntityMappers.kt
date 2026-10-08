@@ -29,7 +29,8 @@ fun ClubMemberDTO.toEntity(): ClubMemberEntity = ClubMemberEntity(
     shirtNumber = shirtNumber,
     profilePictureUrl = profilePictureUrl,
     position = PlayerPosition.fromRaw(position)?.name,
-    role = ClubMemberRole.fromRaw(role).name
+    role = ClubMemberRole.fromRaw(role).name,
+    clubPictureUrl = clubPictureUrl
 )
 
 fun ClubEntity.toDomain(): ClubModel = ClubModel(
@@ -51,7 +52,8 @@ fun ClubMemberEntity.toDomain(): ClubMemberModel = ClubMemberModel(
     profilePictureUrl = profilePictureUrl,
     shirtNumber = shirtNumber,
     position = PlayerPosition.fromRaw(position),
-    role = ClubMemberRole.fromRaw(role)
+    role = ClubMemberRole.fromRaw(role),
+    clubPictureUrl = clubPictureUrl
 )
 
 fun ClubDTO.toDomain(): ClubModel = toEntity().toDomain()
