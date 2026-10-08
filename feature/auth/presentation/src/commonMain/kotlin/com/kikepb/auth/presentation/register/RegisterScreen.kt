@@ -79,7 +79,7 @@ fun RegisterScreen(
         SquadfyAdaptiveFormLayout(
             headerText = stringResource(Res.string.welcome_to_squadfy),
             errorText = state.registrationError?.asString(),
-            logo = { SquadfyBrandLogo() }
+            logo = { SquadfyBrandLogo(onDarkBackground = true) }
         ) {
             SquadfyTextField(
                 state = state.usernameTextState,

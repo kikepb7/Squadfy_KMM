@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Squadfy isotype, reverse version, for dark backgrounds (brand kit 01-logo/svg). Crest + halfway line + the "S" of the kick-off circle. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="106dp"
+    android:viewportWidth="100"
+    android:viewportHeight="106">
+    <group android:translateX="-14" android:translateY="-12">
+        <path android:fillColor="#13804F" android:pathData="M26,12H102A12,12 0,0 1,114 24V60C114,89 93,107 64,118C35,107 14,89 14,60V24A12,12 0,0 1,26 12Z" />
+        <group>
+            <clip-path android:pathData="M26,12H102A12,12 0,0 1,114 24V60C114,89 93,107 64,118C35,107 14,89 14,60V24A12,12 0,0 1,26 12Z" />
+            <path android:strokeColor="#1C9A62" android:strokeWidth="4" android:pathData="M14,61H114" />
+        </group>
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#C8F53C"
+            android:strokeWidth="13"
+            android:strokeLineCap="round"
+            android:pathData="M77.4,39.19A17,13.5 0,1 0,64 61A17,13.5 0,1 1,50.6 82.81" />
+    </group>
+</vector>

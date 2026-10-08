@@ -43,7 +43,7 @@ fun SquadfyAdaptiveResultLayout(
                 modifier = Modifier.padding(innerPadding),
                 header = {
                     Spacer(modifier = Modifier.height(32.dp))
-                    SquadfyBrandLogo()
+                    SquadfyBrandLogo(onDarkBackground = true)
                     Spacer(modifier = Modifier.height(32.dp))
                 },
                 content = content
@@ -58,7 +58,7 @@ fun SquadfyAdaptiveResultLayout(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
-                if(configuration != MOBILE_LANDSCAPE) SquadfyBrandLogo()
+                if(configuration != MOBILE_LANDSCAPE) SquadfyBrandLogo(onDarkBackground = true)
 
                 Column(
                     modifier = Modifier

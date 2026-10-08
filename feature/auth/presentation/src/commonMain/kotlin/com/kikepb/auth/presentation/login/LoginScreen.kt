@@ -74,7 +74,7 @@ fun LoginScreen(
             headerText = stringResource(Res.string.welcome_back),
             errorText = state.error?.asString(),
             logo = {
-                SquadfyBrandLogo()
+                SquadfyBrandLogo(onDarkBackground = true)
             },
             modifier = Modifier.fillMaxSize()
         ) {

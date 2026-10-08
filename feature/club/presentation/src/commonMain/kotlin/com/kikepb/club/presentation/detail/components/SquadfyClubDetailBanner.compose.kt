@@ -40,7 +40,6 @@ import com.kikepb.club.presentation.mapper.initialsOf
 import com.kikepb.core.designsystem.components.avatar.AvatarSize
 import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
 import com.kikepb.core.designsystem.theme.SquadfyBrand1000
-import com.kikepb.core.designsystem.theme.SquadfyBrand600
 import com.kikepb.core.designsystem.theme.SquadfyBrand900
 
 @Composable
@@ -59,7 +58,8 @@ fun SquadfyClubDetailBanner(club: ClubModel, modifier: Modifier = Modifier) {
                 .height(150.dp)
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(SquadfyBrand1000, SquadfyBrand900, SquadfyBrand600)
+                        // Night Pitch → Squad Green (spec 016): the white texts stay AA; lime is only an accent
+                        colors = listOf(SquadfyBrand1000, SquadfyBrand900)
                     )
                 )
         ) {

@@ -80,7 +80,8 @@ val LightExtendedColors = ExtendedColors(
     disabledOutline = SquadfyBase200,
     disabledFill = SquadfyBase150,
     successOutline = SquadfyBrand100,
-    success = SquadfyBrand600,
+    // Kit semantic success = Squad Green (lime is never text on light)
+    success = SquadfyBrand900,
     onSuccess = SquadfyBase0,
     secondaryFill = SquadfyBase100,
 
@@ -134,7 +135,7 @@ val DarkExtendedColors = ExtendedColors(
     onSuccess = SquadfyBase1000,
     secondaryFill = SquadfyBase900,
 
-    textPrimary = SquadfyBase0,
+    textPrimary = SquadfyBase100, // Chalk: text on dark (brand kit)
     textTertiary = SquadfyBase200,
     textSecondary = SquadfyBase150,
     textPlaceholder = SquadfyBase400,

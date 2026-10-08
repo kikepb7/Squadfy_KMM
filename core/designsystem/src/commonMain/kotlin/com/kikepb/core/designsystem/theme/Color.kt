@@ -2,37 +2,37 @@ package com.kikepb.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
+// Brand kit (spec 016, `05-tokens/tokens.json`). Token names are kept so every usage follows the new palette.
 // Brand colors
-val SquadfyBrand1000 = Color(0xFF092E2D)
-val SquadfyBrand900 = Color(0xFF106461)
-val SquadfyBrand600 = Color(0xFF19BA87)
-val SquadfyBrand500 = Color(0xFF4DDEAB)
-val SquadfyBrand500Alpha40 = Color(0x664DDEAB)
-val SquadfyBrand100 = Color(0xFFCEF5E4)
+val SquadfyBrand1000 = Color(0xFF0A2E22) // Night Pitch: main color, dark backgrounds, text on light
+val SquadfyBrand900 = Color(0xFF13804F) // Squad Green: crest on dark, primary on light (4.97:1 with white), success
+val SquadfyBrand600 = Color(0xFFB4E02A) // Peto Lime, pressed/hover
+val SquadfyBrand500 = Color(0xFFC8F53C) // Peto Lime: accent and primary on dark. Never as text on light backgrounds
+val SquadfyBrand500Alpha40 = Color(0x66C8F53C)
+val SquadfyBrand100 = Color(0xFFE8F8C2) // Lime tint for light containers
 
-// Base Colors
-val SquadfyBase1000 = Color(0xFF101C28)
-val SquadfyBase1000Alpha8 = Color(0x14101C28)
-val SquadfyBase1000Alpha80 = Color(0xCC101C28)
-val SquadfyBase950 = Color(0xFF1C2A39)
-val SquadfyBase900 = Color(0xFF2F3F4F)
-val SquadfyBase800 = Color(0xFF475767)
-// AC-011-11: darkened from 0xFF667685 so light textPlaceholder reaches AA (4.67:1) on surfaceLower
-val SquadfyBase700 = Color(0xFF617181)
-val SquadfyBase500 = Color(0xFF8597A9)
-val SquadfyBase400 = Color(0xFF9DADBE)
-val SquadfyBase200 = Color(0xFFD0D7DD)
-val SquadfyBase150 = Color(0xFFDCE0E5)
-val SquadfyBase100 = Color(0xFFF5F7F8)
-val SquadfyBase100Alpha10 = Color(0x1AF5F7F8)
-val SquadfyBase1000Alpha14 = Color(0x14101C28) // 8% alpha for light mode surface outline
-val SquadfyBase100Alpha10Alt = Color(0x1AF5F7F8) // 10% alpha for dark mode surface outline
+// Base Colors: the kit's green-tinted neutrals (0, 50, 100, 200, 400, 600) plus Night Pitch tones for dark surfaces
+val SquadfyBase1000 = Color(0xFF0A2E22) // Night Pitch
+val SquadfyBase1000Alpha8 = Color(0x140A2E22)
+val SquadfyBase1000Alpha80 = Color(0xCC0A2E22)
+val SquadfyBase950 = Color(0xFF193B2F) // Night Pitch + 6% white: dark surface
+val SquadfyBase900 = Color(0xFF2C4B41) // Night Pitch + 14% white: dark raised surface, light secondary text
+val SquadfyBase800 = Color(0xFF3A5247)
+val SquadfyBase700 = Color(0xFF4F6359) // kit neutral 600: light placeholder text (5.86:1 on Chalk)
+val SquadfyBase500 = Color(0xFF6E8178)
+val SquadfyBase400 = Color(0xFFA8B8AF) // dark placeholder text (AA on dark surfaces)
+val SquadfyBase200 = Color(0xFFC9D3CC) // kit neutral 200
+val SquadfyBase150 = Color(0xFFE4E9E2) // kit neutral 100
+val SquadfyBase100 = Color(0xFFF3F5EF) // Chalk: light background, text on dark
+val SquadfyBase100Alpha10 = Color(0x1AF3F5EF)
+val SquadfyBase1000Alpha14 = Color(0x140A2E22) // 8% alpha for light mode surface outline
+val SquadfyBase100Alpha10Alt = Color(0x1AF3F5EF) // 10% alpha for dark mode surface outline
 val SquadfyBase0 = Color(0xFFFFFFFF)
 
-// Red Colors
-val SquadfyRed600 = Color(0xFFAA142A)
-val SquadfyRed500 = Color(0xFFDA233E)
-val SquadfyRed200 = Color(0xFFFF7987)
+// Red Colors (kit "red card" #D93636)
+val SquadfyRed600 = Color(0xFFB02A2A)
+val SquadfyRed500 = Color(0xFFCC3131) // kit red card #D93636 darkened for AA: 4.72:1 on Chalk, 5.18:1 with white content
+val SquadfyRed200 = Color(0xFFF9A3A3) // error on dark: ≥4.93:1 on every dark surface, 7.57:1 with Night Pitch content
 
 // Accent Colors (15% alpha)
 val SquadfyBlue = Color(0x26A2C0FF)
