@@ -221,8 +221,10 @@ val DarkColorScheme = darkColorScheme(
     tertiaryContainer = SquadfyBrand900,
     onTertiaryContainer = SquadfyBrand500,
 
-    error = SquadfyRed500,
-    onError = SquadfyBase0,
+    // AC-011-11: Red500 reached only 2.98:1 as error text on the dark surface. Like primary, the dark scheme
+    // uses the light accent with dark content: 5.79:1 as text, 6.84:1 inside destructive buttons.
+    error = SquadfyRed200,
+    onError = SquadfyBase1000,
     errorContainer = SquadfyRed600,
     onErrorContainer = SquadfyRed200,
 

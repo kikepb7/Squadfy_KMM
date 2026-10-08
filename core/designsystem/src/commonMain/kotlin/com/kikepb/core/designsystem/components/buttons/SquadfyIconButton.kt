@@ -9,6 +9,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -24,7 +25,9 @@ fun SquadfyIconButton(
 ) {
     OutlinedIconButton(
         onClick = onClick,
+        // AC-011-11: 45dp visual, 48dp touch target
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .size(45.dp),
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(

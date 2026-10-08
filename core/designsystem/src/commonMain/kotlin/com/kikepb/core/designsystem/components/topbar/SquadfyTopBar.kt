@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -98,7 +99,8 @@ private fun TopBarIconButton(
 ) {
     OutlinedIconButton(
         onClick = onClick,
-        modifier = modifier.size(size = 38.dp),
+        // AC-011-11: 38dp visual, 48dp touch target
+        modifier = modifier.minimumInteractiveComponentSize().size(size = 38.dp),
         shape = RoundedCornerShape(size = 10.dp),
         border = BorderStroke(
             width = 1.dp,
