@@ -9,7 +9,7 @@
 - [x] **T-007** Dar valores por defecto a los campos opcionales del `ClubDto` de globalPosition.
 - [x] **T-008** Deep links: `chat_details` (Android e iOS) y `reset-password` (manifest).
 - [x] **T-009** `.gitignore`: versionar `.claude/skills` e ignorar `settings.local.json`, keystores, `google-services.json` y `.env`.
-- [ ] **T-010** Dar de alta los secretos `SQUADFY_API_KEY` y `GOOGLE_SERVICES_JSON` en GitHub y verificar el primer run verde. *(manual, owner)*
+- [ ] **T-010** Dar de alta los secretos `SQUADFY_API_KEY` y `GOOGLE_SERVICES_JSON` en GitHub y verificar el primer run verde. *(manual, owner)* Mientras no existan, el CI ya no falla: usa una API key y un `google-services.json` de relleno (`.github/ci/google-services.placeholder.json`) y avisa con un warning. Antes, el CI de `main` fallaba en `processDebugGoogleServices` («Malformed root json») porque el secreto estaba vacío.
 - [ ] **T-011** Commitear los esquemas de Room (`feature/club/database/schemas`, `feature/chat/database/schemas`).
 - [ ] **T-012 (P)** Aplicar ktlint a todos los módulos desde la convention, ejecutar `ktlintFormat` en un commit aislado y poner `ignoreFailures = false`.
 - [ ] **T-013 (P)** Kover agregado en la raíz con `kover(project(...))` para cada módulo, y un gate en el CI.

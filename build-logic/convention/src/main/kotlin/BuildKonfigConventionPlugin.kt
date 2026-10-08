@@ -34,10 +34,11 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
             val localProperties = gradleLocalProperties(rootDir, rootProject.providers)
 
             // Lookup order: -Pkey / gradle.properties, then environment (CI secrets), then local.properties.
+            // Blank values count as missing: GitHub expands an unset secret to "", which must not pass as a real key.
             fun lookup(key: String): String? =
-                providers.gradleProperty(key).orNull
-                    ?: providers.environmentVariable(key).orNull
-                    ?: localProperties.getProperty(key)
+                providers.gradleProperty(key).orNull?.takeIf { it.isNotBlank() }
+                    ?: providers.environmentVariable(key).orNull?.takeIf { it.isNotBlank() }
+                    ?: localProperties.getProperty(key)?.takeIf { it.isNotBlank() }
 
             fun resolve(key: String, default: String): String = lookup(key) ?: default
 
