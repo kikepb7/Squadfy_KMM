@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import com.kikepb.core.data.auth.createDataStore
 import com.kikepb.core.data.auth.storage.KeystoreSessionCipher
 import com.kikepb.core.data.auth.storage.SessionCipher
+import com.kikepb.core.data.crash.FirebaseCrashReporter
+import com.kikepb.core.domain.crash.CrashReporter
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.android.ext.koin.androidContext
@@ -16,4 +18,5 @@ actual val platformCoreDataModule = module {
         createDataStore(androidContext())
     }
     single<SessionCipher> { KeystoreSessionCipher() }
+    single<CrashReporter> { FirebaseCrashReporter() }
 }

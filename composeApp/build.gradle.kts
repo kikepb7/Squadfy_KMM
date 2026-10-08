@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.convention.cmp.application)
     alias(libs.plugins.compose.hot.reload)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.kover)
 }
@@ -69,5 +70,16 @@ kotlin {
 
             implementation(libs.koin.core)
         }
+    }
+}
+// AC-011-13: the R8 mapping goes to Crashlytics only from the CI release job (CRASHLYTICS_MAPPING_UPLOAD=true),
+// so local release builds don't publish symbols to the Firebase project.
+val crashlyticsMappingUpload = providers.gradleProperty("CRASHLYTICS_MAPPING_UPLOAD")
+    .orElse(providers.environmentVariable("CRASHLYTICS_MAPPING_UPLOAD"))
+    .map { it.toBoolean() }
+    .getOrElse(false)
+android.buildTypes.named("release") {
+    configure<com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension> {
+        mappingFileUploadEnabled = crashlyticsMappingUpload
     }
 }

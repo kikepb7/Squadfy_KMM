@@ -17,6 +17,7 @@ import com.kikepb.chat.presentation.profile.ProfileAction.OnPictureSelected
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleCurrentPasswordVisibility
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleNewPasswordVisibility
 import com.kikepb.core.domain.auth.repository.SessionStorage
+import com.kikepb.core.domain.crash.CrashReportingConsent
 import com.kikepb.core.domain.featureflag.FeatureFlag
 import com.kikepb.core.domain.featureflag.FeatureFlags
 import com.kikepb.core.domain.util.DataError.Remote.CONFLICT
@@ -51,7 +52,8 @@ class ProfileViewModel(
     private val deleteProfilePictureUseCase: DeleteProfilePictureUseCase,
     private val sessionStorage: SessionStorage,
     private val deleteAccountUseCase: DeleteAccountUseCase,
-    private val featureFlags: FeatureFlags
+    private val featureFlags: FeatureFlags,
+    private val crashReportingConsent: CrashReportingConsent
 ): ViewModel() {
 
     private var hasLoadedInitialData = false
@@ -63,9 +65,14 @@ class ProfileViewModel(
     val state = combine(
         _state,
         sessionStorage.observeAuthInfo(),
-        featureFlags.observe(FeatureFlag.ACCOUNT_DELETION)
-    ) { stateWithoutFlags, authInfo, isAccountDeletionEnabled ->
-        val currentState = stateWithoutFlags.copy(isAccountDeletionEnabled = isAccountDeletionEnabled)
+        featureFlags.observe(FeatureFlag.ACCOUNT_DELETION),
+        crashReportingConsent.observe()
+    ) { stateWithoutFlags, authInfo, isAccountDeletionEnabled, crashReportsEnabled ->
+        val currentState = stateWithoutFlags.copy(
+            isAccountDeletionEnabled = isAccountDeletionEnabled,
+            isCrashReportingAvailable = crashReportingConsent.isAvailable,
+            crashReportsEnabled = crashReportsEnabled
+        )
         if (authInfo != null) {
             currentState.copy(
                 username = authInfo.user.username,
@@ -236,6 +243,7 @@ class ProfileViewModel(
             is ProfileAction.OnDeleteAccountClick -> showDeleteAccountDialog()
             is ProfileAction.OnDismissDeleteAccountDialog -> dismissDeleteAccountDialog()
             is ProfileAction.OnConfirmDeleteAccount -> deleteAccount()
+            is ProfileAction.OnCrashReportsChanged -> viewModelScope.launch { crashReportingConsent.set(action.enabled) }
             is ProfileAction.OnToggleDeleteAccountPasswordVisibility ->
                 _state.update { it.copy(isDeleteAccountPasswordVisible = !it.isDeleteAccountPasswordVisible) }
             else -> Unit
@@ -265,7 +273,9 @@ data class ProfileState(
     val deleteAccountPasswordState: TextFieldState = TextFieldState(),
     val isDeleteAccountPasswordVisible: Boolean = false,
     val isDeletingAccount: Boolean = false,
-    val deleteAccountError: UiText? = null
+    val deleteAccountError: UiText? = null,
+    val isCrashReportingAvailable: Boolean = false,
+    val crashReportsEnabled: Boolean = false
 )
 
 sealed interface ProfileAction {
@@ -283,6 +293,7 @@ sealed interface ProfileAction {
     data object OnDismissDeleteAccountDialog: ProfileAction
     data object OnConfirmDeleteAccount: ProfileAction
     data object OnToggleDeleteAccountPasswordVisibility: ProfileAction
+    data class OnCrashReportsChanged(val enabled: Boolean): ProfileAction
 }
 
 sealed interface ProfileEvent {

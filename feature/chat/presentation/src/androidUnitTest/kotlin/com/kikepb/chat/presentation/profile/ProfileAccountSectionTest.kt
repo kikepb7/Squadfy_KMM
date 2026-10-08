@@ -9,6 +9,7 @@ import com.kikepb.chat.domain.usecases.profile.UploadProfilePictureUseCase
 import com.kikepb.chat.presentation.fake.FakeAuthRepository
 import com.kikepb.chat.presentation.fake.FakeChatParticipantRepository
 import com.kikepb.chat.presentation.fake.FakeChatRepository
+import com.kikepb.chat.presentation.fake.FakeCrashReportingConsent
 import com.kikepb.chat.presentation.fake.FakeFeatureFlags
 import com.kikepb.chat.presentation.fake.FakeSessionStorage
 import com.kikepb.chat.presentation.util.MainDispatcherRule
@@ -31,7 +32,7 @@ import org.junit.Test
 import squadfy_app.feature.chat.presentation.generated.resources.Res
 import squadfy_app.feature.chat.presentation.generated.resources.error_delete_account_wrong_password
 
-class ProfileDeleteAccountTest {
+class ProfileAccountSectionTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
@@ -41,6 +42,7 @@ class ProfileDeleteAccountTest {
     private lateinit var chatRepository: FakeChatRepository
     private lateinit var featureFlags: FakeFeatureFlags
     private lateinit var viewModel: ProfileViewModel
+    private val crashReportingConsent = FakeCrashReportingConsent()
 
     @Before
     fun setUp() {
@@ -56,7 +58,8 @@ class ProfileDeleteAccountTest {
             deleteProfilePictureUseCase = DeleteProfilePictureUseCase(chatParticipantRepository = participantRepository),
             sessionStorage = sessionStorage,
             deleteAccountUseCase = DeleteAccountUseCase(authRepository, sessionStorage, chatRepository),
-            featureFlags = featureFlags
+            featureFlags = featureFlags,
+            crashReportingConsent = crashReportingConsent
         )
     }
 
@@ -127,5 +130,17 @@ class ProfileDeleteAccountTest {
         typePassword("Secret123")
         viewModel.onAction(ProfileAction.OnConfirmDeleteAccount)
         assertNull(authRepository.lastDeleteAccountPassword)
+    }
+
+    @Test
+    fun `AC-011-13 the crash reports switch reflects and changes the stored consent`() = runTest {
+        collectState()
+        assertTrue(viewModel.state.value.isCrashReportingAvailable)
+        assertFalse(viewModel.state.value.crashReportsEnabled)
+
+        viewModel.onAction(ProfileAction.OnCrashReportsChanged(enabled = true))
+
+        assertTrue(crashReportingConsent.enabled.value)
+        assertTrue(viewModel.state.value.crashReportsEnabled)
     }
 }

@@ -10,6 +10,7 @@ import com.kikepb.chat.domain.usecases.profile.UploadProfilePictureUseCase
 import com.kikepb.chat.presentation.fake.FakeAuthRepository
 import com.kikepb.chat.presentation.fake.FakeChatParticipantRepository
 import com.kikepb.chat.presentation.fake.FakeChatRepository
+import com.kikepb.chat.presentation.fake.FakeCrashReportingConsent
 import com.kikepb.chat.presentation.fake.FakeFeatureFlags
 import com.kikepb.chat.presentation.fake.FakeSessionStorage
 import com.kikepb.chat.presentation.util.MainDispatcherRule
@@ -49,7 +50,8 @@ class ProfileViewModelTest {
         deleteProfilePictureUseCase = DeleteProfilePictureUseCase(chatParticipantRepository = participantRepository),
         sessionStorage = sessionStorage,
         deleteAccountUseCase = DeleteAccountUseCase(authRepository, sessionStorage, FakeChatRepository()),
-        featureFlags = FakeFeatureFlags()
+        featureFlags = FakeFeatureFlags(),
+        crashReportingConsent = FakeCrashReportingConsent()
     )
 
     @Test

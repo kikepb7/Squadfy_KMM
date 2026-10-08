@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -70,6 +71,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import squadfy_app.feature.chat.presentation.generated.resources.account
 import squadfy_app.feature.chat.presentation.generated.resources.cancel
 import squadfy_app.feature.chat.presentation.generated.resources.contact_squadfy_support_change_email
+import squadfy_app.feature.chat.presentation.generated.resources.crash_reports
+import squadfy_app.feature.chat.presentation.generated.resources.crash_reports_desc
 import squadfy_app.feature.chat.presentation.generated.resources.current_password
 import squadfy_app.feature.chat.presentation.generated.resources.delete
 import squadfy_app.feature.chat.presentation.generated.resources.delete_account
@@ -266,6 +269,28 @@ fun ProfileScreen(
         ProfileSectionLayout(
             headerText = stringResource(resource = RString.account)
         ) {
+            // AC-011-13: crash reports are opt-in
+            if (state.isCrashReportingAvailable) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(resource = RString.crash_reports),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.extended.textPrimary
+                        )
+                        Text(
+                            text = stringResource(resource = RString.crash_reports_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.extended.textSecondary
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(width = 12.dp))
+                    Switch(
+                        checked = state.crashReportsEnabled,
+                        onCheckedChange = { onAction(ProfileAction.OnCrashReportsChanged(enabled = it)) }
+                    )
+                }
+            }
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(space = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(space = 12.dp)

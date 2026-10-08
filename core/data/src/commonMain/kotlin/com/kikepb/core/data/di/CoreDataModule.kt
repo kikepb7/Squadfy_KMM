@@ -15,6 +15,8 @@ import com.kikepb.core.data.networking.HttpClientFactory
 import com.kikepb.core.domain.auth.repository.AuthRepository
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.config.LegalLinks
+import com.kikepb.core.data.crash.DataStoreCrashReportingConsent
+import com.kikepb.core.domain.crash.CrashReportingConsent
 import com.kikepb.core.domain.featureflag.AppEnvironment
 import com.kikepb.core.domain.featureflag.FeatureFlagOverrides
 import com.kikepb.core.domain.featureflag.FeatureFlags
@@ -48,6 +50,8 @@ val coreDataModule = module {
     // Push notifications (spec 009)
     single { InAppPushCenter() }
     singleOf(::DataStoreNotificationPromptStore) bind NotificationPromptStore::class
+    // Crash reports with consent (spec 011 AC-011-13)
+    singleOf(::DataStoreCrashReportingConsent) bind CrashReportingConsent::class
     singleOf(::NoOpRemoteFeatureFlagSource) bind RemoteFeatureFlagSource::class
     single {
         DefaultFeatureFlags(environment = get(), overrideStore = get(), remoteSource = get(), scope = get())

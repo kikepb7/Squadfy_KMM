@@ -5,6 +5,8 @@ import androidx.datastore.preferences.core.Preferences
 import com.kikepb.core.data.auth.createDataStore
 import com.kikepb.core.data.auth.storage.DataProtectionSessionCipher
 import com.kikepb.core.data.auth.storage.SessionCipher
+import com.kikepb.core.data.crash.NoOpCrashReporter
+import com.kikepb.core.domain.crash.CrashReporter
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.darwin.Darwin
 import org.koin.dsl.module
@@ -15,4 +17,6 @@ actual val platformCoreDataModule = module {
         createDataStore()
     }
     single<SessionCipher> { DataProtectionSessionCipher() }
+    // Crash reporting is Android-only in the MVP (spec 011 plan §10)
+    single<CrashReporter> { NoOpCrashReporter() }
 }

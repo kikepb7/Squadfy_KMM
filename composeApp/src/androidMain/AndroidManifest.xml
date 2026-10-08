@@ -14,6 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.App.Starting"
         android:networkSecurityConfig="${networkSecurityConfig}">
+        <!-- AC-011-13: Crashlytics only collects after the user opts in (see FirebaseCrashReporter) -->
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false" />
+
         <activity
             android:exported="true"
             android:name=".MainActivity"

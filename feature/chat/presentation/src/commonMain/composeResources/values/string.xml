@@ -63,4 +63,6 @@
     <string name="delete_account_desc">Se borrarán tus datos personales, tu foto y tus mensajes, y saldrás de tus clubes. Tus partidos pasados quedarán como «Usuario eliminado». Es inmediato y no se puede deshacer.</string>
     <string name="delete_account_password">Escribe tu contraseña para confirmar</string>
     <string name="error_delete_account_wrong_password">La contraseña no es correcta</string>
+    <string name="crash_reports">Enviar informes de errores</string>
+    <string name="crash_reports_desc">Si la app falla, envía datos técnicos del fallo (sin tus mensajes) para ayudarnos a corregirlo. Puedes desactivarlo cuando quieras.</string>
 </resources>

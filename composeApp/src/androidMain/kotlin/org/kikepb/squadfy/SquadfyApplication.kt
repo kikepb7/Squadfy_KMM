@@ -2,10 +2,14 @@ package org.kikepb.squadfy
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
+import com.kikepb.core.domain.crash.CrashReportingConsent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.kikepb.squadfy.di.initKoin
 import org.kikepb.squadfy.push.PushNotifier
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.android.ext.android.get
 
 class SquadfyApplication: Application() {
 
@@ -17,5 +21,7 @@ class SquadfyApplication: Application() {
             if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) androidLogger()
         }
         PushNotifier.createChannels(this)
+        // AC-011-13: re-apply the stored crash-report consent (collection is off by default in the manifest)
+        get<CoroutineScope>().launch { get<CrashReportingConsent>().applyStored() }
     }
 }

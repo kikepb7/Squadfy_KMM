@@ -26,6 +26,10 @@ kotlin {
             dependencies {
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.koin.android)
+
+                // Crash reports with consent (spec 011 AC-011-13)
+                implementation(project.dependencies.platform(libs.firebase.bom))
+                implementation(libs.firebase.crashlytics)
             }
         }
 
