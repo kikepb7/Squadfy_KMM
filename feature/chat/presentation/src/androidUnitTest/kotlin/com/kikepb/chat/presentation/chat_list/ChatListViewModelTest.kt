@@ -5,6 +5,8 @@ import com.kikepb.chat.domain.usecases.DeleteAllChatsUseCase
 import com.kikepb.chat.domain.usecases.FetchChatsUseCase
 import com.kikepb.chat.domain.usecases.GetChatsUseCase
 import com.kikepb.chat.domain.usecases.LogoutUseCase
+import com.kikepb.chat.domain.usecases.SignOutUseCase
+import kotlinx.coroutines.CoroutineScope
 import com.kikepb.chat.domain.usecases.UnregisterTokenUseCase
 import com.kikepb.chat.domain.usecases.profile.FetchLocalUserProfileUseCase
 import com.kikepb.chat.domain.notification.PushNotificationService
@@ -61,16 +63,22 @@ class ChatListViewModelTest {
         )
     )
 
+    private fun signOutUseCase() = SignOutUseCase(
+        sessionStorage = sessionStorage,
+        pushNotificationService = object : PushNotificationService {
+            override fun observeDeviceToken() = flowOf("fcm-token")
+        },
+        unregisterTokenUseCase = UnregisterTokenUseCase(deviceTokenService = deviceTokenService),
+        deleteAllChatsUseCase = DeleteAllChatsUseCase(chatRepository = chatRepository),
+        logoutUseCase = LogoutUseCase(authRepository = authRepository),
+        applicationScope = CoroutineScope(mainDispatcherRule.dispatcher)
+    )
+
     private fun createViewModel() = ChatListViewModel(
         getChatsUseCase = GetChatsUseCase(chatRepository = chatRepository),
         fetchChatsUseCase = FetchChatsUseCase(chatRepository = chatRepository),
         sessionStorage = sessionStorage,
-        logoutUseCase = LogoutUseCase(authRepository = authRepository),
-        unregisterTokenUseCase = UnregisterTokenUseCase(deviceTokenService = deviceTokenService),
-        pushNotificationService = object : PushNotificationService {
-            override fun observeDeviceToken() = flowOf("fcm-token")
-        },
-        deleteAllChatsUseCase = DeleteAllChatsUseCase(chatRepository = chatRepository),
+        signOutUseCase = signOutUseCase(),
         fetchLocalUserProfileUseCase = FetchLocalUserProfileUseCase(chatParticipantRepository = participantRepository)
     )
 

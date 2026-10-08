@@ -11,6 +11,7 @@ import com.kikepb.chat.domain.usecases.GetChatParticipantUseCase
 import com.kikepb.chat.domain.usecases.GetChatsUseCase
 import com.kikepb.chat.domain.usecases.LeaveChatUseCase
 import com.kikepb.chat.domain.usecases.LogoutUseCase
+import com.kikepb.chat.domain.usecases.SignOutUseCase
 import com.kikepb.chat.domain.usecases.UnregisterTokenUseCase
 import com.kikepb.chat.domain.usecases.message.DeleteMessageUseCase
 import com.kikepb.chat.domain.usecases.message.FetchMessagesUseCase
@@ -46,6 +47,7 @@ val chatDomainModule = module {
     singleOf(::UploadProfilePictureUseCase)
     singleOf(::DeleteProfilePictureUseCase)
     singleOf(::LogoutUseCase)
+    singleOf(::SignOutUseCase)
     singleOf(::DeleteAccountUseCase)
     singleOf(::UnregisterTokenUseCase)
     singleOf(::DeleteAllChatsUseCase)

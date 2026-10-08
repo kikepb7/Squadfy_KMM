@@ -6,6 +6,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kikepb.chat.domain.usecases.participant.FetchLocalParticipantUseCase
+import com.kikepb.chat.domain.usecases.SignOutUseCase
 import com.kikepb.chat.domain.usecases.profile.ChangePasswordUseCase
 import com.kikepb.chat.domain.usecases.profile.DeleteAccountUseCase
 import com.kikepb.chat.domain.usecases.profile.DeleteProfilePictureUseCase
@@ -53,7 +54,8 @@ class ProfileViewModel(
     private val sessionStorage: SessionStorage,
     private val deleteAccountUseCase: DeleteAccountUseCase,
     private val featureFlags: FeatureFlags,
-    private val crashReportingConsent: CrashReportingConsent
+    private val crashReportingConsent: CrashReportingConsent,
+    private val signOutUseCase: SignOutUseCase
 ): ViewModel() {
 
     private var hasLoadedInitialData = false
@@ -231,6 +233,15 @@ class ProfileViewModel(
         }
     }
 
+    private fun signOut() {
+        if (_state.value.isSigningOut) return
+        _state.update { it.copy(showLogoutConfirmation = false, isSigningOut = true) }
+        viewModelScope.launch {
+            signOutUseCase()
+            eventChannel.send(ProfileEvent.OnSignedOut)
+        }
+    }
+
     fun onAction(action: ProfileAction) {
         when (action) {
             is OnChangePasswordClick -> changePassword()
@@ -243,6 +254,9 @@ class ProfileViewModel(
             is ProfileAction.OnDeleteAccountClick -> showDeleteAccountDialog()
             is ProfileAction.OnDismissDeleteAccountDialog -> dismissDeleteAccountDialog()
             is ProfileAction.OnConfirmDeleteAccount -> deleteAccount()
+            is ProfileAction.OnLogoutClick -> _state.update { it.copy(showLogoutConfirmation = true) }
+            is ProfileAction.OnDismissLogoutDialog -> _state.update { it.copy(showLogoutConfirmation = false) }
+            is ProfileAction.OnConfirmLogout -> signOut()
             is ProfileAction.OnCrashReportsChanged -> viewModelScope.launch { crashReportingConsent.set(action.enabled) }
             is ProfileAction.OnToggleDeleteAccountPasswordVisibility ->
                 _state.update { it.copy(isDeleteAccountPasswordVisible = !it.isDeleteAccountPasswordVisible) }
@@ -275,7 +289,9 @@ data class ProfileState(
     val isDeletingAccount: Boolean = false,
     val deleteAccountError: UiText? = null,
     val isCrashReportingAvailable: Boolean = false,
-    val crashReportsEnabled: Boolean = false
+    val crashReportsEnabled: Boolean = false,
+    val showLogoutConfirmation: Boolean = false,
+    val isSigningOut: Boolean = false
 )
 
 sealed interface ProfileAction {
@@ -294,8 +310,13 @@ sealed interface ProfileAction {
     data object OnConfirmDeleteAccount: ProfileAction
     data object OnToggleDeleteAccountPasswordVisibility: ProfileAction
     data class OnCrashReportsChanged(val enabled: Boolean): ProfileAction
+    data object OnLogoutClick: ProfileAction
+    data object OnDismissLogoutDialog: ProfileAction
+    data object OnConfirmLogout: ProfileAction
+    data object OnFeatureFlagsClick: ProfileAction
 }
 
 sealed interface ProfileEvent {
     data object OnAccountDeleted: ProfileEvent
+    data object OnSignedOut: ProfileEvent
 }

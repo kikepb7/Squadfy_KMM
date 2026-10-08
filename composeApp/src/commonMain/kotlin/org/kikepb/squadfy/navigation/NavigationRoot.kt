@@ -5,6 +5,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.kikepb.chat.presentation.profile.ProfileRoot
+import com.kikepb.core.domain.featureflag.FeatureFlag
+import com.kikepb.core.domain.featureflag.FeatureFlags
+import com.kikepb.core.presentation.util.DialogSheetScopedViewModel
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -37,7 +46,12 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val bottomBarItems = listOf(GlobalPosition, Setup, Chat)
+    // D-13: the chat tab follows the CHAT flag (hidden on iOS in PRO)
+    val featureFlags = koinInject<FeatureFlags>()
+    val isChatEnabled by remember { featureFlags.observe(FeatureFlag.CHAT) }.collectAsState(initial = featureFlags.isEnabled(FeatureFlag.CHAT))
+    val bottomBarItems = if (isChatEnabled) listOf(GlobalPosition, Setup, Chat) else listOf(GlobalPosition, Setup)
+    // Profile (account, privacy, crash reports, sign out) opens from the Home gear on every platform
+    var isProfileVisible by rememberSaveable { mutableStateOf(false) }
     val showBottomBar = bottomBarItems.any { it.isSelected(destination = currentDestination) }
     val selectedIndex = bottomBarItems.indexOfFirst { it.isSelected(destination = currentDestination) }.coerceAtLeast(minimumValue = 0)
 
@@ -82,9 +96,7 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                 onNavigateToClub = { clubId ->
                     navController.navigate(ClubDetailRoute(clubId = clubId))
                 },
-                onNavigateToSettings = {
-                    if (isPreEnvironment) navController.navigate(FeatureFlagsRoute)
-                }
+                onNavigateToSettings = { isProfileVisible = true }
             )
             chatGraph(
                 navController = navController,
@@ -104,5 +116,25 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                 }
             }
         }
+    }
+
+    DialogSheetScopedViewModel(visible = isProfileVisible) {
+        val goToAuth = {
+            isProfileVisible = false
+            navController.navigate(route = AuthGraph) {
+                popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+            }
+        }
+        ProfileRoot(
+            onDismiss = { isProfileVisible = false },
+            onAccountDeleted = goToAuth,
+            onSignedOut = goToAuth,
+            onFeatureFlagsClick = if (isPreEnvironment) {
+                {
+                    isProfileVisible = false
+                    navController.navigate(FeatureFlagsRoute)
+                }
+            } else null
+        )
     }
 }

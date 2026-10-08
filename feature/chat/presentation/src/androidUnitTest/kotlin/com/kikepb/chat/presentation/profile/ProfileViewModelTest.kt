@@ -11,6 +11,8 @@ import com.kikepb.chat.presentation.fake.FakeAuthRepository
 import com.kikepb.chat.presentation.fake.FakeChatParticipantRepository
 import com.kikepb.chat.presentation.fake.FakeChatRepository
 import com.kikepb.chat.presentation.fake.FakeCrashReportingConsent
+import com.kikepb.chat.presentation.fake.fakeSignOutUseCase
+import kotlinx.coroutines.CoroutineScope
 import com.kikepb.chat.presentation.fake.FakeFeatureFlags
 import com.kikepb.chat.presentation.fake.FakeSessionStorage
 import com.kikepb.chat.presentation.util.MainDispatcherRule
@@ -51,7 +53,8 @@ class ProfileViewModelTest {
         sessionStorage = sessionStorage,
         deleteAccountUseCase = DeleteAccountUseCase(authRepository, sessionStorage, FakeChatRepository()),
         featureFlags = FakeFeatureFlags(),
-        crashReportingConsent = FakeCrashReportingConsent()
+        crashReportingConsent = FakeCrashReportingConsent(),
+        signOutUseCase = fakeSignOutUseCase(sessionStorage = sessionStorage, applicationScope = CoroutineScope(mainDispatcherRule.dispatcher))
     )
 
     @Test

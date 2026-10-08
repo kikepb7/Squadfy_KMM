@@ -69,6 +69,10 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import squadfy_app.feature.chat.presentation.generated.resources.account
+import squadfy_app.feature.chat.presentation.generated.resources.feature_flags
+import squadfy_app.feature.chat.presentation.generated.resources.do_you_want_to_logout_desc
+import squadfy_app.feature.chat.presentation.generated.resources.do_you_want_to_logout
+import squadfy_app.feature.chat.presentation.generated.resources.logout
 import squadfy_app.feature.chat.presentation.generated.resources.cancel
 import squadfy_app.feature.chat.presentation.generated.resources.contact_squadfy_support_change_email
 import squadfy_app.feature.chat.presentation.generated.resources.crash_reports
@@ -97,6 +101,9 @@ import squadfy_app.feature.chat.presentation.generated.resources.Res.drawable as
 fun ProfileRoot(
     onDismiss: () -> Unit,
     onAccountDeleted: () -> Unit,
+    onSignedOut: () -> Unit,
+    /** PRE only: opens the feature flags debug screen (spec 013). */
+    onFeatureFlagsClick: (() -> Unit)? = null,
     viewModel: ProfileViewModel = koinViewModel(),
     legalLinks: LegalLinks = koinInject()
 ) {
@@ -106,6 +113,7 @@ fun ProfileRoot(
     ObserveAsEvents(flow = viewModel.events) { event ->
         when (event) {
             ProfileEvent.OnAccountDeleted -> onAccountDeleted()
+            ProfileEvent.OnSignedOut -> onSignedOut()
         }
     }
     val imagePickerLauncher = rememberImagePickerLauncher { pickedImageData ->
@@ -115,11 +123,13 @@ fun ProfileRoot(
     SquadfyAdaptiveDialogSheetLayout(onDismiss = onDismiss) {
         ProfileScreen(
             state = state,
+            showFeatureFlags = onFeatureFlagsClick != null,
             onAction = { action ->
                 when (action) {
                     is OnDismiss -> onDismiss()
                     is OnUploadPictureClick -> { imagePickerLauncher.launch() }
                     is OnPrivacyPolicyClick -> uriHandler.openUri(legalLinks.privacyPolicyUrl)
+                    is ProfileAction.OnFeatureFlagsClick -> onFeatureFlagsClick?.invoke()
                     else -> Unit
                 }
                 viewModel.onAction(action = action)
@@ -131,7 +141,8 @@ fun ProfileRoot(
 @Composable
 fun ProfileScreen(
     state: ProfileState,
-    onAction: (ProfileAction) -> Unit
+    onAction: (ProfileAction) -> Unit,
+    showFeatureFlags: Boolean = false
 ) {
     val deviceConfiguration = currentDeviceConfiguration()
 
@@ -300,11 +311,24 @@ fun ProfileScreen(
                     onClick = { onAction(OnPrivacyPolicyClick) },
                     style = TEXT
                 )
+                SquadfyButton(
+                    text = stringResource(resource = RString.logout),
+                    onClick = { onAction(ProfileAction.OnLogoutClick) },
+                    style = SECONDARY,
+                    isLoading = state.isSigningOut
+                )
                 if (state.isAccountDeletionEnabled) {
                     SquadfyButton(
                         text = stringResource(resource = RString.delete_account),
                         onClick = { onAction(OnDeleteAccountClick) },
                         style = DESTRUCTIVE_SECONDARY
+                    )
+                }
+                if (showFeatureFlags) {
+                    SquadfyButton(
+                        text = stringResource(resource = RString.feature_flags),
+                        onClick = { onAction(ProfileAction.OnFeatureFlagsClick) },
+                        style = TEXT
                     )
                 }
             }
@@ -324,6 +348,18 @@ fun ProfileScreen(
             onConfirmClick = { onAction(OnConfirmDeleteClick) },
             onCancelClick = { onAction(OnDismissDeleteConfirmationDialogClick) },
             onDismiss = { onAction(OnDismissDeleteConfirmationDialogClick) },
+        )
+    }
+
+    if (state.showLogoutConfirmation) {
+        SquadfyDestructiveConfirmationDialog(
+            title = stringResource(resource = RString.do_you_want_to_logout),
+            description = stringResource(resource = RString.do_you_want_to_logout_desc),
+            confirmButtonText = stringResource(resource = RString.logout),
+            cancelButtonText = stringResource(resource = RString.cancel),
+            onConfirmClick = { onAction(ProfileAction.OnConfirmLogout) },
+            onCancelClick = { onAction(ProfileAction.OnDismissLogoutDialog) },
+            onDismiss = { onAction(ProfileAction.OnDismissLogoutDialog) }
         )
     }
 

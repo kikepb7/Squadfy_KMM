@@ -2,12 +2,9 @@ package com.kikepb.chat.presentation.chat_list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kikepb.chat.domain.notification.PushNotificationService
-import com.kikepb.chat.domain.usecases.DeleteAllChatsUseCase
 import com.kikepb.chat.domain.usecases.FetchChatsUseCase
 import com.kikepb.chat.domain.usecases.GetChatsUseCase
-import com.kikepb.chat.domain.usecases.LogoutUseCase
-import com.kikepb.chat.domain.usecases.UnregisterTokenUseCase
+import com.kikepb.chat.domain.usecases.SignOutUseCase
 import com.kikepb.chat.domain.usecases.profile.FetchLocalUserProfileUseCase
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnConfirmLogout
 import com.kikepb.chat.presentation.chat_list.ChatListAction.OnDismissLogoutDialog
@@ -26,23 +23,17 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 
 class ChatListViewModel(
     private val getChatsUseCase: GetChatsUseCase,
     private val fetchChatsUseCase: FetchChatsUseCase,
     private val sessionStorage: SessionStorage,
-    private val logoutUseCase: LogoutUseCase,
-    private val unregisterTokenUseCase: UnregisterTokenUseCase,
-    private val pushNotificationService: PushNotificationService,
-    private val deleteAllChatsUseCase: DeleteAllChatsUseCase,
+    private val signOutUseCase: SignOutUseCase,
     private val fetchLocalUserProfileUseCase: FetchLocalUserProfileUseCase
 ) : ViewModel() {
 
@@ -84,27 +75,8 @@ class ChatListViewModel(
         _state.update { it.copy(showLogoutConfirmation = false) }
 
         viewModelScope.launch {
-            val authInfo = sessionStorage.observeAuthInfo().first()
-            val refreshToken = authInfo?.refreshToken
-
-            // 0. Spec 009 (AC-009-01): DELETE /devices/{fcmToken} needs the session, so it goes first,
-            //    bounded so that logging out never hangs without internet.
-            withTimeoutOrNull(DEVICE_UNREGISTER_TIMEOUT_MS) {
-                pushNotificationService.observeDeviceToken().firstOrNull()?.let { unregisterTokenUseCase.unregisterToken(token = it) }
-            }
-
-            // 1. Local logout — always succeeds, even without internet.
-            //    Clearing the session makes the app behave as unauthenticated immediately.
-            sessionStorage.set(info = null)
-            deleteAllChatsUseCase.deleteAllChats()
+            signOutUseCase()
             eventChannel.send(element = OnLogoutSuccess)
-
-            // 2. Best-effort remote cleanup — fire and forget.
-            //    If offline, the refresh token will expire on the server on its own.
-            //    We don't block logout on network availability.
-            if (refreshToken != null) {
-                launch { logoutUseCase.logout(refreshToken = refreshToken) }
-            }
         }
     }
 
@@ -153,4 +125,3 @@ sealed interface ChatListAction {
     data class OnSelectChat(val chatId: String?): ChatListAction
 }
 
-private const val DEVICE_UNREGISTER_TIMEOUT_MS = 3_000L

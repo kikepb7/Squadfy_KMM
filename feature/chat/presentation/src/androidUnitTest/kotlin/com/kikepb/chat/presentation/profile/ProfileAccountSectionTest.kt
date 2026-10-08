@@ -10,6 +10,8 @@ import com.kikepb.chat.presentation.fake.FakeAuthRepository
 import com.kikepb.chat.presentation.fake.FakeChatParticipantRepository
 import com.kikepb.chat.presentation.fake.FakeChatRepository
 import com.kikepb.chat.presentation.fake.FakeCrashReportingConsent
+import com.kikepb.chat.presentation.fake.fakeSignOutUseCase
+import kotlinx.coroutines.CoroutineScope
 import com.kikepb.chat.presentation.fake.FakeFeatureFlags
 import com.kikepb.chat.presentation.fake.FakeSessionStorage
 import com.kikepb.chat.presentation.util.MainDispatcherRule
@@ -59,7 +61,13 @@ class ProfileAccountSectionTest {
             sessionStorage = sessionStorage,
             deleteAccountUseCase = DeleteAccountUseCase(authRepository, sessionStorage, chatRepository),
             featureFlags = featureFlags,
-            crashReportingConsent = crashReportingConsent
+            crashReportingConsent = crashReportingConsent,
+            signOutUseCase = fakeSignOutUseCase(
+                sessionStorage = sessionStorage,
+                chatRepository = chatRepository,
+                authRepository = authRepository,
+                applicationScope = CoroutineScope(mainDispatcherRule.dispatcher)
+            )
         )
     }
 
@@ -142,5 +150,22 @@ class ProfileAccountSectionTest {
 
         assertTrue(crashReportingConsent.enabled.value)
         assertTrue(viewModel.state.value.crashReportsEnabled)
+    }
+
+    @Test
+    fun `AC-015-03 signing out from Profile asks first, clears the session and emits OnSignedOut`() = runTest {
+        sessionStorage.set(FakeAuthRepository.defaultAuthInfoModel())
+        collectState()
+
+        viewModel.events.test {
+            viewModel.onAction(ProfileAction.OnLogoutClick)
+            assertTrue(viewModel.state.value.showLogoutConfirmation)
+            viewModel.onAction(ProfileAction.OnConfirmLogout)
+
+            assertEquals(ProfileEvent.OnSignedOut, awaitItem())
+        }
+        assertNull(sessionStorage.savedInfo)
+        assertTrue(chatRepository.deleteAllChatsCalled)
+        assertFalse(viewModel.state.value.showLogoutConfirmation)
     }
 }

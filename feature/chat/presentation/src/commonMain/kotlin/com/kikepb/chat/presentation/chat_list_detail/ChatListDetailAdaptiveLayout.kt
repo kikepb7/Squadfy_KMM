@@ -129,6 +129,10 @@ fun ChatListDetailAdaptiveLayout(
             onAccountDeleted = {
                 chatListDetailViewModel.onAction(action = OnDismissCurrentDialog)
                 onLogout()
+            },
+            onSignedOut = {
+                chatListDetailViewModel.onAction(action = OnDismissCurrentDialog)
+                onLogout()
             }
         )
     }
