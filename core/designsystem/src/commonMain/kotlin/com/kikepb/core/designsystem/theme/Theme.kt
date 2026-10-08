@@ -174,8 +174,10 @@ val DarkExtendedColors = ExtendedColors(
 )
 
 val LightColorScheme = lightColorScheme(
-    primary = SquadfyBrand500,
-    onPrimary = SquadfyBrand1000,
+    // D-12 / AC-011-11: on white, the mint (Brand500) only reached 1.70:1 as text. The light scheme uses the
+    // darker brand tone (6.96:1 as text, white content inside buttons); the dark scheme keeps the mint.
+    primary = SquadfyBrand900,
+    onPrimary = SquadfyBase0,
     primaryContainer = SquadfyBrand100,
     onPrimaryContainer = SquadfyBrand900,
 
