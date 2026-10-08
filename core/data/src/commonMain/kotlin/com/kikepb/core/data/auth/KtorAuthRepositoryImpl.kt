@@ -4,6 +4,7 @@ import com.kikepb.core.data.auth.dto.AuthInfoSerializableDTO
 import com.kikepb.core.data.auth.dto.PublicUserSerializableDTO
 import com.kikepb.core.data.auth.dto.UserSerializableDTO
 import com.kikepb.core.data.auth.dto.request.ChangePasswordRequestDTO
+import com.kikepb.core.data.auth.dto.request.DeleteAccountRequestDTO
 import com.kikepb.core.data.auth.dto.request.EmailRequestDTO
 import com.kikepb.core.data.auth.dto.request.LoginRequestDTO
 import com.kikepb.core.data.auth.dto.request.RefreshRequestDTO
@@ -16,6 +17,7 @@ import com.kikepb.core.data.auth.provider.AuthRoutes.RESEND_VERIFICATION_ROUTE
 import com.kikepb.core.data.auth.provider.AuthRoutes.RESET_PASSWORD_ROUTE
 import com.kikepb.core.data.auth.provider.AuthRoutes.VERIFY_EMAIL_ROUTE
 import com.kikepb.core.data.mappers.toDomain
+import com.kikepb.core.data.networking.delete
 import com.kikepb.core.data.networking.get
 import com.kikepb.core.data.networking.post
 import com.kikepb.core.domain.auth.model.AuthInfoModel
@@ -27,6 +29,7 @@ import com.kikepb.core.domain.util.map
 import com.kikepb.core.domain.util.onSuccess
 import io.ktor.client.HttpClient
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.setBody
 import io.ktor.client.plugins.auth.authProvider
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 
@@ -119,6 +122,14 @@ class KtorAuthRepositoryImpl(
             route = "/auth/logout",
             body = RefreshRequestDTO(refreshToken = refreshToken)
         ).onSuccess {
+            httpClient.authProvider<BearerAuthProvider>()?.clearToken()
+        }
+
+    override suspend fun deleteAccount(password: String): EmptyResult<DataError.Remote> =
+        httpClient.delete<Unit>(route = "/me") {
+            setBody(DeleteAccountRequestDTO(password = password))
+        }.onSuccess {
+            // The backend already revoked every session (RN-A4): drop the cached bearer tokens too
             httpClient.authProvider<BearerAuthProvider>()?.clearToken()
         }
 }

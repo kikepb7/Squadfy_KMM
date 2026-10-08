@@ -184,6 +184,7 @@ sealed interface RegisterEvent {
 
 sealed interface RegisterAction {
     data object OnLoginClick: RegisterAction
+    data object OnPrivacyPolicyClick: RegisterAction
     data object OnInputTextFocusGain: RegisterAction
     data object OnRegisterClick: RegisterAction
     data object OnTogglePasswordVisibilityClick: RegisterAction

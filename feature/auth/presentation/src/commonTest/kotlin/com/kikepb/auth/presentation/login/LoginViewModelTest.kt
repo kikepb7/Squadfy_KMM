@@ -45,6 +45,7 @@ class LoginViewModelTest {
         override suspend fun resetPassword(newPassword: String, token: String): EmptyResult<DataError.Remote> = Result.Success(Unit)
         override suspend fun changePassword(currentPassword: String, newPassword: String): EmptyResult<DataError.Remote> = Result.Success(Unit)
         override suspend fun logout(refreshToken: String): EmptyResult<DataError.Remote> = Result.Success(Unit)
+        override suspend fun deleteAccount(password: String): EmptyResult<DataError.Remote> = Result.Success(Unit)
     }
 
     private class FakeSessionStorage : SessionStorage {

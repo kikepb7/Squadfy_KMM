@@ -22,10 +22,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.chat.presentation.profile.ProfileAction.OnChangePasswordClick
+import com.kikepb.chat.presentation.profile.ProfileAction.OnConfirmDeleteAccount
+import com.kikepb.chat.presentation.profile.ProfileAction.OnDeleteAccountClick
+import com.kikepb.chat.presentation.profile.ProfileAction.OnDismissDeleteAccountDialog
+import com.kikepb.chat.presentation.profile.ProfileAction.OnPrivacyPolicyClick
+import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleDeleteAccountPasswordVisibility
 import com.kikepb.chat.presentation.profile.ProfileAction.OnConfirmDeleteClick
 import com.kikepb.chat.presentation.profile.ProfileAction.OnDeletePictureClick
 import com.kikepb.chat.presentation.profile.ProfileAction.OnDismiss
@@ -42,6 +48,7 @@ import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle.DESTRUCTIVE_SECONDARY
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle.SECONDARY
+import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle.TEXT
 import com.kikepb.core.designsystem.components.dialogs.SquadfyAdaptiveDialogSheetLayout
 import com.kikepb.core.designsystem.components.dialogs.SquadfyDestructiveConfirmationDialog
 import com.kikepb.core.designsystem.components.divider.SquadfyHorizontalDivider
@@ -51,16 +58,23 @@ import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
 import com.kikepb.core.presentation.util.DeviceConfiguration.MOBILE_LANDSCAPE
 import com.kikepb.core.presentation.util.DeviceConfiguration.MOBILE_PORTRAIT
+import com.kikepb.core.domain.config.LegalLinks
+import com.kikepb.core.presentation.util.ObserveAsEvents
 import com.kikepb.core.presentation.util.clearFocusOnTap
 import com.kikepb.core.presentation.util.currentDeviceConfiguration
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import squadfy_app.feature.chat.presentation.generated.resources.account
 import squadfy_app.feature.chat.presentation.generated.resources.cancel
 import squadfy_app.feature.chat.presentation.generated.resources.contact_squadfy_support_change_email
 import squadfy_app.feature.chat.presentation.generated.resources.current_password
 import squadfy_app.feature.chat.presentation.generated.resources.delete
+import squadfy_app.feature.chat.presentation.generated.resources.delete_account
+import squadfy_app.feature.chat.presentation.generated.resources.delete_account_desc
+import squadfy_app.feature.chat.presentation.generated.resources.delete_account_password
 import squadfy_app.feature.chat.presentation.generated.resources.delete_profile_picture
 import squadfy_app.feature.chat.presentation.generated.resources.delete_profile_picture_desc
 import squadfy_app.feature.chat.presentation.generated.resources.email
@@ -68,6 +82,7 @@ import squadfy_app.feature.chat.presentation.generated.resources.new_password
 import squadfy_app.feature.chat.presentation.generated.resources.password
 import squadfy_app.feature.chat.presentation.generated.resources.password_change_successful
 import squadfy_app.feature.chat.presentation.generated.resources.password_hint
+import squadfy_app.feature.chat.presentation.generated.resources.privacy_policy
 import squadfy_app.feature.chat.presentation.generated.resources.profile_image
 import squadfy_app.feature.chat.presentation.generated.resources.save
 import squadfy_app.feature.chat.presentation.generated.resources.upload_icon
@@ -78,9 +93,18 @@ import squadfy_app.feature.chat.presentation.generated.resources.Res.drawable as
 @Composable
 fun ProfileRoot(
     onDismiss: () -> Unit,
-    viewModel: ProfileViewModel = koinViewModel()
+    onAccountDeleted: () -> Unit,
+    viewModel: ProfileViewModel = koinViewModel(),
+    legalLinks: LegalLinks = koinInject()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val uriHandler = LocalUriHandler.current
+
+    ObserveAsEvents(flow = viewModel.events) { event ->
+        when (event) {
+            ProfileEvent.OnAccountDeleted -> onAccountDeleted()
+        }
+    }
     val imagePickerLauncher = rememberImagePickerLauncher { pickedImageData ->
         viewModel.onAction(action = OnPictureSelected(bytes = pickedImageData.bytes, mimeType = pickedImageData.mimeType))
     }
@@ -92,6 +116,7 @@ fun ProfileRoot(
                 when (action) {
                     is OnDismiss -> onDismiss()
                     is OnUploadPictureClick -> { imagePickerLauncher.launch() }
+                    is OnPrivacyPolicyClick -> uriHandler.openUri(legalLinks.privacyPolicyUrl)
                     else -> Unit
                 }
                 viewModel.onAction(action = action)
@@ -236,6 +261,30 @@ fun ProfileScreen(
             }
         }
 
+        SquadfyHorizontalDivider()
+        // Spec 011 AC-011-07/08: privacy policy link and, behind ACCOUNT_DELETION, in-app account deletion
+        ProfileSectionLayout(
+            headerText = stringResource(resource = RString.account)
+        ) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(space = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(space = 12.dp)
+            ) {
+                SquadfyButton(
+                    text = stringResource(resource = RString.privacy_policy),
+                    onClick = { onAction(OnPrivacyPolicyClick) },
+                    style = TEXT
+                )
+                if (state.isAccountDeletionEnabled) {
+                    SquadfyButton(
+                        text = stringResource(resource = RString.delete_account),
+                        onClick = { onAction(OnDeleteAccountClick) },
+                        style = DESTRUCTIVE_SECONDARY
+                    )
+                }
+            }
+        }
+
         if (deviceConfiguration in listOf(MOBILE_PORTRAIT, MOBILE_LANDSCAPE)) {
             Spacer(modifier = Modifier.weight(weight = 1f))
         }
@@ -251,6 +300,30 @@ fun ProfileScreen(
             onCancelClick = { onAction(OnDismissDeleteConfirmationDialogClick) },
             onDismiss = { onAction(OnDismissDeleteConfirmationDialogClick) },
         )
+    }
+
+    if (state.showDeleteAccountDialog) {
+        SquadfyDestructiveConfirmationDialog(
+            title = stringResource(resource = RString.delete_account),
+            description = stringResource(resource = RString.delete_account_desc),
+            confirmButtonText = stringResource(resource = RString.delete_account),
+            cancelButtonText = stringResource(resource = RString.cancel),
+            onConfirmClick = { onAction(OnConfirmDeleteAccount) },
+            onCancelClick = { onAction(OnDismissDeleteAccountDialog) },
+            onDismiss = { onAction(OnDismissDeleteAccountDialog) },
+            isConfirmEnabled = state.deleteAccountPasswordState.text.isNotBlank() && !state.isDeletingAccount,
+            isConfirmLoading = state.isDeletingAccount
+        ) {
+            SquadfyPasswordTextField(
+                state = state.deleteAccountPasswordState,
+                isPasswordVisible = state.isDeleteAccountPasswordVisible,
+                onToggleVisibilityClick = { onAction(OnToggleDeleteAccountPasswordVisibility) },
+                placeholder = stringResource(resource = RString.delete_account_password),
+                isError = state.deleteAccountError != null,
+                supportingText = state.deleteAccountError?.asString(),
+                enabled = !state.isDeletingAccount
+            )
+        }
     }
 }
 

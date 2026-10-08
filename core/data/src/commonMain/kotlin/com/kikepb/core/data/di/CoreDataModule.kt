@@ -14,6 +14,7 @@ import com.kikepb.core.data.logger.KermitLogger
 import com.kikepb.core.data.networking.HttpClientFactory
 import com.kikepb.core.domain.auth.repository.AuthRepository
 import com.kikepb.core.domain.auth.repository.SessionStorage
+import com.kikepb.core.domain.config.LegalLinks
 import com.kikepb.core.domain.featureflag.AppEnvironment
 import com.kikepb.core.domain.featureflag.FeatureFlagOverrides
 import com.kikepb.core.domain.featureflag.FeatureFlags
@@ -42,6 +43,7 @@ val coreDataModule = module {
 
     // Feature flags (spec 013): environment comes from SQUADFY_ENV at build time
     single { AppEnvironment.fromKey(BuildKonfig.ENVIRONMENT) }
+    single { LegalLinks(privacyPolicyUrl = BuildKonfig.PRIVACY_POLICY_URL, accountDeletionUrl = BuildKonfig.ACCOUNT_DELETION_URL) }
     singleOf(::DataStoreFeatureFlagOverrideStore) bind FeatureFlagOverrideStore::class
     // Push notifications (spec 009)
     single { InAppPushCenter() }

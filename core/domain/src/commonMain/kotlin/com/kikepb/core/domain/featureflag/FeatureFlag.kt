@@ -44,6 +44,14 @@ enum class FeatureFlag(
         defaultInPro = false
     ),
 
+    // Release readiness (spec 011)
+    ACCOUNT_DELETION(
+        key = "account_deletion",
+        description = "Delete the account from Profile with the password (spec 011, backend spec 010)",
+        defaultInPre = true,
+        defaultInPro = false
+    ),
+
     // QA tooling and unfinished screens
     DEV_TEST_MATCH(
         key = "dev_test_match",

@@ -31,6 +31,7 @@ class RegisterViewModelTest {
         override suspend fun resetPassword(newPassword: String, token: String): EmptyResult<DataError.Remote> = TODO("not used")
         override suspend fun changePassword(currentPassword: String, newPassword: String): EmptyResult<DataError.Remote> = TODO("not used")
         override suspend fun logout(refreshToken: String): EmptyResult<DataError.Remote> = TODO("not used")
+        override suspend fun deleteAccount(password: String): EmptyResult<DataError.Remote> = TODO("not used")
     }
 
     @BeforeTest

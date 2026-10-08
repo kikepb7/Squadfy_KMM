@@ -17,6 +17,10 @@ private const val DEFAULT_BASE_URL_WS = "ws://10.0.2.2:8080/ws"
 
 /** Build environment for feature flag defaults (spec 013). CI release jobs for production pass `pro`. */
 private const val DEFAULT_ENVIRONMENT = "pre"
+
+/** Legal pages (spec 011 AC-011-07/08). The deletion page is served by the backend (BE spec 010) next to the API. */
+private const val DEFAULT_PRIVACY_POLICY_URL = "https://squadfy.app/privacy"
+private const val ACCOUNT_DELETION_PATH = "/account/delete"
 private val SUPPORTED_ENVIRONMENTS = setOf("pre", "pro")
 
 class BuildKonfigConventionPlugin: Plugin<Project> {
@@ -62,6 +66,17 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                     }
                     // Logging and diagnostics are reduced in release builds (AC-011-04)
                     buildConfigField(FieldSpec.Type.BOOLEAN, "IS_RELEASE", isReleaseBuild.toString())
+
+                    buildConfigField(
+                        FieldSpec.Type.STRING,
+                        "PRIVACY_POLICY_URL",
+                        resolve("PRIVACY_POLICY_URL", DEFAULT_PRIVACY_POLICY_URL)
+                    )
+                    buildConfigField(
+                        FieldSpec.Type.STRING,
+                        "ACCOUNT_DELETION_URL",
+                        resolve("ACCOUNT_DELETION_URL", baseUrlHttp.removeSuffix("/").removeSuffix("/api/v1") + ACCOUNT_DELETION_PATH)
+                    )
 
                     val environment = resolve("SQUADFY_ENV", DEFAULT_ENVIRONMENT).lowercase()
                     check(environment in SUPPORTED_ENVIRONMENTS) {

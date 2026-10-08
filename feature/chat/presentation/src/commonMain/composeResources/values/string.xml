@@ -57,4 +57,10 @@
     <string name="error_current_password_incorrect">La contraseña actual no es correcta</string>
     <string name="error_current_password_equal_to_new_one">La nueva contraseña no puede ser igual a la anterior.</string>
     <string name="error_invalid_file_type">Este tipo de archivo no está soportado.</string>
+    <string name="account">Cuenta</string>
+    <string name="privacy_policy">Política de privacidad</string>
+    <string name="delete_account">Eliminar cuenta</string>
+    <string name="delete_account_desc">Se borrarán tus datos personales, tu foto y tus mensajes, y saldrás de tus clubes. Tus partidos pasados quedarán como «Usuario eliminado». Es inmediato y no se puede deshacer.</string>
+    <string name="delete_account_password">Escribe tu contraseña para confirmar</string>
+    <string name="error_delete_account_wrong_password">La contraseña no es correcta</string>
 </resources>

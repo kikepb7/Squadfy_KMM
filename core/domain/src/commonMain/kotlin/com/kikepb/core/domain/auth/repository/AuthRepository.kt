@@ -15,4 +15,6 @@ interface AuthRepository {
     suspend fun resetPassword(newPassword: String, token: String): EmptyResult<DataError.Remote>
     suspend fun changePassword(currentPassword: String, newPassword: String): EmptyResult<DataError.Remote>
     suspend fun logout(refreshToken: String): EmptyResult<DataError.Remote>
+    /** `DELETE /me` (backend spec 010): immediate and irreversible. A wrong password is [DataError.Remote.UNAUTHORIZED]. */
+    suspend fun deleteAccount(password: String): EmptyResult<DataError.Remote>
 }

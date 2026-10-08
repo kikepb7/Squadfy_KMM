@@ -8,6 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import com.kikepb.core.domain.config.LegalLinks
+import org.koin.compose.koinInject
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +30,7 @@ import squadfy_app.feature.auth.presentation.generated.resources.Res
 import squadfy_app.feature.auth.presentation.generated.resources.email
 import squadfy_app.feature.auth.presentation.generated.resources.email_placeholder
 import squadfy_app.feature.auth.presentation.generated.resources.login
+import squadfy_app.feature.auth.presentation.generated.resources.privacy_policy
 import squadfy_app.feature.auth.presentation.generated.resources.password
 import squadfy_app.feature.auth.presentation.generated.resources.register
 import squadfy_app.feature.auth.presentation.generated.resources.username
@@ -38,9 +42,11 @@ import squadfy_app.feature.auth.presentation.generated.resources.welcome_to_squa
 fun RegisterRoot(
     viewModel: RegisterViewModel = koinViewModel(),
     onRegisterSuccess: (email: String, alreadyVerified: Boolean) -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
+    legalLinks: LegalLinks = koinInject()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val uriHandler = LocalUriHandler.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     ObserveAsEvents(viewModel.events) { event ->
@@ -54,6 +60,7 @@ fun RegisterRoot(
         onAction = { action ->
             when (action) {
                 RegisterAction.OnLoginClick -> onLoginClick()
+                RegisterAction.OnPrivacyPolicyClick -> uriHandler.openUri(legalLinks.privacyPolicyUrl)
                 else -> Unit
             }
             viewModel.onAction(action = action)
@@ -123,6 +130,13 @@ fun RegisterScreen(
                 text = stringResource(Res.string.login),
                 onClick = { onAction(RegisterAction.OnLoginClick) },
                 style = SquadfyButtonStyle.SECONDARY,
+                modifier = Modifier.fillMaxWidth()
+            )
+            // Spec 011 AC-011-08: the privacy policy is reachable before creating the account
+            SquadfyButton(
+                text = stringResource(Res.string.privacy_policy),
+                onClick = { onAction(RegisterAction.OnPrivacyPolicyClick) },
+                style = SquadfyButtonStyle.TEXT,
                 modifier = Modifier.fillMaxWidth()
             )
         }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,7 +39,11 @@ fun SquadfyDestructiveConfirmationDialog(
     cancelButtonText: String,
     onConfirmClick: () -> Unit,
     onCancelClick: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    isConfirmEnabled: Boolean = true,
+    isConfirmLoading: Boolean = false,
+    /** Extra content between the description and the buttons, e.g. a password field that confirms the action. */
+    content: @Composable ColumnScope.() -> Unit = {}
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -69,6 +74,7 @@ fun SquadfyDestructiveConfirmationDialog(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.extended.textSecondary
                 )
+                content()
 
                 Row(
                     modifier = Modifier
@@ -85,7 +91,9 @@ fun SquadfyDestructiveConfirmationDialog(
                     SquadfyButton(
                         text = confirmButtonText,
                         onClick = onConfirmClick,
-                        style = SquadfyButtonStyle.DESTRUCTIVE_PRIMARY
+                        style = SquadfyButtonStyle.DESTRUCTIVE_PRIMARY,
+                        enabled = isConfirmEnabled,
+                        isLoading = isConfirmLoading
                     )
                 }
             }

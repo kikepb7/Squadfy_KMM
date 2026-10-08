@@ -26,6 +26,8 @@
 | `POST /me/profile-picture/upload-url?mimeType=` | `POST /participants/profile-picture-upload` | perfil | 002 | ✅ |
 | `PUT /me/profile-picture {publicUrl}` | `POST /participants/confirm-profile-picture` | perfil | 002 | ✅ |
 | `DELETE /me/profile-picture` | `DELETE /participants/profile-picture` | perfil | 002 | ✅ |
+| `DELETE /me {password}` → 204; 401 `INVALID_CREDENTIALS` | — | Perfil › Eliminar cuenta (`DeleteAccountUseCase`) | 011 | ✅ flag `ACCOUNT_DELETION` (backend spec 010, rama `account-deletion-feature`) |
+| `GET /account/delete` (fuera de `/api/v1`, HTML) | — | URL web de borrado para Google Play (`ACCOUNT_DELETION_URL`) | 011 | ✅ enlace, no lo consume la app |
 
 ## Chat
 | Endpoint v1 | Ruta actual | Spec | Estado |
@@ -123,3 +125,4 @@
 | 2026-10-07 | Spec 008: `/ratings`, `/ratings/me`, `/stats?sortBy=` y `/stats/me` (✅); el «rating del partido» sale de `ratingChanges` |
 | 2026-10-07 | Spec 009: enrutado de push por `data.type`, push en primer plano dentro de la app, silenciar club y baja del dispositivo con el token FCM (✅) |
 | 2026-10-07 | Spec 014: ausencias (✅); `MANUAL_SCORE` y `MEMBER_ABSENCES` pasan a estar activos en PRE |
+| 2026-10-08 | Spec 011: `DELETE /me {password}` (✅, flag `ACCOUNT_DELETION`) y la página web `/account/delete` del backend (spec 010) |

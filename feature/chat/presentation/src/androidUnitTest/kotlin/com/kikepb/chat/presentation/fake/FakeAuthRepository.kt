@@ -18,6 +18,8 @@ class FakeAuthRepository : AuthRepository {
     var resetPasswordResult: EmptyResult<DataError.Remote> = Success(Unit)
     var changePasswordResult: EmptyResult<DataError.Remote> = Success(Unit)
     var logoutResult: EmptyResult<DataError.Remote> = Success(Unit)
+    var deleteAccountResult: EmptyResult<DataError.Remote> = Success(Unit)
+    var lastDeleteAccountPassword: String? = null
 
     override suspend fun login(email: String, password: String) = loginResult
     override suspend fun register(username: String, email: String, password: String) = registerResult
@@ -27,6 +29,10 @@ class FakeAuthRepository : AuthRepository {
     override suspend fun resetPassword(newPassword: String, token: String) = resetPasswordResult
     override suspend fun changePassword(currentPassword: String, newPassword: String) = changePasswordResult
     override suspend fun logout(refreshToken: String) = logoutResult
+    override suspend fun deleteAccount(password: String): EmptyResult<DataError.Remote> {
+        lastDeleteAccountPassword = password
+        return deleteAccountResult
+    }
 
     companion object {
         fun defaultAuthInfoModel() = AuthInfoModel(

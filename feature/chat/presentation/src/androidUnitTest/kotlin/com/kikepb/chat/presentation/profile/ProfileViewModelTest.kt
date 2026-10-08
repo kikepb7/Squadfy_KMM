@@ -4,10 +4,13 @@ import androidx.compose.runtime.snapshots.Snapshot
 import app.cash.turbine.test
 import com.kikepb.chat.domain.usecases.participant.FetchLocalParticipantUseCase
 import com.kikepb.chat.domain.usecases.profile.ChangePasswordUseCase
+import com.kikepb.chat.domain.usecases.profile.DeleteAccountUseCase
 import com.kikepb.chat.domain.usecases.profile.DeleteProfilePictureUseCase
 import com.kikepb.chat.domain.usecases.profile.UploadProfilePictureUseCase
 import com.kikepb.chat.presentation.fake.FakeAuthRepository
 import com.kikepb.chat.presentation.fake.FakeChatParticipantRepository
+import com.kikepb.chat.presentation.fake.FakeChatRepository
+import com.kikepb.chat.presentation.fake.FakeFeatureFlags
 import com.kikepb.chat.presentation.fake.FakeSessionStorage
 import com.kikepb.chat.presentation.util.MainDispatcherRule
 import com.kikepb.core.domain.util.DataError
@@ -44,7 +47,9 @@ class ProfileViewModelTest {
         fetchLocalParticipantUseCase = FetchLocalParticipantUseCase(chatParticipantRepository = participantRepository),
         uploadProfilePictureUseCase = UploadProfilePictureUseCase(chatParticipantRepository = participantRepository),
         deleteProfilePictureUseCase = DeleteProfilePictureUseCase(chatParticipantRepository = participantRepository),
-        sessionStorage = sessionStorage
+        sessionStorage = sessionStorage,
+        deleteAccountUseCase = DeleteAccountUseCase(authRepository, sessionStorage, FakeChatRepository()),
+        featureFlags = FakeFeatureFlags()
     )
 
     @Test

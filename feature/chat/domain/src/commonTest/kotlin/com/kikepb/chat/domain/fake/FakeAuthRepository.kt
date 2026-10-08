@@ -31,6 +31,14 @@ class FakeAuthRepository : AuthRepository {
         newPassword: String
     ): EmptyResult<DataError.Remote> = changePasswordResult
 
+    var deleteAccountResult: EmptyResult<DataError.Remote> = Result.Success(Unit)
+    var lastDeleteAccountPassword: String? = null
+
+    override suspend fun deleteAccount(password: String): EmptyResult<DataError.Remote> {
+        lastDeleteAccountPassword = password
+        return deleteAccountResult
+    }
+
     override suspend fun logout(refreshToken: String): EmptyResult<DataError.Remote> {
         lastLogoutRefreshToken = refreshToken
         return logoutResult

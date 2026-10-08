@@ -38,4 +38,5 @@
     <string name="forgot_password_email_sent_successfully">Te hemos enviado un email con un enlace para restablecer tu contraseña</string>
     <string name="reset_password_successfully">Tu contraseña se ha cambiado. Ya puedes iniciar sesión con la nueva contraseña</string>
     <string name="reset_password_title">Nueva contraseña</string>
+    <string name="privacy_policy">Política de privacidad</string>
 </resources>

@@ -39,7 +39,7 @@ Se retiran: la valoración manual 1–99, el `PATCH` de miembro por un admin, el
 ## 3. Lo que falta en el backend para ir a producción (propuestas de specs BE)
 | # | Brecha | Impacto | Prioridad |
 |---|---|---|---|
-| BE-GAP-1 | **Borrado de cuenta** desde la app: no hay endpoint. | **Bloquea la publicación**: tanto Apple (App Store Review Guideline 5.1.1(v)) como Google Play exigen poder eliminar la cuenta si la app permite crearla, y Play pide además un enlace web de borrado. | 🔴 Bloqueante |
+| ~~BE-GAP-1~~ | Resuelto en el backend (spec 010, rama `account-deletion-feature`): `DELETE /me {password}` y la página web `/account/delete`. La app lo consume tras `ACCOUNT_DELETION` (spec 011). Falta fusionarlo y desplegarlo. | Apple 5.1.1(v) y Google Play | ✅ (pendiente de despliegue) |
 | BE-GAP-2 | **Rate limit de `/auth/refresh`**: 10 por hora y por IP en `prod`, con access tokens de 15 min. Un solo usuario activo más de 2,5 h, o varios en la misma wifi, recibe 429 y se le cierra la sesión. Está reconocido en el §16 de `BACKEND.md`. | Sesiones caídas en producción | 🔴 Alta |
 | BE-GAP-3 | El despliegue está sin hacer: hosting, dominio HTTPS, registro de imágenes, CD (BE-006). | Sin backend público no hay release | 🔴 Bloqueante |
 | BE-GAP-4 | `GET /auth/verify` responde 200 vacío en el navegador, sin página de confirmación. | UX pobre en el primer contacto | 🟡 Media |

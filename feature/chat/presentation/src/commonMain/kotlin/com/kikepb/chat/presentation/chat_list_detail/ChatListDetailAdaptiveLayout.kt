@@ -26,6 +26,7 @@ import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnSele
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnCreateChatClick
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnDismissCurrentDialog
 import com.kikepb.chat.presentation.chat_list_detail.ChatListDetailAction.OnProfileSettingsClick
+import com.kikepb.chat.presentation.profile.ProfileRoot
 import com.kikepb.chat.presentation.create_chat.CreateChatRoot
 import com.kikepb.chat.presentation.manage_chat.ManageChatRoot
 import com.kikepb.core.designsystem.theme.extended
@@ -118,6 +119,16 @@ fun ChatListDetailAdaptiveLayout(
             },
             onDismiss = {
                 chatListDetailViewModel.onAction(action = OnDismissCurrentDialog)
+            }
+        )
+    }
+
+    DialogSheetScopedViewModel(visible = sharedState.dialogState is DialogState.Profile) {
+        ProfileRoot(
+            onDismiss = { chatListDetailViewModel.onAction(action = OnDismissCurrentDialog) },
+            onAccountDeleted = {
+                chatListDetailViewModel.onAction(action = OnDismissCurrentDialog)
+                onLogout()
             }
         )
     }
