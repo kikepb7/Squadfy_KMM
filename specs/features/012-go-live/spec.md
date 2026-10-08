@@ -45,3 +45,9 @@ El backend tiene lista la imagen Docker, Flyway y la CI, pero **no tiene hosting
   - chat;
   - logout.
 - **AC-012-12** Beta cerrada con **un club real durante 4 semanas** (métrica de `vision.md`), antes de abrir la producción.
+
+## Documentos del lado app
+- `plan.md`: plan y riesgos (incluida la decisión D-13).
+- `privacy-data.md`: inventario de datos, Data Safety, etiquetas de privacidad y contenido de la política.
+- `store-listing.md`: fichas ES/EN, categoría y clasificación.
+- `release-checklist.md`: secretos, Firebase, cuenta de demo y smoke test.
