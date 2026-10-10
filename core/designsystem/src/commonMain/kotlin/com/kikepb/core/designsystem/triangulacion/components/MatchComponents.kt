@@ -493,3 +493,34 @@ private fun MatchComponentsPreview() {
         }
     }
 }
+
+/**
+ * Rating evolution: brand line over a soft area, the last point highlighted in Volt. [values] oldest first; with
+ * fewer than two points nothing is drawn.
+ */
+@Composable
+fun RatingSparkline(values: List<Int>, modifier: Modifier = Modifier) {
+    val colors = Triangulacion.colors
+    Canvas(modifier = modifier.fillMaxWidth().height(96.dp)) {
+        if (values.size < 2) return@Canvas
+        val min = values.min().toFloat()
+        val max = values.max().toFloat()
+        val span = (max - min).takeIf { it > 0f } ?: 1f
+        val pad = 8.dp.toPx()
+        val points = values.mapIndexed { i, v ->
+            Offset(
+                x = pad + (size.width - 2 * pad) * i / (values.size - 1),
+                y = pad + (size.height - 2 * pad) * (1f - (v - min) / span)
+            )
+        }
+        val line = Path().apply { moveTo(points.first().x, points.first().y); points.drop(1).forEach { lineTo(it.x, it.y) } }
+        val area = Path().apply {
+            addPath(line)
+            lineTo(points.last().x, size.height); lineTo(points.first().x, size.height); close()
+        }
+        drawPath(area, colors.successSoft)
+        drawPath(line, colors.accentText, style = Stroke(width = 2.5.dp.toPx()))
+        drawCircle(colors.accentText, radius = 6.dp.toPx(), center = points.last())
+        drawCircle(colors.volt, radius = 4.dp.toPx(), center = points.last())
+    }
+}

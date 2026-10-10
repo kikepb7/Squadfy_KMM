@@ -24,7 +24,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 015 | Cierre del MVP y paridad con el backend 011–013 | **Done** (11/11) | ✅ | — | ✅ | 002–014 | 3 d |
 | 016 | Identidad de marca (kit): iconos, splash, logo, paleta y Poppins | **Done** (7/7) | ✅ | — | ✅ | 011 | — |
 | 017 | Coherencia de la interfaz: estados de carga, barra superior y barra de estado | **Done** (6/6) | ✅ | — | ✅ | 016 | — |
-| 018 | Rediseño «Triangulación»: tokens, fuentes, logo Corte, componentes y pantallas | **In progress** (9/15) | ✅ | — | ✅ | 017 | — |
+| 018 | Rediseño «Triangulación»: tokens, fuentes, logo Corte, componentes y pantallas | **In progress** (10/15) | ✅ | — | ✅ | 017 | — |
 
 \* Días ideales de una persona. Son orientativos, para priorizar, no un compromiso.
 

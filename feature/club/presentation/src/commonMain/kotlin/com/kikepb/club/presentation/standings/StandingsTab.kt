@@ -1,5 +1,24 @@
 package com.kikepb.club.presentation.standings
 
+import com.kikepb.club.presentation.mapper.toTri
+import com.kikepb.core.designsystem.triangulacion.components.RankingRow
+import com.kikepb.core.designsystem.triangulacion.components.TriChip
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriNotice
+import com.kikepb.core.designsystem.triangulacion.components.TriNoticeTone
+import com.kikepb.core.designsystem.triangulacion.components.TriTabs
+import com.kikepb.core.designsystem.triangulacion.theme.Space
+import squadfy_app.feature.club.presentation.generated.resources.standings_chip_assists
+import squadfy_app.feature.club.presentation.generated.resources.standings_chip_goals
+import squadfy_app.feature.club.presentation.generated.resources.standings_chip_matches
+import squadfy_app.feature.club.presentation.generated.resources.standings_chip_minutes
+import squadfy_app.feature.club.presentation.generated.resources.standings_chip_rating
+import squadfy_app.feature.club.presentation.generated.resources.standings_chip_wins
+import squadfy_app.feature.club.presentation.generated.resources.standings_unit_assists
+import squadfy_app.feature.club.presentation.generated.resources.standings_unit_goals
+import squadfy_app.feature.club.presentation.generated.resources.standings_unit_matches
+import squadfy_app.feature.club.presentation.generated.resources.standings_unit_minutes
+import squadfy_app.feature.club.presentation.generated.resources.standings_unit_wins
 import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import squadfy_app.feature.club.presentation.generated.resources.standings_period_year
 import squadfy_app.feature.club.presentation.generated.resources.standings_period_all
@@ -17,6 +36,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -84,66 +104,84 @@ fun StandingsTab(
     StandingsContent(club = club, state = state, onAction = viewModel::onAction, onMemberClick = onMemberClick)
 }
 
+/** Tabla A (spec 018): filter chips, then one ranking row per player with its value and last change. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StandingsContent(club: ClubModel, state: StandingsState, onAction: (StandingsAction) -> Unit, onMemberClick: (String) -> Unit) {
+    val formerMember = stringResource(Res.string.former_member)
     PullToRefreshBox(isRefreshing = state.isLoading, onRefresh = { onAction(StandingsAction.OnRefresh) }, modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(Space.s4),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            item(key = "filters") { FilterChips(state = state, onAction = onAction) }
+            if (state.mode == StandingsMode.STATS) {
+                // AC-015-07: period of the stats (the rating is cumulative and is never filtered)
+                item(key = "period") { PeriodChips(selected = state.statsPeriod, onSelected = { onAction(StandingsAction.OnStatsPeriodSelected(it)) }) }
+            }
+            if (state.isStale) item(key = "stale") { TriNotice(title = stringResource(Res.string.standings_offline), tone = TriNoticeTone.Warn, icon = TriIcon.Alert) }
             if (!state.hasLoaded) item(key = "loading") { SquadfyLoadingIndicator() }
-            if (state.isStale) item(key = "stale") { HintText(text = stringResource(Res.string.standings_offline)) }
-            item(key = "mode") {
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                    StandingsMode.entries.forEachIndexed { index, mode ->
-                        SegmentedButton(
-                            selected = state.mode == mode,
-                            onClick = { onAction(StandingsAction.OnModeSelected(mode)) },
-                            shape = SegmentedButtonDefaults.itemShape(index = index, count = StandingsMode.entries.size)
-                        ) {
-                            Text(text = stringResource(if (mode == StandingsMode.RATING) Res.string.standings_rating else Res.string.standings_stats))
-                        }
-                    }
-                }
-            }
-            if (state.isEmpty) {
-                item(key = "empty") { SectionCard { HintText(text = stringResource(Res.string.standings_empty)) } }
-            }
+            if (state.isEmpty) item(key = "empty") { TriNotice(title = stringResource(Res.string.standings_empty), icon = TriIcon.Trophy) }
             when (state.mode) {
-                StandingsMode.RATING -> {
-                    state.myRating?.let { mine ->
-                        item(key = "mine") {
-                            SectionCard {
-                                Text(
-                                    text = stringResource(Res.string.standings_my_position, mine.rank, mine.totalPlayers, mine.rating),
-                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
-                    item(key = "ratings") { RatingTable(state = state, onMemberClick = onMemberClick) }
+                StandingsMode.RATING -> items(items = state.ratings, key = { "r-${it.clubMemberId}" }) { entry ->
+                    val member = state.members[entry.clubMemberId]
+                    RankingRow(
+                        position = entry.rank,
+                        name = member?.username ?: formerMember,
+                        value = entry.rating.toString(),
+                        number = member?.shirtNumber,
+                        playerPosition = member?.position.toTri(),
+                        delta = state.lastMatchDeltas[entry.clubMemberId],
+                        isMe = entry.clubMemberId == state.myMemberId,
+                        provisional = entry.isProvisional,
+                        imageUrl = member?.pictureUrl,
+                        onClick = { onMemberClick(entry.clubMemberId) }
+                    )
                 }
-                StandingsMode.STATS -> {
-                    // AC-015-07: period of the stats (the rating is cumulative and is never filtered)
-                    item(key = "period") { PeriodChips(selected = state.statsPeriod, onSelected = { onAction(StandingsAction.OnStatsPeriodSelected(it)) }) }
-                    item(key = "sort") { SortChips(selected = state.sortBy, onSelected = { onAction(StandingsAction.OnSortSelected(it)) }) }
-                    item(key = "stats") { StatsTable(state = state, onMemberClick = onMemberClick) }
+                StandingsMode.STATS -> items(items = state.stats, key = { "s-${it.stats.clubMemberId}" }) { entry ->
+                    val stats = entry.stats
+                    val member = state.members[stats.clubMemberId]
+                    val value = when (state.sortBy) {
+                        StatsSortBy.GOALS -> stats.goals
+                        StatsSortBy.ASSISTS -> stats.assists
+                        StatsSortBy.MATCHES -> stats.matchesPlayed
+                        StatsSortBy.MINUTES -> stats.minutesPlayed
+                        StatsSortBy.WINS -> stats.wins
+                    }
+                    RankingRow(
+                        position = entry.rank,
+                        name = member?.username ?: formerMember,
+                        value = value.toString(),
+                        number = member?.shirtNumber,
+                        playerPosition = member?.position.toTri(),
+                        unit = stringResource(state.sortBy.unit),
+                        isMe = stats.clubMemberId == state.myMemberId,
+                        imageUrl = member?.pictureUrl,
+                        onClick = { onMemberClick(stats.clubMemberId) }
+                    )
                 }
             }
         }
     }
 }
 
-private val StatsSortBy.label: StringResource
+private val StatsSortBy.chip: StringResource
     get() = when (this) {
-        StatsSortBy.GOALS -> Res.string.standings_sort_goals
-        StatsSortBy.ASSISTS -> Res.string.standings_sort_assists
-        StatsSortBy.MATCHES -> Res.string.standings_sort_matches
-        StatsSortBy.MINUTES -> Res.string.standings_sort_minutes
-        StatsSortBy.WINS -> Res.string.standings_sort_wins
+        StatsSortBy.GOALS -> Res.string.standings_chip_goals
+        StatsSortBy.ASSISTS -> Res.string.standings_chip_assists
+        StatsSortBy.MATCHES -> Res.string.standings_chip_matches
+        StatsSortBy.MINUTES -> Res.string.standings_chip_minutes
+        StatsSortBy.WINS -> Res.string.standings_chip_wins
+    }
+
+private val StatsSortBy.unit: StringResource
+    get() = when (this) {
+        StatsSortBy.GOALS -> Res.string.standings_unit_goals
+        StatsSortBy.ASSISTS -> Res.string.standings_unit_assists
+        StatsSortBy.MATCHES -> Res.string.standings_unit_matches
+        StatsSortBy.MINUTES -> Res.string.standings_unit_minutes
+        StatsSortBy.WINS -> Res.string.standings_unit_wins
     }
 
 private val StatsPeriod.label: StringResource
@@ -153,130 +191,36 @@ private val StatsPeriod.label: StringResource
         StatsPeriod.LAST_30_DAYS -> Res.string.standings_period_30d
     }
 
+/** Rating, Goles, Asist., PJ… : the first is the rating table, the others the stats sorted by that column. */
+@Composable
+private fun FilterChips(state: StandingsState, onAction: (StandingsAction) -> Unit) {
+    val order = listOf(StatsSortBy.GOALS, StatsSortBy.ASSISTS, StatsSortBy.MATCHES, StatsSortBy.WINS, StatsSortBy.MINUTES)
+    Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        TriChip(
+            text = stringResource(Res.string.standings_chip_rating),
+            selected = state.mode == StandingsMode.RATING,
+            onClick = { onAction(StandingsAction.OnModeSelected(StandingsMode.RATING)) },
+            icon = TriIcon.Trophy
+        )
+        order.forEach { sortBy ->
+            TriChip(
+                text = stringResource(sortBy.chip),
+                selected = state.mode == StandingsMode.STATS && state.sortBy == sortBy,
+                onClick = {
+                    onAction(StandingsAction.OnModeSelected(StandingsMode.STATS))
+                    onAction(StandingsAction.OnSortSelected(sortBy))
+                },
+                icon = if (sortBy == StatsSortBy.GOALS) TriIcon.Ball else null
+            )
+        }
+    }
+}
+
 @Composable
 private fun PeriodChips(selected: StatsPeriod, onSelected: (StatsPeriod) -> Unit) {
-    Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        StatsPeriod.entries.forEach { period ->
-            FilterChip(selected = period == selected, onClick = { onSelected(period) }, label = { Text(text = stringResource(period.label)) })
-        }
-    }
-}
-
-@Composable
-private fun SortChips(selected: StatsSortBy, onSelected: (StatsSortBy) -> Unit) {
-    Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        StatsSortBy.entries.forEach { sortBy ->
-            FilterChip(selected = sortBy == selected, onClick = { onSelected(sortBy) }, label = { Text(text = stringResource(sortBy.label)) })
-        }
-    }
-}
-
-@Composable
-private fun RatingTable(state: StandingsState, onMemberClick: (String) -> Unit) {
-    val provisional = stringResource(Res.string.standings_provisional)
-    TableCard {
-        TableRow(highlighted = false, header = true, onClick = null) {
-            Cell("#", RANK_WIDTH, header = true)
-            Cell(stringResource(Res.string.standings_header_player), null, header = true)
-            Cell(stringResource(Res.string.standings_header_rating), 64.dp, header = true)
-            Cell(stringResource(Res.string.standings_header_matches), NUMBER_WIDTH, header = true)
-        }
-        state.ratings.forEach { entry ->
-            HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-            TableRow(highlighted = entry.clubMemberId == state.myMemberId, onClick = { onMemberClick(entry.clubMemberId) }) {
-                Cell(entry.rank.toString(), RANK_WIDTH)
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = state.members[entry.clubMemberId]?.username ?: stringResource(Res.string.former_member),
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    if (entry.isProvisional) HintText(text = provisional)
-                }
-                Cell(entry.rating.toString(), 64.dp)
-                Cell(entry.matchesRated.toString(), NUMBER_WIDTH)
-            }
-        }
-    }
-}
-
-@Composable
-private fun StatsTable(state: StandingsState, onMemberClick: (String) -> Unit) {
-    // Fixed player column plus a horizontally scrollable block of numbers (AC-008-03)
-    val scroll = rememberScrollState()
-    val headers = listOf(
-        stringResource(Res.string.standings_header_matches), stringResource(Res.string.standings_header_wins),
-        stringResource(Res.string.standings_header_draws), stringResource(Res.string.standings_header_losses),
-        stringResource(Res.string.standings_header_goals), stringResource(Res.string.standings_header_assists),
-        "🟨", "🟥", stringResource(Res.string.standings_header_minutes)
-    )
-    TableCard {
-        TableRow(highlighted = false, header = true, onClick = null) {
-            Cell("#", RANK_WIDTH, header = true)
-            Cell(stringResource(Res.string.standings_header_player), PLAYER_WIDTH, header = true)
-            Row(modifier = Modifier.horizontalScroll(scroll)) { headers.forEach { Cell(it, STAT_WIDTH, header = true) } }
-        }
-        state.stats.forEach { entry ->
-            val stats = entry.stats
-            HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-            TableRow(highlighted = stats.clubMemberId == state.myMemberId, onClick = { onMemberClick(stats.clubMemberId) }) {
-                Cell(entry.rank.toString(), RANK_WIDTH)
-                Cell(state.members[stats.clubMemberId]?.username ?: stringResource(Res.string.former_member), PLAYER_WIDTH)
-                Row(modifier = Modifier.horizontalScroll(scroll)) {
-                    listOf(
-                        stats.matchesPlayed, stats.wins, stats.draws, stats.losses, stats.goals,
-                        stats.assists, stats.yellowCards, stats.redCards, stats.minutesPlayed
-                    ).forEach { Cell(it.toString(), STAT_WIDTH) }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TableCard(content: @Composable () -> Unit) {
-    androidx.compose.material3.Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 1.dp
-    ) {
-        Column { content() }
-    }
-}
-
-@Composable
-private fun TableRow(highlighted: Boolean, onClick: (() -> Unit)?, header: Boolean = false, content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
-    val background = when {
-        header -> MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-        highlighted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-        else -> MaterialTheme.colorScheme.surface
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(background)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        content = content
+    TriTabs(
+        items = StatsPeriod.entries.map { stringResource(it.label) },
+        selectedIndex = StatsPeriod.entries.indexOf(selected),
+        onSelect = { onSelected(StatsPeriod.entries[it]) }
     )
 }
-
-@Composable
-private fun androidx.compose.foundation.layout.RowScope.Cell(text: String, width: Dp?, header: Boolean = false) {
-    Text(
-        text = text,
-        style = if (header) MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold) else MaterialTheme.typography.bodySmall,
-        color = if (header) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.extended.textPrimary,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        modifier = if (width != null) Modifier.width(width) else Modifier.weight(1f)
-    )
-}
-
-private val RANK_WIDTH = 32.dp
-private val NUMBER_WIDTH = 40.dp
-private val PLAYER_WIDTH = 110.dp
-private val STAT_WIDTH = 52.dp

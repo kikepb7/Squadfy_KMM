@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.standings
 
+import com.kikepb.club.domain.usecase.GetClubMatchesUseCase
 import kotlin.time.Instant
 import com.kikepb.club.domain.model.StatsPeriod
 import com.kikepb.club.presentation.fake.FixedTestClock
@@ -71,6 +72,7 @@ class StandingsViewModelTest {
         syncClubDetailUseCase = SyncClubDetailUseCase(clubRepository),
         getScheduleUseCase = GetScheduleUseCase(scheduleRepository),
         clock = fixedClock,
+        getClubMatchesUseCase = GetClubMatchesUseCase(matchRepository),
         savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1"))
     )
 
@@ -168,5 +170,19 @@ class StandingsViewModelTest {
 
         viewModel.onAction(StandingsAction.OnStatsPeriodSelected(StatsPeriod.ALL_TIME))
         assertEquals("stats:GOALS", repository.calls.last())
+    }
+
+    @Test
+    fun `AC-018-06 each row shows the rating change of the last completed match`() = runTest(UnconfinedTestDispatcher()) {
+        matchRepository.clubMatches = Result.Success(
+            listOf(
+                match(status = MatchStatus.COMPLETED, scheduledAt = "2026-10-01T18:00:00Z").copy(ratingChanges = mapOf("me" to 5)),
+                match(status = MatchStatus.COMPLETED, scheduledAt = "2026-10-08T18:00:00Z").copy(id = "match-2", ratingChanges = mapOf("me" to 12, "m-2" to -3))
+            )
+        )
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+
+        assertEquals(mapOf("me" to 12, "m-2" to -3), viewModel.state.value.lastMatchDeltas)
     }
 }

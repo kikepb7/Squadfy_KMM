@@ -1,5 +1,7 @@
 package com.kikepb.club.presentation.standings
 
+import com.kikepb.club.domain.model.MatchStatus
+import com.kikepb.club.domain.usecase.GetClubMatchesUseCase
 import kotlinx.coroutines.Job
 import kotlin.time.Clock
 import kotlinx.datetime.toLocalDateTime
@@ -43,6 +45,7 @@ class StandingsViewModel(
     private val syncClubDetailUseCase: SyncClubDetailUseCase,
     private val getScheduleUseCase: GetScheduleUseCase,
     private val clock: Clock,
+    private val getClubMatchesUseCase: GetClubMatchesUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -105,6 +108,11 @@ class StandingsViewModel(
                     .onFailure(::onError)
                 // 404 when I am not rated yet: the "your position" card is simply hidden
                 getMyRatingUseCase(clubId).onSuccess { mine -> _state.update { it.copy(myRating = mine) } }
+                // Spec 018: each row shows the change of the last completed match (BE-008 RN-F1)
+                getClubMatchesUseCase(clubId, MatchStatus.COMPLETED).onSuccess { matches ->
+                    val last = matches.maxByOrNull { it.scheduledAt }
+                    _state.update { it.copy(lastMatchDeltas = last?.ratingChanges.orEmpty()) }
+                }
                 loadStatsNow()
             } finally {
                 _state.update { it.copy(isLoading = false, hasLoaded = true) }
@@ -143,7 +151,9 @@ data class StandingsState(
     val myRating: MyRating? = null,
     val stats: List<StatsEntry> = emptyList(),
     val members: Map<String, ClubMemberModel> = emptyMap(),
-    val myMemberId: String? = null
+    val myMemberId: String? = null,
+    /** Rating change of each member in the last completed match (spec 018, the ▲/▼ of the table). */
+    val lastMatchDeltas: Map<String, Int> = emptyMap()
 ) {
     /** AC-008-06 */
     val isEmpty: Boolean get() = hasLoaded && ratings.noCompletedMatches()

@@ -398,4 +398,27 @@
     <string name="match_timeline_title">Cronología</string>
     <string name="match_timeline_delete_hint">Toca un evento para borrarlo.</string>
     <string name="match_team_count">%1$s · %2$d</string>
+    <string name="standings_chip_rating">Rating</string>
+    <string name="standings_chip_goals">Goles</string>
+    <string name="standings_chip_assists">Asist.</string>
+    <string name="standings_chip_matches">PJ</string>
+    <string name="standings_chip_wins">Victorias</string>
+    <string name="standings_chip_minutes">Min.</string>
+    <string name="standings_unit_goals">GOLES</string>
+    <string name="standings_unit_assists">ASIST.</string>
+    <string name="standings_unit_matches">PJ</string>
+    <string name="standings_unit_wins">VICT.</string>
+    <string name="standings_unit_minutes">MIN</string>
+    <string name="member_card_title">Ficha del jugador</string>
+    <string name="member_rating_caps_rank">RATING · #%1$d DE %2$d</string>
+    <string name="member_rating_caps">RATING</string>
+    <string name="member_evolution_caps">EVOLUCIÓN</string>
+    <string name="member_stat_matches">PARTIDOS</string>
+    <string name="member_stat_record">V·E·D</string>
+    <string name="member_stat_goals">GOLES</string>
+    <string name="member_stat_assists">ASIST.</string>
+    <string name="member_stat_minutes">MINUTOS</string>
+    <string name="member_stat_yellows">AMARILLAS</string>
+    <string name="member_recent_title">Últimos partidos</string>
+    <string name="member_edit_a11y">Editar mis datos</string>
 </resources>

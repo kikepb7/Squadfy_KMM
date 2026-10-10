@@ -1,5 +1,11 @@
 package com.kikepb.club.presentation.memberdetail
 
+import squadfy_app.feature.club.presentation.generated.resources.member_edit_a11y
+import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarIconButton
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarBackButton
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -107,7 +113,7 @@ fun MemberDetailRoot(
         },
         onBackClick = onBackClick,
         snackbarHostState = snackbarHostState,
-        statsSection = { MemberStatsSection() }
+        statsSection = { member -> MemberStatsSection(member = member) }
     )
 }
 
@@ -117,17 +123,31 @@ fun MemberDetailScreen(
     onAction: (MemberDetailAction) -> Unit,
     onBackClick: () -> Unit,
     snackbarHostState: SnackbarHostState,
-    statsSection: @Composable () -> Unit = {}
+    statsSection: @Composable (ClubMemberModel) -> Unit = {}
 ) {
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
-        topBar = { SquadfyTopBar(title = stringResource(Res.string.member_title), onBackClick = onBackClick) },
+        containerColor = Triangulacion.colors.surface100,
+        topBar = {
+            SquadfyTopBar(
+                title = { Text(text = stringResource(Res.string.member_title), style = Triangulacion.type.displayMd, color = Triangulacion.colors.ink) },
+                navigationIcon = { SquadfyTopBarBackButton(onClick = onBackClick) },
+                actions = {
+                    if (state.isSelf) {
+                        SquadfyTopBarIconButton(
+                            onClick = { onAction(MemberDetailAction.OnShowDialog(MemberDialog.EDIT_MINE)) },
+                            icon = TriIcon.Edit,
+                            contentDescription = stringResource(Res.string.member_edit_a11y)
+                        )
+                    }
+                }
+            )
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         val member = state.member
         when {
             state.isLoading -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                SquadfyLoadingIndicator()
             }
             member == null -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text(text = stringResource(Res.string.member_not_found), color = MaterialTheme.colorScheme.extended.textPlaceholder)
@@ -140,68 +160,13 @@ fun MemberDetailScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                MemberHeader(member = member)
-                MemberInfo(member = member)
-                statsSection()
+                statsSection(member)
                 MemberActions(state = state, onAction = onAction)
             }
         }
     }
 
     MemberDialogs(state = state, onAction = onAction)
-}
-
-@Composable
-private fun MemberHeader(member: ClubMemberModel) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        SquadfyAvatarPhoto(displayText = initialsOf(member.username), imageUrl = member.pictureUrl, size = AvatarSize.LARGE)
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = member.username,
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.extended.textPrimary
-            )
-            Text(
-                text = stringResource(member.role.label),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
-}
-
-@Composable
-private fun MemberInfo(member: ClubMemberModel) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 1.dp
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            InfoRow(label = stringResource(Res.string.member_shirt), value = member.shirtNumber?.toString() ?: "-")
-            HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-            InfoRow(label = stringResource(Res.string.member_position), value = stringResource(member.position.label))
-            HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-            InfoRow(label = stringResource(Res.string.member_role), value = stringResource(member.role.label))
-        }
-    }
-}
-
-@Composable
-private fun InfoRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(text = label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.extended.textPlaceholder)
-        Text(
-            text = value,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = MaterialTheme.colorScheme.extended.textPrimary
-        )
-    }
 }
 
 @Composable

@@ -51,7 +51,7 @@ class MemberStatsViewModel(
 
     private suspend fun loadMine() {
         getMyStatsUseCase(clubId).onSuccess { stats -> _state.update { it.copy(stats = stats) } }
-        getMyRatingUseCase(clubId).onSuccess { mine -> _state.update { it.copy(rating = mine.rating, rank = mine.rank) } }
+        getMyRatingUseCase(clubId).onSuccess { mine -> _state.update { it.copy(rating = mine.rating, rank = mine.rank, totalPlayers = mine.totalPlayers, isProvisional = mine.isProvisional) } }
     }
 
     private suspend fun loadFromClassifications() {
@@ -59,7 +59,9 @@ class MemberStatsViewModel(
             _state.update { it.copy(stats = rows.firstOrNull { row -> row.stats.clubMemberId == memberId }?.stats) }
         }
         getRatingLeaderboardUseCase(clubId).onSuccess { rows ->
-            rows.firstOrNull { it.clubMemberId == memberId }?.let { row -> _state.update { it.copy(rating = row.rating, rank = row.rank) } }
+            rows.firstOrNull { it.clubMemberId == memberId }?.let { row ->
+                _state.update { it.copy(rating = row.rating, rank = row.rank, totalPlayers = rows.size, isProvisional = row.isProvisional) }
+            }
         }
     }
 }
@@ -68,5 +70,17 @@ data class MemberStatsState(
     val stats: PlayerStats? = null,
     val rating: Int? = null,
     val rank: Int? = null,
+    /** Spec 018: «#2 de 14» on the player card. */
+    val totalPlayers: Int? = null,
+    val isProvisional: Boolean = false,
     val recentChanges: List<MatchRatingChange> = emptyList()
-)
+) {
+    /** Rating after each recent match, oldest first, rebuilt from the current rating and the changes (newest first). */
+    val evolution: List<Int>
+        get() {
+            val current = rating ?: return emptyList()
+            val values = mutableListOf(current)
+            recentChanges.forEach { change -> values += values.last() - change.change }
+            return values.reversed()
+        }
+}
