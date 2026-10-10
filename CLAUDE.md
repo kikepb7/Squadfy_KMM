@@ -43,6 +43,7 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 - **Room**: el esquema se exporta en `*/schemas` y se versiona. Cada cambio lleva una `Migration` explícita (está prohibido `fallbackToDestructiveMigration` de cara a la release).
 - **Marca** (spec 018, sistema «Triangulación»): el kit está en `docs/brand/` (LEEME, `TRIANGULACION.md`, `tokens.json`, logos SVG). Los colores salen de `Triangulacion.colors` (temas Tiza y Noche, en `core/designsystem/.../triangulacion/theme`), nunca hex sueltos. Tipografía: Bricolage Grotesque (display y cifras, `Triangulacion.type.display*`/`stat*`/`title`) e Instrument Sans (texto). Logo: `SquadfyBrandLogo`/`SquadfyBrandLockup` (Corte). Volt solo como relleno con `onVolt` encima, y un único CTA Volt por pantalla. Firma: El Corte (esquina superior derecha biselada), segmentos a −18° y glifos de posición/resultado.
 - **UI**: no hay strings escritos a mano; van en `composeResources/values*/strings.xml` (ES por defecto, EN).
+- **Orientación**: la app es solo vertical (spec 018 T-023): `screenOrientation="portrait"` en `MainActivity` y `UISupportedInterfaceOrientations` en el proyecto de Xcode. No diseñes layouts apaisados.
 - **Tests**:
   - `kotlin.test` + `kotlinx-coroutines-test` + Turbine en `commonTest`, y JUnit4 en `androidUnitTest`;
   - se usan fakes, no mocks;
