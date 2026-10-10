@@ -3,6 +3,7 @@ package com.kikepb.core.designsystem.components.brand
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -55,7 +56,8 @@ fun SquadfyBrandLockup(
             painter = painterResource(Res.drawable.squadfy_wordmark),
             contentDescription = stringResource(Res.string.app_name),
             colorFilter = ColorFilter.tint(if (onDarkBackground) colors.onInverse else colors.ink),
-            modifier = Modifier.height(markSize * 0.82f)
+            // The wordmark viewport is 171.1 × 52 (x-height plus descender): keep its ratio at the mark's height
+            modifier = Modifier.height(markSize * 0.78f).aspectRatio(171.1f / 52f)
         )
     }
 }

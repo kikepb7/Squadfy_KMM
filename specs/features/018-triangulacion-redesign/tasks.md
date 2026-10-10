@@ -21,4 +21,4 @@
 - [x] **T-014** Barra inferior en todas las pantallas con sesión (AC-018-08).
 
 ## Fase 4 · Cierre
-- [ ] **T-015** Verificación en el emulador (Tiza y Noche) contra las maquetas, tests, compilación de iOS, `checkHardcodedStrings`; `docs/brand`, CLAUDE.md y roadmap actualizados (AC-018-09).
+- [x] **T-015** Verificación en el emulador (Tiza y Noche) contra las maquetas, tests, compilación de iOS, `checkHardcodedStrings`; `docs/brand`, CLAUDE.md y roadmap actualizados (AC-018-09).

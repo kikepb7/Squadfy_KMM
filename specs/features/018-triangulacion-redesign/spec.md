@@ -1,6 +1,6 @@
 # 018 · Rediseño «Triangulación»
 
-- **Estado:** In progress (2026-10-10). El owner pidió un rediseño completo de la app según el kit `Squadfy-Brand-Kit.zip` (sistema de diseño Triangulación), en la rama `squadfy-redesign-feature`.
+- **Estado:** Done (2026-10-10). El owner pidió un rediseño completo de la app según el kit `Squadfy-Brand-Kit.zip` (sistema de diseño Triangulación), en la rama `squadfy-redesign-feature`.
 - **Fuente:** el kit (guía `IMPLEMENTAR-EN-CLAUDE-CODE.md`, `tokens.json`, librería Compose, logos y maquetas de las 16 pantallas en Tiza y Noche). Lo reutilizable se copia a `docs/brand/` (tokens, logos y guía). Las maquetas y capturas promocionales son de prueba y **no** se incluyen en el repo (owner, 2026-10-10).
 - **Alcance:** solo presentación. No cambia ninguna regla del backend, ni el dominio, los DTOs o el contrato. Lo que está detrás de un flag en PRO sigue detrás de su flag.
 - **Sustituye** a la identidad de la 016 (escudo, paleta Night Pitch y Poppins) y a la decisión de mantener el fondo azul pizarra en el tema oscuro.
@@ -23,5 +23,17 @@
 - **AC-018-08 Navegación.** La barra inferior (Inicio, Clubs, Chat) se ve en todas las pantallas de la app con sesión, con la pestaña activa en píldora.
 - **AC-018-09 Calidad.** `testDebugUnitTest`, `assembleDebug`, `checkHardcodedStrings` y la compilación de iOS en verde. Los ViewModels y sus tests no cambian salvo para exponer datos que ya existen.
 
+## Decisiones de implementación
+- **Datos que ya existían y se exponen en la UI:** «Última jornada» de Inicio (último partido cerrado, resultado, cambio de rating y forma) sale de `GET /clubs/{id}/matches?status=COMPLETED` y de `ratingChanges`; la variación de la tabla es la del último partido cerrado; la evolución de la ficha se reconstruye con el rating actual y los cambios recientes.
+- **Equipos** es una pestaña nueva con su `TeamsViewModel` (solo lectura). Editar o resortear sigue en el detalle del partido (spec 006).
+- **Ajustes del club** dejan de ser una pestaña: se abren con el botón de la cabecera.
+- **Push «equipos publicados»** abre la pantalla nueva de sorteo (`squadfy://match/{id}/draw`), que lleva al detalle con «Ver equipos».
+- **Resultado** se abre desde «Última jornada» y desde el acta de un partido cerrado.
+- **Código de invitación:** las celdas crecen de 8 a 12 porque el backend acepta 6–12.
+- **Iconos y emojis:** los eventos del acta usan los glifos del kit; desaparecen los emojis.
+- **Fuera de la maqueta, sin dato en el backend:** la fila «Notificaciones» del perfil (no hay ajustes globales; silenciar es por club), el contador de no leídos del chat y la campana de Inicio. Quedan para cuando haya backend.
+- **Perfil** sigue abriéndose como hoja desde el avatar de Inicio y desde Chat, con el aspecto de página de la maqueta.
+- La búsqueda del chat filtra en local los chats cargados.
+
 ## Preguntas abiertas
-- Ninguna bloqueante. Los datos que piden las maquetas y la app no tiene (por ejemplo, «Cambiar contraseña» con sesión iniciada, o la búsqueda del chat en el servidor) se resuelven con lo que hay y se anotan en `tasks.md`.
+- Ninguna bloqueante.
