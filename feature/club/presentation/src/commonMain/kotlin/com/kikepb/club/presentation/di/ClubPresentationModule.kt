@@ -15,6 +15,7 @@ import com.kikepb.club.presentation.schedule.ScheduleViewModel
 import com.kikepb.club.presentation.settings.ClubSettingsViewModel
 import com.kikepb.club.presentation.standings.StandingsViewModel
 import org.koin.core.module.dsl.viewModelOf
+import com.kikepb.club.presentation.teams.TeamsViewModel
 import org.koin.dsl.module
 
 val clubPresentationModule = module {
@@ -32,4 +33,5 @@ val clubPresentationModule = module {
     viewModelOf(::StandingsViewModel)
     viewModelOf(::MemberStatsViewModel)
     viewModelOf(::AbsencesViewModel)
+    viewModelOf(::TeamsViewModel)
 }

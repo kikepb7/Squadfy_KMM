@@ -1,5 +1,47 @@
 package com.kikepb.club.presentation.announcement
 
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.text.style.TextOverflow
+import com.kikepb.club.presentation.mapper.matchFormatLabel
+import com.kikepb.club.presentation.mapper.toTri
+import com.kikepb.core.designsystem.triangulacion.components.Countdown
+import com.kikepb.core.designsystem.triangulacion.components.Plazas
+import com.kikepb.core.designsystem.triangulacion.components.PosChip
+import com.kikepb.core.designsystem.triangulacion.components.TriAvatar
+import com.kikepb.core.designsystem.triangulacion.components.TriButton
+import com.kikepb.core.designsystem.triangulacion.components.TriButtonVariant
+import com.kikepb.core.designsystem.triangulacion.components.TriCaps
+import com.kikepb.core.designsystem.triangulacion.components.TriCard
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriIconView
+import com.kikepb.core.designsystem.triangulacion.components.TriNotice
+import com.kikepb.core.designsystem.triangulacion.components.TriNoticeTone
+import com.kikepb.core.designsystem.triangulacion.components.TriRoundIconButton
+import com.kikepb.core.designsystem.triangulacion.components.TriSectionTitle
+import com.kikepb.core.designsystem.triangulacion.components.TriTextButton
+import com.kikepb.core.designsystem.triangulacion.components.rememberCountdown
+import com.kikepb.core.designsystem.triangulacion.format.TriDates
+import com.kikepb.core.designsystem.triangulacion.format.formatClubTime
+import com.kikepb.core.designsystem.triangulacion.format.formatLongDayCaps
+import com.kikepb.core.designsystem.triangulacion.format.formatMatchDate
+import com.kikepb.core.designsystem.triangulacion.theme.Space
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import com.kikepb.core.designsystem.triangulacion.theme.tabular
+import squadfy_app.core.designsystem.generated.resources.Res as DesignRes
+import squadfy_app.core.designsystem.generated.resources.tri_closes_in
+import squadfy_app.feature.club.presentation.generated.resources.announcement_absence_body
+import squadfy_app.feature.club.presentation.generated.resources.announcement_enrolled_message
+import squadfy_app.feature.club.presentation.generated.resources.announcement_opens_at
+import squadfy_app.feature.club.presentation.generated.resources.announcement_confirmed_count_title
+import squadfy_app.feature.club.presentation.generated.resources.announcement_opens_in_caps
+import squadfy_app.feature.club.presentation.generated.resources.announcement_stale_title
+import squadfy_app.feature.club.presentation.generated.resources.announcement_state_waitlisted
+import squadfy_app.feature.club.presentation.generated.resources.announcement_teams_line
+import squadfy_app.feature.club.presentation.generated.resources.announcement_waitlist_count_title
 import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import com.kikepb.club.presentation.components.LoadErrorCard
 import androidx.compose.foundation.layout.Arrangement
@@ -161,16 +203,17 @@ fun AnnouncementContent(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(horizontal = Space.s4, vertical = Space.s4),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             val current = state.current
             if (state.isStale && state.lastUpdatedAt != null) {
                 item(key = "stale") {
-                    Text(
-                        text = stringResource(Res.string.announcement_offline, formatDateTime(state.lastUpdatedAt, state.timeZoneId)),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
+                    TriNotice(
+                        title = stringResource(Res.string.announcement_stale_title),
+                        body = stringResource(Res.string.announcement_offline, formatDateTime(state.lastUpdatedAt, state.timeZoneId)),
+                        tone = TriNoticeTone.Warn,
+                        icon = TriIcon.Alert
                     )
                 }
             }
@@ -181,46 +224,50 @@ fun AnnouncementContent(
                     else -> item(key = "loading") { SquadfyLoadingIndicator() }
                 }
             } else {
-                item(key = "header") { HeaderCard(state = state, onOpenMatch = onOpenMatch) }
-                item(key = "actions") { PrimaryActions(state = state, onAction = onAction) }
-                item(key = "confirmed-title") { SectionTitle(text = stringResource(Res.string.announcement_confirmed_title)) }
+                item(key = "match-card") { MatchCard(state = state, onAction = onAction, onOpenMatch = onOpenMatch) }
+                item(key = "confirmed-title") {
+                    TriSectionTitle(
+                        text = stringResource(Res.string.announcement_confirmed_count_title, state.confirmed.size),
+                        modifier = Modifier.padding(top = Space.s4)
+                    )
+                }
                 if (state.confirmed.isEmpty()) {
                     item(key = "confirmed-empty") { Hint(text = stringResource(Res.string.announcement_empty_list)) }
                 }
-                items(items = state.confirmed, key = { "c-${it.id}" }) { entry ->
-                    EntryRow(entry = entry, state = state, index = null, onRemove = { onAction(AnnouncementAction.OnRemoveGuest(entry)) })
+                itemsIndexed(items = state.confirmed, key = { _, entry -> "c-${entry.id}" }) { index, entry ->
+                    EntryRow(entry = entry, state = state, index = index + 1, onRemove = { onAction(AnnouncementAction.OnRemoveGuest(entry)) })
                 }
                 if (state.waitlist.isNotEmpty()) {
-                    item(key = "waitlist-title") { SectionTitle(text = stringResource(Res.string.announcement_waitlist_title)) }
-                    items(items = state.waitlist, key = { "w-${it.id}" }) { entry ->
-                        EntryRow(
-                            entry = entry,
-                            state = state,
-                            index = state.waitlist.indexOf(entry) + 1,
-                            onRemove = { onAction(AnnouncementAction.OnRemoveGuest(entry)) }
+                    item(key = "waitlist-title") {
+                        TriSectionTitle(
+                            text = stringResource(Res.string.announcement_waitlist_count_title, state.waitlist.size),
+                            modifier = Modifier.padding(top = Space.s4)
                         )
+                    }
+                    itemsIndexed(items = state.waitlist, key = { _, entry -> "w-${entry.id}" }) { index, entry ->
+                        EntryRow(entry = entry, state = state, index = index + 1, onRemove = { onAction(AnnouncementAction.OnRemoveGuest(entry)) })
                     }
                 }
             }
             if (state.isManager && !state.isStale && state.hasLoaded) item(key = "manager-actions") { managerActions() }
             if (onOpenMatch != null && state.upcoming.isNotEmpty()) {
-                item(key = "upcoming-title") { SectionTitle(text = stringResource(Res.string.announcement_upcoming_title)) }
+                item(key = "upcoming-title") { TriSectionTitle(text = stringResource(Res.string.announcement_upcoming_title), modifier = Modifier.padding(top = Space.s4)) }
                 items(items = state.upcoming, key = { "u-${it.id}" }) { next ->
-                    TextButton(onClick = { onOpenMatch(next.matchId) }, modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(Res.string.announcement_upcoming_item, formatDateTime(next.closesAt, state.timeZoneId), next.confirmedCount, next.maxPlayers),
-                            modifier = Modifier.fillMaxWidth(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.extended.textSecondary
-                        )
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+                    LinkRow(
+                        text = stringResource(Res.string.announcement_upcoming_item, formatDateTime(next.closesAt, state.timeZoneId), next.confirmedCount, next.maxPlayers),
+                        onClick = { onOpenMatch(next.matchId) }
+                    )
                 }
             }
             if (onOpenMatch != null && state.past.isNotEmpty()) {
-                item(key = "history-title") { SectionTitle(text = stringResource(Res.string.announcement_history_title)) }
+                item(key = "history-title") { TriSectionTitle(text = stringResource(Res.string.announcement_history_title), modifier = Modifier.padding(top = Space.s4)) }
                 items(items = state.past, key = { "h-${it.id}" }) { past ->
-                    HistoryRow(announcement = past, timeZoneId = state.timeZoneId, onClick = { onOpenMatch(past.matchId) })
+                    val closedAt = formatDateTime(past.closesAt, state.timeZoneId)
+                    LinkRow(
+                        text = if (past.status == AnnouncementStatus.CANCELLED) stringResource(Res.string.announcement_history_cancelled, closedAt)
+                        else stringResource(Res.string.announcement_history_item, closedAt, past.confirmedCount),
+                        onClick = { onOpenMatch(past.matchId) }
+                    )
                 }
             }
         }
@@ -229,119 +276,119 @@ fun AnnouncementContent(
 
 @Composable
 private fun NoMatchCard(isManager: Boolean, onOpenSchedule: () -> Unit) {
-    Card {
-        Text(
-            text = stringResource(Res.string.announcement_none),
-            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = MaterialTheme.colorScheme.extended.textPrimary
-        )
+    TriCard(modifier = Modifier.fillMaxWidth(), contentPadding = Space.s5) {
+        Text(text = stringResource(Res.string.announcement_none), style = Triangulacion.type.displayMd, color = Triangulacion.colors.ink)
+        Spacer(Modifier.height(6.dp))
         Hint(text = stringResource(Res.string.announcement_none_hint))
         if (isManager) {
-            SquadfyButton(text = stringResource(Res.string.announcement_configure_schedule), onClick = onOpenSchedule, style = SquadfyButtonStyle.SECONDARY)
+            Spacer(Modifier.height(Space.s4))
+            TriButton(text = stringResource(Res.string.announcement_configure_schedule), onClick = onOpenSchedule, variant = TriButtonVariant.Secondary, icon = TriIcon.Calendar)
         }
     }
 }
 
+/**
+ * Partido A (spec 018): date line, draw time and format, the places, the countdown and the enrollment state
+ * (free, called up, waitlist, closed, not open yet, cancelled), each in one truthful line.
+ */
 @Composable
-private fun HeaderCard(state: AnnouncementState, onOpenMatch: ((String) -> Unit)?) {
+private fun MatchCard(state: AnnouncementState, onAction: (AnnouncementAction) -> Unit, onOpenMatch: ((String) -> Unit)?) {
     val current = state.current ?: return
     val announcement = current.announcement
-    Card {
+    val colors = Triangulacion.colors
+    val local = TriDates.local(current.matchScheduledAt, state.timeZoneId)
+    val isOpen = state.windowState == WindowState.OPEN && !state.isStale
+    val isActing = AnnouncementOperation.ENROLLMENT in state.acting
+    TriCard(modifier = Modifier.fillMaxWidth(), contentPadding = Space.s5) {
+        TriCaps(text = "${formatLongDayCaps(local.date)} · ${formatClubTime(current.matchScheduledAt, state.timeZoneId)}", color = colors.ink)
         Text(
-            text = stringResource(Res.string.announcement_match_at, formatDateTime(current.matchScheduledAt, state.timeZoneId)),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.extended.textPrimary
+            text = if (state.windowState != WindowState.CANCELLED) {
+                stringResource(Res.string.announcement_teams_line, formatMatchDate(announcement.drawAt, state.timeZoneId), matchFormatLabel(announcement.maxPlayers))
+            } else matchFormatLabel(announcement.maxPlayers),
+            style = Triangulacion.type.bodySm,
+            color = colors.inkMuted,
+            modifier = Modifier.padding(top = 2.dp)
         )
-        Text(
-            text = stringResource(Res.string.announcement_seats, announcement.confirmedCount, announcement.maxPlayers) +
-                if (announcement.waitlistCount > 0) " · " + stringResource(Res.string.announcement_waitlist_count, announcement.waitlistCount) else "",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.extended.textSecondary
-        )
-        val remaining = state.timeToNextChange
-        val windowText = when (state.windowState) {
-            WindowState.NOT_OPEN -> remaining?.let { stringResource(Res.string.announcement_opens_in, formatDuration(it)) }
-            WindowState.OPEN -> remaining?.let { stringResource(Res.string.announcement_closes_in, formatDuration(it)) }
-            WindowState.CLOSED -> stringResource(Res.string.announcement_closed)
-            WindowState.CANCELLED -> stringResource(Res.string.announcement_cancelled)
-            null -> null
-        }
-        windowText?.let {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.labelLarge,
-                color = if (state.windowState == WindowState.OPEN) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.extended.textPlaceholder
+        Spacer(Modifier.height(Space.s4))
+        Plazas(max = announcement.maxPlayers, confirmed = announcement.confirmedCount)
+        if (state.windowState == WindowState.OPEN || state.windowState == WindowState.NOT_OPEN) {
+            Spacer(Modifier.height(Space.s5))
+            val target = if (state.windowState == WindowState.NOT_OPEN) announcement.opensAt else announcement.closesAt
+            val countdown = rememberCountdown(target)
+            Countdown(
+                value = countdown,
+                label = if (state.windowState == WindowState.NOT_OPEN) stringResource(Res.string.announcement_opens_in_caps) else stringResource(DesignRes.string.tri_closes_in),
+                urgent = state.windowState == WindowState.OPEN && countdown.days == 0 && countdown.hours < 3
             )
         }
         if (state.hasAbsenceOnMatchDay) {
-            Text(
-                text = stringResource(Res.string.announcement_absence_warning),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.error
+            Spacer(Modifier.height(Space.s4))
+            TriNotice(title = stringResource(Res.string.announcement_absence_warning), body = stringResource(Res.string.announcement_absence_body), tone = TriNoticeTone.Warn)
+        }
+        Spacer(Modifier.height(Space.s5))
+        when {
+            current.myStatus == MyEnrollmentStatus.CONFIRMED -> {
+                TriNotice(title = stringResource(Res.string.announcement_enrolled_message), tone = TriNoticeTone.Ok)
+                if (isOpen) EnrollLink(stringResource(Res.string.announcement_withdraw), isActing) { onAction(AnnouncementAction.OnWithdrawClick) }
+            }
+            current.myStatus == MyEnrollmentStatus.WAITLISTED -> {
+                TriNotice(title = stringResource(Res.string.announcement_state_waitlisted, current.myWaitlistPosition ?: 0), tone = TriNoticeTone.Warn)
+                if (isOpen) EnrollLink(stringResource(Res.string.announcement_leave_waitlist), isActing) { onAction(AnnouncementAction.OnWithdrawClick) }
+            }
+            isOpen -> TriButton(
+                text = stringResource(Res.string.announcement_enroll),
+                onClick = { onAction(AnnouncementAction.OnEnrollClick) },
+                variant = TriButtonVariant.Volt,
+                icon = TriIcon.Plus,
+                isLoading = isActing,
+                large = true,
+                glow = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            state.windowState == WindowState.NOT_OPEN ->
+                TriNotice(title = stringResource(Res.string.announcement_opens_at, formatMatchDate(announcement.opensAt, state.timeZoneId)), icon = TriIcon.Calendar)
+            state.windowState == WindowState.CANCELLED ->
+                TriNotice(title = stringResource(Res.string.announcement_cancelled), tone = TriNoticeTone.Danger)
+            else -> TriNotice(title = stringResource(Res.string.announcement_closed), icon = TriIcon.Lock)
+        }
+        if (state.canAddGuest) {
+            Spacer(Modifier.height(Space.s3))
+            TriButton(
+                text = stringResource(Res.string.guests_add),
+                onClick = { onAction(AnnouncementAction.OnAddGuestClick) },
+                variant = TriButtonVariant.Secondary,
+                icon = TriIcon.User,
+                enabled = AnnouncementOperation.GUESTS !in state.acting,
+                modifier = Modifier.fillMaxWidth()
             )
         }
-        if (announcement.drawAt != announcement.closesAt && state.windowState != WindowState.CANCELLED) {
-            Hint(text = stringResource(Res.string.announcement_draw_at, formatDateTime(announcement.drawAt, state.timeZoneId)))
-        }
         if (onOpenMatch != null && state.windowState == WindowState.CLOSED) {
-            OutlinedButton(onClick = { onOpenMatch(announcement.matchId) }) { Text(text = stringResource(Res.string.announcement_view_match)) }
+            Spacer(Modifier.height(Space.s2))
+            TriTextButton(
+                text = stringResource(Res.string.announcement_view_match),
+                onClick = { onOpenMatch(announcement.matchId) },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
         }
     }
 }
 
 @Composable
-private fun PrimaryActions(state: AnnouncementState, onAction: (AnnouncementAction) -> Unit) {
-    val current = state.current ?: return
-    val isOpen = state.windowState == WindowState.OPEN && !state.isStale
-    val isActing = AnnouncementOperation.ENROLLMENT in state.acting
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        when (current.myStatus) {
-            MyEnrollmentStatus.CONFIRMED -> AssistChip(onClick = {}, label = { Text(text = stringResource(Res.string.announcement_confirmed_badge)) })
-            MyEnrollmentStatus.WAITLISTED -> AssistChip(
-                onClick = {},
-                label = { Text(text = stringResource(Res.string.announcement_waitlisted_badge, current.myWaitlistPosition ?: 0)) }
-            )
-            MyEnrollmentStatus.NOT_ENROLLED -> Unit
-        }
-        if (isOpen) {
-            when (current.myStatus) {
-                MyEnrollmentStatus.NOT_ENROLLED -> SquadfyButton(
-                    text = stringResource(Res.string.announcement_enroll),
-                    onClick = { onAction(AnnouncementAction.OnEnrollClick) },
-                    isLoading = isActing,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                MyEnrollmentStatus.CONFIRMED -> SquadfyButton(
-                    text = stringResource(Res.string.announcement_withdraw),
-                    onClick = { onAction(AnnouncementAction.OnWithdrawClick) },
-                    style = SquadfyButtonStyle.DESTRUCTIVE_SECONDARY,
-                    isLoading = isActing,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                MyEnrollmentStatus.WAITLISTED -> SquadfyButton(
-                    text = stringResource(Res.string.announcement_leave_waitlist),
-                    onClick = { onAction(AnnouncementAction.OnWithdrawClick) },
-                    style = SquadfyButtonStyle.SECONDARY,
-                    isLoading = isActing,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-        if (state.canAddGuest) {
-            OutlinedButton(
-                onClick = { onAction(AnnouncementAction.OnAddGuestClick) },
-                enabled = AnnouncementOperation.GUESTS !in state.acting,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(imageVector = Icons.Outlined.PersonAdd, contentDescription = null, modifier = Modifier.size(18.dp))
-                Text(text = stringResource(Res.string.guests_add), modifier = Modifier.padding(start = 8.dp))
-            }
-        }
-    }
+private fun ColumnScope.EnrollLink(text: String, isActing: Boolean, onClick: () -> Unit) {
+    Spacer(Modifier.height(Space.s2))
+    TriTextButton(
+        text = text,
+        onClick = onClick,
+        enabled = !isActing,
+        color = Triangulacion.colors.ink,
+        underline = true,
+        modifier = Modifier.align(Alignment.CenterHorizontally)
+    )
 }
 
 @Composable
 private fun EntryRow(entry: AnnouncementEntry, state: AnnouncementState, index: Int?, onRemove: () -> Unit) {
+    val colors = Triangulacion.colors
     val member = entry.clubMemberId?.let { state.members[it] }
     val formerMember = stringResource(Res.string.former_member)
     val name = if (entry.isGuest) {
@@ -350,51 +397,36 @@ private fun EntryRow(entry: AnnouncementEntry, state: AnnouncementState, index: 
     } else {
         member?.username ?: formerMember
     }
-    val position = if (entry.isGuest) entry.guestPosition else member?.position
+    val position = (if (entry.isGuest) entry.guestPosition else member?.position).toTri()
     val isMe = !entry.isGuest && entry.clubMemberId != null && entry.clubMemberId == state.me?.id
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = if (isMe) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface,
-        shadowElevation = if (isMe) 0.dp else 1.dp
-    ) {
+    TriCard(modifier = Modifier.fillMaxWidth(), highlighted = isMe, contentPadding = 0.dp) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            index?.let { Text(text = "$it.", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.extended.textPlaceholder) }
-            SquadfyAvatarPhoto(displayText = initialsOf(entry.guestName ?: member?.username.orEmpty()), imageUrl = member?.pictureUrl)
+            index?.let { Text(text = it.toString(), style = Triangulacion.type.label.tabular, color = colors.inkMuted, modifier = Modifier.widthIn(min = 16.dp)) }
+            TriAvatar(name = entry.guestName ?: member?.username.orEmpty(), imageUrl = member?.pictureUrl, size = 44.dp, isMe = isMe)
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = name, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
-                val details = listOfNotNull(member?.shirtNumber?.let { "#$it" }, position?.let { stringResource(it.label) }).joinToString(" · ")
-                if (details.isNotBlank()) Hint(text = details)
+                Text(text = name, style = Triangulacion.type.title, color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                member?.shirtNumber?.let { Text(text = "#$it", style = Triangulacion.type.bodySm.tabular, color = colors.inkMuted) }
             }
+            position?.let { PosChip(it) }
             if (state.canRemoveGuest(entry)) {
-                IconButton(onClick = onRemove) {
-                    Icon(imageVector = Icons.Outlined.Close, contentDescription = stringResource(Res.string.guests_remove))
-                }
+                TriRoundIconButton(icon = TriIcon.X, contentDescription = stringResource(Res.string.guests_remove), onClick = onRemove, filled = true)
             }
         }
     }
 }
 
 @Composable
-private fun HistoryRow(announcement: MatchAnnouncementModel, timeZoneId: String, onClick: () -> Unit) {
-    val closedAt = formatDateTime(announcement.closesAt, timeZoneId)
-    TextButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = if (announcement.status == AnnouncementStatus.CANCELLED) {
-                stringResource(Res.string.announcement_history_cancelled, closedAt)
-            } else {
-                stringResource(Res.string.announcement_history_item, closedAt, announcement.confirmedCount)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.extended.textSecondary
-        )
+private fun LinkRow(text: String, onClick: () -> Unit) {
+    TriCard(modifier = Modifier.fillMaxWidth(), onClick = onClick, contentPadding = 0.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = Space.s4, vertical = 14.dp)) {
+            Text(text = text, style = Triangulacion.type.body, color = Triangulacion.colors.ink, modifier = Modifier.weight(1f))
+            TriIconView(icon = TriIcon.ChevR, contentDescription = null, size = 20.dp, tint = Triangulacion.colors.inkMuted)
+        }
     }
-    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
 }
 
 @Composable
@@ -432,28 +464,6 @@ private fun AnnouncementDialogs(state: AnnouncementState, onAction: (Announcemen
 }
 
 @Composable
-private fun Card(content: @Composable () -> Unit) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 1.dp
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { content() }
-    }
-}
-
-@Composable
-private fun SectionTitle(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-        color = MaterialTheme.colorScheme.extended.textPrimary,
-        modifier = Modifier.padding(top = 8.dp)
-    )
-}
-
-@Composable
 private fun Hint(text: String) {
-    Text(text = text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.extended.textPlaceholder)
+    Text(text = text, style = Triangulacion.type.body, color = Triangulacion.colors.inkMuted)
 }

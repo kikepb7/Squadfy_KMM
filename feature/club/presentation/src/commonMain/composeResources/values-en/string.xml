@@ -173,7 +173,7 @@
     <string name="announcement_withdraw">Withdraw</string>
     <string name="announcement_leave_waitlist">Leave the waitlist</string>
     <string name="announcement_confirmed_badge">Confirmed</string>
-    <string name="announcement_waitlisted_badge">Waitlisted · #%1$d</string>
+    <string name="announcement_waitlisted_badge">Waitlist · #%1$d</string>
     <string name="announcement_withdraw_title">Withdraw?</string>
     <string name="announcement_withdraw_description">If there is a waitlist, your seat goes to the next player.</string>
     <string name="announcement_waitlisted_message">Full: you are on the waitlist (#%1$d)</string>
@@ -371,4 +371,27 @@
     <string name="standings_period_year">This year</string>
     <string name="standings_period_30d">Last 30 days</string>
     <string name="common_load_error">Couldn't load</string>
+    <string name="club_tab_teams">Teams</string>
+    <string name="club_tab_table">Table</string>
+    <string name="club_settings_title">Club settings</string>
+    <string name="club_members_count">%1$d members</string>
+    <string name="club_format_players">%1$d-a-side</string>
+    <string name="club_format_spots">%1$d spots</string>
+    <string name="announcement_teams_line">Teams %1$s · %2$s</string>
+    <string name="announcement_confirmed_count_title">Called up · %1$d</string>
+    <string name="announcement_waitlist_count_title">Waitlist · %1$d</string>
+    <string name="announcement_opens_in_caps">OPENS IN</string>
+    <string name="announcement_state_waitlisted">On the waitlist · #%1$d</string>
+    <string name="announcement_absence_body">You are taken off open sign-ups on those days.</string>
+    <string name="announcement_stale_title">Offline</string>
+    <string name="teams_published_title">Teams published</string>
+    <string name="teams_you_play_in">You play in %1$s.</string>
+    <string name="teams_not_yet">No teams yet</string>
+    <string name="teams_not_yet_body">They are published %1$s, when sign-ups close.</string>
+    <string name="teams_no_match">When there is a match, the teams show up here.</string>
+    <string name="teams_view_pitch">Pitch</string>
+    <string name="teams_view_list">List</string>
+    <string name="teams_more">+%1$d more</string>
+    <string name="teams_open_match">Open match report</string>
+    <string name="member_you">You</string>
 </resources>

@@ -1,5 +1,24 @@
+@file:OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
+
 package com.kikepb.club.presentation.detail
 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.backhandler.BackHandler
+import com.kikepb.club.domain.model.ClubMemberRole
+import com.kikepb.club.presentation.mapper.label
+import com.kikepb.club.presentation.teams.TeamsTab
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarBackButton
+import com.kikepb.core.designsystem.triangulacion.components.ClubCrest
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriRoundIconButton
+import com.kikepb.core.designsystem.triangulacion.components.TriTabs
+import com.kikepb.core.designsystem.triangulacion.components.TriTag
+import com.kikepb.core.designsystem.triangulacion.theme.CrestTone
+import com.kikepb.core.designsystem.triangulacion.theme.Space
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import squadfy_app.feature.club.presentation.generated.resources.club_members_count
+import squadfy_app.feature.club.presentation.generated.resources.club_settings_title
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -120,9 +139,24 @@ fun ClubDetailScreen(
     val club = state.club
     var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
 
+    val inSettings = ClubDetailTabModel.entries[selectedTabIndex] == ClubDetailTabModel.SETTINGS
+    // Settings open from the header button; back returns to the match tab
+    BackHandler(enabled = inSettings) { selectedTabIndex = ClubDetailTabModel.MATCH.ordinal }
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
-        topBar = { SquadfyTopBar(title = club?.name ?: stringResource(Res.string.club_detail_title), onBackClick = onBackClick) },
+        containerColor = Triangulacion.colors.surface100,
+        topBar = {
+            if (club == null) {
+                SquadfyTopBar(title = stringResource(Res.string.club_detail_title), onBackClick = onBackClick)
+            } else {
+                ClubHeader(
+                    club = club,
+                    role = state.myMembership?.role,
+                    onBackClick = if (inSettings) ({ selectedTabIndex = ClubDetailTabModel.MATCH.ordinal }) else onBackClick,
+                    onSettingsClick = { selectedTabIndex = ClubDetailTabModel.SETTINGS.ordinal },
+                    settingsSelected = inSettings
+                )
+            }
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         when {
@@ -167,13 +201,13 @@ private fun ClubContent(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        SquadfyClubDetailBanner(
-            club = club,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+        val visibleIndex = ClubDetailTabModel.tabs.indexOf(ClubDetailTabModel.entries[selectedTabIndex])
+        TriTabs(
+            items = ClubDetailTabModel.tabs.map { stringResource(it.title) },
+            selectedIndex = visibleIndex,
+            onSelect = { onTabSelected(ClubDetailTabModel.tabs[it].ordinal) },
+            modifier = Modifier.padding(horizontal = Space.s4, vertical = Space.s2)
         )
-        SquadfyClubDetailTabRow(selectedIndex = selectedTabIndex, onTabSelected = onTabSelected)
         AnimatedContent(
             targetState = selectedTabIndex,
             transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
@@ -186,6 +220,7 @@ private fun ClubContent(
                     onNotMemberAnymore = onLeftClub,
                     onOpenMatch = onOpenMatch
                 )
+                ClubDetailTabModel.TEAMS -> TeamsTab(onOpenMatch = onOpenMatch)
                 ClubDetailTabModel.CLASSIFICATION -> StandingsTab(club = club, onMemberClick = onMemberClick)
                 ClubDetailTabModel.MEMBERS -> SquadfyClubDetailMembersTab(members = state.members, onMemberClick = onMemberClick)
                 ClubDetailTabModel.SETTINGS -> ClubSettingsTab(
@@ -256,4 +291,39 @@ private fun EmptyContent(modifier: Modifier = Modifier, onRetry: () -> Unit) {
             SquadfyButton(text = stringResource(Res.string.common_retry), onClick = onRetry)
         }
     }
+}
+
+/** Club header (spec 018): back, crest, name, my role and the member count, and the settings button. */
+@Composable
+private fun ClubHeader(
+    club: ClubModel,
+    role: ClubMemberRole?,
+    onBackClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    settingsSelected: Boolean
+) {
+    val colors = Triangulacion.colors
+    SquadfyTopBar(
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                ClubCrest(name = club.name, size = 44.dp, tone = CrestTone.forKey(club.id), logoUrl = club.clubLogoUrl)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(text = club.name, style = Triangulacion.type.displayMd, color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        role?.let { TriTag(text = stringResource(it.label)) }
+                        Text(text = stringResource(Res.string.club_members_count, club.membersCount), style = Triangulacion.type.bodySm, color = colors.inkMuted)
+                    }
+                }
+            }
+        },
+        navigationIcon = { SquadfyTopBarBackButton(onClick = onBackClick) },
+        actions = {
+            TriRoundIconButton(
+                icon = if (settingsSelected) TriIcon.X else TriIcon.Sliders,
+                contentDescription = stringResource(Res.string.club_settings_title),
+                onClick = onSettingsClick,
+                filled = settingsSelected
+            )
+        }
+    )
 }

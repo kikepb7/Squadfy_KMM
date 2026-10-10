@@ -17,6 +17,7 @@ kotlin {
                 implementation(libs.bundles.koin.common)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.jetbrains.compose.material.icons.extended)
+                implementation(libs.jetbrains.compose.backhandler)
 
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
