@@ -1,5 +1,9 @@
 package org.kikepb.squadfy.debug
 
+import com.kikepb.core.domain.featureflag.FeatureFlag
+import com.kikepb.core.domain.featureflag.AppEnvironment
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +25,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
+import com.kikepb.core.domain.featureflag.AppEnvironment.PRE
+import com.kikepb.core.domain.featureflag.FeatureFlag.entries
 import com.kikepb.core.domain.featureflag.FlagValueSource
+import com.kikepb.core.domain.featureflag.FlagValueSource.DEFAULT
+import com.kikepb.core.domain.featureflag.FlagValueSource.OVERRIDE
 import com.kikepb.core.domain.featureflag.ResolvedFeatureFlag
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -111,9 +119,9 @@ private fun FeatureFlagRow(
             Text(
                 text = stringResource(
                     when (resolved.source) {
-                        FlagValueSource.DEFAULT -> Res.string.feature_flags_source_default
+                        DEFAULT -> Res.string.feature_flags_source_default
                         FlagValueSource.REMOTE -> Res.string.feature_flags_source_remote
-                        FlagValueSource.OVERRIDE -> Res.string.feature_flags_source_override
+                        OVERRIDE -> Res.string.feature_flags_source_override
                     }
                 ),
                 style = MaterialTheme.typography.labelSmall,
@@ -124,22 +132,20 @@ private fun FeatureFlagRow(
     }
 }
 
-// Spec 018: the PRE-only feature flags screen in Tiza and Noche
+// Previews (spec 018): the PRE-only feature flags screen in Tiza and Noche
 private val previewState = FeatureFlagsState(
-    environment = com.kikepb.core.domain.featureflag.AppEnvironment.PRE,
-    flags = com.kikepb.core.domain.featureflag.FeatureFlag.entries.mapIndexed { index, flag ->
-        com.kikepb.core.domain.featureflag.ResolvedFeatureFlag(
-            flag = flag,
-            enabled = index % 2 == 0,
-            source = if (index % 3 == 0) com.kikepb.core.domain.featureflag.FlagValueSource.OVERRIDE else com.kikepb.core.domain.featureflag.FlagValueSource.DEFAULT
-        )
+    environment = AppEnvironment.PRE,
+    flags = FeatureFlag.entries.mapIndexed { index, flag ->
+        ResolvedFeatureFlag(flag = flag, enabled = index % 2 == 0, source = if (index % 3 == 0) FlagValueSource.OVERRIDE else FlagValueSource.DEFAULT)
     }
 )
 
-@org.jetbrains.compose.ui.tooling.preview.Preview(name = "Feature flags · Tiza", widthDp = 393, heightDp = 852)
-@Composable
-private fun FeatureFlagsTiza() = com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview { FeatureFlagsScreen(state = previewState, onAction = {}) }
 
-@org.jetbrains.compose.ui.tooling.preview.Preview(name = "Feature flags · Noche", widthDp = 393, heightDp = 852)
+
+@Preview(name = "Feature flags · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun FeatureFlagsNoche() = com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview(darkTheme = true) { FeatureFlagsScreen(state = previewState, onAction = {}) }
+private fun FeatureFlagsTizaPreview() = ScreenPreview { FeatureFlagsScreen(state = previewState, onAction = {}) }
+
+@Preview(name = "Feature flags · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun FeatureFlagsNochePreview() = ScreenPreview(darkTheme = true) { FeatureFlagsScreen(state = previewState, onAction = {}) }

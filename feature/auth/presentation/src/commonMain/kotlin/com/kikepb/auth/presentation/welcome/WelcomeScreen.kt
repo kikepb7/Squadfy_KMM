@@ -1,5 +1,6 @@
 package com.kikepb.auth.presentation.welcome
 
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -103,8 +104,12 @@ fun WelcomeScreen(
     }
 }
 
-@Preview
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "01 Bienvenida · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun WelcomeScreenPreview() {
-    SquadfyTheme { WelcomeScreen(onCreateAccountClick = {}, onLoginClick = {}) }
-}
+private fun WelcomeTizaPreview() = ScreenPreview { WelcomeScreen(onCreateAccountClick = {}, onLoginClick = {}) }
+
+@Preview(name = "01 Bienvenida · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun WelcomeNochePreview() = ScreenPreview(darkTheme = true) { WelcomeScreen(onCreateAccountClick = {}, onLoginClick = {}) }

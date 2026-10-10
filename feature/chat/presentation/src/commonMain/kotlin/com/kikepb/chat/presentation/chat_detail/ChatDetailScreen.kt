@@ -2,6 +2,8 @@
 
 package com.kikepb.chat.presentation.chat_detail
 
+import com.kikepb.chat.presentation.preview.ChatSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -352,86 +354,12 @@ private fun DynamicRoundedCornerColumn(
     }
 }
 
-@Preview
-@Composable
-private fun ChatDetailEmptyPreview() {
-    SquadfyTheme {
-        ChatDetailScreen(
-            state = ChatDetailState(),
-            messageListState = LazyListState(),
-            isDetailPresent = false,
-            snackBarState = remember { SnackbarHostState() },
-            onAction = {}
-        )
-    }
-}
+// Previews (spec 018): Tiza and Noche with the data of the mockups
 
-@Preview
+@Preview(name = "14b Conversación · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun ChatDetailMessagesPreview() {
-    SquadfyTheme(darkTheme = true) {
-        ChatDetailScreen(
-            state = ChatDetailState(
-                messageTextFieldState = rememberTextFieldState(
-                    initialText = "This is a new message!"
-                ),
-                canSendMessage = true,
-                chatUi = ChatModelUi(
-                    id = "1",
-                    localParticipant = ChatParticipantModelUi(
-                        id = "1",
-                        username = "Enrique",
-                        initials = "EN",
-                    ),
-                    otherParticipants = listOf(
-                        ChatParticipantModelUi(
-                            id = "2",
-                            username = "Carmen",
-                            initials = "CA",
-                        ),
-                        ChatParticipantModelUi(
-                            id = "3",
-                            username = "Ana",
-                            initials = "AN",
-                        )
-                    ),
-                    lastMessage = ChatMessageModel(
-                        id = "1",
-                        chatId = "1",
-                        content = "This is a last chat message that was sent by Enrique " +
-                                "and goes over multiple lines to showcase the ellipsis",
-                        createdAt = Clock.System.now(),
-                        senderId = "1",
-                        deliveryStatus = ChatMessageDeliveryStatus.SENT
-                    ),
-                    lastMessageSenderUsername = "Enrique"
-                ),
-                messages = (1..20).map {
-                    if(it % 2 == 0) {
-                        LocalUserMessage(
-                            id = Uuid.random().toString(),
-                            content = "Hello world!",
-                            deliveryStatus = ChatMessageDeliveryStatus.SENT,
-                            formattedSentTime = UiText.DynamicString("Friday, Aug 20")
-                        )
-                    } else {
-                        OtherUserMessage(
-                            id = Uuid.random().toString(),
-                            content = "Hello world!",
-                            sender = ChatParticipantModelUi(
-                                id = Uuid.random().toString(),
-                                username = "Carmen",
-                                initials = "CA"
-                            ),
-                            formattedSentTime = UiText.DynamicString("Friday, Aug 20"),
-                        )
-                    }
-                }
-            ),
-            messageListState = LazyListState(),
-            isDetailPresent = true,
-            snackBarState = remember { SnackbarHostState() },
-            onAction = {}
-        )
-    }
-}
+private fun ChatDetailTizaPreview() = ScreenPreview { ChatDetailScreen(state = ChatSamples.detail, messageListState = LazyListState(), isDetailPresent = false, snackBarState = remember { SnackbarHostState() }, onAction = {}) }
+
+@Preview(name = "14b Conversación · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun ChatDetailNochePreview() = ScreenPreview(darkTheme = true) { ChatDetailScreen(state = ChatSamples.detail, messageListState = LazyListState(), isDetailPresent = false, snackBarState = remember { SnackbarHostState() }, onAction = {}) }

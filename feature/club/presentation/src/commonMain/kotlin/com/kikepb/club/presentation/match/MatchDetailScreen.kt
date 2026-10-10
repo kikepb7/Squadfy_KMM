@@ -1,5 +1,9 @@
 package com.kikepb.club.presentation.match
 
+import com.kikepb.club.presentation.mapper.matchFormatLabel
+import com.kikepb.club.presentation.preview.ClubSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import squadfy_app.feature.club.presentation.generated.resources.match_view_pitch
 import squadfy_app.feature.club.presentation.generated.resources.result_view
 import androidx.compose.foundation.background
@@ -345,7 +349,7 @@ private fun MatchHeader(state: MatchDetailState) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         TriCaps(text = "${formatLongDayCaps(local.date)} · ${formatClubTime(match.scheduledAt, state.timeZoneId)}", color = Triangulacion.colors.ink)
         val details = listOfNotNull(
-            state.format?.let { stringResource(it.label) },
+            state.announcement?.maxPlayers?.let { matchFormatLabel(it) } ?: state.format?.let { stringResource(it.label) },
             stringResource(Res.string.match_duration, match.durationMinutes)
         ).joinToString(" · ")
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -774,3 +778,21 @@ private fun ConfirmDialog(title: String, text: String, confirm: String, onConfir
         dismissButton = { TextButton(onClick = onDismiss) { Text(text = stringResource(Res.string.common_cancel)) } }
     )
 }
+
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "07 Acta · por cerrar · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun ReportOpenTizaPreview() = ScreenPreview { MatchDetailScreen(state = ClubSamples.matchDetail(MatchStatus.SCHEDULED).copy(match = ClubSamples.match(MatchStatus.COMPLETED).copy(status = MatchStatus.SCHEDULED, ratingChanges = emptyMap())), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, onOpenPitch = {}) }
+
+@Preview(name = "07 Acta · por cerrar · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun ReportOpenNochePreview() = ScreenPreview(darkTheme = true) { MatchDetailScreen(state = ClubSamples.matchDetail(MatchStatus.SCHEDULED).copy(match = ClubSamples.match(MatchStatus.COMPLETED).copy(status = MatchStatus.SCHEDULED, ratingChanges = emptyMap())), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, onOpenPitch = {}) }
+
+@Preview(name = "07b Acta · cerrado · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun ReportClosedTizaPreview() = ScreenPreview { MatchDetailScreen(state = ClubSamples.matchDetail(MatchStatus.COMPLETED), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, onOpenResult = {}) }
+
+@Preview(name = "07b Acta · cerrado · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun ReportClosedNochePreview() = ScreenPreview(darkTheme = true) { MatchDetailScreen(state = ClubSamples.matchDetail(MatchStatus.COMPLETED), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, onOpenResult = {}) }

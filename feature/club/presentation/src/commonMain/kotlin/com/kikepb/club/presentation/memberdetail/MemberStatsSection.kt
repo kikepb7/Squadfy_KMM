@@ -1,5 +1,8 @@
 package com.kikepb.club.presentation.memberdetail
 
+import com.kikepb.club.presentation.preview.ClubSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -165,3 +168,13 @@ private fun StatsGrid(cells: List<Pair<String, String>>) {
         }
     }
 }
+
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "09b Ficha · estadísticas · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun MemberStatsTizaPreview() = ScreenPreview { MemberStatsContent(member = ClubSamples.alvaro, state = ClubSamples.memberStats) }
+
+@Preview(name = "09b Ficha · estadísticas · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun MemberStatsNochePreview() = ScreenPreview(darkTheme = true) { MemberStatsContent(member = ClubSamples.alvaro, state = ClubSamples.memberStats) }

@@ -1,5 +1,6 @@
 package com.kikepb.auth.presentation.register
 
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
@@ -162,14 +163,12 @@ fun RegisterScreen(
     }
 }
 
-@Preview()
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "02b Registro · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun RegisterScreenPreview() {
-    SquadfyTheme {
-        RegisterScreen(
-            state = RegisterState(),
-            onAction = {},
-            snackbarHostState = remember { SnackbarHostState() }
-        )
-    }
-}
+private fun RegisterTizaPreview() = ScreenPreview { RegisterScreen(state = RegisterState(), onAction = {}, snackbarHostState = remember { SnackbarHostState() }) }
+
+@Preview(name = "02b Registro · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun RegisterNochePreview() = ScreenPreview(darkTheme = true) { RegisterScreen(state = RegisterState(), onAction = {}, snackbarHostState = remember { SnackbarHostState() }) }

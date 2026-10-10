@@ -1,5 +1,6 @@
 package com.kikepb.auth.presentation.register_success
 
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -105,16 +106,12 @@ fun RegisterSuccessScreen(
     }
 }
 
-@Preview
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "02e Cuenta creada · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun RegisterSuccessPreview() {
-    SquadfyTheme {
-        RegisterSuccessScreen(
-            state = RegisterSuccessState(
-                registeredEmail = "test@preview.com"
-            ),
-            onAction = {},
-            snackbarHostState = remember { SnackbarHostState() }
-        )
-    }
-}
+private fun RegisterSuccessTizaPreview() = ScreenPreview { RegisterSuccessScreen(state = RegisterSuccessState(registeredEmail = "alvaro@correo.es"), onAction = {}, snackbarHostState = remember { SnackbarHostState() }) }
+
+@Preview(name = "02e Cuenta creada · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun RegisterSuccessNochePreview() = ScreenPreview(darkTheme = true) { RegisterSuccessScreen(state = RegisterSuccessState(registeredEmail = "alvaro@correo.es"), onAction = {}, snackbarHostState = remember { SnackbarHostState() }) }

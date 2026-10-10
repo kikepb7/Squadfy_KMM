@@ -1,5 +1,6 @@
 package com.kikepb.auth.presentation.reset_password
 
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import com.kikepb.core.designsystem.triangulacion.components.TriIcon
 import com.kikepb.core.designsystem.triangulacion.components.TriButton
@@ -90,13 +91,12 @@ fun ResetPasswordScreen(
     }
 }
 
-@Preview
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "02d Nueva contraseña · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun ResetPasswordPreview() {
-    SquadfyTheme {
-        ResetPasswordScreen(
-            state = ResetPasswordState(),
-            onAction = {}
-        )
-    }
-}
+private fun ResetPasswordTizaPreview() = ScreenPreview { ResetPasswordScreen(state = ResetPasswordState(), onAction = {}) }
+
+@Preview(name = "02d Nueva contraseña · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun ResetPasswordNochePreview() = ScreenPreview(darkTheme = true) { ResetPasswordScreen(state = ResetPasswordState(), onAction = {}) }

@@ -1,5 +1,6 @@
 package com.kikepb.auth.presentation.email_verification
 
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -141,35 +142,20 @@ private fun VerifyingContent(modifier: Modifier = Modifier) {
     }
 }
 
-@Preview
-@Composable
-private fun EmailVerificationErrorPreview() {
-    SquadfyTheme {
-        EmailVerificationScreen(
-            state = EmailVerificationState(),
-            onAction = {}
-        )
-    }
-}
+// Previews (spec 018): Tiza and Noche with the data of the mockups
 
-@Preview
+@Preview(name = "02f Email verificado · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun EmailVerificationVerifyingPreview() {
-    SquadfyTheme {
-        EmailVerificationScreen(
-            state = EmailVerificationState(isVerifying = true),
-            onAction = {}
-        )
-    }
-}
+private fun EmailVerifiedTizaPreview() = ScreenPreview { EmailVerificationScreen(state = EmailVerificationState(isVerified = true), onAction = {}) }
 
-@Preview
+@Preview(name = "02f Email verificado · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun EmailVerificationSuccessPreview() {
-    SquadfyTheme {
-        EmailVerificationScreen(
-            state = EmailVerificationState(isVerified = true),
-            onAction = {}
-        )
-    }
-}
+private fun EmailVerifiedNochePreview() = ScreenPreview(darkTheme = true) { EmailVerificationScreen(state = EmailVerificationState(isVerified = true), onAction = {}) }
+
+@Preview(name = "02g Email no verificado · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun EmailNotVerifiedTizaPreview() = ScreenPreview { EmailVerificationScreen(state = EmailVerificationState(), onAction = {}) }
+
+@Preview(name = "02g Email no verificado · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun EmailNotVerifiedNochePreview() = ScreenPreview(darkTheme = true) { EmailVerificationScreen(state = EmailVerificationState(), onAction = {}) }

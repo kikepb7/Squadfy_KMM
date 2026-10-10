@@ -1,5 +1,6 @@
 package com.kikepb.auth.presentation.login
 
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -150,24 +151,12 @@ fun LoginScreen(
     }
 }
 
-@Preview
-@Composable
-private fun LightThemePreview() {
-    SquadfyTheme {
-        LoginScreen(
-            state = LoginState(),
-            onAction = {}
-        )
-    }
-}
+// Previews (spec 018): Tiza and Noche with the data of the mockups
 
-@Preview
+@Preview(name = "02 Login · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun DarkThemePreview() {
-    SquadfyTheme(darkTheme = true) {
-        LoginScreen(
-            state = LoginState(),
-            onAction = {}
-        )
-    }
-}
+private fun LoginTizaPreview() = ScreenPreview { LoginScreen(state = LoginState(), onAction = {}) }
+
+@Preview(name = "02 Login · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun LoginNochePreview() = ScreenPreview(darkTheme = true) { LoginScreen(state = LoginState(), onAction = {}) }

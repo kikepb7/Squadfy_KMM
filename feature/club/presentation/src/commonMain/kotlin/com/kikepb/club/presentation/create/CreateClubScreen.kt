@@ -1,5 +1,8 @@
 package com.kikepb.club.presentation.create
 
+import com.kikepb.club.presentation.preview.ClubSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import squadfy_app.feature.club.presentation.generated.resources.create_title
 import squadfy_app.feature.club.presentation.generated.resources.create_heading
 import squadfy_app.feature.club.presentation.generated.resources.create_subtitle
@@ -319,3 +322,13 @@ private fun ClubLogoPickerCard(
         }
     }
 }
+
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "10b Crear club · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun CreateClubTizaPreview() = ScreenPreview { CreateClubScreen(state = CreateClubState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, onPickLogo = {}) }
+
+@Preview(name = "10b Crear club · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun CreateClubNochePreview() = ScreenPreview(darkTheme = true) { CreateClubScreen(state = CreateClubState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, onPickLogo = {}) }

@@ -1,5 +1,8 @@
 package com.kikepb.club.presentation.memberdetail
 
+import com.kikepb.club.presentation.preview.ClubSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import squadfy_app.feature.club.presentation.generated.resources.member_edit_a11y
 import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarIconButton
@@ -315,3 +318,13 @@ private fun MemberDialogs(state: MemberDetailState, onAction: (MemberDetailActio
         null -> Unit
     }
 }
+
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "09 Ficha del jugador · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun PlayerCardTizaPreview() = ScreenPreview { MemberDetailScreen(state = ClubSamples.memberDetail, onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, statsSection = { MemberStatsContent(member = it, state = ClubSamples.memberStats) }) }
+
+@Preview(name = "09 Ficha del jugador · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun PlayerCardNochePreview() = ScreenPreview(darkTheme = true) { MemberDetailScreen(state = ClubSamples.memberDetail, onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, statsSection = { MemberStatsContent(member = it, state = ClubSamples.memberStats) }) }

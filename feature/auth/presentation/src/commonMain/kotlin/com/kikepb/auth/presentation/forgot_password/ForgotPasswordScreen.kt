@@ -1,5 +1,6 @@
 package com.kikepb.auth.presentation.forgot_password
 
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import squadfy_app.feature.auth.presentation.generated.resources.forgot_password_subtitle
 import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import com.kikepb.core.designsystem.triangulacion.components.TriIcon
@@ -96,13 +97,12 @@ fun ForgotPasswordScreen(
     }
 }
 
-@Preview
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "02c Olvidé la contraseña · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun ForgotPasswordPreview() {
-    SquadfyTheme {
-        ForgotPasswordScreen(
-            state = ForgotPasswordState(),
-            onAction = {}
-        )
-    }
-}
+private fun ForgotPasswordTizaPreview() = ScreenPreview { ForgotPasswordScreen(state = ForgotPasswordState(), onAction = {}) }
+
+@Preview(name = "02c Olvidé la contraseña · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun ForgotPasswordNochePreview() = ScreenPreview(darkTheme = true) { ForgotPasswordScreen(state = ForgotPasswordState(), onAction = {}) }

@@ -1,5 +1,8 @@
 package com.kikepb.club.presentation.match
 
+import com.kikepb.club.presentation.preview.ClubSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -179,121 +182,12 @@ fun MatchDrawScreen(state: MatchDetailState, onBackClick: () -> Unit, onViewTeam
     }
 }
 
-/** Resultado (spec 018, screen 16): the closed match, my change and everyone's rating change. */
-@Composable
-fun MatchResultRoot(
-    onBackClick: () -> Unit,
-    viewModel: MatchDetailViewModel = koinViewModel()
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    LifecycleResumeEffect(Unit) {
-        viewModel.onAction(MatchDetailAction.OnRefresh)
-        onPauseOrDispose { }
-    }
-    MatchResultScreen(state = state, onBackClick = onBackClick)
-}
+// Previews (spec 018): Tiza and Noche with the data of the mockups
 
+@Preview(name = "15 Sorteo completado · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-fun MatchResultScreen(state: MatchDetailState, onBackClick: () -> Unit) {
-    val colors = Triangulacion.colors
-    val formerMember = stringResource(Res.string.former_member)
-    Scaffold(
-        containerColor = colors.surface100,
-        topBar = {
-            SquadfyTopBar(
-                title = { Text(text = stringResource(Res.string.result_title), style = Triangulacion.type.displayMd, color = colors.ink) },
-                navigationIcon = { SquadfyTopBarBackButton(onClick = onBackClick) }
-            )
-        }
-    ) { padding ->
-        val match = state.match
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(Space.s4),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            if (match == null) {
-                item(key = "loading") { SquadfyLoadingIndicator() }
-                return@LazyColumn
-            }
-            item(key = "hero") { ResultHero(state) }
-            if (match.status != MatchStatus.COMPLETED) {
-                item(key = "pending") { TriNotice(title = stringResource(Res.string.result_pending), icon = TriIcon.Clock) }
-                return@LazyColumn
-            }
-            val myChange = state.myMemberId?.let { match.ratingChanges[it] }
-            if (myChange != null) {
-                item(key = "mine-title") { TriSectionTitle(text = stringResource(Res.string.result_your_rating), modifier = Modifier.padding(top = Space.s3)) }
-                item(key = "mine") {
-                    TriCard(modifier = Modifier.fillMaxWidth(), contentPadding = Space.s4) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = stringResource(Res.string.result_your_change), style = Triangulacion.type.body, color = colors.inkMuted, modifier = Modifier.weight(1f))
-                            RatingDelta(myChange)
-                        }
-                    }
-                }
-            }
-            val changes = match.ratingChanges.entries.sortedByDescending { it.value }
-            if (changes.isNotEmpty()) {
-                item(key = "changes-title") { TriSectionTitle(text = stringResource(Res.string.result_changes), modifier = Modifier.padding(top = Space.s3)) }
-                items(items = changes, key = { "c-${it.key}" }) { (memberId, change) ->
-                    val player = state.player(memberId, isGuest = false)
-                    val isMe = memberId == state.myMemberId
-                    TriCard(modifier = Modifier.fillMaxWidth(), highlighted = isMe, contentPadding = 12.dp) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            TriAvatar(name = player.name ?: formerMember, imageUrl = player.profilePictureUrl, size = 40.dp, isMe = isMe)
-                            Text(text = player.name ?: formerMember, style = Triangulacion.type.title, color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                            RatingDelta(change)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+private fun DrawTizaPreview() = ScreenPreview { MatchDrawScreen(state = ClubSamples.matchDetail(MatchStatus.SCHEDULED), onBackClick = {}, onViewTeams = {}) }
 
+@Preview(name = "15 Sorteo completado · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun ResultHero(state: MatchDetailState) {
-    val colors = Triangulacion.colors
-    val match = state.match ?: return
-    val local = TriDates.local(match.scheduledAt, state.timeZoneId)
-    val myTeam = state.myTeam
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Space.s3),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(CutLg)
-            .background(colors.surfaceInverse)
-            .drawBehind {
-                val cut = Radius.cutLg.toPx()
-                drawPath(Path().apply { moveTo(size.width - cut, 0f); lineTo(size.width, cut); lineTo(size.width - cut, cut); close() }, colors.volt)
-            }
-            .padding(vertical = Space.s6, horizontal = Space.s5)
-    ) {
-        TriCaps(
-            text = stringResource(
-                Res.string.result_caps,
-                "${stringResource(TriDates.shortDay(local.dayOfWeek))} ${formatDayMonth(local.date)}",
-                state.format?.let { stringResource(it.label) } ?: stringResource(Res.string.result_title)
-            ),
-            color = colors.onInverseMuted
-        )
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s4)) {
-            Text(text = match.teamAScore.toString(), style = Triangulacion.type.statXl.copy(fontSize = Triangulacion.type.statXl.fontSize * 1.3f), color = colors.onInverse)
-            androidx.compose.foundation.layout.Box(Modifier.size(14.dp).clip(CircleShape).background(colors.volt))
-            Text(text = match.teamBScore.toString(), style = Triangulacion.type.statXl.copy(fontSize = Triangulacion.type.statXl.fontSize * 1.3f), color = colors.onInverse)
-        }
-        if (match.status == MatchStatus.COMPLETED && myTeam != null) {
-            val (mine, theirs) = if (myTeam == Team.A) match.teamAScore to match.teamBScore else match.teamBScore to match.teamAScore
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                when {
-                    mine > theirs -> TriTag(text = stringResource(Res.string.result_win))
-                    mine < theirs -> TriTag(text = stringResource(Res.string.result_loss), tone = TriTagTone.Danger)
-                    else -> TriTag(text = stringResource(Res.string.result_draw), tone = TriTagTone.Neutral)
-                }
-                TriTag(text = teamName(myTeam.toTri()), tone = TriTagTone.Neutral)
-            }
-        }
-    }
-}
+private fun DrawNochePreview() = ScreenPreview(darkTheme = true) { MatchDrawScreen(state = ClubSamples.matchDetail(MatchStatus.SCHEDULED), onBackClick = {}, onViewTeams = {}) }

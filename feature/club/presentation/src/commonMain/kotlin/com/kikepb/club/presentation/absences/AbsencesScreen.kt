@@ -1,5 +1,8 @@
 package com.kikepb.club.presentation.absences
 
+import com.kikepb.club.presentation.preview.ClubSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -224,3 +227,13 @@ private fun PickRow(text: String, onPick: () -> Unit) {
 }
 
 private fun LocalDate.formatted(): String = "${day.toString().padStart(2, '0')}/${(month.ordinal + 1).toString().padStart(2, '0')}/$year"
+
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "12 Ausencias · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun AbsencesTizaPreview() = ScreenPreview { AbsencesScreen(state = ClubSamples.absences, onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }
+
+@Preview(name = "12 Ausencias · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun AbsencesNochePreview() = ScreenPreview(darkTheme = true) { AbsencesScreen(state = ClubSamples.absences, onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }

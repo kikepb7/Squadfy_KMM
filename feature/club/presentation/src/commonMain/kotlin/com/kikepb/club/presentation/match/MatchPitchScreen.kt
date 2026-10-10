@@ -1,5 +1,9 @@
 package com.kikepb.club.presentation.match
 
+import com.kikepb.club.domain.model.MatchStatus
+import com.kikepb.club.presentation.preview.ClubSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -112,3 +116,13 @@ fun MatchPitchScreen(state: MatchDetailState, onBackClick: () -> Unit) {
         }
     }
 }
+
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "06 Campo · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun PitchTizaPreview() = ScreenPreview { MatchPitchScreen(state = ClubSamples.matchDetail(MatchStatus.SCHEDULED), onBackClick = {}) }
+
+@Preview(name = "06 Campo · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun PitchNochePreview() = ScreenPreview(darkTheme = true) { MatchPitchScreen(state = ClubSamples.matchDetail(MatchStatus.SCHEDULED), onBackClick = {}) }

@@ -1,5 +1,8 @@
 package com.kikepb.chat.presentation.components.manage_chat
 
+import com.kikepb.chat.presentation.preview.ChatSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -121,3 +124,13 @@ fun ManageChatScreen(
         )
     }
 }
+
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "14c Nuevo chat · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun ManageChatTizaPreview() = ScreenPreview { ManageChatScreen(headerText = "Nuevo chat", primaryButtonText = "Crear chat", state = ChatSamples.createChat, onAction = {}) }
+
+@Preview(name = "14c Nuevo chat · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun ManageChatNochePreview() = ScreenPreview(darkTheme = true) { ManageChatScreen(headerText = "Nuevo chat", primaryButtonText = "Crear chat", state = ChatSamples.createChat, onAction = {}) }

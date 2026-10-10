@@ -1,5 +1,8 @@
 package com.kikepb.club.presentation.detail.components
 
+import com.kikepb.club.presentation.preview.ClubSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import squadfy_app.feature.club.presentation.generated.resources.members_count_one
 import squadfy_app.feature.club.presentation.generated.resources.members_count_other
 import squadfy_app.feature.club.presentation.generated.resources.members_empty
@@ -77,3 +80,13 @@ private fun SquadfyClubDetailStaggeredMemberItem(member: ClubMemberModel, index:
         SquadfyClubDetailMemberCard(member = member, onClick = onClick)
     }
 }
+
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "Miembros · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun MembersTizaPreview() = ScreenPreview { SquadfyClubDetailMembersTab(members = ClubSamples.members, onMemberClick = {}) }
+
+@Preview(name = "Miembros · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun MembersNochePreview() = ScreenPreview(darkTheme = true) { SquadfyClubDetailMembersTab(members = ClubSamples.members, onMemberClick = {}) }

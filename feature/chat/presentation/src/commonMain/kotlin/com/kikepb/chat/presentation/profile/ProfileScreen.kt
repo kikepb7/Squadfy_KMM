@@ -1,5 +1,7 @@
 package com.kikepb.chat.presentation.profile
 
+import com.kikepb.chat.presentation.preview.ChatSamples
+import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -347,18 +349,17 @@ fun ProfileScreen(
     }
 }
 
-@Preview
-@Composable
-private fun ProfilePreview() {
-    SquadfyTheme {
-        ProfileScreen(
-            state = ProfileState(),
-            onAction = {}
-        )
-    }
-}
-
 @Composable
 private fun SquadfyLoadingSpinner() {
     androidx.compose.material3.CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Triangulacion.colors.brand)
 }
+
+// Previews (spec 018): Tiza and Noche with the data of the mockups
+
+@Preview(name = "13 Perfil · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun ProfileTizaPreview() = ScreenPreview { ProfileScreen(state = ChatSamples.profile, onAction = {}) }
+
+@Preview(name = "13 Perfil · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun ProfileNochePreview() = ScreenPreview(darkTheme = true) { ProfileScreen(state = ChatSamples.profile, onAction = {}) }
