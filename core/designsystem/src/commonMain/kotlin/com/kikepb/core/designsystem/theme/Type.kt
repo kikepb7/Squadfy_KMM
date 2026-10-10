@@ -6,106 +6,56 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import squadfy_app.core.designsystem.generated.resources.Res
-import squadfy_app.core.designsystem.generated.resources.poppins_bold
-import squadfy_app.core.designsystem.generated.resources.poppins_medium
-import squadfy_app.core.designsystem.generated.resources.poppins_regular
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import com.kikepb.core.designsystem.triangulacion.theme.TriangulacionTypography
 import org.jetbrains.compose.resources.Font
+import squadfy_app.core.designsystem.generated.resources.Res
+import squadfy_app.core.designsystem.generated.resources.bricolagegrotesque_bold
+import squadfy_app.core.designsystem.generated.resources.bricolagegrotesque_extrabold
+import squadfy_app.core.designsystem.generated.resources.bricolagegrotesque_medium
+import squadfy_app.core.designsystem.generated.resources.bricolagegrotesque_semibold
+import squadfy_app.core.designsystem.generated.resources.instrumentsans_bold
+import squadfy_app.core.designsystem.generated.resources.instrumentsans_medium
+import squadfy_app.core.designsystem.generated.resources.instrumentsans_regular
+import squadfy_app.core.designsystem.generated.resources.instrumentsans_semibold
 
-/**
- * Brand kit typeface (spec 016): Poppins (SIL Open Font License 1.1). Bold 700 for headings, Medium 500 for UI and
- * Regular 400 for text; other requested weights (e.g. SemiBold) resolve to the closest available one.
- */
-val Poppins @Composable get() = FontFamily(
-    Font(
-        resource = Res.font.poppins_regular,
-        weight = FontWeight.Normal
-    ),
-    Font(
-        resource = Res.font.poppins_medium,
-        weight = FontWeight.Medium
-    ),
-    Font(
-        resource = Res.font.poppins_bold,
-        weight = FontWeight.Bold
-    ),
+/** Display and figures (spec 018). Bricolage Grotesque, SIL Open Font License 1.1 (see FONTS.md). */
+val BricolageGrotesque @Composable get() = FontFamily(
+    Font(resource = Res.font.bricolagegrotesque_medium, weight = FontWeight.Medium),
+    Font(resource = Res.font.bricolagegrotesque_semibold, weight = FontWeight.SemiBold),
+    Font(resource = Res.font.bricolagegrotesque_bold, weight = FontWeight.Bold),
+    Font(resource = Res.font.bricolagegrotesque_extrabold, weight = FontWeight.ExtraBold),
+)
+
+/** Text and UI (spec 018). Instrument Sans, SIL Open Font License 1.1 (see FONTS.md). */
+val InstrumentSans @Composable get() = FontFamily(
+    Font(resource = Res.font.instrumentsans_regular, weight = FontWeight.Normal),
+    Font(resource = Res.font.instrumentsans_medium, weight = FontWeight.Medium),
+    Font(resource = Res.font.instrumentsans_semibold, weight = FontWeight.SemiBold),
+    Font(resource = Res.font.instrumentsans_bold, weight = FontWeight.Bold),
 )
 
 val Typography.labelXSmall: TextStyle
-    @Composable get() = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 11.sp,
-        lineHeight = 14.sp
-    )
+    @Composable get() = Triangulacion.type.labelCaps
 
 val Typography.titleXSmall: TextStyle
-    @Composable get() = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 14.sp,
-        lineHeight = 18.sp
-    )
+    @Composable get() = Triangulacion.type.title.copy(fontSize = 15.sp, lineHeight = 20.sp)
 
-val Typography @Composable get() = Typography(
-    titleLarge = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 30.sp,
-        lineHeight = 36.sp
-    ),
-    titleMedium = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp,
-        lineHeight = 28.sp
-    ),
-    titleSmall = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 16.sp,
-        lineHeight = 24.sp
-    ),
-    bodyLarge = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.Normal,
-        fontSize = 18.sp,
-        lineHeight = 26.sp
-    ),
-    bodyMedium = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp
-    ),
-    bodySmall = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 20.sp
-    ),
-    labelMedium = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.Medium,
-        fontSize = 16.sp,
-        lineHeight = 24.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 14.sp,
-        lineHeight = 20.sp
-    ),
-    headlineSmall = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 14.sp,
-        lineHeight = 18.sp
-    ),
-    displaySmall = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 11.sp,
-        lineHeight = 14.sp
-    ),
+/** Material 3 roles on the Triangulación scale, for the components that still read `MaterialTheme.typography`. */
+fun squadfyTypography(t: TriangulacionTypography) = Typography(
+    displayLarge = t.statXl,
+    displayMedium = t.displayXl,
+    displaySmall = t.labelCaps,
+    headlineLarge = t.displayLg,
+    headlineMedium = t.displayMd,
+    headlineSmall = t.label,
+    titleLarge = t.displayLg,
+    titleMedium = t.displayMd,
+    titleSmall = t.title,
+    bodyLarge = t.bodyLg,
+    bodyMedium = t.body,
+    bodySmall = t.bodySm,
+    labelLarge = t.label.copy(fontSize = 15.sp, lineHeight = 20.sp),
+    labelMedium = t.label.copy(fontSize = 15.sp, lineHeight = 20.sp),
+    labelSmall = t.label,
 )

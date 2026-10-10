@@ -39,8 +39,7 @@ import com.kikepb.club.domain.model.ClubModel
 import com.kikepb.club.presentation.mapper.initialsOf
 import com.kikepb.core.designsystem.components.avatar.AvatarSize
 import com.kikepb.core.designsystem.components.avatar.SquadfyAvatarPhoto
-import com.kikepb.core.designsystem.theme.SquadfyBrand1000
-import com.kikepb.core.designsystem.theme.SquadfyBrand900
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 
 @Composable
 fun SquadfyClubDetailBanner(club: ClubModel, modifier: Modifier = Modifier) {
@@ -59,7 +58,7 @@ fun SquadfyClubDetailBanner(club: ClubModel, modifier: Modifier = Modifier) {
                 .background(
                     brush = Brush.linearGradient(
                         // Night Pitch → Squad Green (spec 016): the white texts stay AA; lime is only an accent
-                        colors = listOf(SquadfyBrand1000, SquadfyBrand900)
+                        colors = listOf(Triangulacion.colors.surfaceInverse, Triangulacion.colors.surfaceInverse)
                     )
                 )
         ) {

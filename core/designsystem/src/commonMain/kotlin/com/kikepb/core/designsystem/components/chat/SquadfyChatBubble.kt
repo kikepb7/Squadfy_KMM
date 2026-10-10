@@ -105,7 +105,7 @@ private fun SquadfyChatBubbleLeftPreview() {
             sender = "Enrique",
             formattedDateTime = "Monday 2:40pm",
             trianglePosition = LEFT,
-            color = MaterialTheme.colorScheme.extended.cakeGreen
+            color = MaterialTheme.colorScheme.surface
         )
     }
 }

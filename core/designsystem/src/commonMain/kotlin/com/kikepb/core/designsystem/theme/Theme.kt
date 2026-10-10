@@ -8,6 +8,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.kikepb.core.designsystem.triangulacion.theme.NocheColors
+import com.kikepb.core.designsystem.triangulacion.theme.TizaColors
+import com.kikepb.core.designsystem.triangulacion.theme.TriangulacionColors
 
 val LocalExtendedColors = staticCompositionLocalOf { LightExtendedColors }
 
@@ -16,9 +19,12 @@ val ColorScheme.extended: ExtendedColors
     @Composable
     get() = LocalExtendedColors.current
 
+/**
+ * Roles the app used before Triangulación (spec 018), now mapped to its tokens so every screen follows Tiza and
+ * Noche. New code reads `Triangulacion.colors` directly.
+ */
 @Immutable
 data class ExtendedColors(
-    // Button states
     val primaryHover: Color,
     val destructiveHover: Color,
     val destructiveSecondaryOutline: Color,
@@ -29,215 +35,102 @@ data class ExtendedColors(
     val onSuccess: Color,
     val secondaryFill: Color,
 
-    // Text variants
     val textPrimary: Color,
     val textTertiary: Color,
     val textSecondary: Color,
     val textPlaceholder: Color,
     val textDisabled: Color,
 
-    // Surface variants
     val surfaceLower: Color,
     val surfaceHigher: Color,
     val surfaceOutline: Color,
     val overlay: Color,
 
-    // Accent colors
-    val accentBlue: Color,
-    val accentPurple: Color,
-    val accentViolet: Color,
-    val accentPink: Color,
-    val accentOrange: Color,
-    val accentYellow: Color,
-    val accentGreen: Color,
-    val accentTeal: Color,
-    val accentLightBlue: Color,
-    val accentGrey: Color,
-
-    // Disciplinary card colors
     val yellowCardBackground: Color,
     val yellowCardText: Color,
     val redCardBackground: Color,
     val redCardText: Color,
-
-    // Cake colors for chat bubbles
-    val cakeViolet: Color,
-    val cakeGreen: Color,
-    val cakeBlue: Color,
-    val cakePink: Color,
-    val cakeOrange: Color,
-    val cakeYellow: Color,
-    val cakeTeal: Color,
-    val cakePurple: Color,
-    val cakeRed: Color,
-    val cakeMint: Color,
 )
 
-val LightExtendedColors = ExtendedColors(
-    primaryHover = SquadfyBrand600,
-    destructiveHover = SquadfyRed600,
-    destructiveSecondaryOutline = SquadfyRed200,
-    disabledOutline = SquadfyBase200,
-    disabledFill = SquadfyBase150,
-    successOutline = SquadfyBrand100,
-    // Kit semantic success = Squad Green (lime is never text on light)
-    success = SquadfyBrand900,
-    onSuccess = SquadfyBase0,
-    secondaryFill = SquadfyBase100,
+private fun TriangulacionColors.toExtended() = ExtendedColors(
+    primaryHover = brand,
+    destructiveHover = danger,
+    destructiveSecondaryOutline = danger,
+    disabledOutline = line,
+    disabledFill = surface300,
+    successOutline = accentText,
+    success = accentText,
+    onSuccess = onBrand,
+    secondaryFill = surface300,
 
-    textPrimary = SquadfyBase1000,
-    textTertiary = SquadfyBase800,
-    textSecondary = SquadfyBase900,
-    textPlaceholder = SquadfyBase700,
-    textDisabled = SquadfyBase400,
+    textPrimary = ink,
+    textTertiary = inkMuted,
+    textSecondary = inkMuted,
+    textPlaceholder = inkSubtle,
+    textDisabled = inkSubtle,
 
-    surfaceLower = SquadfyBase100,
-    surfaceHigher = SquadfyBase100,
-    surfaceOutline = SquadfyBase1000Alpha14,
-    overlay = SquadfyBase1000Alpha80,
+    surfaceLower = surface100,
+    surfaceHigher = surface300,
+    surfaceOutline = line,
+    overlay = scrim,
 
-    accentBlue = SquadfyBlue,
-    accentPurple = SquadfyPurple,
-    accentViolet = SquadfyViolet,
-    accentPink = SquadfyPink,
-    accentOrange = SquadfyOrange,
-    accentYellow = SquadfyYellow,
-    accentGreen = SquadfyGreen,
-    accentTeal = SquadfyTeal,
-    accentLightBlue = SquadfyLightBlue,
-    accentGrey = SquadfyGrey,
-
-    yellowCardBackground = SquadfyYellowCardBgLight,
-    yellowCardText = SquadfyYellowCardTextLight,
-    redCardBackground = SquadfyRedCardBgLight,
-    redCardText = SquadfyRedCardTextLight,
-
-    cakeViolet = SquadfyCakeLightViolet,
-    cakeGreen = SquadfyCakeLightGreen,
-    cakeBlue = SquadfyCakeLightBlue,
-    cakePink = SquadfyCakeLightPink,
-    cakeOrange = SquadfyCakeLightOrange,
-    cakeYellow = SquadfyCakeLightYellow,
-    cakeTeal = SquadfyCakeLightTeal,
-    cakePurple = SquadfyCakeLightPurple,
-    cakeRed = SquadfyCakeLightRed,
-    cakeMint = SquadfyCakeLightMint,
+    yellowCardBackground = cardYellow,
+    yellowCardText = onVolt,
+    redCardBackground = cardRed,
+    // White reaches AA on the Tiza red; on the lighter Noche red the dark ink does
+    redCardText = if (isDark) onVolt else Color.White,
 )
 
-val DarkExtendedColors = ExtendedColors(
-    primaryHover = SquadfyBrand600,
-    destructiveHover = SquadfyRed600,
-    destructiveSecondaryOutline = SquadfyRed200,
-    disabledOutline = SquadfyDark900,
-    disabledFill = SquadfyDark1000,
-    successOutline = SquadfyBrand500Alpha40,
-    success = SquadfyBrand500,
-    onSuccess = SquadfyBase1000,
-    secondaryFill = SquadfyDark900,
+val LightExtendedColors = TizaColors.toExtended()
+val DarkExtendedColors = NocheColors.toExtended()
 
-    textPrimary = SquadfyBase100, // Chalk: text on dark (brand kit)
-    textTertiary = SquadfyBase200,
-    textSecondary = SquadfyBase150,
-    textPlaceholder = SquadfyBase400,
-    textDisabled = SquadfyBase500,
+/** Material 3 roles from the tokens: screens on surface-100, cards and sheets on surface-200, sunken on surface-300. */
+private fun TriangulacionColors.toColorScheme(): ColorScheme {
+    val scheme = if (isDark) darkColorScheme() else lightColorScheme()
+    return scheme.copy(
+        primary = brand,
+        onPrimary = onBrand,
+        primaryContainer = successSoft,
+        onPrimaryContainer = accentText,
+        inversePrimary = volt,
 
-    surfaceLower = SquadfyDark1000,
-    surfaceHigher = SquadfyDark900,
-    surfaceOutline = SquadfyBase100Alpha10Alt,
-    overlay = SquadfyDark1000Alpha80,
+        secondary = volt,
+        onSecondary = onVolt,
+        secondaryContainer = surface300,
+        onSecondaryContainer = ink,
 
-    accentBlue = SquadfyBlue,
-    accentPurple = SquadfyPurple,
-    accentViolet = SquadfyViolet,
-    accentPink = SquadfyPink,
-    accentOrange = SquadfyOrange,
-    accentYellow = SquadfyYellow,
-    accentGreen = SquadfyGreen,
-    accentTeal = SquadfyTeal,
-    accentLightBlue = SquadfyLightBlue,
-    accentGrey = SquadfyGrey,
+        tertiary = accentText,
+        onTertiary = surface100,
+        tertiaryContainer = successSoft,
+        onTertiaryContainer = accentText,
 
-    yellowCardBackground = SquadfyYellowCardBgDark,
-    yellowCardText = SquadfyYellowCardTextDark,
-    redCardBackground = SquadfyRedCardBgDark,
-    redCardText = SquadfyRedCardTextDark,
+        error = danger,
+        onError = surface100,
+        errorContainer = dangerSoft,
+        onErrorContainer = danger,
 
-    cakeViolet = SquadfyCakeDarkViolet,
-    cakeGreen = SquadfyCakeDarkGreen,
-    cakeBlue = SquadfyCakeDarkBlue,
-    cakePink = SquadfyCakeDarkPink,
-    cakeOrange = SquadfyCakeDarkOrange,
-    cakeYellow = SquadfyCakeDarkYellow,
-    cakeTeal = SquadfyCakeDarkTeal,
-    cakePurple = SquadfyCakeDarkPurple,
-    cakeRed = SquadfyCakeDarkRed,
-    cakeMint = SquadfyCakeDarkMint,
-)
+        background = surface100,
+        onBackground = ink,
+        surface = surface200,
+        onSurface = ink,
+        surfaceVariant = surface300,
+        onSurfaceVariant = inkMuted,
+        surfaceTint = Color.Transparent,
+        surfaceBright = surface200,
+        surfaceDim = surface300,
+        surfaceContainerLowest = surface200,
+        surfaceContainerLow = surface200,
+        surfaceContainer = surface200,
+        surfaceContainerHigh = surface200,
+        surfaceContainerHighest = surface300,
+        inverseSurface = surfaceInverse,
+        inverseOnSurface = onInverse,
 
-val LightColorScheme = lightColorScheme(
-    // D-12 / AC-011-11: on white, the mint (Brand500) only reached 1.70:1 as text. The light scheme uses the
-    // darker brand tone (6.96:1 as text, white content inside buttons); the dark scheme keeps the mint.
-    primary = SquadfyBrand900,
-    onPrimary = SquadfyBase0,
-    primaryContainer = SquadfyBrand100,
-    onPrimaryContainer = SquadfyBrand900,
+        outline = lineStrong,
+        outlineVariant = line,
+        scrim = scrim,
+    )
+}
 
-    secondary = SquadfyBase700,
-    onSecondary = SquadfyBase0,
-    secondaryContainer = SquadfyBase100,
-    onSecondaryContainer = SquadfyBase900,
-
-    tertiary = SquadfyBrand900,
-    onTertiary = SquadfyBase0,
-    tertiaryContainer = SquadfyBrand100,
-    onTertiaryContainer = SquadfyBrand1000,
-
-    error = SquadfyRed500,
-    onError = SquadfyBase0,
-    errorContainer = SquadfyRed200,
-    onErrorContainer = SquadfyRed600,
-
-    background = SquadfyBrand1000,
-    onBackground = SquadfyBase0,
-    surface = SquadfyBase0,
-    onSurface = SquadfyBase1000,
-    surfaceVariant = SquadfyBase100,
-    onSurfaceVariant = SquadfyBase900,
-
-    outline = SquadfyBase1000Alpha8,
-    outlineVariant = SquadfyBase200,
-)
-
-val DarkColorScheme = darkColorScheme(
-    primary = SquadfyBrand500,
-    onPrimary = SquadfyBrand1000,
-    primaryContainer = SquadfyBrand900,
-    onPrimaryContainer = SquadfyBrand500,
-
-    secondary = SquadfyBase400,
-    onSecondary = SquadfyBase1000,
-    secondaryContainer = SquadfyDark900,
-    onSecondaryContainer = SquadfyBase150,
-
-    tertiary = SquadfyBrand500,
-    onTertiary = SquadfyBase1000,
-    tertiaryContainer = SquadfyBrand900,
-    onTertiaryContainer = SquadfyBrand500,
-
-    // AC-011-11: Red500 reached only 2.98:1 as error text on the dark surface. Like primary, the dark scheme
-    // uses the light accent with dark content: 5.79:1 as text, 6.84:1 inside destructive buttons.
-    error = SquadfyRed200,
-    onError = SquadfyBase1000,
-    errorContainer = SquadfyRed600,
-    onErrorContainer = SquadfyRed200,
-
-    background = SquadfyDark1000,
-    onBackground = SquadfyBase0,
-    surface = SquadfyDark950,
-    onSurface = SquadfyBase0,
-    surfaceVariant = SquadfyDark900,
-    onSurfaceVariant = SquadfyBase150,
-
-    outline = SquadfyBase100Alpha10,
-    outlineVariant = SquadfyDark800,
-)
+val LightColorScheme = TizaColors.toColorScheme()
+val DarkColorScheme = NocheColors.toColorScheme()

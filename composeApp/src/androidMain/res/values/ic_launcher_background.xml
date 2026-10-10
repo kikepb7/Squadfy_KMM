@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#0A2E22</color>
+    <!-- Spec 018: Volt behind the app icon; the splash uses the inverse surface -->
+    <color name="ic_launcher_background">#C5F65A</color>
+    <color name="splash_background">#0E1A12</color>
 </resources>

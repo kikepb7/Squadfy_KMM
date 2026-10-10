@@ -1,30 +1,61 @@
 package com.kikepb.core.designsystem.components.brand
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import squadfy_app.core.designsystem.generated.resources.Res
-import squadfy_app.core.designsystem.generated.resources.squadfy_isotipo
-import squadfy_app.core.designsystem.generated.resources.squadfy_isotipo_reverse
+import squadfy_app.core.designsystem.generated.resources.app_name
+import squadfy_app.core.designsystem.generated.resources.squadfy_mark
+import squadfy_app.core.designsystem.generated.resources.squadfy_mark_inverse
+import squadfy_app.core.designsystem.generated.resources.squadfy_wordmark
 
 /**
- * The Squadfy isotype (brand kit, spec 016): the "color" version on light backgrounds and the "reverse" one on
- * dark ones, as the kit prescribes. By default it follows `surface`; screens that draw it on `background` (the
- * auth header, dark in both themes) pass [onDarkBackground]. Callers can shrink it; by default it is at most 40 dp tall.
+ * The Corte mark (spec 018): ink container on light backgrounds, the inverse (Volt container) on dark ones. By
+ * default it follows the theme; a dark block in the light theme (welcome, ticket) passes [onDarkBackground].
  */
 @Composable
 fun SquadfyBrandLogo(
     modifier: Modifier = Modifier,
-    onDarkBackground: Boolean = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    size: Dp = 40.dp,
+    onDarkBackground: Boolean = Triangulacion.colors.isDark
 ) {
     Image(
-        painter = painterResource(if (onDarkBackground) Res.drawable.squadfy_isotipo_reverse else Res.drawable.squadfy_isotipo),
+        painter = painterResource(if (onDarkBackground) Res.drawable.squadfy_mark_inverse else Res.drawable.squadfy_mark),
         contentDescription = null,
-        modifier = modifier.sizeIn(maxWidth = 38.dp, maxHeight = 40.dp)
+        modifier = modifier.size(size)
     )
+}
+
+/** Mark plus the lowercase wordmark, the lockup of the welcome and login screens. */
+@Composable
+fun SquadfyBrandLockup(
+    modifier: Modifier = Modifier,
+    markSize: Dp = 40.dp,
+    onDarkBackground: Boolean = Triangulacion.colors.isDark
+) {
+    val colors = Triangulacion.colors
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(markSize * 0.3f)
+    ) {
+        SquadfyBrandLogo(size = markSize, onDarkBackground = onDarkBackground)
+        Image(
+            painter = painterResource(Res.drawable.squadfy_wordmark),
+            contentDescription = stringResource(Res.string.app_name),
+            colorFilter = ColorFilter.tint(if (onDarkBackground) colors.onInverse else colors.ink),
+            modifier = Modifier.height(markSize * 0.82f)
+        )
+    }
 }
