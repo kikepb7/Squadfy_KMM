@@ -13,7 +13,7 @@
 - [x] **T-006** Inicio: ticket, Apuntarme, tus clubs y última jornada (AC-018-06).
 - [x] **T-007** Club: cabecera, pestañas, Partido con estados de inscripción y ajustes tras el botón (AC-018-06).
 - [x] **T-008** Equipos: campo con jugadores, equilibrio y lista (AC-018-07).
-- [ ] **T-009** Acta: marcador y cronología (AC-018-06).
+- [x] **T-009** Acta: marcador y cronología (AC-018-06).
 - [ ] **T-010** Tabla y ficha del jugador (AC-018-06).
 - [ ] **T-011** Unirse, crear club, horario, ausencias y vetos (AC-018-06).
 - [ ] **T-012** Perfil (pantalla completa) y chat (AC-018-06).

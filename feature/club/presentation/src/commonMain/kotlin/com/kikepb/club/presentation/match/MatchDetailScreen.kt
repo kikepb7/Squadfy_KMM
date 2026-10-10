@@ -1,5 +1,54 @@
 package com.kikepb.club.presentation.match
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
+import com.kikepb.club.domain.model.MatchModel
+import com.kikepb.club.presentation.mapper.toTimelineKind
+import com.kikepb.club.presentation.mapper.toTri
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarBackButton
+import com.kikepb.core.designsystem.triangulacion.components.PosChip
+import com.kikepb.core.designsystem.triangulacion.components.RatingDelta
+import com.kikepb.core.designsystem.triangulacion.components.Scoreboard
+import com.kikepb.core.designsystem.triangulacion.components.TeamBadge
+import com.kikepb.core.designsystem.triangulacion.components.TeamBalance
+import com.kikepb.core.designsystem.triangulacion.components.Timeline
+import com.kikepb.core.designsystem.triangulacion.components.TimelineEvent
+import com.kikepb.core.designsystem.triangulacion.components.TimelineEventIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriAvatar
+import com.kikepb.core.designsystem.triangulacion.components.TriButton
+import com.kikepb.core.designsystem.triangulacion.components.TriButtonVariant
+import com.kikepb.core.designsystem.triangulacion.components.TriCaps
+import com.kikepb.core.designsystem.triangulacion.components.TriCard
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriIconView
+import com.kikepb.core.designsystem.triangulacion.components.TriNotice
+import com.kikepb.core.designsystem.triangulacion.components.TriNoticeTone
+import com.kikepb.core.designsystem.triangulacion.components.TriRoundIconButton
+import com.kikepb.core.designsystem.triangulacion.components.TriSectionTitle
+import com.kikepb.core.designsystem.triangulacion.components.TriTag
+import com.kikepb.core.designsystem.triangulacion.components.TriTagTone
+import com.kikepb.core.designsystem.triangulacion.components.TriTextButton
+import com.kikepb.core.designsystem.triangulacion.format.TriDates
+import com.kikepb.core.designsystem.triangulacion.format.formatClubTime
+import com.kikepb.core.designsystem.triangulacion.format.formatLongDayCaps
+import com.kikepb.core.designsystem.triangulacion.theme.Radius
+import com.kikepb.core.designsystem.triangulacion.theme.Space
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import com.kikepb.core.designsystem.triangulacion.theme.tabular
+import squadfy_app.core.designsystem.generated.resources.Res as DesignRes
+import squadfy_app.core.designsystem.generated.resources.tri_team_a
+import squadfy_app.core.designsystem.generated.resources.tri_team_b
+import squadfy_app.feature.club.presentation.generated.resources.match_status_to_close
+import squadfy_app.feature.club.presentation.generated.resources.match_team_count
+import squadfy_app.feature.club.presentation.generated.resources.match_timeline_delete_hint
+import squadfy_app.feature.club.presentation.generated.resources.match_timeline_title
 import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import com.kikepb.club.presentation.components.LoadErrorCard
 import androidx.compose.foundation.clickable
@@ -181,8 +230,16 @@ fun MatchDetailScreen(
     snackbarHostState: SnackbarHostState
 ) {
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
-        topBar = { SquadfyTopBar(title = stringResource(Res.string.match_title), onBackClick = onBackClick) },
+        containerColor = Triangulacion.colors.surface100,
+        topBar = {
+            SquadfyTopBar(
+                title = {
+                    Text(text = stringResource(Res.string.match_title), style = Triangulacion.type.displayMd, color = Triangulacion.colors.ink, maxLines = 1)
+                },
+                navigationIcon = { SquadfyTopBarBackButton(onClick = onBackClick) },
+                actions = { state.match?.let { StatusTag(it, state) } }
+            )
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         PullToRefreshBox(
@@ -192,10 +249,12 @@ fun MatchDetailScreen(
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(Space.s4),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                if (state.isStale) item(key = "stale") { HintText(text = stringResource(Res.string.match_offline)) }
+                if (state.isStale) item(key = "stale") {
+                    TriNotice(title = stringResource(Res.string.match_offline), tone = TriNoticeTone.Warn, icon = TriIcon.Alert)
+                }
                 if (state.match == null) {
                     if (state.loadFailed) item(key = "error") { LoadErrorCard(onRetry = { onAction(MatchDetailAction.OnRefresh) }) }
                     else item(key = "loading") { SquadfyLoadingIndicator() }
@@ -207,15 +266,24 @@ fun MatchDetailScreen(
                 }
                 if (state.canRecord) {
                     item(key = "report-toggle") {
-                        OutlinedButton(onClick = { onAction(MatchDetailAction.OnToggleReport) }, enabled = state.editing == null, modifier = Modifier.fillMaxWidth()) {
-                            Text(text = stringResource(if (state.reportMode) Res.string.match_report_mode_exit else Res.string.match_report_mode))
-                        }
+                        TriButton(
+                            text = stringResource(if (state.reportMode) Res.string.match_report_mode_exit else Res.string.match_report_mode),
+                            onClick = { onAction(MatchDetailAction.OnToggleReport) },
+                            variant = TriButtonVariant.Secondary,
+                            icon = if (state.reportMode) TriIcon.Check else TriIcon.Whistle,
+                            enabled = state.editing == null,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
-                matchTeamsSection(state = state, onAction = onAction)
                 if (state.match.events.isNotEmpty() || state.reportMode) item(key = "events") { EventsCard(state = state, onAction = onAction) }
+                matchTeamsSection(state = state, onAction = onAction)
                 state.visibleBalance?.let { balance ->
-                    item(key = "balance") { BalancePanel(balance = balance, state = state) }
+                    item(key = "balance") {
+                        TriCard(modifier = Modifier.fillMaxWidth(), contentPadding = Space.s5) {
+                            TeamBalance(ratingA = balance.teamA.averageRating, ratingB = balance.teamB.averageRating, expectedA = balance.teamAExpectedScore.toFloat())
+                        }
+                    }
                 }
                 if (state.canComplete || state.canReopen || state.canCancel) item(key = "cycle") { CycleActions(state = state, onAction = onAction) }
             }
@@ -226,25 +294,30 @@ fun MatchDetailScreen(
 }
 
 @Composable
+private fun StatusTag(match: MatchModel, state: MatchDetailState) {
+    when {
+        match.status == MatchStatus.COMPLETED -> TriTag(text = stringResource(match.status.label))
+        match.status == MatchStatus.CANCELLED -> TriTag(text = stringResource(match.status.label), tone = TriTagTone.Danger)
+        state.canComplete -> TriTag(text = stringResource(Res.string.match_status_to_close), tone = TriTagTone.Warn)
+        else -> TriTag(text = stringResource(match.status.label), tone = TriTagTone.Neutral)
+    }
+}
+
+@Composable
 private fun MatchHeader(state: MatchDetailState) {
     val match = state.match ?: return
-    SectionCard {
-        Text(
-            text = formatDateTime(match.scheduledAt, state.timeZoneId),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.extended.textPrimary
-        )
+    val local = TriDates.local(match.scheduledAt, state.timeZoneId)
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        TriCaps(text = "${formatLongDayCaps(local.date)} · ${formatClubTime(match.scheduledAt, state.timeZoneId)}", color = Triangulacion.colors.ink)
         val details = listOfNotNull(
             state.format?.let { stringResource(it.label) },
             stringResource(Res.string.match_duration, match.durationMinutes)
         ).joinToString(" · ")
-        HintText(text = details)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            AssistChip(onClick = {}, label = { Text(text = stringResource(match.status.label)) })
-            when (state.myTeam) {
-                Team.A -> AssistChip(onClick = {}, label = { Text(text = stringResource(Res.string.match_my_team_a)) })
-                Team.B -> AssistChip(onClick = {}, label = { Text(text = stringResource(Res.string.match_my_team_b)) })
-                null -> Unit
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            HintText(text = details)
+            state.myTeam?.let { team ->
+                TeamBadge(team.toTri(), size = 18.dp)
+                HintText(text = stringResource(if (team == Team.A) Res.string.match_my_team_a else Res.string.match_my_team_b))
             }
         }
     }
@@ -254,17 +327,14 @@ private fun androidx.compose.foundation.lazy.LazyListScope.matchTeamsSection(sta
     val pending = state.pending
     if (pending != null) {
         item(key = "pending") {
-            SectionCard {
-                Text(
-                    text = when (pending) {
-                        is TeamsPending.AtClose -> stringResource(Res.string.match_teams_at_close, formatDateTime(pending.closesAt, state.timeZoneId))
-                        is TeamsPending.AtDraw -> stringResource(Res.string.match_teams_at_draw, formatDateTime(pending.drawAt, state.timeZoneId))
-                        TeamsPending.Pending -> stringResource(Res.string.match_teams_pending)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.extended.textSecondary
-                )
-            }
+            TriNotice(
+                title = when (pending) {
+                    is TeamsPending.AtClose -> stringResource(Res.string.match_teams_at_close, formatDateTime(pending.closesAt, state.timeZoneId))
+                    is TeamsPending.AtDraw -> stringResource(Res.string.match_teams_at_draw, formatDateTime(pending.drawAt, state.timeZoneId))
+                    TeamsPending.Pending -> stringResource(Res.string.match_teams_pending)
+                },
+                icon = TriIcon.Shuffle
+            )
         }
     } else {
         item(key = "team-a") { TeamCard(team = Team.A, players = state.teamA, state = state, onAction = onAction) }
@@ -276,17 +346,27 @@ private fun androidx.compose.foundation.lazy.LazyListScope.matchTeamsSection(sta
 @Composable
 private fun TeamCard(team: Team, players: List<TeamPlayer>, state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
     val isMine = state.myTeam == team
-    SectionCard {
-        SectionTitle(text = stringResource(if (team == Team.A) Res.string.match_team_a else Res.string.match_team_b) + " · ${players.size}")
+    val colors = Triangulacion.colors
+    TriCard(modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TeamBadge(team.toTri(), size = 22.dp)
+            Text(
+                text = stringResource(Res.string.match_team_count, stringResource(if (team == Team.A) Res.string.match_team_a else Res.string.match_team_b), players.size),
+                style = Triangulacion.type.title,
+                color = if (team == Team.A) colors.teamAText else colors.teamBText
+            )
+        }
         if (state.editing != null) PositionsSummary(players = players)
+        Spacer(Modifier.height(6.dp))
         // Grouped by position (AC-006-01): goalkeepers first, players without position last
         players.sortedBy { it.position?.ordinal ?: Int.MAX_VALUE }.forEach { player ->
             PlayerRow(
                 player = player,
+                team = team,
                 highlighted = isMine && player.isMe,
                 editing = state.editing != null,
                 onClick = { onAction(MatchDetailAction.OnMovePlayer(player.id)) },
-                stats = playerStats(player = player, state = state),
+                state = state,
                 ratingChange = state.match?.ratingChanges?.get(player.id)?.takeIf { !player.isGuest }
             )
             // Guests have no stats (BE-008 RN-A6): only members get report controls
@@ -305,41 +385,58 @@ private fun PositionsSummary(players: List<TeamPlayer>) {
 }
 
 @Composable
-private fun PlayerRow(player: TeamPlayer, highlighted: Boolean, editing: Boolean, onClick: () -> Unit, stats: String? = null, ratingChange: Int? = null) {
+private fun PlayerRow(
+    player: TeamPlayer,
+    team: Team,
+    highlighted: Boolean,
+    editing: Boolean,
+    onClick: () -> Unit,
+    state: MatchDetailState,
+    ratingChange: Int? = null
+) {
+    val colors = Triangulacion.colors
     val name = player.name ?: stringResource(Res.string.former_member)
-    Surface(
-        modifier = Modifier.fillMaxWidth().then(if (editing) Modifier.clickable(onClick = onClick) else Modifier),
-        shape = RoundedCornerShape(12.dp),
-        color = if (highlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.sm))
+            .background(if (highlighted) colors.successSoft else Color.Transparent)
+            .then(if (editing) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 6.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            SquadfyAvatarPhoto(displayText = initialsOf(name), imageUrl = player.profilePictureUrl)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = name, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
-                val details = listOfNotNull(
-                    player.shirtNumber?.let { "#$it" },
-                    player.position?.let { stringResource(it.label) },
-                    stringResource(Res.string.match_guest).takeIf { player.isGuest }
-                ).joinToString(" · ")
-                if (details.isNotBlank()) HintText(text = details)
-            }
-            stats?.let { Text(text = it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.extended.textSecondary) }
-            // AC-008-08: match rating, green when it goes up and red when it goes down
-            ratingChange?.let { change ->
-                Text(
-                    text = if (change > 0) "+$change" else "$change",
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                    color = if (change >= 0) MaterialTheme.colorScheme.extended.success else MaterialTheme.colorScheme.error
-                )
-            }
-            if (editing) {
-                Icon(imageVector = Icons.AutoMirrored.Outlined.CompareArrows, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            }
+        TriAvatar(name = name, imageUrl = player.profilePictureUrl, size = 36.dp, team = team.toTri().takeIf { player.profilePictureUrl == null }, isMe = highlighted)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = name, style = Triangulacion.type.label.copy(fontSize = Triangulacion.type.body.fontSize), color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            val details = listOfNotNull(
+                player.shirtNumber?.let { "#$it" },
+                stringResource(Res.string.match_guest).takeIf { player.isGuest }
+            ).joinToString(" · ")
+            if (details.isNotBlank()) HintText(text = details)
         }
+        player.position.toTri()?.let { PosChip(it) }
+        EventCounts(player = player, state = state)
+        // AC-008-08: match rating, with its glyph and number
+        ratingChange?.let { RatingDelta(it) }
+        if (editing) TriIconView(icon = TriIcon.Swap, contentDescription = null, size = 20.dp, tint = colors.brand)
+    }
+}
+
+/** Goals, assists and cards of a player as glyphs with counts; minutes in report mode or once completed. */
+@Composable
+private fun EventCounts(player: TeamPlayer, state: MatchDetailState) {
+    val match = state.match ?: return
+    if (player.isGuest) return
+    val counts = match.events.filter { it.clubMemberId == player.id }.groupingBy { it.type }.eachCount()
+    val showMinutes = state.reportMode || match.status == MatchStatus.COMPLETED
+    if (counts.isEmpty() && !showMinutes) return
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        counts.entries.sortedBy { it.key.ordinal }.forEach { (type, count) ->
+            TimelineEventIcon(kind = type.toTimelineKind(), modifier = Modifier.size(24.dp))
+            if (count > 1) Text(text = count.toString(), style = Triangulacion.type.label.tabular, color = Triangulacion.colors.ink)
+        }
+        if (showMinutes) Text(text = stringResource(Res.string.match_minutes_value, match.minutesOf(player.id)), style = Triangulacion.type.bodySm.tabular, color = Triangulacion.colors.inkMuted)
     }
 }
 
@@ -348,68 +445,39 @@ private fun RectifyActions(state: MatchDetailState, onAction: (MatchDetailAction
     val editing = state.editing
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (editing == null) {
-            SquadfyButton(
+            TriButton(
                 text = stringResource(Res.string.match_redraw),
                 onClick = { onAction(MatchDetailAction.OnRedrawClick) },
+                icon = TriIcon.Shuffle,
                 isLoading = state.isWorking,
                 modifier = Modifier.fillMaxWidth()
             )
-            OutlinedButton(onClick = { onAction(MatchDetailAction.OnStartManualEdit) }, enabled = !state.isWorking, modifier = Modifier.fillMaxWidth()) {
-                Text(text = stringResource(Res.string.match_manual_edit))
-            }
+            TriButton(
+                text = stringResource(Res.string.match_manual_edit),
+                onClick = { onAction(MatchDetailAction.OnStartManualEdit) },
+                variant = TriButtonVariant.Secondary,
+                icon = TriIcon.Edit,
+                enabled = !state.isWorking,
+                modifier = Modifier.fillMaxWidth()
+            )
         } else {
-            HintText(text = stringResource(if (editing.isValid) Res.string.match_manual_hint else Res.string.match_manual_invalid))
-            SquadfyButton(
+            TriNotice(
+                title = stringResource(if (editing.isValid) Res.string.match_manual_hint else Res.string.match_manual_invalid),
+                tone = if (editing.isValid) TriNoticeTone.Info else TriNoticeTone.Warn
+            )
+            TriButton(
                 text = stringResource(Res.string.match_save_teams),
                 onClick = { onAction(MatchDetailAction.OnSaveManualEdit) },
                 enabled = editing.isValid,
                 isLoading = state.isWorking,
                 modifier = Modifier.fillMaxWidth()
             )
-            SquadfyButton(
+            TriButton(
                 text = stringResource(Res.string.common_cancel),
                 onClick = { onAction(MatchDetailAction.OnCancelManualEdit) },
-                style = SquadfyButtonStyle.SECONDARY,
+                variant = TriButtonVariant.Secondary,
                 modifier = Modifier.fillMaxWidth()
             )
-        }
-    }
-}
-
-@Composable
-private fun BalancePanel(balance: TeamBalanceModel, state: MatchDetailState) {
-    SectionCard {
-        SectionTitle(text = stringResource(Res.string.match_balance_title))
-        val percentA = (balance.teamAExpectedScore * 100).roundToInt().coerceIn(0, 100)
-        Text(
-            text = stringResource(Res.string.match_balance_expected, "$percentA %", "${100 - percentA} %"),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.extended.textPrimary
-        )
-        LinearProgressIndicator(progress = { percentA / 100f }, modifier = Modifier.fillMaxWidth().height(8.dp))
-        TeamStrength(name = stringResource(Res.string.match_team_a), strength = balance.teamA, state = state)
-        TeamStrength(name = stringResource(Res.string.match_team_b), strength = balance.teamB, state = state)
-    }
-}
-
-@Composable
-private fun TeamStrength(name: String, strength: TeamStrengthModel, state: MatchDetailState) {
-    Column(modifier = Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(
-            text = stringResource(Res.string.match_balance_team, name, strength.averageRating, strength.totalRating),
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-        )
-        strength.playerRatings.forEach { rating ->
-            val player = state.player(rating.id, rating.isGuest)
-            val label = if (rating.isGuest) {
-                "${player.name.orEmpty()} · " + stringResource(Res.string.match_balance_guest, rating.rating)
-            } else {
-                "${player.name ?: stringResource(Res.string.former_member)} · ${rating.rating}"
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Surface(modifier = Modifier.size(6.dp), shape = RoundedCornerShape(3.dp), color = MaterialTheme.colorScheme.primary) {}
-                HintText(text = label)
-            }
         }
     }
 }
@@ -422,131 +490,135 @@ val MatchEventType.label
         MatchEventType.RED_CARD -> Res.string.match_event_red
     }
 
-private val MatchEventType.symbol: String
-    get() = when (this) {
-        MatchEventType.GOAL -> "⚽"
-        MatchEventType.ASSIST -> "🅰️"
-        MatchEventType.YELLOW_CARD -> "🟨"
-        MatchEventType.RED_CARD -> "🟥"
-    }
-
-/** "⚽2 🟨 · 45 min": events plus the minutes in report mode or once completed. */
-@Composable
-private fun playerStats(player: TeamPlayer, state: MatchDetailState): String? {
-    val match = state.match ?: return null
-    if (player.isGuest) return null
-    val events = match.events.filter { it.clubMemberId == player.id }
-        .groupingBy { it.type }.eachCount().entries
-        .joinToString(" ") { (type, count) -> if (count > 1) "${type.symbol}$count" else type.symbol }
-    val showMinutes = state.reportMode || match.status == MatchStatus.COMPLETED
-    val minutes = if (showMinutes) stringResource(Res.string.match_minutes_value, match.minutesOf(player.id)) else null
-    return listOf(events, minutes).filter { !it.isNullOrBlank() }.joinToString(" · ").ifBlank { null }
-}
-
+/** Report mode (AC-007-01): one chip per event type with its glyph, plus the minutes. */
 @Composable
 private fun ReportControls(player: TeamPlayer, state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
     val match = state.match ?: return
     Row(
-        modifier = Modifier.fillMaxWidth().padding(start = 48.dp),
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(start = 46.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         MatchEventType.entries.forEach { type ->
-            TextButton(onClick = { onAction(MatchDetailAction.OnAddEventClick(player.id, type)) }, enabled = !state.isWorking) {
-                Text(text = type.symbol)
+            ReportChip(text = stringResource(type.label), enabled = !state.isWorking, onClick = { onAction(MatchDetailAction.OnAddEventClick(player.id, type)) }) {
+                TimelineEventIcon(kind = type.toTimelineKind(), modifier = Modifier.size(22.dp))
             }
         }
-        TextButton(onClick = { onAction(MatchDetailAction.OnEditMinutesClick(player.id)) }, enabled = !state.isWorking) {
-            Text(text = stringResource(Res.string.match_minutes_value, match.minutesOf(player.id)), maxLines = 1, softWrap = false)
-        }
+        ReportChip(
+            text = stringResource(Res.string.match_minutes_value, match.minutesOf(player.id)),
+            enabled = !state.isWorking,
+            onClick = { onAction(MatchDetailAction.OnEditMinutesClick(player.id)) }
+        ) { TriIconView(icon = TriIcon.Clock, contentDescription = null, size = 18.dp) }
+    }
+}
+
+@Composable
+private fun ReportChip(text: String, enabled: Boolean, onClick: () -> Unit, icon: @Composable () -> Unit) {
+    val colors = Triangulacion.colors
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier
+            .heightIn(min = 40.dp)
+            .clip(RoundedCornerShape(Radius.sm))
+            .border(1.5.dp, colors.lineStrong, RoundedCornerShape(Radius.sm))
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+    ) {
+        icon()
+        Text(text = text, style = Triangulacion.type.label, color = if (enabled) colors.ink else colors.inkSubtle, maxLines = 1)
     }
 }
 
 @Composable
 private fun ScoreCard(state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
     val match = state.match ?: return
-    SectionCard {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // Official score: from goal events, or the manual one (APP-RN-10, BE-008 RN-E2)
-            Text(
-                text = stringResource(Res.string.match_score, match.teamAScore, match.teamBScore),
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.extended.textPrimary,
-                modifier = Modifier.weight(1f)
-            )
-            if (match.isManualScore) AssistChip(onClick = {}, label = { Text(text = stringResource(Res.string.match_score_manual)) })
+    TriCard(modifier = Modifier.fillMaxWidth(), contentPadding = Space.s5) {
+        // Official score: from goal events, or the manual one (APP-RN-10, BE-008 RN-E2)
+        Scoreboard(
+            scoreA = match.teamAScore,
+            scoreB = match.teamBScore,
+            nameA = stringResource(DesignRes.string.tri_team_a),
+            nameB = stringResource(DesignRes.string.tri_team_b),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (match.isManualScore) TriTag(text = stringResource(Res.string.match_score_manual), tone = TriTagTone.Dashed)
         }
         if (state.canSetManualScore) {
+            Spacer(Modifier.height(Space.s3))
             HintText(text = stringResource(Res.string.match_manual_score_hint))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { onAction(MatchDetailAction.OnManualScoreClick) }, enabled = !state.isWorking) {
-                    Text(text = stringResource(Res.string.match_manual_score))
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                TriButton(
+                    text = stringResource(Res.string.match_manual_score),
+                    onClick = { onAction(MatchDetailAction.OnManualScoreClick) },
+                    variant = TriButtonVariant.Secondary,
+                    enabled = !state.isWorking
+                )
                 if (match.isManualScore) {
-                    TextButton(onClick = { onAction(MatchDetailAction.OnClearManualScore) }, enabled = !state.isWorking) {
-                        Text(text = stringResource(Res.string.match_manual_score_clear))
-                    }
+                    TriTextButton(text = stringResource(Res.string.match_manual_score_clear), onClick = { onAction(MatchDetailAction.OnClearManualScore) }, enabled = !state.isWorking)
                 }
             }
         }
     }
 }
 
+/** Cronología (spec 018): goals, assists and cards on both sides of the minute axis. */
 @Composable
 private fun EventsCard(state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
     val match = state.match ?: return
-    SectionCard {
-        SectionTitle(text = stringResource(Res.string.match_events_title))
-        if (match.events.isEmpty()) HintText(text = stringResource(Res.string.match_events_empty))
-        match.events.forEach { event -> EventRow(event = event, state = state, onAction = onAction) }
-    }
-}
-
-@Composable
-private fun EventRow(event: MatchEventModel, state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
-    val player = state.player(event.clubMemberId, isGuest = false)
-    val team = state.match?.teamOf(event.clubMemberId)?.name?.let { " ($it)" }.orEmpty()
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = listOfNotNull(event.minute?.let { "$it'" }, event.type.symbol, stringResource(event.type.label)).joinToString(" ") +
-                " · " + (player.name ?: stringResource(Res.string.former_member)) + team,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f)
-        )
-        if (state.canRecord) {
-            IconButton(onClick = { onAction(MatchDetailAction.OnDeleteEvent(event)) }, enabled = !state.isWorking) {
-                Icon(imageVector = Icons.Outlined.Delete, contentDescription = stringResource(Res.string.match_event_delete))
-            }
+    val formerMember = stringResource(Res.string.former_member)
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        TriSectionTitle(text = stringResource(Res.string.match_timeline_title))
+        if (match.events.isEmpty()) {
+            HintText(text = stringResource(Res.string.match_events_empty))
+        } else {
+            if (state.canRecord) HintText(text = stringResource(Res.string.match_timeline_delete_hint))
+            val events = match.events.sortedWith(compareBy({ it.minute ?: Int.MAX_VALUE }, { it.createdAt }))
+            Timeline(
+                events = events.map { event ->
+                    TimelineEvent(
+                        id = event.id,
+                        minute = event.minute,
+                        team = match.teamOf(event.clubMemberId)?.toTri(),
+                        kind = event.type.toTimelineKind(),
+                        who = state.player(event.clubMemberId, isGuest = false).name ?: formerMember
+                    )
+                },
+                onEventClick = if (state.canRecord && !state.isWorking) {
+                    { timelineEvent -> events.firstOrNull { it.id == timelineEvent.id }?.let { onAction(MatchDetailAction.OnDeleteEvent(it)) } }
+                } else null
+            )
         }
     }
-    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
 }
 
 @Composable
 private fun CycleActions(state: MatchDetailState, onAction: (MatchDetailAction) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = Space.s2)) {
         if (state.canComplete) {
-            SquadfyButton(
+            TriButton(
                 text = stringResource(Res.string.match_complete),
                 onClick = { onAction(MatchDetailAction.OnCompleteClick) },
+                icon = TriIcon.Check,
                 isLoading = state.isWorking,
+                large = true,
                 modifier = Modifier.fillMaxWidth()
             )
         }
         if (state.canReopen) {
-            SquadfyButton(
+            TriButton(
                 text = stringResource(Res.string.match_reopen),
                 onClick = { onAction(MatchDetailAction.OnReopenClick) },
-                style = SquadfyButtonStyle.SECONDARY,
+                variant = TriButtonVariant.Secondary,
                 isLoading = state.isWorking,
                 modifier = Modifier.fillMaxWidth()
             )
         }
         if (state.canCancel) {
-            SquadfyButton(
+            TriButton(
                 text = stringResource(Res.string.match_cancel),
                 onClick = { onAction(MatchDetailAction.OnCancelMatchClick) },
-                style = SquadfyButtonStyle.DESTRUCTIVE_SECONDARY,
+                variant = TriButtonVariant.Danger,
                 enabled = !state.isWorking,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -598,7 +670,10 @@ private fun MatchDetailDialogs(state: MatchDetailState, onAction: (MatchDetailAc
                 title = { Text(text = stringResource(Res.string.match_event_add_title, stringResource(dialog.type.label))) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(text = "${dialog.type.symbol} $name", style = MaterialTheme.typography.bodyLarge)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            TimelineEventIcon(kind = dialog.type.toTimelineKind())
+                            Text(text = name, style = Triangulacion.type.bodyLg, color = Triangulacion.colors.ink)
+                        }
                         SquadfyTextField(state = dialog.minute, title = stringResource(Res.string.match_event_minute), singleLine = true)
                     }
                 },
@@ -648,9 +723,9 @@ private fun MatchDetailDialogs(state: MatchDetailState, onAction: (MatchDetailAc
 private fun ScoreStepper(label: String, value: Int, onChange: (Int) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(text = label, modifier = Modifier.weight(1f))
-        IconButton(onClick = { onChange(-1) }) { Icon(imageVector = Icons.Outlined.Remove, contentDescription = stringResource(Res.string.match_decrease)) }
-        Text(text = value.toString(), style = MaterialTheme.typography.titleLarge)
-        IconButton(onClick = { onChange(1) }) { Icon(imageVector = Icons.Outlined.Add, contentDescription = stringResource(Res.string.match_increase)) }
+        TriRoundIconButton(icon = TriIcon.Minus, contentDescription = stringResource(Res.string.match_decrease), onClick = { onChange(-1) }, filled = true)
+        Text(text = value.toString(), style = Triangulacion.type.displayMd.tabular, color = Triangulacion.colors.ink, modifier = Modifier.padding(horizontal = 12.dp))
+        TriRoundIconButton(icon = TriIcon.Plus, contentDescription = stringResource(Res.string.match_increase), onClick = { onChange(1) }, filled = true)
     }
 }
 
