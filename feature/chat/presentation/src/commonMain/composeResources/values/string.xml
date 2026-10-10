@@ -20,7 +20,7 @@
     <string name="today_parameter">Hoy, %1$s</string>
     <string name="yesterday_parameter">Ayer, %1$s</string>
     <string name="no_chat_selected">Ningún chat seleccionado</string>
-    <string name="select_a_chat">¡Selecciona un chat para empezar a hablar!</string>
+    <string name="select_a_chat">Elige un chat para empezar a hablar.</string>
     <string name="open_chat_options_menu">Abrir el menú de opciones del chat</string>
     <string name="chat_members">Miembros del chat</string>
     <string name="leave_chat">Salir del chat</string>
@@ -36,7 +36,7 @@
     <string name="no_chats">No hay chats</string>
     <string name="no_chats_subtitle">Crea un chat para empezar a enviar mensajes</string>
     <string name="no_messages">No hay mensajes</string>
-    <string name="no_messages_subtitle">¡Sé el primero en enviar un mensaje!</string>
+    <string name="no_messages_subtitle">Sé el primero en escribir.</string>
     <string name="do_you_want_to_logout">¿Quieres cerrar sesión?</string>
     <string name="do_you_want_to_logout_desc">Tendrás que volver a iniciar sesión para usar la app.</string>
     <string name="error_participant_not_found">No se ha encontrado al participante</string>
@@ -53,7 +53,7 @@
     <string name="delete_profile_picture">Eliminar foto de perfil</string>
     <string name="delete_profile_picture_desc">¿Seguro que quieres eliminar tu foto de perfil? Esta acción no se puede deshacer.</string>
     <string name="contact_squadfy_support_change_email">Contacta con el soporte de Squadfy para cambiar tu email.</string>
-    <string name="password_change_successful">¡Has cambiado tu contraseña!</string>
+    <string name="password_change_successful">Contraseña cambiada.</string>
     <string name="error_current_password_incorrect">La contraseña actual no es correcta</string>
     <string name="error_current_password_equal_to_new_one">La nueva contraseña no puede ser igual a la anterior.</string>
     <string name="error_invalid_file_type">Este tipo de archivo no está soportado.</string>

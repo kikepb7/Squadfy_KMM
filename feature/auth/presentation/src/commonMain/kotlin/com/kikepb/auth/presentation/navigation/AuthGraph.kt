@@ -12,6 +12,8 @@ import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.EmailVerification
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.ForgotPassword
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Login
+import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Welcome
+import com.kikepb.auth.presentation.welcome.WelcomeScreen
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Register
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.RegisterSuccess
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.ResetPassword
@@ -24,8 +26,14 @@ fun NavGraphBuilder.authGraph(
     onLoginSuccess: () -> Unit
 ) {
     navigation<AuthGraph>(
-        startDestination = Login
+        startDestination = Welcome
     ) {
+        composable<Welcome> {
+            WelcomeScreen(
+                onCreateAccountClick = { navController.navigate(route = Register) { launchSingleTop = true } },
+                onLoginClick = { navController.navigate(route = Login) { launchSingleTop = true } }
+            )
+        }
         composable<Login> {
             LoginRoot(
                 onLoginSuccess = onLoginSuccess,

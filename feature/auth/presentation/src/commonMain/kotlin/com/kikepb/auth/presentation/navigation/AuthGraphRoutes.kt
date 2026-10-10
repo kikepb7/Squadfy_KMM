@@ -6,6 +6,10 @@ sealed interface AuthGraphRoutes {
     @Serializable
     data object AuthGraph: AuthGraphRoutes
 
+    /** Spec 018: first screen of the auth flow. */
+    @Serializable
+    data object Welcome: AuthGraphRoutes
+
     @Serializable
     data object Login: AuthGraphRoutes
 

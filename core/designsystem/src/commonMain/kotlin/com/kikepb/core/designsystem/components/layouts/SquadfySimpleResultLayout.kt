@@ -1,5 +1,6 @@
 package com.kikepb.core.designsystem.components.layouts
 
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -45,15 +46,15 @@ fun SquadfySimpleResultLayout(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.extended.textPrimary,
+                style = Triangulacion.type.displayLg,
+                color = Triangulacion.colors.ink,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.extended.textSecondary,
+                style = Triangulacion.type.body,
+                color = Triangulacion.colors.inkMuted,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(24.dp))

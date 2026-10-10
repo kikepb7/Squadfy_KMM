@@ -1,5 +1,16 @@
 package com.kikepb.auth.presentation.register
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import com.kikepb.core.designsystem.triangulacion.components.TriButton
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriTextButton
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import squadfy_app.feature.auth.presentation.generated.resources.have_account_prefix
+import squadfy_app.feature.auth.presentation.generated.resources.login_link
+import squadfy_app.feature.auth.presentation.generated.resources.register_subtitle
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,9 +25,6 @@ import org.koin.compose.koinInject
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
-import com.kikepb.core.designsystem.components.buttons.SquadfyButton
-import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveFormLayout
 import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
 import com.kikepb.core.designsystem.components.textfields.SquadfyPasswordTextField
@@ -78,8 +86,8 @@ fun RegisterScreen(
     SquadfySnackbarScaffold(snackbarHostState = snackbarHostState) {
         SquadfyAdaptiveFormLayout(
             headerText = stringResource(Res.string.welcome_to_squadfy),
-            errorText = state.registrationError?.asString(),
-            logo = { SquadfyBrandLogo(onDarkBackground = true) }
+            subtitle = stringResource(Res.string.register_subtitle),
+            errorText = state.registrationError?.asString()
         ) {
             SquadfyTextField(
                 state = state.usernameTextState,
@@ -89,7 +97,8 @@ fun RegisterScreen(
                 isError = state.usernameError != null,
                 onFocusChanged = { isFocused ->
                     onAction(RegisterAction.OnInputTextFocusGain)
-                }
+                },
+                leadingIcon = TriIcon.User
             )
             Spacer(modifier = Modifier.height(16.dp))
             SquadfyTextField(
@@ -101,7 +110,8 @@ fun RegisterScreen(
                 onFocusChanged = { isFocused ->
                     onAction(RegisterAction.OnInputTextFocusGain)
                 },
-                keyboardType = KeyboardType.Email
+                keyboardType = KeyboardType.Email,
+                leadingIcon = TriIcon.Mail
             )
             Spacer(modifier = Modifier.height(16.dp))
             SquadfyPasswordTextField(
@@ -115,29 +125,38 @@ fun RegisterScreen(
                 onToggleVisibilityClick = {
                     onAction(RegisterAction.OnTogglePasswordVisibilityClick)
                 },
-                isPasswordVisible = state.isPasswordVisible
+                isPasswordVisible = state.isPasswordVisible,
+                leadingIcon = TriIcon.Lock
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            SquadfyButton(
+            Spacer(modifier = Modifier.height(32.dp))
+            TriButton(
                 text = stringResource(Res.string.register),
                 onClick = { onAction(RegisterAction.OnRegisterClick) },
-                enabled =  state.canRegister,
+                enabled = state.canRegister,
                 isLoading = state.isRegistering,
+                large = true,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
-            SquadfyButton(
-                text = stringResource(Res.string.login),
-                onClick = { onAction(RegisterAction.OnLoginClick) },
-                style = SquadfyButtonStyle.SECONDARY,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                Text(
+                    text = stringResource(Res.string.have_account_prefix),
+                    style = Triangulacion.type.body,
+                    color = Triangulacion.colors.inkMuted
+                )
+                TriTextButton(text = stringResource(Res.string.login_link), onClick = { onAction(RegisterAction.OnLoginClick) })
+            }
             // Spec 011 AC-011-08: the privacy policy is reachable before creating the account
-            SquadfyButton(
+            TriTextButton(
                 text = stringResource(Res.string.privacy_policy),
                 onClick = { onAction(RegisterAction.OnPrivacyPolicyClick) },
-                style = SquadfyButtonStyle.TEXT,
-                modifier = Modifier.fillMaxWidth()
+                color = Triangulacion.colors.inkMuted,
+                underline = true,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
     }

@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="welcome_to_squadfy">¡Bienvenido a Squadfy!</string>
-    <string name="welcome_back">¡Hola de nuevo!</string>
-    <string name="account_successfully_created">¡Tu cuenta de Squadfy se ha creado!</string>
+    <string name="welcome_to_squadfy">Crea tu cuenta</string>
+    <string name="welcome_back">Bienvenido de vuelta</string>
+    <string name="account_successfully_created">Cuenta creada</string>
     <string name="account_ready_to_login">Tu cuenta está lista. Ya puedes iniciar sesión.</string>
     <string name="verification_email_sent_to_x">Te hemos enviado un email de verificación a %1$s</string>
     <string name="resend_verification_email">Reenviar email de verificación</string>
     <string name="resent_verification_email">Email de verificación reenviado</string>
     <string name="verifying_account">Verificando la cuenta…</string>
-    <string name="email_verified_successfully">¡Email verificado!</string>
+    <string name="email_verified_successfully">Email verificado</string>
     <string name="email_verified_failed">No se ha podido verificar tu email</string>
     <string name="email_verified_successfully_desc">Tu email se ha verificado. Ya puedes iniciar sesión con tus credenciales</string>
     <string name="email_verified_failed_desc">No hemos podido verificar tu email. Puede que el enlace no sea válido o haya caducado</string>
     <string name="close">Cerrar</string>
     <string name="submit">Enviar</string>
     <string name="username">Nombre de usuario</string>
-    <string name="forgot_password">¿Has olvidado la contraseña?</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
     <string name="new_password">Nueva contraseña</string>
     <string name="set_new_password">Establece una nueva contraseña</string>
     <string name="create_account">Crear cuenta</string>
@@ -39,4 +39,15 @@
     <string name="reset_password_successfully">Tu contraseña se ha cambiado. Ya puedes iniciar sesión con la nueva contraseña</string>
     <string name="reset_password_title">Nueva contraseña</string>
     <string name="privacy_policy">Política de privacidad</string>
+    <string name="welcome_headline">Tu fútbol semanal,</string>
+    <string name="welcome_headline_accent">organizado.</string>
+    <string name="welcome_body">Convocatoria, equipos equilibrados y clasificación. Sin hojas de cálculo ni mensajes perdidos.</string>
+    <string name="already_have_account">Ya tengo cuenta</string>
+    <string name="login_subtitle">Entra para ver tu próxima convocatoria.</string>
+    <string name="register_subtitle">Después te unes a tu club con su código.</string>
+    <string name="no_account_prefix">¿Sin cuenta?</string>
+    <string name="register_link">Regístrate</string>
+    <string name="have_account_prefix">¿Ya tienes cuenta?</string>
+    <string name="login_link">Inicia sesión</string>
+    <string name="forgot_password_subtitle">Te enviamos un enlace para crear una contraseña nueva.</string>
 </resources>

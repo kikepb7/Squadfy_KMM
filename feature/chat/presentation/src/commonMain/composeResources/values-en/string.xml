@@ -20,7 +20,7 @@
     <string name="today_parameter">Today, %1$s</string>
     <string name="yesterday_parameter">Yesterday, %1$s</string>
     <string name="no_chat_selected">No chat selected</string>
-    <string name="select_a_chat">Select a chat to start chatting!</string>
+    <string name="select_a_chat">Pick a chat to start talking.</string>
     <string name="open_chat_options_menu">Open chat options menu</string>
     <string name="chat_members">Chat members</string>
     <string name="leave_chat">Leave chat</string>
@@ -36,7 +36,7 @@
     <string name="no_chats">No chats</string>
     <string name="no_chats_subtitle">Create new chat to start messaging</string>
     <string name="no_messages">No messages</string>
-    <string name="no_messages_subtitle">Be the first one to send a message!</string>
+    <string name="no_messages_subtitle">Be the first to write.</string>
     <string name="do_you_want_to_logout">Do you want to log out?</string>
     <string name="do_you_want_to_logout_desc">You will have to log in again to use the app.</string>
     <string name="error_participant_not_found">No participant found</string>
@@ -53,7 +53,7 @@
     <string name="delete_profile_picture">Delete profile image</string>
     <string name="delete_profile_picture_desc">Are you sure you want to delete your profile picture? This action cannot be undone.</string>
     <string name="contact_squadfy_support_change_email">Contact the Squadfy support to change your email.</string>
-    <string name="password_change_successful">You've successfully changed your password!</string>
+    <string name="password_change_successful">Password changed.</string>
     <string name="error_current_password_incorrect">Your current password is not correct</string>
     <string name="error_current_password_equal_to_new_one">Your new password can't be equal to the old one.</string>
     <string name="error_invalid_file_type">This file type is not supported.</string>

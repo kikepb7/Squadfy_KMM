@@ -1,11 +1,12 @@
 package com.kikepb.auth.presentation.login
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,21 +15,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
-import com.kikepb.core.designsystem.components.buttons.SquadfyButton
-import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveFormLayout
 import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
 import com.kikepb.core.designsystem.components.textfields.SquadfyPasswordTextField
 import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
 import com.kikepb.core.designsystem.theme.SquadfyTheme
+import com.kikepb.core.designsystem.triangulacion.components.TriButton
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriNotice
+import com.kikepb.core.designsystem.triangulacion.components.TriNoticeTone
+import com.kikepb.core.designsystem.triangulacion.components.TriTextButton
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import squadfy_app.feature.auth.presentation.generated.resources.login_subtitle
+import squadfy_app.feature.auth.presentation.generated.resources.no_account_prefix
+import squadfy_app.feature.auth.presentation.generated.resources.register_link
 import com.kikepb.core.presentation.util.ObserveAsEvents
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import squadfy_app.feature.auth.presentation.generated.resources.Res
 import squadfy_app.feature.auth.presentation.generated.resources.resend_verification_email
-import squadfy_app.feature.auth.presentation.generated.resources.create_account
 import squadfy_app.feature.auth.presentation.generated.resources.email
 import squadfy_app.feature.auth.presentation.generated.resources.email_placeholder
 import squadfy_app.feature.auth.presentation.generated.resources.forgot_password
@@ -72,10 +78,8 @@ fun LoginScreen(
     SquadfySnackbarScaffold {
         SquadfyAdaptiveFormLayout(
             headerText = stringResource(Res.string.welcome_back),
+            subtitle = stringResource(Res.string.login_subtitle),
             errorText = state.error?.asString(),
-            logo = {
-                SquadfyBrandLogo(onDarkBackground = true)
-            },
             modifier = Modifier.fillMaxSize()
         ) {
             SquadfyTextField(
@@ -84,9 +88,10 @@ fun LoginScreen(
                 keyboardType = KeyboardType.Email,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                title = stringResource(Res.string.email)
+                title = stringResource(Res.string.email),
+                leadingIcon = TriIcon.Mail
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             SquadfyPasswordTextField(
                 state = state.passwordTextFieldState,
                 placeholder = stringResource(Res.string.password),
@@ -95,57 +100,52 @@ fun LoginScreen(
                     onAction(LoginAction.OnTogglePasswordVisibility)
                 },
                 modifier = Modifier.fillMaxWidth(),
-                title = stringResource(Res.string.password)
+                title = stringResource(Res.string.password),
+                leadingIcon = TriIcon.Lock
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
+            TriTextButton(
                 text = stringResource(Res.string.forgot_password),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .clickable {
-                        onAction(LoginAction.OnForgotPasswordClick)
-                    }
+                onClick = { onAction(LoginAction.OnForgotPasswordClick) },
+                modifier = Modifier.align(Alignment.End)
             )
-            Spacer(modifier = Modifier.height(24.dp))
-            SquadfyButton(
+            Spacer(modifier = Modifier.height(32.dp))
+            TriButton(
                 text = stringResource(Res.string.login),
-                onClick = {
-                    onAction(LoginAction.OnLoginClick)
-                },
+                onClick = { onAction(LoginAction.OnLoginClick) },
                 enabled = state.canLogin,
                 isLoading = state.isLoggingIn,
+                large = true,
                 modifier = Modifier.fillMaxWidth()
             )
             if (state.canResendVerification) {
-                Spacer(modifier = Modifier.height(8.dp))
-                SquadfyButton(
+                TriTextButton(
                     text = stringResource(Res.string.resend_verification_email),
                     onClick = { onAction(LoginAction.OnResendVerificationClick) },
-                    style = SquadfyButtonStyle.TEXT,
-                    isLoading = state.isResendingVerification,
-                    modifier = Modifier.fillMaxWidth()
+                    enabled = !state.isResendingVerification,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
             }
             state.info?.let { info ->
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = info.asString(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                TriNotice(title = null, body = info.asString(), tone = TriNoticeTone.Ok)
             }
             Spacer(modifier = Modifier.height(8.dp))
-            SquadfyButton(
-                text = stringResource(Res.string.create_account),
-                onClick = {
-                    onAction(LoginAction.OnSignUpClick)
-                },
-                style = SquadfyButtonStyle.SECONDARY,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                Text(
+                    text = stringResource(Res.string.no_account_prefix),
+                    style = Triangulacion.type.body,
+                    color = Triangulacion.colors.inkMuted
+                )
+                TriTextButton(
+                    text = stringResource(Res.string.register_link),
+                    onClick = { onAction(LoginAction.OnSignUpClick) },
+                    modifier = Modifier.padding(start = 0.dp)
+                )
+            }
         }
     }
 }

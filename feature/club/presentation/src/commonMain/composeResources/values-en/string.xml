@@ -177,7 +177,7 @@
     <string name="announcement_withdraw_title">Withdraw?</string>
     <string name="announcement_withdraw_description">If there is a waitlist, your seat goes to the next player.</string>
     <string name="announcement_waitlisted_message">Full: you are on the waitlist (#%1$d)</string>
-    <string name="announcement_enrolled_message">You are in!</string>
+    <string name="announcement_enrolled_message">Called up · you have a spot</string>
     <string name="announcement_not_open_error">The sign-up is not open</string>
     <string name="announcement_already_enrolled">You are already signed up</string>
     <string name="announcement_confirmed_title">Confirmed</string>

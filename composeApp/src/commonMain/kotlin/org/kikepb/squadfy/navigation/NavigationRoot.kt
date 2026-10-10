@@ -29,6 +29,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.authGraph
 import com.kikepb.chat.presentation.navigation.chatGraph
+import com.kikepb.club.presentation.navigation.ClubGraphRoutes
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.ClubDetailRoute
 import com.kikepb.club.presentation.navigation.clubGraph
 import com.kikepb.club.presentation.navigation.setupGraph
@@ -113,7 +114,14 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                 onNavigateToClub = { clubId ->
                     navController.navigate(ClubDetailRoute(clubId = clubId))
                 },
-                onNavigateToSettings = { isProfileVisible = true }
+                onNavigateToSettings = { isProfileVisible = true },
+                onNavigateToClubs = {
+                    navController.navigate(ClubGraphRoutes.SetupGraph) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
             chatGraph(
                 navController = navController,

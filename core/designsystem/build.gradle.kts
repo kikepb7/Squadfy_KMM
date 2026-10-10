@@ -9,6 +9,7 @@ kotlin {
                 implementation(projects.core.presentation)
 
                 implementation(libs.kotlin.stdlib)
+                implementation(libs.kotlinx.datetime)
 
                 implementation(libs.coil.compose)
                 implementation(libs.coil.network.ktor)

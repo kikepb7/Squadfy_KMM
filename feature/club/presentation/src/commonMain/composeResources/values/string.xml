@@ -177,7 +177,7 @@
     <string name="announcement_withdraw_title">¿Desapuntarte?</string>
     <string name="announcement_withdraw_description">Si hay lista de espera, tu plaza pasará al siguiente.</string>
     <string name="announcement_waitlisted_message">Cupo completo: estás en lista de espera (nº %1$d)</string>
-    <string name="announcement_enrolled_message">¡Estás convocado!</string>
+    <string name="announcement_enrolled_message">Convocado · tienes plaza</string>
     <string name="announcement_not_open_error">La convocatoria no está abierta</string>
     <string name="announcement_already_enrolled">Ya estás apuntado</string>
     <string name="announcement_confirmed_title">Convocados</string>

@@ -1,5 +1,9 @@
 package com.kikepb.auth.presentation.forgot_password
 
+import squadfy_app.feature.auth.presentation.generated.resources.forgot_password_subtitle
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriButton
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,11 +17,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kikepb.auth.presentation.forgot_password.ForgotPasswordAction.OnSubmitClick
-import com.kikepb.core.designsystem.components.buttons.SquadfyButton
 import com.kikepb.core.designsystem.components.layouts.SquadfyAdaptiveFormLayout
 import com.kikepb.core.designsystem.components.layouts.SquadfySnackbarScaffold
 import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
-import com.kikepb.core.designsystem.components.brand.SquadfyBrandLogo
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
@@ -52,12 +54,12 @@ fun ForgotPasswordScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     SquadfySnackbarScaffold(
-        topBar = { SquadfyTopBar(title = stringResource(RString.forgot_password), onBackClick = onNavigateBack) }
+        topBar = { SquadfyTopBar(title = "", onBackClick = onNavigateBack) }
     ) {
         SquadfyAdaptiveFormLayout(
             headerText = stringResource(RString.forgot_password),
-            errorText = state.errorText?.asString(),
-            logo = { SquadfyBrandLogo(onDarkBackground = true) }
+            subtitle = stringResource(RString.forgot_password_subtitle),
+            logo = {}
         ) {
             SquadfyTextField(
                 state = state.emailTextFieldState,
@@ -67,25 +69,25 @@ fun ForgotPasswordScreen(
                 isError = state.errorText != null,
                 supportingText = state.errorText?.asString(),
                 keyboardType = KeyboardType.Email,
-                singleLine = true
+                singleLine = true,
+                leadingIcon = TriIcon.Mail
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            SquadfyButton(
+            Spacer(modifier = Modifier.height(32.dp))
+            TriButton(
                 text = stringResource(RString.submit),
-                onClick = {
-                    onAction(OnSubmitClick)
-                },
+                onClick = { onAction(OnSubmitClick) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !state.isLoading && state.canSubmit,
-                isLoading = state.isLoading
+                enabled = state.canSubmit,
+                isLoading = state.isLoading,
+                large = true
             )
             Spacer(modifier = Modifier.height(16.dp))
 
             if (state.isEmailSentSuccessfully) {
                 Text(
                     text = stringResource(RString.forgot_password_email_sent_successfully),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.extended.success,
+                    style = Triangulacion.type.label,
+                    color = Triangulacion.colors.accentText,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )

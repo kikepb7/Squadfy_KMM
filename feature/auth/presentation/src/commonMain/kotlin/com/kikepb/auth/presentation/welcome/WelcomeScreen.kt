@@ -1,0 +1,134 @@
+package com.kikepb.auth.presentation.welcome
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import com.kikepb.core.designsystem.components.brand.SquadfyBrandLockup
+import com.kikepb.core.designsystem.components.systembars.StatusBarIconsEffect
+import com.kikepb.core.designsystem.theme.SquadfyTheme
+import com.kikepb.core.designsystem.triangulacion.components.TriButton
+import com.kikepb.core.designsystem.triangulacion.components.TriButtonVariant
+import com.kikepb.core.designsystem.triangulacion.components.TriTextButton
+import com.kikepb.core.designsystem.triangulacion.theme.Space
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import squadfy_app.feature.auth.presentation.generated.resources.Res
+import squadfy_app.feature.auth.presentation.generated.resources.already_have_account
+import squadfy_app.feature.auth.presentation.generated.resources.create_account
+import squadfy_app.feature.auth.presentation.generated.resources.welcome_body
+import squadfy_app.feature.auth.presentation.generated.resources.welcome_headline
+import squadfy_app.feature.auth.presentation.generated.resources.welcome_headline_accent
+
+/**
+ * Welcome (spec 018, screen 01-bienvenida): the inverse surface in both themes, the lockup, a pass triangle and the
+ * promise of the product. «Crear cuenta» is the Volt action; «Ya tengo cuenta» goes to the login.
+ */
+@Composable
+fun WelcomeScreen(
+    onCreateAccountClick: () -> Unit,
+    onLoginClick: () -> Unit
+) {
+    val colors = Triangulacion.colors
+    StatusBarIconsEffect(lightIcons = true)
+    Box(
+        contentAlignment = Alignment.TopCenter,
+        modifier = Modifier.fillMaxSize().background(colors.surfaceInverse)
+    ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = 520.dp)
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(horizontal = Space.s5, vertical = Space.s4)
+        ) {
+            SquadfyBrandLockup(onDarkBackground = true, markSize = 48.dp)
+            PassTriangle(modifier = Modifier.fillMaxWidth().height(260.dp).padding(vertical = Space.s6))
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = buildAnnotatedString {
+                    append(stringResource(Res.string.welcome_headline))
+                    append(" ")
+                    withStyle(SpanStyle(color = colors.volt)) { append(stringResource(Res.string.welcome_headline_accent)) }
+                },
+                style = Triangulacion.type.displayXl,
+                color = colors.onInverse,
+                modifier = Modifier.semantics { heading() }
+            )
+            Spacer(Modifier.height(Space.s4))
+            Text(
+                text = stringResource(Res.string.welcome_body),
+                style = Triangulacion.type.bodyLg,
+                color = colors.onInverseMuted
+            )
+            Spacer(Modifier.height(Space.s8))
+            TriButton(
+                text = stringResource(Res.string.create_account),
+                onClick = onCreateAccountClick,
+                variant = TriButtonVariant.Volt,
+                large = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            TriTextButton(
+                text = stringResource(Res.string.already_have_account),
+                onClick = onLoginClick,
+                color = colors.onInverse,
+                modifier = Modifier.fillMaxWidth().padding(top = Space.s2)
+            )
+        }
+    }
+}
+
+/** Three players and the passes between them: the triangulation that names the system. Decorative. */
+@Composable
+private fun PassTriangle(modifier: Modifier = Modifier) {
+    val colors = Triangulacion.colors
+    Canvas(modifier = modifier) {
+        val top = Offset(size.width * 0.5f, size.height * 0.12f)
+        val left = Offset(size.width * 0.12f, size.height * 0.86f)
+        val mid = Offset(size.width * 0.44f, size.height * 0.84f)
+        val right = Offset(size.width * 0.82f, size.height * 0.8f)
+        val dashed = PathEffect.dashPathEffect(floatArrayOf(8f, 10f))
+        val faint = colors.onInverse.copy(alpha = 0.45f)
+        drawLine(faint, top, left, strokeWidth = 2.dp.toPx(), pathEffect = dashed)
+        drawLine(faint, top, right, strokeWidth = 2.dp.toPx(), pathEffect = dashed)
+        drawLine(colors.volt, left, mid, strokeWidth = 3.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 10f)))
+        drawLine(colors.volt, mid, right, strokeWidth = 3.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 10f)))
+        drawCircle(colors.onInverse, radius = 14.dp.toPx(), center = top)
+        drawCircle(colors.volt, radius = 13.dp.toPx(), center = left)
+        drawCircle(colors.volt, radius = 18.dp.toPx(), center = mid)
+        drawCircle(colors.teamB, radius = 13.dp.toPx(), center = right)
+    }
+}
+
+@Preview
+@Composable
+private fun WelcomeScreenPreview() {
+    SquadfyTheme { WelcomeScreen(onCreateAccountClick = {}, onLoginClick = {}) }
+}

@@ -9,8 +9,8 @@
 - [x] **T-004** Componentes propios: CutShape, Escudo, PosChip, Plazas, CuentaAtras, Ticket, Equilibrio, Marcador, Forma, DeltaRating, FilaRanking, Cronologia, Aviso, Tabs, Campo11 (AC-018-04/05).
 
 ## Fase 3 · Pantallas
-- [ ] **T-005** Auth: bienvenida (nueva), login, registro, recuperación y verificación (AC-018-06/07).
-- [ ] **T-006** Inicio: ticket, Apuntarme, tus clubs y última jornada (AC-018-06).
+- [x] **T-005** Auth: bienvenida (nueva), login, registro, recuperación y verificación (AC-018-06/07).
+- [x] **T-006** Inicio: ticket, Apuntarme, tus clubs y última jornada (AC-018-06).
 - [ ] **T-007** Club: cabecera, pestañas, Partido con estados de inscripción y ajustes tras el botón (AC-018-06).
 - [ ] **T-008** Equipos: campo con jugadores, equilibrio y lista (AC-018-07).
 - [ ] **T-009** Acta: marcador y cronología (AC-018-06).

@@ -1,5 +1,14 @@
 package com.kikepb.globalPosition.presentation
 
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.async
+import com.kikepb.globalPosition.presentation.home.HomeLastMatchdayPolicy
+import com.kikepb.globalPosition.presentation.home.HomeLastMatchday
+import com.kikepb.club.domain.model.MatchStatus
+import com.kikepb.club.domain.usecase.GetClubMatchesUseCase
+import com.kikepb.club.domain.usecase.ObserveMyMembershipUseCase
+import com.kikepb.core.domain.auth.repository.SessionStorage
 import kotlinx.coroutines.Job
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -40,7 +49,10 @@ class GlobalPositionViewModel(
     private val getCurrentAnnouncementUseCase: GetCurrentAnnouncementUseCase,
     private val getScheduleUseCase: GetScheduleUseCase,
     private val enrollUseCase: EnrollUseCase,
-    private val clock: Clock
+    private val clock: Clock,
+    sessionStorage: SessionStorage,
+    private val observeMyMembershipUseCase: ObserveMyMembershipUseCase,
+    private val getClubMatchesUseCase: GetClubMatchesUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(GlobalPositionUiState(now = clock.now()))
@@ -50,6 +62,9 @@ class GlobalPositionViewModel(
     /** Per club: announcement status, loaded at most [MAX_PARALLEL] at a time (AC-010-01). */
     private val statuses = MutableStateFlow<Map<String, HomeAnnouncementStatus>>(emptyMap())
     private val enrolling = MutableStateFlow<Set<String>>(emptySet())
+    /** Spec 018: «Última jornada», computed from the completed matches of my clubs. */
+    private val lastMatchday = MutableStateFlow<HomeLastMatchday?>(null)
+    private var lastMatchdayJob: Job? = null
     private val semaphore = Semaphore(MAX_PARALLEL)
     private var knownClubs: List<ClubModel> = emptyList()
 
@@ -57,8 +72,9 @@ class GlobalPositionViewModel(
         _state,
         observeMyClubsUseCase(),
         statuses,
-        enrolling
-    ) { current, myClubs, statusByClub, enrollingIds ->
+        enrolling,
+        combine(lastMatchday, sessionStorage.observeAuthInfo()) { last, auth -> last to auth?.user?.username }
+    ) { current, myClubs, statusByClub, enrollingIds, (last, userName) ->
         val clubs = myClubs.map { it.club }
         onClubsChanged(clubs)
         current.copy(
@@ -66,7 +82,9 @@ class GlobalPositionViewModel(
                 .map { club -> HomeClubCardModel(club, statusByClub[club.id] ?: HomeAnnouncementStatus.Loading, club.id in enrollingIds) }
                 .sortedForHome(current.now),
             // An empty cache only means "no clubs" once the first fetch answered (spec 017)
-            isLoadingClubs = clubs.isEmpty() && !current.hasFetchedClubs
+            isLoadingClubs = clubs.isEmpty() && !current.hasFetchedClubs,
+            lastMatchday = last?.takeIf { matchday -> clubs.any { it.id == matchday.clubId } },
+            userName = userName
         )
     }.stateIn(
         scope = viewModelScope,
@@ -90,6 +108,7 @@ class GlobalPositionViewModel(
             GlobalPositionAction.OnResume -> refresh()
             is GlobalPositionAction.OnRetryClub -> knownClubs.firstOrNull { it.id == action.clubId }?.let(::loadAnnouncement)
             is GlobalPositionAction.OnEnrollClick -> enroll(action.clubId)
+            GlobalPositionAction.OnSeeAllClubsClick -> viewModelScope.launch { eventChannel.send(element = GlobalPositionEvent.NavigateToClubs) }
         }
     }
 
@@ -98,6 +117,7 @@ class GlobalPositionViewModel(
         val newClubs = clubs.filter { club -> knownClubs.none { it.id == club.id } }
         knownClubs = clubs
         newClubs.forEach(::loadAnnouncement)
+        if (newClubs.isNotEmpty()) loadLastMatchday()
     }
 
     /** AC-010-07: pull-to-refresh and coming back to the foreground. Only the pull shows the indicator (spec 017). */
@@ -108,9 +128,29 @@ class GlobalPositionViewModel(
             try {
                 fetchMyClubsUseCase()
                 knownClubs.forEach(::loadAnnouncement)
+                loadLastMatchday()
             } finally {
                 _state.update { it.copy(isRefreshing = false, hasFetchedClubs = true) }
             }
+        }
+    }
+
+    private fun loadLastMatchday() {
+        val clubs = knownClubs
+        lastMatchdayJob?.cancel()
+        lastMatchdayJob = viewModelScope.launch {
+            val perClub = clubs.map { club ->
+                async {
+                    semaphore.withPermit {
+                        val memberId = observeMyMembershipUseCase(club.id).first()?.id ?: return@withPermit null
+                        val matches = (getClubMatchesUseCase(club.id, MatchStatus.COMPLETED) as? Result.Success)?.data ?: return@withPermit null
+                        val zone = (getScheduleUseCase(club.id) as? Result.Success)?.data?.timeZone
+                        HomeLastMatchdayPolicy.of(club.id, club.name, memberId, matches, zone)
+                    }
+                }
+            }.awaitAll().filterNotNull()
+            // A failed load keeps what was shown: it is a secondary block
+            HomeLastMatchdayPolicy.latest(perClub)?.let { lastMatchday.value = it }
         }
     }
 
@@ -150,6 +190,8 @@ class GlobalPositionViewModel(
 
 data class GlobalPositionUiState(
     val now: Instant,
+    val userName: String? = null,
+    val lastMatchday: HomeLastMatchday? = null,
     val cards: List<HomeClubCardModel> = emptyList(),
     val isLoadingClubs: Boolean = true,
     /** The first fetch of my clubs answered (success or not), so an empty list is real. */
@@ -165,6 +207,7 @@ sealed interface GlobalPositionAction {
     data object OnResume : GlobalPositionAction
     data class OnRetryClub(val clubId: String) : GlobalPositionAction
     data class OnEnrollClick(val clubId: String) : GlobalPositionAction
+    data object OnSeeAllClubsClick : GlobalPositionAction
 }
 
 sealed interface GlobalPositionEvent {
@@ -172,4 +215,5 @@ sealed interface GlobalPositionEvent {
     data class NavigateToClub(val clubId: String) : GlobalPositionEvent
     data object NavigateToSettings : GlobalPositionEvent
     data object EnrollFailed : GlobalPositionEvent
+    data object NavigateToClubs : GlobalPositionEvent
 }
