@@ -106,12 +106,12 @@ fun RegisterSuccessScreen(
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "02e Cuenta creada · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun RegisterSuccessTizaPreview() = ScreenPreview { RegisterSuccessScreen(state = RegisterSuccessState(registeredEmail = "alvaro@correo.es"), onAction = {}, snackbarHostState = remember { SnackbarHostState() }) }
+private fun RegisterSuccessTizaPreview() = ScreenPreview { RegisterSuccessScreen(state = RegisterSuccessState(), onAction = {}, snackbarHostState = remember { SnackbarHostState() }) }
 
 @Preview(name = "02e Cuenta creada · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun RegisterSuccessNochePreview() = ScreenPreview(darkTheme = true) { RegisterSuccessScreen(state = RegisterSuccessState(registeredEmail = "alvaro@correo.es"), onAction = {}, snackbarHostState = remember { SnackbarHostState() }) }
+private fun RegisterSuccessNochePreview() = ScreenPreview(darkTheme = true) { RegisterSuccessScreen(state = RegisterSuccessState(), onAction = {}, snackbarHostState = remember { SnackbarHostState() }) }

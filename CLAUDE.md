@@ -26,7 +26,7 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 - `local.properties` admite, de forma opcional, `BASE_URL_HTTP` (tiene que terminar en `/api/v1`) y `BASE_URL_WS` (`…/ws`); por defecto apuntan al emulador, `10.0.2.2:8080`. **No hay API key de cliente** (ADR-0008): no la reintroduzcas, porque cualquier clave compilada en la app se puede extraer.
 - Backend local para E2E: `cd ../Squadfy_Backend && docker compose up -d`, y después `JWT_SECRET_BASE64=$(openssl rand -base64 32) FIREBASE_ENABLED=false ./gradlew :app:bootRun --args='--spring.profiles.active=dev'` (Swagger en `localhost:8080/swagger-ui.html`, emails en Mailpit `localhost:8025`).
 - Datos de demo en el backend local (spec 018): `OWNER_EMAIL=… OWNER_PASSWORD=… DEMO_PASSWORD=… python3 scripts/dev/seed_demo.py <clubId>` crea la plantilla del diseño, tres partidos jugados (resultados, eventos, ratings), el próximo partido con los equipos ya sorteados, lista de espera, ausencias y dos chats. Solo contra el backend local (usa el Postgres de Docker); nunca contra PRE ni PRO.
-- Cada pantalla (`*Screen`, `*Content`) tiene sus previews Tiza y Noche en el mismo archivo, con los datos de `preview/*Samples.kt`.
+- Cada pantalla (`*Screen`, `*Content`) tiene sus previews Tiza y Noche en el mismo archivo, con el estado por defecto. **No hay mocks** (spec 018 T-021): ni `*Samples` ni datos de prueba en la app; todo sale del backend. Para ver datos reales, usa el backend local con `seed_demo.py`.
 - `composeApp/google-services.json` está en `.gitignore` y hace falta para compilar Android. Lo mismo pasa con `iosApp/iosApp/GoogleService-Info.plist` en iOS, que corresponde al bundle `com.kikepb.squadfy`.
 
 ## Arquitectura
@@ -60,6 +60,6 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 - `ClubMemberDto` v1 **no** trae `email` ni estadísticas, y el `UserDto` no trae foto: las estadísticas salen de `/stats` y `/ratings` (spec 008). Todo DTO nuevo lleva valores por defecto en los campos opcionales.
 - Los equipos, convocatorias, ratings y estadísticas usan `clubMemberId`, no `userId`.
 - **Feature flags** (spec 013): el trabajo sin terminar o pendiente del backend se oculta tras un `FeatureFlag` con valores por defecto para PRE y PRO; no se borra. Invitados, excepciones de calendario, `drawTime`, marcador manual y ausencias ya están en el backend (BE-008) y en la app, pero siguen tras sus flags (on en PRE y off en PRO) hasta que se den por buenos (D-1). La valoración es siempre automática (rating).
-- Entorno: `-PSQUADFY_ENV=pre|pro` (o la variable de entorno, o `local.properties`); por defecto `pre`.
+- Entorno: `-PSQUADFY_ENV=pre|pro` (o la variable de entorno, o `local.properties`). Por defecto es `pre` en debug y `pro` en release (tareas `*Release*` o Xcode Release). La pantalla de feature flags y su fila en Perfil solo existen en PRE.
 - Inicio (`globalPosition`) solo tiene la capa `presentation`: usa el dominio de `club` y no tiene mocks. Sus módulos `domain` y `data`, que solo servían datos de ejemplo, se retiraron en la spec 015.
 - El backend tiene su propio SDD. No lo modifiques salvo que el usuario lo incluya en el alcance; propón specs del backend en `specs/roadmap.md`.

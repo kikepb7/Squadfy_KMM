@@ -1,6 +1,5 @@
 package com.kikepb.chat.presentation.components.manage_chat
 
-import com.kikepb.chat.presentation.preview.ChatSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.animation.AnimatedVisibility
@@ -36,6 +35,7 @@ import com.kikepb.core.presentation.util.currentDeviceConfiguration
 import org.jetbrains.compose.resources.stringResource
 import squadfy_app.feature.chat.presentation.generated.resources.Res.string as RString
 import squadfy_app.feature.chat.presentation.generated.resources.cancel
+import squadfy_app.feature.chat.presentation.generated.resources.create_chat
 
 @Composable
 fun ManageChatScreen(
@@ -125,12 +125,12 @@ fun ManageChatScreen(
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "14c Nuevo chat · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun ManageChatTizaPreview() = ScreenPreview { ManageChatScreen(headerText = "Nuevo chat", primaryButtonText = "Crear chat", state = ChatSamples.createChat, onAction = {}) }
+private fun ManageChatTizaPreview() = ScreenPreview { ManageChatScreen(headerText = stringResource(RString.create_chat), primaryButtonText = stringResource(RString.create_chat), state = ManageChatState(), onAction = {}) }
 
 @Preview(name = "14c Nuevo chat · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun ManageChatNochePreview() = ScreenPreview(darkTheme = true) { ManageChatScreen(headerText = "Nuevo chat", primaryButtonText = "Crear chat", state = ChatSamples.createChat, onAction = {}) }
+private fun ManageChatNochePreview() = ScreenPreview(darkTheme = true) { ManageChatScreen(headerText = stringResource(RString.create_chat), primaryButtonText = stringResource(RString.create_chat), state = ManageChatState(), onAction = {}) }

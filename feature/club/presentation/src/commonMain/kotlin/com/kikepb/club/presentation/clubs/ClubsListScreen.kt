@@ -1,6 +1,5 @@
 package com.kikepb.club.presentation.clubs
 
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.kikepb.core.designsystem.triangulacion.components.ClubCrest
@@ -221,12 +220,12 @@ private fun ClubOptionCard(title: String, icon: ImageVector, onClick: () -> Unit
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "12c Mis clubes · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun ClubsListTizaPreview() = ScreenPreview { ClubsListScreen(state = ClubSamples.clubsList, onAction = {}, onClubClick = {}, onJoinClub = {}, onCreateClub = {}, snackbarHostState = remember { SnackbarHostState() }) }
+private fun ClubsListTizaPreview() = ScreenPreview { ClubsListScreen(state = ClubsListState(), onAction = {}, onClubClick = {}, onJoinClub = {}, onCreateClub = {}, snackbarHostState = remember { SnackbarHostState() }) }
 
 @Preview(name = "12c Mis clubes · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun ClubsListNochePreview() = ScreenPreview(darkTheme = true) { ClubsListScreen(state = ClubSamples.clubsList, onAction = {}, onClubClick = {}, onJoinClub = {}, onCreateClub = {}, snackbarHostState = remember { SnackbarHostState() }) }
+private fun ClubsListNochePreview() = ScreenPreview(darkTheme = true) { ClubsListScreen(state = ClubsListState(), onAction = {}, onClubClick = {}, onJoinClub = {}, onCreateClub = {}, snackbarHostState = remember { SnackbarHostState() }) }

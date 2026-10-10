@@ -1,6 +1,5 @@
 package com.kikepb.club.presentation.teams
 
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
@@ -198,20 +197,20 @@ private fun TeamList(team: TriTeam, players: List<TeamPlayer>, myMemberId: Strin
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "Equipos · campo · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun TeamsPitchTizaPreview() = ScreenPreview { TeamsContent(state = ClubSamples.teams, onAction = {}, onOpenMatch = {}) }
+private fun TeamsPitchTizaPreview() = ScreenPreview { TeamsContent(state = TeamsState(), onAction = {}, onOpenMatch = {}) }
 
 @Preview(name = "Equipos · campo · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun TeamsPitchNochePreview() = ScreenPreview(darkTheme = true) { TeamsContent(state = ClubSamples.teams, onAction = {}, onOpenMatch = {}) }
+private fun TeamsPitchNochePreview() = ScreenPreview(darkTheme = true) { TeamsContent(state = TeamsState(), onAction = {}, onOpenMatch = {}) }
 
 @Preview(name = "Equipos · lista · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun TeamsListTizaPreview() = ScreenPreview { TeamsContent(state = ClubSamples.teams.copy(view = TeamsView.LIST), onAction = {}, onOpenMatch = {}) }
+private fun TeamsListTizaPreview() = ScreenPreview { TeamsContent(state = TeamsState(view = TeamsView.LIST), onAction = {}, onOpenMatch = {}) }
 
 @Preview(name = "Equipos · lista · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun TeamsListNochePreview() = ScreenPreview(darkTheme = true) { TeamsContent(state = ClubSamples.teams.copy(view = TeamsView.LIST), onAction = {}, onOpenMatch = {}) }
+private fun TeamsListNochePreview() = ScreenPreview(darkTheme = true) { TeamsContent(state = TeamsState(view = TeamsView.LIST), onAction = {}, onOpenMatch = {}) }

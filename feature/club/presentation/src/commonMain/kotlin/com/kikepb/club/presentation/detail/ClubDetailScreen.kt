@@ -2,15 +2,17 @@
 
 package com.kikepb.club.presentation.detail
 
+import kotlin.time.Clock
+import com.kikepb.club.domain.model.ClubMemberModel
 import com.kikepb.club.presentation.settings.ClubSettingsContent
+import com.kikepb.club.presentation.settings.ClubSettingsState
 import com.kikepb.club.presentation.standings.StandingsContent
+import com.kikepb.club.presentation.standings.StandingsState
 import com.kikepb.club.presentation.teams.TeamsView
 import com.kikepb.club.presentation.teams.TeamsState
 import com.kikepb.club.presentation.teams.TeamsContent
 import com.kikepb.club.presentation.announcement.AnnouncementState
 import com.kikepb.club.presentation.announcement.AnnouncementContent
-import com.kikepb.club.domain.model.MyEnrollmentStatus
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Row
@@ -348,15 +350,15 @@ private fun ClubHeader(
     )
 }
 
-/** Preview helper: the club screen with [tab] drawn from sample state. */
+/** Preview helper: the club screen with [tab] drawn from its default state. */
 @Composable
 private fun ClubDetailWithTab(
     tab: ClubDetailTabModel,
-    announcement: AnnouncementState = ClubSamples.announcement(),
-    teams: TeamsState = ClubSamples.teams
+    announcement: AnnouncementState = AnnouncementState(now = Clock.System.now()),
+    teams: TeamsState = TeamsState()
 ) {
     ClubDetailScreen(
-        state = ClubSamples.clubDetail,
+        state = ClubDetailState(isLoading = false, club = blankClub),
         onAction = {},
         onBackClick = {},
         onMemberClick = { _, _ -> },
@@ -370,10 +372,10 @@ private fun ClubDetailWithTab(
             when (selected) {
                 ClubDetailTabModel.MATCH -> AnnouncementContent(state = announcement, onAction = {}, onOpenSchedule = {}, onOpenMatch = {})
                 ClubDetailTabModel.TEAMS -> TeamsContent(state = teams, onAction = {}, onOpenMatch = {})
-                ClubDetailTabModel.CLASSIFICATION -> StandingsContent(club = ClubSamples.club, state = ClubSamples.standings, onAction = {}, onMemberClick = {})
-                ClubDetailTabModel.MEMBERS -> SquadfyClubDetailMembersTab(members = ClubSamples.members, onMemberClick = {})
+                ClubDetailTabModel.CLASSIFICATION -> StandingsContent(club = blankClub, state = StandingsState(), onAction = {}, onMemberClick = {})
+                ClubDetailTabModel.MEMBERS -> SquadfyClubDetailMembersTab(members = emptyList(), onMemberClick = {})
                 ClubDetailTabModel.SETTINGS -> ClubSettingsContent(
-                    club = ClubSamples.club, myMembership = ClubSamples.alvaro, state = ClubSamples.clubSettings, onAction = {},
+                    club = blankClub, myMembership = blankMember, state = ClubSettingsState(), onAction = {},
                     onCopyCode = {}, onShareCode = {}, onChangeLogo = {}, onOpenBans = {}, onOpenSchedule = {}, onOpenAbsences = {}
                 )
             }
@@ -381,7 +383,9 @@ private fun ClubDetailWithTab(
     )
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
+private val blankMember = ClubMemberModel(id = "", clubId = "", userId = "", username = "", profilePictureUrl = null, shirtNumber = null, position = null, role = ClubMemberRole.PLAYER)
+private val blankClub = ClubModel(id = "", name = "", description = null, clubLogoUrl = null, ownerId = "", invitationCode = "", maxMembers = null, membersCount = 0)
 
 @Preview(name = "04 Club · Partido · Tiza", widthDp = 393, heightDp = 852)
 @Composable
@@ -390,30 +394,6 @@ private fun ClubMatchTizaPreview() = ScreenPreview { ClubDetailWithTab(ClubDetai
 @Preview(name = "04 Club · Partido · Noche", widthDp = 393, heightDp = 852)
 @Composable
 private fun ClubMatchNochePreview() = ScreenPreview(darkTheme = true) { ClubDetailWithTab(ClubDetailTabModel.MATCH) }
-
-@Preview(name = "04b Club · Partido convocado · Tiza", widthDp = 393, heightDp = 852)
-@Composable
-private fun ClubMatchConfirmedTizaPreview() = ScreenPreview { ClubDetailWithTab(ClubDetailTabModel.MATCH, ClubSamples.announcement(MyEnrollmentStatus.CONFIRMED)) }
-
-@Preview(name = "04b Club · Partido convocado · Noche", widthDp = 393, heightDp = 852)
-@Composable
-private fun ClubMatchConfirmedNochePreview() = ScreenPreview(darkTheme = true) { ClubDetailWithTab(ClubDetailTabModel.MATCH, ClubSamples.announcement(MyEnrollmentStatus.CONFIRMED)) }
-
-@Preview(name = "04c Club · Partido en espera · Tiza", widthDp = 393, heightDp = 852)
-@Composable
-private fun ClubMatchWaitlistTizaPreview() = ScreenPreview { ClubDetailWithTab(ClubDetailTabModel.MATCH, ClubSamples.announcement(MyEnrollmentStatus.WAITLISTED)) }
-
-@Preview(name = "04c Club · Partido en espera · Noche", widthDp = 393, heightDp = 852)
-@Composable
-private fun ClubMatchWaitlistNochePreview() = ScreenPreview(darkTheme = true) { ClubDetailWithTab(ClubDetailTabModel.MATCH, ClubSamples.announcement(MyEnrollmentStatus.WAITLISTED)) }
-
-@Preview(name = "04d Club · Partido cerrada · Tiza", widthDp = 393, heightDp = 852)
-@Composable
-private fun ClubMatchClosedTizaPreview() = ScreenPreview { ClubDetailWithTab(ClubDetailTabModel.MATCH, ClubSamples.announcementClosed) }
-
-@Preview(name = "04d Club · Partido cerrada · Noche", widthDp = 393, heightDp = 852)
-@Composable
-private fun ClubMatchClosedNochePreview() = ScreenPreview(darkTheme = true) { ClubDetailWithTab(ClubDetailTabModel.MATCH, ClubSamples.announcementClosed) }
 
 @Preview(name = "05 Club · Equipos en el campo · Tiza", widthDp = 393, heightDp = 852)
 @Composable
@@ -425,11 +405,11 @@ private fun ClubTeamsPitchNochePreview() = ScreenPreview(darkTheme = true) { Clu
 
 @Preview(name = "05b Club · Equipos en lista · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun ClubTeamsListTizaPreview() = ScreenPreview { ClubDetailWithTab(ClubDetailTabModel.TEAMS, teams = ClubSamples.teams.copy(view = TeamsView.LIST)) }
+private fun ClubTeamsListTizaPreview() = ScreenPreview { ClubDetailWithTab(ClubDetailTabModel.TEAMS, teams = TeamsState(view = TeamsView.LIST)) }
 
 @Preview(name = "05b Club · Equipos en lista · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun ClubTeamsListNochePreview() = ScreenPreview(darkTheme = true) { ClubDetailWithTab(ClubDetailTabModel.TEAMS, teams = ClubSamples.teams.copy(view = TeamsView.LIST)) }
+private fun ClubTeamsListNochePreview() = ScreenPreview(darkTheme = true) { ClubDetailWithTab(ClubDetailTabModel.TEAMS, teams = TeamsState(view = TeamsView.LIST)) }
 
 @Preview(name = "08 Club · Tabla · Tiza", widthDp = 393, heightDp = 852)
 @Composable

@@ -1,6 +1,5 @@
 package com.kikepb.chat.presentation.chat_list
 
-import com.kikepb.chat.presentation.preview.ChatSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.PaddingValues
@@ -217,20 +216,13 @@ fun ChatListScreen(
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "14 Chat · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun ChatListTizaPreview() = ScreenPreview { ChatListScreen(state = ChatSamples.list, onAction = {}, snackBarHostState = remember { SnackbarHostState() }) }
+private fun ChatListTizaPreview() = ScreenPreview { ChatListScreen(state = ChatListState(), onAction = {}, snackBarHostState = remember { SnackbarHostState() }) }
 
 @Preview(name = "14 Chat · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun ChatListNochePreview() = ScreenPreview(darkTheme = true) { ChatListScreen(state = ChatSamples.list, onAction = {}, snackBarHostState = remember { SnackbarHostState() }) }
+private fun ChatListNochePreview() = ScreenPreview(darkTheme = true) { ChatListScreen(state = ChatListState(), onAction = {}, snackBarHostState = remember { SnackbarHostState() }) }
 
-@Preview(name = "14d Chat vacío · Tiza", widthDp = 393, heightDp = 852)
-@Composable
-private fun ChatListEmptyTizaPreview() = ScreenPreview { ChatListScreen(state = ChatListState(), onAction = {}, snackBarHostState = remember { SnackbarHostState() }) }
-
-@Preview(name = "14d Chat vacío · Noche", widthDp = 393, heightDp = 852)
-@Composable
-private fun ChatListEmptyNochePreview() = ScreenPreview(darkTheme = true) { ChatListScreen(state = ChatListState(), onAction = {}, snackBarHostState = remember { SnackbarHostState() }) }

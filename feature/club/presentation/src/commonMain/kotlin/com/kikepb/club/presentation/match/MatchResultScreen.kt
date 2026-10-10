@@ -1,7 +1,6 @@
 package com.kikepb.club.presentation.match
 
 import com.kikepb.club.presentation.mapper.matchFormatLabel
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
@@ -213,14 +212,12 @@ private fun ResultHero(state: MatchDetailState) {
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
-
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "16 Resultado · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun ResultTizaPreview() = ScreenPreview { MatchResultScreen(state = ClubSamples.matchDetail(MatchStatus.COMPLETED), onBackClick = {}) }
+private fun ResultTizaPreview() = ScreenPreview { MatchResultScreen(state = MatchDetailState(), onBackClick = {}) }
 
 @Preview(name = "16 Resultado · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun ResultNochePreview() = ScreenPreview(darkTheme = true) { MatchResultScreen(state = ClubSamples.matchDetail(MatchStatus.COMPLETED), onBackClick = {}) }
+private fun ResultNochePreview() = ScreenPreview(darkTheme = true) { MatchResultScreen(state = MatchDetailState(), onBackClick = {}) }

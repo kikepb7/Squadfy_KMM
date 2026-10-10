@@ -1,6 +1,5 @@
 package com.kikepb.club.presentation.standings
 
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.kikepb.club.presentation.mapper.toTri
@@ -228,20 +227,21 @@ private fun PeriodChips(selected: StatsPeriod, onSelected: (StatsPeriod) -> Unit
     )
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
+private val blankClub = ClubModel(id = "", name = "", description = null, clubLogoUrl = null, ownerId = "", invitationCode = "", maxMembers = null, membersCount = 0)
 
 @Preview(name = "Tabla · rating · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun StandingsRatingTizaPreview() = ScreenPreview { StandingsContent(club = ClubSamples.club, state = ClubSamples.standings, onAction = {}, onMemberClick = {}) }
+private fun StandingsRatingTizaPreview() = ScreenPreview { StandingsContent(club = blankClub, state = StandingsState(), onAction = {}, onMemberClick = {}) }
 
 @Preview(name = "Tabla · rating · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun StandingsRatingNochePreview() = ScreenPreview(darkTheme = true) { StandingsContent(club = ClubSamples.club, state = ClubSamples.standings, onAction = {}, onMemberClick = {}) }
+private fun StandingsRatingNochePreview() = ScreenPreview(darkTheme = true) { StandingsContent(club = blankClub, state = StandingsState(), onAction = {}, onMemberClick = {}) }
 
 @Preview(name = "Tabla · goles · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun StandingsGoalsTizaPreview() = ScreenPreview { StandingsContent(club = ClubSamples.club, state = ClubSamples.standings.copy(mode = StandingsMode.STATS), onAction = {}, onMemberClick = {}) }
+private fun StandingsGoalsTizaPreview() = ScreenPreview { StandingsContent(club = blankClub, state = StandingsState(mode = StandingsMode.STATS), onAction = {}, onMemberClick = {}) }
 
 @Preview(name = "Tabla · goles · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun StandingsGoalsNochePreview() = ScreenPreview(darkTheme = true) { StandingsContent(club = ClubSamples.club, state = ClubSamples.standings.copy(mode = StandingsMode.STATS), onAction = {}, onMemberClick = {}) }
+private fun StandingsGoalsNochePreview() = ScreenPreview(darkTheme = true) { StandingsContent(club = blankClub, state = StandingsState(mode = StandingsMode.STATS), onAction = {}, onMemberClick = {}) }

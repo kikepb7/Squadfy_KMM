@@ -1,6 +1,5 @@
 package com.kikepb.club.presentation.schedule
 
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
@@ -579,12 +578,12 @@ private fun Hint(text: String) {
 
 private const val MILLIS_PER_DAY = 24L * 60 * 60 * 1000
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "11 Horario semanal · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun ScheduleTizaPreview() = ScreenPreview { ScheduleScreen(state = ClubSamples.schedule(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }
+private fun ScheduleTizaPreview() = ScreenPreview { ScheduleScreen(state = ScheduleState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }
 
 @Preview(name = "11 Horario semanal · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun ScheduleNochePreview() = ScreenPreview(darkTheme = true) { ScheduleScreen(state = ClubSamples.schedule(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }
+private fun ScheduleNochePreview() = ScreenPreview(darkTheme = true) { ScheduleScreen(state = ScheduleState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }

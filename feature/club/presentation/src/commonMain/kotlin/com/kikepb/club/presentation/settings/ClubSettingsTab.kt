@@ -1,6 +1,6 @@
 package com.kikepb.club.presentation.settings
 
-import com.kikepb.club.presentation.preview.ClubSamples
+import com.kikepb.club.domain.model.ClubMemberRole
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.clickable
@@ -393,12 +393,14 @@ internal fun SettingsRow(
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
+private val blankMember = ClubMemberModel(id = "", clubId = "", userId = "", username = "", profilePictureUrl = null, shirtNumber = null, position = null, role = ClubMemberRole.PLAYER)
+private val blankClub = ClubModel(id = "", name = "", description = null, clubLogoUrl = null, ownerId = "", invitationCode = "", maxMembers = null, membersCount = 0)
 
 @Preview(name = "Ajustes del club · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun SettingsTizaPreview() = ScreenPreview { ClubSettingsContent(club = ClubSamples.club, myMembership = ClubSamples.alvaro, state = ClubSamples.clubSettings, onAction = {}, onCopyCode = {}, onShareCode = {}, onChangeLogo = {}, onOpenBans = {}, onOpenSchedule = {}, onOpenAbsences = {}) }
+private fun SettingsTizaPreview() = ScreenPreview { ClubSettingsContent(club = blankClub, myMembership = blankMember, state = ClubSettingsState(), onAction = {}, onCopyCode = {}, onShareCode = {}, onChangeLogo = {}, onOpenBans = {}, onOpenSchedule = {}, onOpenAbsences = {}) }
 
 @Preview(name = "Ajustes del club · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun SettingsNochePreview() = ScreenPreview(darkTheme = true) { ClubSettingsContent(club = ClubSamples.club, myMembership = ClubSamples.alvaro, state = ClubSamples.clubSettings, onAction = {}, onCopyCode = {}, onShareCode = {}, onChangeLogo = {}, onOpenBans = {}, onOpenSchedule = {}, onOpenAbsences = {}) }
+private fun SettingsNochePreview() = ScreenPreview(darkTheme = true) { ClubSettingsContent(club = blankClub, myMembership = blankMember, state = ClubSettingsState(), onAction = {}, onCopyCode = {}, onShareCode = {}, onChangeLogo = {}, onOpenBans = {}, onOpenSchedule = {}, onOpenAbsences = {}) }

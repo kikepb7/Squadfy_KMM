@@ -132,15 +132,11 @@ private fun FeatureFlagRow(
     }
 }
 
-// Previews (spec 018): the PRE-only feature flags screen in Tiza and Noche
+// Previews (spec 018): the PRE-only feature flags screen in Tiza and Noche, with the real PRE defaults
 private val previewState = FeatureFlagsState(
     environment = AppEnvironment.PRE,
-    flags = FeatureFlag.entries.mapIndexed { index, flag ->
-        ResolvedFeatureFlag(flag = flag, enabled = index % 2 == 0, source = if (index % 3 == 0) FlagValueSource.OVERRIDE else FlagValueSource.DEFAULT)
-    }
+    flags = FeatureFlag.entries.map { flag -> ResolvedFeatureFlag(flag = flag, enabled = flag.defaultInPre, source = FlagValueSource.DEFAULT) }
 )
-
-
 
 @Preview(name = "Feature flags · Tiza", widthDp = 393, heightDp = 852)
 @Composable

@@ -1,6 +1,5 @@
 package com.kikepb.club.presentation.match
 
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
@@ -38,7 +37,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kikepb.club.domain.model.MatchStatus
 import com.kikepb.club.domain.model.Team
 import com.kikepb.club.presentation.mapper.label
 import com.kikepb.club.presentation.mapper.toTri
@@ -182,12 +180,12 @@ fun MatchDrawScreen(state: MatchDetailState, onBackClick: () -> Unit, onViewTeam
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "15 Sorteo completado · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun DrawTizaPreview() = ScreenPreview { MatchDrawScreen(state = ClubSamples.matchDetail(MatchStatus.SCHEDULED), onBackClick = {}, onViewTeams = {}) }
+private fun DrawTizaPreview() = ScreenPreview { MatchDrawScreen(state = MatchDetailState(), onBackClick = {}, onViewTeams = {}) }
 
 @Preview(name = "15 Sorteo completado · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun DrawNochePreview() = ScreenPreview(darkTheme = true) { MatchDrawScreen(state = ClubSamples.matchDetail(MatchStatus.SCHEDULED), onBackClick = {}, onViewTeams = {}) }
+private fun DrawNochePreview() = ScreenPreview(darkTheme = true) { MatchDrawScreen(state = MatchDetailState(), onBackClick = {}, onViewTeams = {}) }

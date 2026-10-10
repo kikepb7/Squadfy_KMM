@@ -251,27 +251,12 @@ fun PlayerDisc(slot: PitchSlot, discSize: Dp, modifier: Modifier = Modifier) {
     }
 }
 
-internal object PitchSamples {
-    val teamA = listOf(
-        PitchPlayer("1", "Marcos", 1, TriPosition.GK), PitchPlayer("4", "Iván", 4, TriPosition.DEF),
-        PitchPlayer("5", "Sergio", 5, TriPosition.DEF), PitchPlayer("3", "Hugo", 3, TriPosition.DEF),
-        PitchPlayer("8", "Dani", 8, TriPosition.MID), PitchPlayer("10", "Álvaro", 10, TriPosition.MID, isMe = true),
-        PitchPlayer("9", "Álex", 9, TriPosition.FWD)
-    )
-    val teamB = listOf(
-        PitchPlayer("13", "Nico", 13, TriPosition.GK), PitchPlayer("2", "Jaime", 2, TriPosition.DEF),
-        PitchPlayer("6", "Tomás", 6, TriPosition.DEF), PitchPlayer("15", "Gabi", 15, TriPosition.DEF),
-        PitchPlayer("16", "Pablo", 16, TriPosition.MID), PitchPlayer("14", "Nacho", 14, TriPosition.MID),
-        PitchPlayer("11", "Leo", 11, TriPosition.FWD, isGuest = true)
-    )
-}
-
 @Preview
 @Composable
 private fun PitchPreview() {
     SquadfyTheme {
         Box(Modifier.background(Triangulacion.colors.surface100).padding(16.dp)) {
-            Pitch(teamA = PitchSamples.teamA, teamB = PitchSamples.teamB)
+            Pitch(teamA = emptyList(), teamB = emptyList())
         }
     }
 }
@@ -281,7 +266,7 @@ private fun PitchPreview() {
 private fun PitchDarkPreview() {
     SquadfyTheme(darkTheme = true) {
         Box(Modifier.background(Triangulacion.colors.surface100).padding(16.dp)) {
-            Pitch(teamA = PitchSamples.teamA, teamB = PitchSamples.teamB)
+            Pitch(teamA = emptyList(), teamB = emptyList())
         }
     }
 }

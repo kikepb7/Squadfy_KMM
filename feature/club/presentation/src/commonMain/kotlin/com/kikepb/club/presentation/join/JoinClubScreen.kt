@@ -1,7 +1,5 @@
 package com.kikepb.club.presentation.join
 
-import androidx.compose.foundation.text.input.TextFieldState
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Spacer
@@ -184,12 +182,12 @@ fun JoinClubScreen(
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "10 Unirse con código · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun JoinTizaPreview() = ScreenPreview { JoinClubScreen(state = JoinClubState(invitationCodeState = TextFieldState("K7Q2M9")), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, onCreateClubClick = {}) }
+private fun JoinTizaPreview() = ScreenPreview { JoinClubScreen(state = JoinClubState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, onCreateClubClick = {}) }
 
 @Preview(name = "10 Unirse con código · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun JoinNochePreview() = ScreenPreview(darkTheme = true) { JoinClubScreen(state = JoinClubState(invitationCodeState = TextFieldState("K7Q2M9")), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, onCreateClubClick = {}) }
+private fun JoinNochePreview() = ScreenPreview(darkTheme = true) { JoinClubScreen(state = JoinClubState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, onCreateClubClick = {}) }

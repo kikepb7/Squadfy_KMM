@@ -1,6 +1,6 @@
 package com.kikepb.globalPosition.presentation
 
-import com.kikepb.globalPosition.presentation.preview.HomeSamples
+import kotlin.time.Clock
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.clickable
@@ -234,20 +234,20 @@ private fun HomeHeader(userName: String?, today: kotlinx.datetime.LocalDate, onP
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "03 Inicio · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun HomeTizaPreview() = ScreenPreview { GlobalPositionScreen(state = HomeSamples.state, onAction = {}) }
+private fun HomeTizaPreview() = ScreenPreview { GlobalPositionScreen(state = GlobalPositionUiState(now = Clock.System.now()), onAction = {}) }
 
 @Preview(name = "03 Inicio · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun HomeNochePreview() = ScreenPreview(darkTheme = true) { GlobalPositionScreen(state = HomeSamples.state, onAction = {}) }
+private fun HomeNochePreview() = ScreenPreview(darkTheme = true) { GlobalPositionScreen(state = GlobalPositionUiState(now = Clock.System.now()), onAction = {}) }
 
 @Preview(name = "03b Inicio sin clubs · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun HomeEmptyTizaPreview() = ScreenPreview { GlobalPositionScreen(state = HomeSamples.empty, onAction = {}) }
+private fun HomeEmptyTizaPreview() = ScreenPreview { GlobalPositionScreen(state = GlobalPositionUiState(now = Clock.System.now(), isLoadingClubs = false, hasFetchedClubs = true), onAction = {}) }
 
 @Preview(name = "03b Inicio sin clubs · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun HomeEmptyNochePreview() = ScreenPreview(darkTheme = true) { GlobalPositionScreen(state = HomeSamples.empty, onAction = {}) }
+private fun HomeEmptyNochePreview() = ScreenPreview(darkTheme = true) { GlobalPositionScreen(state = GlobalPositionUiState(now = Clock.System.now(), isLoadingClubs = false, hasFetchedClubs = true), onAction = {}) }

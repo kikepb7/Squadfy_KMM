@@ -151,7 +151,7 @@ fun LoginScreen(
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "02 Login · Tiza", widthDp = 393, heightDp = 852)
 @Composable

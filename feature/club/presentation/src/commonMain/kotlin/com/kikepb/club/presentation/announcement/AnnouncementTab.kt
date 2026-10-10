@@ -1,6 +1,6 @@
 package com.kikepb.club.presentation.announcement
 
-import com.kikepb.club.presentation.preview.ClubSamples
+import kotlin.time.Clock
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.ColumnScope
@@ -471,36 +471,13 @@ private fun Hint(text: String) {
     Text(text = text, style = Triangulacion.type.body, color = Triangulacion.colors.inkMuted)
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "Partido · abierta · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun AnnouncementOpenTizaPreview() = ScreenPreview { AnnouncementContent(state = ClubSamples.announcement(), onAction = {}, onOpenSchedule = {}, onOpenMatch = {}) }
+private fun AnnouncementOpenTizaPreview() = ScreenPreview { AnnouncementContent(state = AnnouncementState(now = Clock.System.now()), onAction = {}, onOpenSchedule = {}, onOpenMatch = {}) }
 
 @Preview(name = "Partido · abierta · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun AnnouncementOpenNochePreview() = ScreenPreview(darkTheme = true) { AnnouncementContent(state = ClubSamples.announcement(), onAction = {}, onOpenSchedule = {}, onOpenMatch = {}) }
+private fun AnnouncementOpenNochePreview() = ScreenPreview(darkTheme = true) { AnnouncementContent(state = AnnouncementState(now = Clock.System.now()), onAction = {}, onOpenSchedule = {}, onOpenMatch = {}) }
 
-@Preview(name = "Partido · convocado · Tiza", widthDp = 393, heightDp = 852)
-@Composable
-private fun AnnouncementConfirmedTizaPreview() = ScreenPreview { AnnouncementContent(state = ClubSamples.announcement(MyEnrollmentStatus.CONFIRMED), onAction = {}, onOpenSchedule = {}, onOpenMatch = {}) }
-
-@Preview(name = "Partido · convocado · Noche", widthDp = 393, heightDp = 852)
-@Composable
-private fun AnnouncementConfirmedNochePreview() = ScreenPreview(darkTheme = true) { AnnouncementContent(state = ClubSamples.announcement(MyEnrollmentStatus.CONFIRMED), onAction = {}, onOpenSchedule = {}, onOpenMatch = {}) }
-
-@Preview(name = "Partido · en espera · Tiza", widthDp = 393, heightDp = 852)
-@Composable
-private fun AnnouncementWaitlistTizaPreview() = ScreenPreview { AnnouncementContent(state = ClubSamples.announcement(MyEnrollmentStatus.WAITLISTED), onAction = {}, onOpenSchedule = {}, onOpenMatch = {}) }
-
-@Preview(name = "Partido · en espera · Noche", widthDp = 393, heightDp = 852)
-@Composable
-private fun AnnouncementWaitlistNochePreview() = ScreenPreview(darkTheme = true) { AnnouncementContent(state = ClubSamples.announcement(MyEnrollmentStatus.WAITLISTED), onAction = {}, onOpenSchedule = {}, onOpenMatch = {}) }
-
-@Preview(name = "Partido · cerrada · Tiza", widthDp = 393, heightDp = 852)
-@Composable
-private fun AnnouncementClosedTizaPreview() = ScreenPreview { AnnouncementContent(state = ClubSamples.announcementClosed, onAction = {}, onOpenSchedule = {}, onOpenMatch = {}) }
-
-@Preview(name = "Partido · cerrada · Noche", widthDp = 393, heightDp = 852)
-@Composable
-private fun AnnouncementClosedNochePreview() = ScreenPreview(darkTheme = true) { AnnouncementContent(state = ClubSamples.announcementClosed, onAction = {}, onOpenSchedule = {}, onOpenMatch = {}) }

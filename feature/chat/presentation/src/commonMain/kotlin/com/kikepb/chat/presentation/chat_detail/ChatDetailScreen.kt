@@ -2,7 +2,6 @@
 
 package com.kikepb.chat.presentation.chat_detail
 
-import com.kikepb.chat.presentation.preview.ChatSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -354,12 +353,12 @@ private fun DynamicRoundedCornerColumn(
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "14b Conversación · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun ChatDetailTizaPreview() = ScreenPreview { ChatDetailScreen(state = ChatSamples.detail, messageListState = LazyListState(), isDetailPresent = false, snackBarState = remember { SnackbarHostState() }, onAction = {}) }
+private fun ChatDetailTizaPreview() = ScreenPreview { ChatDetailScreen(state = ChatDetailState(), messageListState = LazyListState(), isDetailPresent = false, snackBarState = remember { SnackbarHostState() }, onAction = {}) }
 
 @Preview(name = "14b Conversación · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun ChatDetailNochePreview() = ScreenPreview(darkTheme = true) { ChatDetailScreen(state = ChatSamples.detail, messageListState = LazyListState(), isDetailPresent = false, snackBarState = remember { SnackbarHostState() }, onAction = {}) }
+private fun ChatDetailNochePreview() = ScreenPreview(darkTheme = true) { ChatDetailScreen(state = ChatDetailState(), messageListState = LazyListState(), isDetailPresent = false, snackBarState = remember { SnackbarHostState() }, onAction = {}) }

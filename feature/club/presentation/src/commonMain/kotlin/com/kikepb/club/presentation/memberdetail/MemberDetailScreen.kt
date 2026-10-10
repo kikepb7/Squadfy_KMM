@@ -1,6 +1,5 @@
 package com.kikepb.club.presentation.memberdetail
 
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import squadfy_app.feature.club.presentation.generated.resources.member_edit_a11y
@@ -319,12 +318,12 @@ private fun MemberDialogs(state: MemberDetailState, onAction: (MemberDetailActio
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "09 Ficha del jugador · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun PlayerCardTizaPreview() = ScreenPreview { MemberDetailScreen(state = ClubSamples.memberDetail, onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, statsSection = { MemberStatsContent(member = it, state = ClubSamples.memberStats) }) }
+private fun PlayerCardTizaPreview() = ScreenPreview { MemberDetailScreen(state = MemberDetailState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, statsSection = { MemberStatsContent(member = it, state = MemberStatsState()) }) }
 
 @Preview(name = "09 Ficha del jugador · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun PlayerCardNochePreview() = ScreenPreview(darkTheme = true) { MemberDetailScreen(state = ClubSamples.memberDetail, onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, statsSection = { MemberStatsContent(member = it, state = ClubSamples.memberStats) }) }
+private fun PlayerCardNochePreview() = ScreenPreview(darkTheme = true) { MemberDetailScreen(state = MemberDetailState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }, statsSection = { MemberStatsContent(member = it, state = MemberStatsState()) }) }

@@ -1,6 +1,5 @@
 package com.kikepb.club.presentation.create
 
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import squadfy_app.feature.club.presentation.generated.resources.create_title
@@ -323,7 +322,7 @@ private fun ClubLogoPickerCard(
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "10b Crear club · Tiza", widthDp = 393, heightDp = 852)
 @Composable

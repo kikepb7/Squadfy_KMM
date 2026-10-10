@@ -1,6 +1,5 @@
 package com.kikepb.club.presentation.bans
 
-import com.kikepb.club.presentation.preview.ClubSamples
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
@@ -137,12 +136,12 @@ fun ClubBansScreen(
     }
 }
 
-// Previews (spec 018): Tiza and Noche with the data of the mockups
+// Previews (spec 018): Tiza and Noche with the default state, no sample data
 
 @Preview(name = "12b Vetados · Tiza", widthDp = 393, heightDp = 852)
 @Composable
-private fun BansTizaPreview() = ScreenPreview { ClubBansScreen(state = ClubSamples.bans, onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }
+private fun BansTizaPreview() = ScreenPreview { ClubBansScreen(state = ClubBansState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }
 
 @Preview(name = "12b Vetados · Noche", widthDp = 393, heightDp = 852)
 @Composable
-private fun BansNochePreview() = ScreenPreview(darkTheme = true) { ClubBansScreen(state = ClubSamples.bans, onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }
+private fun BansNochePreview() = ScreenPreview(darkTheme = true) { ClubBansScreen(state = ClubBansState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }
