@@ -15,8 +15,13 @@ import org.gradle.kotlin.dsl.configure
 private const val DEFAULT_BASE_URL_HTTP = "http://10.0.2.2:8080/api/v1"
 private const val DEFAULT_BASE_URL_WS = "ws://10.0.2.2:8080/ws"
 
-/** Build environment for feature flag defaults (spec 013). CI release jobs for production pass `pro`. */
+/**
+ * Build environment for feature flag defaults (spec 013). Debug builds default to `pre`; release builds (Android
+ * `*Release*` tasks or Xcode Release) default to `pro`, so a store build never ships the PRE-only feature flags
+ * screen by accident. An explicit `SQUADFY_ENV` still wins (e.g. a PRE release for testers).
+ */
 private const val DEFAULT_ENVIRONMENT = "pre"
+private const val DEFAULT_RELEASE_ENVIRONMENT = "pro"
 
 /** Legal pages (spec 011 AC-011-07/08). The deletion page is served by the backend (BE spec 010) next to the API. */
 private const val DEFAULT_PRIVACY_POLICY_URL = "https://squadfy.app/privacy"
@@ -76,7 +81,7 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                         resolve("ACCOUNT_DELETION_URL", baseUrlHttp.removeSuffix("/").removeSuffix("/api/v1") + ACCOUNT_DELETION_PATH)
                     )
 
-                    val environment = resolve("SQUADFY_ENV", DEFAULT_ENVIRONMENT).lowercase()
+                    val environment = resolve("SQUADFY_ENV", if (isReleaseBuild) DEFAULT_RELEASE_ENVIRONMENT else DEFAULT_ENVIRONMENT).lowercase()
                     check(environment in SUPPORTED_ENVIRONMENTS) {
                         "Invalid SQUADFY_ENV '$environment'. Expected one of $SUPPORTED_ENVIRONMENTS"
                     }

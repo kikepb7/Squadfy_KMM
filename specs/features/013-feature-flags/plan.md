@@ -18,7 +18,7 @@
 - `interface RemoteFeatureFlagSource`: `observe(): Flow<Map<String, Boolean>>`.
 
 ## core/data · `com.kikepb.core.data.featureflag`
-- `BuildKonfig.ENVIRONMENT`: la `BuildKonfigConventionPlugin` resuelve `SQUADFY_ENV` (`-P`, entorno o `local.properties`; por defecto `pre`) y falla con cualquier otro valor.
+- `BuildKonfig.ENVIRONMENT`: la `BuildKonfigConventionPlugin` resuelve `SQUADFY_ENV` (`-P`, entorno o `local.properties`; por defecto `pre` en debug y `pro` en release, spec 018 T-022) y falla con cualquier otro valor.
 - `FeatureFlagOverrideStore` (interfaz interna) + `DataStoreFeatureFlagOverrideStore`, con claves `ff_<key>` en el DataStore de preferencias que ya existe.
 - `NoOpRemoteFeatureFlagSource` → `flowOf(emptyMap())`.
 - `DefaultFeatureFlags(environment, store, remote, scope)`:
