@@ -1,5 +1,26 @@
 package com.kikepb.club.presentation.absences
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarBackButton
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarIconButton
+import com.kikepb.core.designsystem.triangulacion.components.TriAvatar
+import com.kikepb.core.designsystem.triangulacion.components.TriCaps
+import com.kikepb.core.designsystem.triangulacion.components.TriCard
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriIconView
+import com.kikepb.core.designsystem.triangulacion.components.TriNotice
+import com.kikepb.core.designsystem.triangulacion.components.TriNoticeTone
+import com.kikepb.core.designsystem.triangulacion.components.TriRoundIconButton
+import com.kikepb.core.designsystem.triangulacion.format.formatDayMonth
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import squadfy_app.feature.club.presentation.generated.resources.absences_club_caps
+import squadfy_app.feature.club.presentation.generated.resources.absences_mine_caps
+import squadfy_app.feature.club.presentation.generated.resources.absences_notice_body
+import squadfy_app.feature.club.presentation.generated.resources.absences_notice_title
 import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -81,8 +102,14 @@ fun AbsencesRoot(onBackClick: () -> Unit, viewModel: AbsencesViewModel = koinVie
 @Composable
 fun AbsencesScreen(state: AbsencesState, onAction: (AbsencesAction) -> Unit, onBackClick: () -> Unit, snackbarHostState: SnackbarHostState) {
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
-        topBar = { SquadfyTopBar(title = stringResource(Res.string.absences_title), onBackClick = onBackClick) },
+        containerColor = Triangulacion.colors.surface100,
+        topBar = {
+            SquadfyTopBar(
+                title = { Text(text = stringResource(Res.string.absences_title), style = Triangulacion.type.displayMd, color = Triangulacion.colors.ink) },
+                navigationIcon = { SquadfyTopBarBackButton(onClick = onBackClick) },
+                actions = { SquadfyTopBarIconButton(onClick = { onAction(AbsencesAction.OnAddClick) }, icon = TriIcon.Plus, contentDescription = stringResource(Res.string.absences_add)) }
+            )
+        },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         PullToRefreshBox(isRefreshing = state.isRefreshing, onRefresh = { onAction(AbsencesAction.OnRefresh) }, modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -91,12 +118,20 @@ fun AbsencesScreen(state: AbsencesState, onAction: (AbsencesAction) -> Unit, onB
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                item(key = "add") {
-                    SquadfyButton(text = stringResource(Res.string.absences_add), onClick = { onAction(AbsencesAction.OnAddClick) }, modifier = Modifier.fillMaxWidth())
+                item(key = "notice") {
+                    TriNotice(title = stringResource(Res.string.absences_notice_title), body = stringResource(Res.string.absences_notice_body), tone = TriNoticeTone.Warn)
                 }
                 if (state.isLoading && state.absences.isEmpty()) item(key = "loading") { SquadfyLoadingIndicator() }
                 if (!state.isLoading && state.absences.isEmpty()) item(key = "empty") { HintText(text = stringResource(Res.string.absences_empty)) }
-                items(items = state.absences, key = { it.id }) { absence -> AbsenceRow(absence = absence, state = state, onAction = onAction) }
+                val (mine, others) = state.absences.partition { state.canDelete(it) }
+                if (mine.isNotEmpty()) {
+                    item(key = "mine-title") { TriCaps(text = stringResource(Res.string.absences_mine_caps), modifier = Modifier.padding(top = 8.dp)) }
+                    items(items = mine, key = { it.id }) { absence -> AbsenceRow(absence = absence, state = state, onAction = onAction) }
+                }
+                if (others.isNotEmpty()) {
+                    item(key = "club-title") { TriCaps(text = stringResource(Res.string.absences_club_caps), modifier = Modifier.padding(top = 8.dp)) }
+                    items(items = others, key = { it.id }) { absence -> AbsenceRow(absence = absence, state = state, onAction = onAction) }
+                }
             }
         }
     }
@@ -105,20 +140,37 @@ fun AbsencesScreen(state: AbsencesState, onAction: (AbsencesAction) -> Unit, onB
 
 @Composable
 private fun AbsenceRow(absence: MemberAbsenceModel, state: AbsencesState, onAction: (AbsencesAction) -> Unit) {
-    SectionCard {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+    val colors = Triangulacion.colors
+    val name = state.members[absence.clubMemberId]?.username ?: stringResource(Res.string.former_member)
+    val mine = state.canDelete(absence)
+    TriCard(modifier = Modifier.fillMaxWidth(), contentPadding = 14.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (mine) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(44.dp).background(colors.warningSoft, CircleShape)) {
+                    TriIconView(icon = TriIcon.Moon, contentDescription = null, size = 22.dp, tint = colors.warning)
+                }
+            } else {
+                TriAvatar(name = name, imageUrl = state.members[absence.clubMemberId]?.pictureUrl, size = 44.dp)
+            }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = state.members[absence.clubMemberId]?.username ?: stringResource(Res.string.former_member),
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                    text = if (mine) "${formatDayMonth(absence.fromDate)} – ${formatDayMonth(absence.toDate)}" else name,
+                    style = Triangulacion.type.title,
+                    color = colors.ink
                 )
-                HintText(text = stringResource(Res.string.absences_period, absence.fromDate.formatted(), absence.toDate.formatted()))
-                absence.reason?.let { HintText(text = it) }
+                Text(
+                    text = listOfNotNull(
+                        if (mine) null else "${formatDayMonth(absence.fromDate)} – ${formatDayMonth(absence.toDate)}",
+                        absence.reason
+                    ).joinToString(" · "),
+                    style = Triangulacion.type.bodySm,
+                    color = colors.inkMuted
+                )
             }
-            if (state.canDelete(absence)) {
-                IconButton(onClick = { onAction(AbsencesAction.OnDeleteClick(absence)) }) {
-                    Icon(imageVector = Icons.Outlined.Delete, contentDescription = stringResource(Res.string.absences_delete))
-                }
+            if (mine) {
+                TriRoundIconButton(icon = TriIcon.Trash, contentDescription = stringResource(Res.string.absences_delete), onClick = { onAction(AbsencesAction.OnDeleteClick(absence)) }, filled = true)
+            } else {
+                TriIconView(icon = TriIcon.Moon, contentDescription = null, size = 20.dp, tint = colors.inkMuted)
             }
         }
     }

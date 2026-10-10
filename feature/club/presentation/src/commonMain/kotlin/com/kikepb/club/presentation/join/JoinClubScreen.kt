@@ -1,5 +1,19 @@
 package com.kikepb.club.presentation.join
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.ui.text.style.TextAlign
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarBackButton
+import com.kikepb.core.designsystem.triangulacion.components.InviteCodeField
+import com.kikepb.core.designsystem.triangulacion.components.TriButton
+import com.kikepb.core.designsystem.triangulacion.components.TriCaps
+import com.kikepb.core.designsystem.triangulacion.components.TriCard
+import com.kikepb.core.designsystem.triangulacion.components.TriTextButton
+import com.kikepb.core.designsystem.triangulacion.theme.Space
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import squadfy_app.feature.club.presentation.generated.resources.join_create_instead
+import squadfy_app.feature.club.presentation.generated.resources.join_profile_title
 import squadfy_app.feature.club.presentation.generated.resources.join_title
 import squadfy_app.feature.club.presentation.generated.resources.join_heading
 import squadfy_app.feature.club.presentation.generated.resources.join_subtitle
@@ -56,6 +70,7 @@ import com.kikepb.club.presentation.join.JoinClubEvent.Success
 @Composable
 fun JoinClubRoot(
     onBackClick: () -> Unit,
+    onCreateClubClick: (() -> Unit)? = null,
     onSuccess: (clubId: String) -> Unit,
     viewModel: JoinClubViewModel = koinViewModel()
 ) {
@@ -76,21 +91,26 @@ fun JoinClubRoot(
         state = state,
         onAction = viewModel::onAction,
         onBackClick = onBackClick,
+        onCreateClubClick = onCreateClubClick,
         snackbarHostState = snackbarHostState
     )
 }
 
+/** Unirse (spec 018, screen 10): the code in cells, then my shirt number and position for this club. */
 @Composable
 fun JoinClubScreen(
     state: JoinClubState,
     onAction: (JoinClubAction) -> Unit,
     onBackClick: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    onCreateClubClick: (() -> Unit)? = null
 ) {
+    val colors = Triangulacion.colors
+    val code = state.invitationCodeState.text.toString()
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
+        containerColor = colors.surface100,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = { SquadfyTopBar(title = stringResource(Res.string.join_title), onBackClick = onBackClick) },
+        topBar = { SquadfyTopBar(title = { }, navigationIcon = { SquadfyTopBarBackButton(onClick = onBackClick) }) },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Column(
@@ -98,84 +118,64 @@ fun JoinClubScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(horizontal = Space.s5, vertical = Space.s2),
+            verticalArrangement = Arrangement.spacedBy(Space.s5)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = stringResource(Res.string.join_heading),
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = (-0.5).sp
-                    ),
-                    color = MaterialTheme.colorScheme.extended.textPrimary
+                Text(text = stringResource(Res.string.join_heading), style = Triangulacion.type.displayLg, color = colors.ink)
+                Text(text = stringResource(Res.string.join_subtitle), style = Triangulacion.type.body, color = colors.inkMuted)
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                InviteCodeField(
+                    value = code,
+                    onValueChange = { state.invitationCodeState.setTextAndPlaceCursorAtEnd(it) },
+                    isError = state.invitationCodeError != null,
+                    onDone = { if (state.canSubmit) onAction(OnJoinClub) },
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Text(
-                    text = stringResource(Res.string.join_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.extended.textPlaceholder
+                    text = state.invitationCodeError?.asString() ?: stringResource(Res.string.join_code_hint),
+                    style = Triangulacion.type.bodySm,
+                    color = if (state.invitationCodeError != null) colors.danger else colors.inkMuted,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
             }
-
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 2.dp,
-                tonalElevation = 0.dp
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    SquadfyTextField(
-                        state = state.invitationCodeState,
-                        modifier = Modifier.fillMaxWidth(),
-                        title = stringResource(Res.string.join_code_label),
-                        placeholder = stringResource(Res.string.join_code_placeholder),
-                        singleLine = true,
-                        isError = state.invitationCodeError != null,
-                        supportingText = state.invitationCodeError?.asString() ?: stringResource(Res.string.join_code_hint),
-                        keyboardType = KeyboardType.Text
-                    )
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-
-                    SquadfyTextField(
-                        state = state.shirtNumberState,
-                        modifier = Modifier.fillMaxWidth(),
-                        title = stringResource(Res.string.join_shirt_label),
-                        placeholder = stringResource(Res.string.join_shirt_placeholder),
-                        singleLine = true,
-                        isError = state.shirtNumberError != null,
-                        supportingText = state.shirtNumberError?.asString() ?: stringResource(Res.string.join_shirt_hint),
-                        keyboardType = KeyboardType.Number
-                    )
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-
-                    Text(
-                        text = stringResource(Res.string.join_position_title),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.extended.textSecondary
-                    )
-                    PositionChips(
-                        selected = state.position,
-                        onSelected = { onAction(JoinClubAction.OnPositionSelected(it)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+            TriCard(modifier = Modifier.fillMaxWidth(), contentPadding = Space.s4) {
+                TriCaps(text = stringResource(Res.string.join_profile_title))
+                Spacer(Modifier.height(Space.s3))
+                SquadfyTextField(
+                    state = state.shirtNumberState,
+                    modifier = Modifier.fillMaxWidth(),
+                    title = stringResource(Res.string.join_shirt_label),
+                    placeholder = stringResource(Res.string.join_shirt_placeholder),
+                    singleLine = true,
+                    isError = state.shirtNumberError != null,
+                    supportingText = state.shirtNumberError?.asString() ?: stringResource(Res.string.join_shirt_hint),
+                    keyboardType = KeyboardType.Number
+                )
+                Spacer(Modifier.height(Space.s4))
+                TriCaps(text = stringResource(Res.string.join_position_title))
+                Spacer(Modifier.height(Space.s2))
+                PositionChips(
+                    selected = state.position,
+                    onSelected = { onAction(JoinClubAction.OnPositionSelected(it)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                TriButton(
+                    text = stringResource(Res.string.join_submit),
+                    onClick = { onAction(OnJoinClub) },
+                    enabled = state.canSubmit,
+                    isLoading = state.isLoading,
+                    large = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (onCreateClubClick != null) {
+                    TriTextButton(text = stringResource(Res.string.join_create_instead), onClick = onCreateClubClick, modifier = Modifier.fillMaxWidth())
                 }
             }
-
-            SquadfyButton(
-                text = stringResource(Res.string.join_submit),
-                onClick = { onAction(OnJoinClub) },
-                enabled = state.canSubmit,
-                isLoading = state.isLoading,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
     }
 }

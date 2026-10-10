@@ -1,5 +1,14 @@
 package com.kikepb.club.presentation.detail.components
 
+import com.kikepb.club.domain.model.ClubMemberRole
+import com.kikepb.club.presentation.mapper.toTri
+import com.kikepb.core.designsystem.triangulacion.components.PosChip
+import com.kikepb.core.designsystem.triangulacion.components.TriAvatar
+import com.kikepb.core.designsystem.triangulacion.components.TriCard
+import com.kikepb.core.designsystem.triangulacion.components.TriTag
+import com.kikepb.core.designsystem.triangulacion.components.TriTagTone
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import com.kikepb.core.designsystem.triangulacion.theme.tabular
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,61 +40,23 @@ import com.kikepb.core.designsystem.theme.extended
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SquadfyClubDetailMemberCard(member: ClubMemberModel, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 1.dp,
-        tonalElevation = 0.dp
-    ) {
+    // Spec 018: avatar, name with the role when it is not a plain player, shirt number and position chip
+    val colors = Triangulacion.colors
+    TriCard(modifier = Modifier.fillMaxWidth(), onClick = onClick, contentPadding = 0.dp) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SquadfyAvatarPhoto(
-                displayText = initialsOf(member.username),
-                imageUrl = member.pictureUrl,
-                size = AvatarSize.SMALL
-            )
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text(
-                    text = member.username,
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.extended.textPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (member.position != null) {
-                    Text(
-                        text = stringResource(member.position.label),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.extended.textPlaceholder,
-                        maxLines = 1
-                    )
+            TriAvatar(name = member.username, imageUrl = member.pictureUrl, size = 44.dp)
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = member.username, style = Triangulacion.type.title, color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    member.shirtNumber?.let { Text(text = "#$it", style = Triangulacion.type.bodySm.tabular, color = colors.inkMuted) }
+                    if (member.role != ClubMemberRole.PLAYER) TriTag(text = stringResource(member.role.label), tone = TriTagTone.Neutral)
                 }
             }
-            member.shirtNumber?.let { number ->
-                Box(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "#$number",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+            member.position.toTri()?.let { PosChip(it) }
         }
     }
 }

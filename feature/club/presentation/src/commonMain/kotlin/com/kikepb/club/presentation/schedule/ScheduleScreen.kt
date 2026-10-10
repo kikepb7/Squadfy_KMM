@@ -1,5 +1,40 @@
 package com.kikepb.club.presentation.schedule
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import org.jetbrains.compose.resources.StringResource
+import com.kikepb.core.designsystem.triangulacion.components.TriButton
+import com.kikepb.core.designsystem.triangulacion.components.TriButtonVariant
+import com.kikepb.core.designsystem.triangulacion.components.TriCaps
+import com.kikepb.core.designsystem.triangulacion.components.TriCard
+import com.kikepb.core.designsystem.triangulacion.components.TriChip
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriIconView
+import com.kikepb.core.designsystem.triangulacion.components.TriNotice
+import com.kikepb.core.designsystem.triangulacion.components.TriNoticeTone
+import com.kikepb.core.designsystem.triangulacion.components.TriRoundIconButton
+import com.kikepb.core.designsystem.triangulacion.theme.Radius
+import com.kikepb.core.designsystem.triangulacion.theme.Space
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import squadfy_app.feature.club.presentation.generated.resources.day_initial_friday
+import squadfy_app.feature.club.presentation.generated.resources.day_initial_monday
+import squadfy_app.feature.club.presentation.generated.resources.day_initial_saturday
+import squadfy_app.feature.club.presentation.generated.resources.day_initial_sunday
+import squadfy_app.feature.club.presentation.generated.resources.day_initial_thursday
+import squadfy_app.feature.club.presentation.generated.resources.day_initial_tuesday
+import squadfy_app.feature.club.presentation.generated.resources.day_initial_wednesday
+import squadfy_app.feature.club.presentation.generated.resources.schedule_days_before_one
+import squadfy_app.feature.club.presentation.generated.resources.schedule_days_before_value
+import squadfy_app.feature.club.presentation.generated.resources.schedule_days_before_zero
+import squadfy_app.feature.club.presentation.generated.resources.schedule_decrease_days
+import squadfy_app.feature.club.presentation.generated.resources.schedule_increase_days
 import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -221,37 +256,36 @@ private fun ScheduleForm(state: ScheduleState, onAction: (ScheduleAction) -> Uni
     val form = state.form ?: return
     Card {
         Label(text = stringResource(Res.string.schedule_day))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        // Spec 018: one box per weekday with its initial; the selected one in Volt
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
             DayOfWeek.entries.forEach { day ->
-                FilterChip(
+                DayBox(
+                    initial = stringResource(day.initial),
+                    description = stringResource(day.label),
                     selected = form.dayOfWeek == day,
                     onClick = { onAction(ScheduleAction.OnDaySelected(day)) },
-                    label = { Text(text = stringResource(day.label).take(3)) }
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
-        TimeRow(label = stringResource(Res.string.schedule_time), time = form.matchTime) {
-            onAction(ScheduleAction.OnOpenTimePicker(TimeTarget.MATCH))
-        }
+        Label(text = stringResource(Res.string.schedule_time))
+        ValueBox(icon = TriIcon.Clock, value = form.matchTime.formatted()) { onAction(ScheduleAction.OnOpenTimePicker(TimeTarget.MATCH)) }
         SquadfyTextField(state = state.timeZone, title = stringResource(Res.string.schedule_time_zone), singleLine = true)
         Label(text = stringResource(Res.string.schedule_format))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             MatchFormat.entries.forEach { format ->
-                FilterChip(
-                    selected = form.format == format,
-                    onClick = { onAction(ScheduleAction.OnFormatSelected(format)) },
-                    label = { Text(text = stringResource(format.label)) }
-                )
+                TriChip(text = stringResource(format.label), selected = form.format == format, onClick = { onAction(ScheduleAction.OnFormatSelected(format)) })
             }
         }
         SquadfyTextField(
             state = state.duration,
             title = stringResource(Res.string.schedule_duration),
             singleLine = true,
-            keyboardType = KeyboardType.Number
+            keyboardType = KeyboardType.Number,
+            leadingIcon = TriIcon.Ball
         )
         if (state.customDeadlinesEnabled) {
-            HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+            HorizontalDivider(color = Triangulacion.colors.line)
             DeadlineEditor(
                 title = stringResource(Res.string.schedule_close),
                 days = form.closeDaysBefore,
@@ -273,35 +307,87 @@ private fun ScheduleForm(state: ScheduleState, onAction: (ScheduleAction) -> Uni
                 Switch(checked = form.isActive, onCheckedChange = { onAction(ScheduleAction.OnActiveChanged(it)) })
             }
         }
-        state.formError?.let { Text(text = it.asString(), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
-        SquadfyButton(
+        state.formError?.let { TriNotice(title = it.asString(), tone = TriNoticeTone.Danger) }
+        TriButton(
             text = stringResource(if (state.schedule == null) Res.string.schedule_save_create else Res.string.schedule_save_update),
             onClick = { onAction(ScheduleAction.OnSave) },
             isLoading = state.isWorking,
+            large = true,
             modifier = Modifier.fillMaxWidth()
         )
     }
 }
 
+/** Close / draw deadline: «1 día antes · 22:00» with a stepper for the days and the time as a chip. */
 @Composable
 private fun DeadlineEditor(title: String, days: Int, time: LocalTime, onDaysChange: (Int) -> Unit, onPickTime: () -> Unit) {
-    Label(text = title)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = stringResource(Res.string.schedule_days_before), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-        TextButton(onClick = { onDaysChange(days - 1) }, enabled = days > 0) { Text("−") }
-        Text(text = days.toString(), style = MaterialTheme.typography.titleSmall)
-        TextButton(onClick = { onDaysChange(days + 1) }, enabled = days < 6) { Text("+") }
-        OutlinedButton(onClick = onPickTime) { Text(text = time.formatted()) }
+    val colors = Triangulacion.colors
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(text = title, style = Triangulacion.type.title, color = colors.ink)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = when (days) {
+                    0 -> stringResource(Res.string.schedule_days_before_zero)
+                    1 -> stringResource(Res.string.schedule_days_before_one)
+                    else -> stringResource(Res.string.schedule_days_before_value, days)
+                },
+                style = Triangulacion.type.body,
+                color = colors.inkMuted,
+                modifier = Modifier.weight(1f)
+            )
+            TriRoundIconButton(icon = TriIcon.Minus, contentDescription = stringResource(Res.string.schedule_decrease_days), onClick = { if (days > 0) onDaysChange(days - 1) }, filled = true)
+            TriRoundIconButton(icon = TriIcon.Plus, contentDescription = stringResource(Res.string.schedule_increase_days), onClick = { if (days < 6) onDaysChange(days + 1) }, filled = true)
+            TriChip(text = time.formatted(), selected = false, onClick = onPickTime, icon = TriIcon.Clock)
+        }
     }
 }
 
 @Composable
-private fun TimeRow(label: String, time: LocalTime, onClick: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(text = label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-        OutlinedButton(onClick = onClick) { Text(text = time.formatted()) }
+private fun DayBox(initial: String, description: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = Triangulacion.colors
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .background(if (selected) colors.volt else colors.surface200, RoundedCornerShape(Radius.sm))
+            .border(1.5.dp, if (selected) colors.volt else colors.lineStrong, RoundedCornerShape(Radius.sm))
+            .clickable(role = Role.RadioButton, onClick = onClick)
+            .semantics { contentDescription = description; this.selected = selected }
+    ) {
+        Text(text = initial, style = Triangulacion.type.title, color = if (selected) colors.onVolt else colors.ink)
     }
 }
+
+/** Read-only field that opens a picker (time). */
+@Composable
+private fun ValueBox(icon: TriIcon, value: String, onClick: () -> Unit) {
+    val colors = Triangulacion.colors
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 52.dp)
+            .background(colors.surface200, RoundedCornerShape(Radius.sm))
+            .border(1.5.dp, colors.lineStrong, RoundedCornerShape(Radius.sm))
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 14.dp)
+    ) {
+        TriIconView(icon = icon, contentDescription = null, size = 20.dp, tint = colors.inkMuted)
+        Text(text = value, style = Triangulacion.type.body.copy(fontSize = Triangulacion.type.bodyLg.fontSize), color = colors.ink)
+    }
+}
+
+private val DayOfWeek.initial: StringResource
+    get() = when (this) {
+        DayOfWeek.MONDAY -> Res.string.day_initial_monday
+        DayOfWeek.TUESDAY -> Res.string.day_initial_tuesday
+        DayOfWeek.WEDNESDAY -> Res.string.day_initial_wednesday
+        DayOfWeek.THURSDAY -> Res.string.day_initial_thursday
+        DayOfWeek.FRIDAY -> Res.string.day_initial_friday
+        DayOfWeek.SATURDAY -> Res.string.day_initial_saturday
+        DayOfWeek.SUNDAY -> Res.string.day_initial_sunday
+    }
 
 @Composable
 private fun ExceptionsSection(state: ScheduleState, onAction: (ScheduleAction) -> Unit) {
@@ -327,9 +413,7 @@ private fun ExceptionsSection(state: ScheduleState, onAction: (ScheduleAction) -
         if (state.canEdit) {
             val form = state.exceptionForm
             if (form == null) {
-                OutlinedButton(onClick = { onAction(ScheduleAction.OnOpenExceptionForm) }, modifier = Modifier.fillMaxWidth()) {
-                    Text(text = stringResource(Res.string.exceptions_add))
-                }
+                TriButton(text = stringResource(Res.string.exceptions_add), onClick = { onAction(ScheduleAction.OnOpenExceptionForm) }, variant = TriButtonVariant.Secondary, modifier = Modifier.fillMaxWidth())
             } else {
                 ExceptionFormContent(form = form, isWorking = state.isWorking, onAction = onAction)
             }
@@ -371,30 +455,16 @@ private fun ExceptionFormContent(form: ExceptionForm, isWorking: Boolean, onActi
     HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(text = stringResource(Res.string.exceptions_date), modifier = Modifier.weight(1f))
-        OutlinedButton(onClick = { onAction(ScheduleAction.OnOpenDatePicker(DateTarget.EXCEPTION)) }) {
-            Text(text = form.date?.toString() ?: stringResource(Res.string.exceptions_pick_date))
-        }
+        TriButton(text = form.date?.toString() ?: stringResource(Res.string.exceptions_pick_date), onClick = { onAction(ScheduleAction.OnOpenDatePicker(DateTarget.EXCEPTION)) }, variant = TriButtonVariant.Secondary)
     }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        FilterChip(
-            selected = form.type == ScheduleExceptionType.CANCELLED,
-            onClick = { onAction(ScheduleAction.OnExceptionTypeSelected(ScheduleExceptionType.CANCELLED)) },
-            label = { Text(text = stringResource(Res.string.exceptions_type_cancel)) }
-        )
-        FilterChip(
-            selected = form.type == ScheduleExceptionType.RESCHEDULED,
-            onClick = { onAction(ScheduleAction.OnExceptionTypeSelected(ScheduleExceptionType.RESCHEDULED)) },
-            label = { Text(text = stringResource(Res.string.exceptions_type_reschedule)) }
-        )
+        TriChip(text = stringResource(Res.string.exceptions_type_cancel), selected = form.type == ScheduleExceptionType.CANCELLED, onClick = { onAction(ScheduleAction.OnExceptionTypeSelected(ScheduleExceptionType.CANCELLED)) })
+        TriChip(text = stringResource(Res.string.exceptions_type_reschedule), selected = form.type == ScheduleExceptionType.RESCHEDULED, onClick = { onAction(ScheduleAction.OnExceptionTypeSelected(ScheduleExceptionType.RESCHEDULED)) })
     }
     if (form.type == ScheduleExceptionType.RESCHEDULED) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { onAction(ScheduleAction.OnOpenDatePicker(DateTarget.RESCHEDULE)) }, modifier = Modifier.weight(1f)) {
-                Text(text = form.newDate?.toString() ?: stringResource(Res.string.exceptions_new_date))
-            }
-            OutlinedButton(onClick = { onAction(ScheduleAction.OnOpenTimePicker(TimeTarget.RESCHEDULE)) }, modifier = Modifier.weight(1f)) {
-                Text(text = form.newTime?.formatted() ?: stringResource(Res.string.exceptions_new_time))
-            }
+            TriButton(text = form.newDate?.toString() ?: stringResource(Res.string.exceptions_new_date), onClick = { onAction(ScheduleAction.OnOpenDatePicker(DateTarget.RESCHEDULE)) }, variant = TriButtonVariant.Secondary, modifier = Modifier.weight(1f))
+            TriButton(text = form.newTime?.formatted() ?: stringResource(Res.string.exceptions_new_time), onClick = { onAction(ScheduleAction.OnOpenTimePicker(TimeTarget.RESCHEDULE)) }, variant = TriButtonVariant.Secondary, modifier = Modifier.weight(1f))
         }
     }
     SquadfyTextField(state = form.reason, title = stringResource(Res.string.exceptions_reason), singleLine = true)
@@ -489,24 +559,19 @@ private fun ScheduleDialogs(state: ScheduleState, onAction: (ScheduleAction) -> 
 
 @Composable
 private fun Card(content: @Composable () -> Unit) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 1.dp
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) { content() }
+    TriCard(modifier = Modifier.fillMaxWidth(), contentPadding = Space.s5) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { content() }
     }
 }
 
 @Composable
 private fun Label(text: String) {
-    Text(text = text, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.extended.textSecondary)
+    TriCaps(text = text)
 }
 
 @Composable
 private fun Hint(text: String) {
-    Text(text = text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.extended.textPlaceholder)
+    Text(text = text, style = Triangulacion.type.bodySm, color = Triangulacion.colors.inkMuted)
 }
 
 private const val MILLIS_PER_DAY = 24L * 60 * 60 * 1000

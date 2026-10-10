@@ -26,6 +26,7 @@ fun NavGraphBuilder.setupGraph(navController: NavController) {
         composable<JoinClubRoute> {
             JoinClubRoot(
                 onBackClick = { navController.navigateUp() },
+                onCreateClubClick = { navController.navigate(CreateClubRoute) { popUpTo(ClubsListRoute) } },
                 onSuccess = { clubId -> navController.openNewClub(ClubDetailRoute(clubId = clubId)) }
             )
         }

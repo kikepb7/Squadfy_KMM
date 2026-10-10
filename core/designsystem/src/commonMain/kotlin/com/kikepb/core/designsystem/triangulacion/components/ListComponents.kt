@@ -219,7 +219,7 @@ private fun TimelineCard(event: TimelineEvent, alignEnd: Boolean, onClick: (() -
 
 /**
  * CodigoClub: the invite code in cells with a dash in the middle. Case-insensitive: the field upper-cases and keeps
- * letters and digits only.
+ * letters and digits only. It shows [length] cells and grows up to [maxLength] (the backend accepts 6–12).
  */
 @Composable
 fun InviteCodeField(
@@ -227,6 +227,7 @@ fun InviteCodeField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     length: Int = 8,
+    maxLength: Int = 12,
     isError: Boolean = false,
     onDone: (() -> Unit)? = null
 ) {
@@ -234,7 +235,7 @@ fun InviteCodeField(
     val description = stringResource(Res.string.tri_code_a11y)
     BasicTextField(
         value = value,
-        onValueChange = { input -> onValueChange(input.filter { it.isLetterOrDigit() }.uppercase().take(length)) },
+        onValueChange = { input -> onValueChange(input.filter { it.isLetterOrDigit() }.uppercase().take(maxLength)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Done, autoCorrectEnabled = false),
         keyboardActions = KeyboardActions(onDone = { onDone?.invoke() }),
@@ -244,9 +245,10 @@ fun InviteCodeField(
         decorationBox = { inner ->
             Box {
                 Box(Modifier.alpha(0f).size(1.dp)) { inner() }
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    for (i in 0 until length) {
-                        if (i == length / 2) Box(Modifier.size(width = 10.dp, height = 2.dp).background(colors.lineStrong))
+                val cells = if (value.length < length) length else (value.length + 1).coerceAtMost(maxLength)
+                Row(horizontalArrangement = Arrangement.spacedBy(if (cells > length) 4.dp else 6.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    for (i in 0 until cells) {
+                        if (cells == length && i == length / 2) Box(Modifier.size(width = 10.dp, height = 2.dp).background(colors.lineStrong))
                         val char = value.getOrNull(i)
                         val active = i == value.length
                         Box(

@@ -1,5 +1,7 @@
 package com.kikepb.club.presentation.clubs
 
+import com.kikepb.core.designsystem.triangulacion.components.ClubCrest
+import com.kikepb.core.designsystem.triangulacion.theme.CrestTone
 import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -156,7 +158,7 @@ private fun MyClubCard(myClub: MyClubModel, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            SquadfyAvatarPhoto(displayText = initialsOf(club.name), imageUrl = club.clubLogoUrl)
+            ClubCrest(name = club.name, size = 44.dp, tone = CrestTone.forKey(club.id), logoUrl = club.clubLogoUrl)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     text = club.name,

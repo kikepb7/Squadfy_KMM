@@ -327,11 +327,11 @@
     <string name="announcement_absence_warning">Tienes una ausencia ese día</string>
     <string name="settings_absences">Ausencias</string>
     <string name="join_title">Unirme a un club</string>
-    <string name="join_heading">Introduce el código</string>
-    <string name="join_subtitle">Pídele el código de invitación al administrador del club.</string>
+    <string name="join_heading">Únete con un código</string>
+    <string name="join_subtitle">Pídeselo al owner de tu club.</string>
     <string name="join_code_label">Código de invitación *</string>
     <string name="join_code_placeholder">Ej: ABC123</string>
-    <string name="join_code_hint">6–12 caracteres alfanuméricos</string>
+    <string name="join_code_hint">No distingue mayúsculas de minúsculas · 6 a 12 caracteres.</string>
     <string name="join_shirt_label">Número de camiseta</string>
     <string name="join_shirt_placeholder">Ej: 10</string>
     <string name="join_shirt_hint">Opcional · Entre 1 y 999</string>
@@ -421,4 +421,22 @@
     <string name="member_stat_yellows">AMARILLAS</string>
     <string name="member_recent_title">Últimos partidos</string>
     <string name="member_edit_a11y">Editar mis datos</string>
+    <string name="join_profile_title">Tu ficha en el club</string>
+    <string name="join_create_instead">Crear mi propio club</string>
+    <string name="day_initial_monday">L</string>
+    <string name="day_initial_tuesday">M</string>
+    <string name="day_initial_wednesday">X</string>
+    <string name="day_initial_thursday">J</string>
+    <string name="day_initial_friday">V</string>
+    <string name="day_initial_saturday">S</string>
+    <string name="day_initial_sunday">D</string>
+    <string name="schedule_days_before_value">%1$d días antes</string>
+    <string name="schedule_days_before_one">1 día antes</string>
+    <string name="schedule_days_before_zero">El mismo día</string>
+    <string name="schedule_decrease_days">Un día menos</string>
+    <string name="schedule_increase_days">Un día más</string>
+    <string name="absences_mine_caps">TUS AUSENCIAS</string>
+    <string name="absences_club_caps">AUSENCIAS DEL CLUB</string>
+    <string name="absences_notice_title">Avisa si no vas a estar</string>
+    <string name="absences_notice_body">Te desapuntamos de las convocatorias abiertas de esas fechas.</string>
 </resources>
