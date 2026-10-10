@@ -5,8 +5,8 @@
 - [x] **T-002** Logo Corte (vectores marca/lockup, color e inverso), icono de app Android/iOS y splash (AC-018-03).
 
 ## Fase 2 · Componentes
-- [ ] **T-003** Componentes base por dentro con su API: botón, campos, barra inferior, cabecera, diálogos y hojas, avatar, burbujas (AC-018-05).
-- [ ] **T-004** Componentes propios: CutShape, Escudo, PosChip, Plazas, CuentaAtras, Ticket, Equilibrio, Marcador, Forma, DeltaRating, FilaRanking, Cronologia, Aviso, Tabs, Campo11 (AC-018-04/05).
+- [x] **T-003** Componentes base por dentro con su API: botón, campos, barra inferior, cabecera, diálogos y hojas, avatar, burbujas (AC-018-05).
+- [x] **T-004** Componentes propios: CutShape, Escudo, PosChip, Plazas, CuentaAtras, Ticket, Equilibrio, Marcador, Forma, DeltaRating, FilaRanking, Cronologia, Aviso, Tabs, Campo11 (AC-018-04/05).
 
 ## Fase 3 · Pantallas
 - [ ] **T-005** Auth: bienvenida (nueva), login, registro, recuperación y verificación (AC-018-06/07).

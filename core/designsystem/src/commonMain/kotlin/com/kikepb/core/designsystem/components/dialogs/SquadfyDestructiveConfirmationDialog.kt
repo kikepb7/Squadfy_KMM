@@ -57,7 +57,7 @@ fun SquadfyDestructiveConfirmationDialog(
                 .widthIn(max = 480.dp)
                 .background(
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(size = 16.dp)
+                    shape = RoundedCornerShape(size = 20.dp)
                 )
         ) {
             Column(

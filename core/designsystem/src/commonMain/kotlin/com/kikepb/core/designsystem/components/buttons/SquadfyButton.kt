@@ -19,6 +19,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.heightIn
+import com.kikepb.core.designsystem.triangulacion.components.CutSm
+import com.kikepb.core.designsystem.triangulacion.theme.Radius
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle.DESTRUCTIVE_PRIMARY
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle.DESTRUCTIVE_SECONDARY
 import com.kikepb.core.designsystem.components.buttons.SquadfyButtonStyle.PRIMARY
@@ -36,6 +41,10 @@ enum class SquadfyButtonStyle {
     TEXT
 }
 
+/**
+ * The app's button on Triangulación (spec 018): PRIMARY = brand with the Corte, SECONDARY = outlined, DESTRUCTIVE_* =
+ * danger, TEXT = accent text. Minimum height 48 dp. For the Volt call to action use [com.kikepb.core.designsystem.triangulacion.components.TriButton].
+ */
 @Composable
 fun SquadfyButton(
     text: String,
@@ -46,47 +55,48 @@ fun SquadfyButton(
     isLoading: Boolean = false,
     leadingIcon: @Composable (() -> Unit)? = null,
 ) {
-    val defaultBorderStroke = BorderStroke(
-        width = 1.dp,
-        color = MaterialTheme.colorScheme.extended.disabledOutline
-    )
-
+    val colors = Triangulacion.colors
+    val (container, content) = when {
+        !enabled && style != TEXT -> colors.surface300 to colors.inkSubtle
+        !enabled -> Color.Transparent to colors.inkSubtle
+        style == PRIMARY -> colors.brand to colors.onBrand
+        style == DESTRUCTIVE_PRIMARY -> colors.danger to colors.surface100
+        style == SECONDARY -> colors.surface200 to colors.ink
+        style == DESTRUCTIVE_SECONDARY -> colors.surface200 to colors.danger
+        else -> Color.Transparent to colors.accentText
+    }
     val border = when {
-        style == PRIMARY && !enabled -> defaultBorderStroke
-        style == SECONDARY -> defaultBorderStroke
-        style == DESTRUCTIVE_PRIMARY && !enabled -> defaultBorderStroke
-        style == DESTRUCTIVE_SECONDARY -> {
-            val borderColor = if(enabled) {
-                MaterialTheme.colorScheme.extended.destructiveSecondaryOutline
-            } else {
-                MaterialTheme.colorScheme.extended.disabledOutline
-            }
-            BorderStroke(
-                width = 1.dp,
-                color = borderColor
-            )
-        }
+        !enabled -> null
+        style == SECONDARY -> BorderStroke(width = 1.5.dp, color = colors.lineStrong)
+        style == DESTRUCTIVE_SECONDARY -> BorderStroke(width = 1.5.dp, color = colors.danger)
         else -> null
     }
+    val shape = if (style == PRIMARY) CutSm else RoundedCornerShape(Radius.md)
 
     Button(
         onClick = onClick,
-        modifier = modifier,
-        enabled = enabled,
-        shape = RoundedCornerShape(8.dp),
-        colors = squadfyButtonColors(style = style),
-        border = border
+        modifier = modifier.heightIn(min = 48.dp),
+        enabled = enabled && !isLoading,
+        shape = shape,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = container,
+            contentColor = content,
+            disabledContainerColor = if (isLoading) container else container,
+            disabledContentColor = content
+        ),
+        border = border,
+        elevation = null
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(6.dp)
+            modifier = Modifier.padding(vertical = 4.dp)
         ) {
             CircularProgressIndicator(
                 modifier = Modifier
-                    .size(15.dp)
+                    .size(18.dp)
                     .alpha(if (isLoading) 1f else 0f),
-                strokeWidth = 1.5.dp,
-                color = Color.Black
+                strokeWidth = 2.dp,
+                color = content
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(
@@ -101,48 +111,13 @@ fun SquadfyButton(
                 leadingIcon?.invoke()
                 Text(
                     text = text,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = Triangulacion.type.label.copy(fontSize = 16.sp),
                     textAlign = TextAlign.Center
                 )
             }
         }
     }
 }
-
-@Composable
-private fun squadfyButtonColors(style: SquadfyButtonStyle) =
-    when (style) {
-        PRIMARY -> ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContainerColor = MaterialTheme.colorScheme.extended.disabledFill,
-            disabledContentColor = MaterialTheme.colorScheme.extended.textDisabled
-        )
-        DESTRUCTIVE_PRIMARY -> ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.error,
-            contentColor = MaterialTheme.colorScheme.onError,
-            disabledContainerColor = MaterialTheme.colorScheme.extended.disabledFill,
-            disabledContentColor = MaterialTheme.colorScheme.extended.textDisabled
-        )
-        SECONDARY -> ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.extended.textSecondary,
-            disabledContainerColor = Color.Transparent,
-            disabledContentColor = MaterialTheme.colorScheme.extended.textDisabled
-        )
-        DESTRUCTIVE_SECONDARY -> ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.error,
-            disabledContainerColor = Color.Transparent,
-            disabledContentColor = MaterialTheme.colorScheme.extended.textDisabled
-        )
-        TEXT -> ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.tertiary,
-            disabledContainerColor = Color.Transparent,
-            disabledContentColor = MaterialTheme.colorScheme.extended.textDisabled
-        )
-    }
 
 @Preview
 @Composable

@@ -22,7 +22,7 @@ fun SquadfyDialogContent(
         Surface(
             modifier = modifier
                 .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(size = 16.dp)),
+                .clip(shape = RoundedCornerShape(size = 20.dp)),
             color = MaterialTheme.colorScheme.surface
         ){
             content()

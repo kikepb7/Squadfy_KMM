@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicSecureTextField
@@ -23,6 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriIconView
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
@@ -49,6 +54,7 @@ fun SquadfyPasswordTextField(
     isError: Boolean = false,
     enabled: Boolean = true,
     onFocusChanged: (Boolean) -> Unit = {},
+    leadingIcon: TriIcon? = null
 ) {
     SquadfyTextFieldLayout(
         title = title,
@@ -68,7 +74,7 @@ fun SquadfyPasswordTextField(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password
             ),
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
+            textStyle = Triangulacion.type.body.copy(fontSize = 16.sp).copy(
                 color = if(enabled) {
                     MaterialTheme.colorScheme.onSurface
                 } else {
@@ -83,6 +89,10 @@ fun SquadfyPasswordTextField(
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    if (leadingIcon != null) {
+                        TriIconView(icon = leadingIcon, contentDescription = null, size = 20.dp, tint = Triangulacion.colors.inkMuted)
+                        Spacer(Modifier.width(10.dp))
+                    }
                     Box(
                         modifier = Modifier
                             .weight(1f),
@@ -91,8 +101,8 @@ fun SquadfyPasswordTextField(
                         if(state.text.isEmpty() && placeholder != null) {
                             Text(
                                 text = placeholder,
-                                color = MaterialTheme.colorScheme.extended.textPlaceholder,
-                                style = MaterialTheme.typography.bodyMedium
+                                color = Triangulacion.colors.inkSubtle,
+                                style = Triangulacion.type.body.copy(fontSize = 16.sp)
                             )
                         }
                         innerBox()
@@ -101,7 +111,7 @@ fun SquadfyPasswordTextField(
                     Icon(
                         imageVector = if (isPasswordVisible) vectorResource(Res.drawable.eye_off_icon) else vectorResource(Res.drawable.eye_icon),
                         contentDescription = if (isPasswordVisible) stringResource(Res.string.hide_password) else stringResource(Res.string.show_password),
-                        tint = MaterialTheme.colorScheme.extended.textDisabled,
+                        tint = Triangulacion.colors.inkMuted,
                         modifier = Modifier
                             .size(24.dp)
                             .clickable(

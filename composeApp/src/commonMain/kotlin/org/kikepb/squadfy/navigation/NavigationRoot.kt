@@ -21,6 +21,8 @@ import com.kikepb.core.presentation.util.DialogSheetScopedViewModel
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -56,7 +58,9 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
     val bottomBarItems = if (isChatEnabled) listOf(GlobalPosition, Setup, Chat) else listOf(GlobalPosition, Setup)
     // Profile (account, privacy, crash reports, sign out) opens from the Home gear on every platform
     var isProfileVisible by rememberSaveable { mutableStateOf(false) }
-    val showBottomBar = bottomBarItems.any { it.isSelected(destination = currentDestination) }
+    // Spec 018: the bar is on every signed-in screen (not on the auth flow)
+    val isAuthDestination = currentDestination?.hierarchy?.any { it.hasRoute(AuthGraph::class) } == true
+    val showBottomBar = currentDestination != null && !isAuthDestination
     val selectedIndex = bottomBarItems.indexOfFirst { it.isSelected(destination = currentDestination) }.coerceAtLeast(minimumValue = 0)
 
     Scaffold(
@@ -73,6 +77,11 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                     },
                     selectedIndex = selectedIndex,
                     onItemClick = { index ->
+                        // From a detail screen, a tab goes back to its root instead of restoring the detail
+                        val isTabRoot = currentDestination?.hierarchy?.any { destination ->
+                            bottomBarItems.any { destination.hasRoute(it.navigateTo::class) }
+                        } == true
+                        if (!isTabRoot) navController.popBackStack(navController.graph.findStartDestination().id, inclusive = false)
                         navController.navigate(bottomBarItems[index].navigateTo) {
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true

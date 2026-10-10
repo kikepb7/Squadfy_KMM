@@ -1,5 +1,8 @@
 package com.kikepb.core.designsystem.components.chat
 
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -35,12 +38,14 @@ fun SquadfyChatBubble(
     formattedDateTime: String,
     trianglePosition: TrianglePosition,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.extended.surfaceHigher,
+    // Spec 018: own messages on Volt, the others on surface-200
+    color: Color = Triangulacion.colors.volt,
     messageStatus: @Composable (() -> Unit)? = null,
     triangleSize: Dp = 16.dp,
     onLongClick: (() -> Unit)? = null
 ) {
     val padding = 12.dp
+    val onBubble = if (color.luminance() > 0.5f) Triangulacion.colors.onVolt else Triangulacion.colors.ink
 
     Column(
         modifier = modifier
@@ -75,21 +80,21 @@ fun SquadfyChatBubble(
         ) {
             Text(
                 text = sender,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.extended.textSecondary,
+                style = Triangulacion.type.label.copy(fontSize = 12.sp),
+                color = onBubble.copy(alpha = 0.72f),
                 modifier = Modifier.weight(weight = 1f)
             )
             Spacer(modifier = Modifier.width(width = 20.dp))
             Text(
                 text = formattedDateTime,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.extended.textSecondary,
+                style = Triangulacion.type.label.copy(fontSize = 12.sp),
+                color = onBubble.copy(alpha = 0.72f),
             )
         }
         Text(
             text = messageContent,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.extended.textPrimary,
+            style = Triangulacion.type.body.copy(fontSize = 16.sp, lineHeight = 22.sp),
+            color = onBubble,
             modifier = Modifier.fillMaxWidth()
         )
         messageStatus?.invoke()

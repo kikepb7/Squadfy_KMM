@@ -21,6 +21,7 @@ import com.kikepb.core.designsystem.components.dropdown.SquadfyDropDownMenu
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBar
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarBackButton
 import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarIconButton
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
 import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.theme.extended
 import org.jetbrains.compose.resources.stringResource
@@ -68,13 +69,11 @@ fun ChatDetailHeader(
         },
         actions = {
             Box {
-                SquadfyTopBarIconButton(onClick = onChatOptionsClick) {
-                    Icon(
-                        imageVector = vectorResource(DesignSystemDrawable.dots_icon),
-                        contentDescription = stringResource(RString.open_chat_options_menu),
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
+                SquadfyTopBarIconButton(
+                    onClick = onChatOptionsClick,
+                    icon = TriIcon.More,
+                    contentDescription = stringResource(RString.open_chat_options_menu)
+                )
 
                 SquadfyDropDownMenu(
                     isOpen = isChatOptionsDropDownOpen,

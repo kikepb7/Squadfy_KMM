@@ -11,10 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +19,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriIconView
+import com.kikepb.core.designsystem.triangulacion.theme.Radius
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import com.kikepb.core.designsystem.theme.extended
 
 @Composable
@@ -38,61 +41,53 @@ fun SquadfyTextFieldLayout(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
+    val colors = Triangulacion.colors
 
     LaunchedEffect(isFocused) { onFocusChanged(isFocused) }
 
+    // Spec 018 (Campo): radius-sm, line-strong border, 2 dp focus ring, error with icon and word (never colour alone)
+    val shape = RoundedCornerShape(Radius.sm)
     val textFieldStyleModifier = Modifier
         .fillMaxWidth()
-        .background(
-            color = when {
-                isFocused -> MaterialTheme.colorScheme.primary.copy(
-                    alpha = 0.05f
-                )
-                enabled -> MaterialTheme.colorScheme.surface
-                else -> MaterialTheme.colorScheme.extended.secondaryFill
-            },
-            shape = RoundedCornerShape(8.dp)
-        )
+        .heightIn(min = 52.dp)
+        .background(color = if (enabled) colors.surface200 else colors.surface300, shape = shape)
         .border(
-            width = 1.dp,
+            width = if (isFocused || isError) 2.dp else 1.5.dp,
             color = when {
-                isError -> MaterialTheme.colorScheme.error
-                isFocused -> MaterialTheme.colorScheme.primary
-                else -> MaterialTheme.colorScheme.outline
+                isError -> colors.danger
+                isFocused -> colors.focusRing
+                else -> colors.lineStrong
             },
-            shape = RoundedCornerShape(8.dp)
+            shape = shape
         )
-        .padding(12.dp)
+        .padding(horizontal = 14.dp, vertical = 14.dp)
 
     Column(modifier = modifier) {
         if (title != null) {
             Text(
-                text = title,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.extended.textSecondary
+                text = title.uppercase(),
+                style = Triangulacion.type.labelCaps,
+                color = colors.inkMuted
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
 
         textField(textFieldStyleModifier, interactionSource)
 
-        if(!supportingConditions.isNullOrEmpty()) {
-            Spacer(modifier = Modifier.height(4.dp))
+        if (!supportingConditions.isNullOrEmpty()) {
+            Spacer(modifier = Modifier.height(6.dp))
             supportingConditions.forEach { (label, ok) ->
-                Row(modifier = Modifier.padding(top = 2.dp)) {
-                    val icon = if (ok) Icons.Filled.Check else Icons.Filled.Close
-                    val iconColor = if (ok) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-
-                    Icon(
-                        imageVector = icon,
+                Row(modifier = Modifier.padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                    TriIconView(
+                        icon = if (ok) TriIcon.Check else TriIcon.X,
                         contentDescription = null,
-                        tint = iconColor
+                        size = 16.dp,
+                        tint = if (ok) colors.accentText else colors.danger
                     )
-
                     Text(
                         text = label,
-                        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.extended.textTertiary,
-                        style = MaterialTheme.typography.bodySmall,
+                        color = if (ok) colors.inkMuted else colors.danger,
+                        style = Triangulacion.type.bodySm,
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
@@ -101,12 +96,19 @@ fun SquadfyTextFieldLayout(
         }
 
         if (!supportingText.isNullOrEmpty()) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = supportingText,
-                color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.extended.textTertiary,
-                style = MaterialTheme.typography.bodySmall
-            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (isError) {
+                    TriIconView(icon = TriIcon.Alert, contentDescription = null, size = 16.dp, tint = colors.danger)
+                    Spacer(Modifier.width(6.dp))
+                }
+                Text(
+                    text = supportingText,
+                    color = if (isError) colors.danger else colors.inkMuted,
+                    style = Triangulacion.type.bodySm
+                )
+            }
         }
     }
 }
+

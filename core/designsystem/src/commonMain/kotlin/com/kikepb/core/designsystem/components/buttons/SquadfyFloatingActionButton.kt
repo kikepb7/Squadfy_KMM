@@ -1,5 +1,7 @@
 package com.kikepb.core.designsystem.components.buttons
 
+import androidx.compose.material3.FloatingActionButtonDefaults
+import com.kikepb.core.designsystem.triangulacion.components.CutSm
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -21,9 +23,11 @@ fun SquadfyFloatingActionButton(
     FloatingActionButton(
         onClick = onClick,
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
+        // Spec 018: small Corte, brand fill
+        shape = CutSm,
         containerColor = MaterialTheme.colorScheme.primary,
         contentColor = MaterialTheme.colorScheme.onPrimary,
+        elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 2.dp),
         content = content
     )
 }

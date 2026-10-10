@@ -1,11 +1,9 @@
 package org.kikepb.squadfy.navigation.bottomBar
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.outlined.Groups
-import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.vector
 import androidx.navigation.NavDestination
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -29,7 +27,7 @@ sealed class BottomBarItem {
         override val title = Res.string.tab_home
         override val navigateTo: Any = GlobalPositionGraphRoutes.GlobalPositionGraph
         override val icon: @Composable () -> Unit = {
-            Icon(imageVector = Icons.Default.Home, contentDescription = stringResource(title))
+            Icon(imageVector = TriIcon.Home.vector, contentDescription = stringResource(title))
         }
         override fun isSelected(destination: NavDestination?) =
             destination?.hierarchy?.any { it.hasRoute(GlobalPositionGraphRoutes.GlobalPositionGraph::class) } == true
@@ -39,17 +37,28 @@ sealed class BottomBarItem {
         override val title = Res.string.tab_clubs
         override val navigateTo: Any = ClubGraphRoutes.SetupGraph
         override val icon: @Composable () -> Unit = {
-            Icon(imageVector = Icons.Outlined.Groups, contentDescription = stringResource(title))
+            Icon(imageVector = TriIcon.Clubs.vector, contentDescription = stringResource(title))
         }
+        // Spec 018: every club screen (detail, match, schedule…) belongs to the Clubs tab
         override fun isSelected(destination: NavDestination?) =
-            destination?.hierarchy?.any { it.hasRoute(ClubGraphRoutes.SetupGraph::class) } == true
+            destination?.hierarchy?.any { it.hasRoute(ClubGraphRoutes.SetupGraph::class) } == true ||
+                CLUB_ROUTES.any { destination?.hasRoute(it) == true }
+
+        private val CLUB_ROUTES = listOf(
+            ClubGraphRoutes.ClubDetailRoute::class,
+            ClubGraphRoutes.ClubMemberDetailRoute::class,
+            ClubGraphRoutes.ClubBansRoute::class,
+            ClubGraphRoutes.ClubScheduleRoute::class,
+            ClubGraphRoutes.ClubAbsencesRoute::class,
+            ClubGraphRoutes.MatchDetailRoute::class
+        )
     }
 
     data object Chat : BottomBarItem() {
         override val title = Res.string.tab_chat
         override val navigateTo: Any = ChatGraphRoutes.ChatGraph
         override val icon: @Composable () -> Unit = {
-            Icon(imageVector = Icons.Outlined.MailOutline, contentDescription = stringResource(title))
+            Icon(imageVector = TriIcon.Chat.vector, contentDescription = stringResource(title))
         }
         override fun isSelected(destination: NavDestination?) =
             destination?.hierarchy?.any { it.hasRoute(ChatGraphRoutes.ChatGraph::class) } == true

@@ -33,7 +33,7 @@ fun SquadfyAvatarPhoto(
     size: AvatarSize = AvatarSize.SMALL,
     imageUrl: String? = null,
     onClick: (() -> Unit)? = null,
-    textColor: Color = MaterialTheme.colorScheme.extended.textPlaceholder
+    textColor: Color = MaterialTheme.colorScheme.extended.textPrimary
 ) {
     Box(
         modifier = modifier
@@ -43,12 +43,8 @@ fun SquadfyAvatarPhoto(
                 onClick = { onClick?.invoke() },
                 enabled = onClick != null
             )
-            .background(color = MaterialTheme.colorScheme.extended.secondaryFill)
-            .border(
-                width = 2.dp,
-                color = MaterialTheme.colorScheme.outline,
-                shape = CircleShape
-            ),
+            // Spec 018 (Avatar): initials on surface-300, no outline
+            .background(color = MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
         Text(
