@@ -21,8 +21,9 @@ class PushRouterTest {
     }
 
     @Test
-    fun `AC-009-08 published teams open the match detail`() {
-        assertEquals("squadfy://match/m-1?clubId=c-1", PushRouter.deepLink(club + ("type" to PushRouter.TEAMS_PUBLISHED) + ("team" to "A")))
+    fun `AC-018-07 published teams open the draw result`() {
+        // Spec 018: teams published opens the draw result screen
+        assertEquals("squadfy://match/m-1/draw?clubId=c-1", PushRouter.deepLink(club + ("type" to PushRouter.TEAMS_PUBLISHED) + ("team" to "A")))
     }
 
     @Test

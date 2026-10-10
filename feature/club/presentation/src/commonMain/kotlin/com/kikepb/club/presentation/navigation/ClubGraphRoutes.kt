@@ -1,5 +1,9 @@
 package com.kikepb.club.presentation.navigation
 
+import com.kikepb.club.presentation.navigation.ClubGraphRoutes.MatchResultRoute
+import com.kikepb.club.presentation.navigation.ClubGraphRoutes.MatchDrawRoute
+import com.kikepb.club.presentation.match.MatchResultRoot
+import com.kikepb.club.presentation.match.MatchDrawRoot
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -49,6 +53,14 @@ sealed interface ClubGraphRoutes {
 
     @Serializable
     data class MatchDetailRoute(val clubId: String, val matchId: String) : ClubGraphRoutes
+
+    /** Spec 018: «Juegas en el Equipo A», opened by the teams-published push. */
+    @Serializable
+    data class MatchDrawRoute(val clubId: String, val matchId: String) : ClubGraphRoutes
+
+    /** Spec 018: the closed match with everyone's rating change. */
+    @Serializable
+    data class MatchResultRoute(val clubId: String, val matchId: String) : ClubGraphRoutes
 }
 
 fun NavGraphBuilder.clubGraph(navController: NavController) {
@@ -79,6 +91,20 @@ fun NavGraphBuilder.clubGraph(navController: NavController) {
         AbsencesRoot(onBackClick = { navController.navigateUp() })
     }
     composable<MatchDetailRoute>(deepLinks = listOf(navDeepLink { uriPattern = "squadfy://match/{matchId}?clubId={clubId}" })) {
-        MatchDetailRoot(onBackClick = { navController.navigateUp() })
+        MatchDetailRoot(
+            onBackClick = { navController.navigateUp() },
+            onOpenResult = { clubId, matchId -> navController.navigate(route = MatchResultRoute(clubId = clubId, matchId = matchId)) }
+        )
+    }
+    composable<MatchDrawRoute>(deepLinks = listOf(navDeepLink { uriPattern = "squadfy://match/{matchId}/draw?clubId={clubId}" })) {
+        MatchDrawRoot(
+            onBackClick = { navController.navigateUp() },
+            onViewTeams = { clubId, matchId ->
+                navController.navigate(route = MatchDetailRoute(clubId = clubId, matchId = matchId)) { popUpTo<MatchDrawRoute> { inclusive = true } }
+            }
+        )
+    }
+    composable<MatchResultRoute> {
+        MatchResultRoot(onBackClick = { navController.navigateUp() })
     }
 }

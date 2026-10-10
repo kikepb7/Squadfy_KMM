@@ -22,6 +22,8 @@ data class PushMessage(
 sealed interface PushDestination {
     data class ClubAnnouncement(val clubId: String) : PushDestination
     data class Match(val matchId: String, val clubId: String) : PushDestination
+    /** Spec 018: «teams published» opens the draw result («Juegas en el Equipo A»). */
+    data class TeamsDrawn(val matchId: String, val clubId: String) : PushDestination
     data class Chat(val chatId: String) : PushDestination
     /** Unknown type or missing ids: just open the app. */
     data object None : PushDestination
@@ -46,7 +48,7 @@ object PushRouter {
         val chatId = data[PushMessage.KEY_CHAT_ID]
         return when {
             type in clubAnnouncementTypes && clubId != null -> PushDestination.ClubAnnouncement(clubId)
-            type == TEAMS_PUBLISHED && matchId != null && clubId != null -> PushDestination.Match(matchId, clubId)
+            type == TEAMS_PUBLISHED && matchId != null && clubId != null -> PushDestination.TeamsDrawn(matchId, clubId)
             // Chat pushes predating `type` only carried `chatId`
             (type == NEW_MESSAGE || type == null) && chatId != null -> PushDestination.Chat(chatId)
             else -> PushDestination.None
@@ -57,6 +59,7 @@ object PushRouter {
     fun deepLink(destination: PushDestination): String? = when (destination) {
         is PushDestination.ClubAnnouncement -> "squadfy://club/${destination.clubId}/announcement"
         is PushDestination.Match -> "squadfy://match/${destination.matchId}?clubId=${destination.clubId}"
+        is PushDestination.TeamsDrawn -> "squadfy://match/${destination.matchId}/draw?clubId=${destination.clubId}"
         is PushDestination.Chat -> "squadfy://chat_details/${destination.chatId}"
         PushDestination.None -> null
     }

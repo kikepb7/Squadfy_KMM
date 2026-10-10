@@ -16,9 +16,9 @@
 - [x] **T-009** Acta: marcador y cronología (AC-018-06).
 - [x] **T-010** Tabla y ficha del jugador (AC-018-06).
 - [x] **T-011** Unirse, crear club, horario, ausencias y vetos (AC-018-06).
-- [ ] **T-012** Perfil (pantalla completa) y chat (AC-018-06).
-- [ ] **T-013** Sorteo completado y resultado del partido (AC-018-07).
-- [ ] **T-014** Barra inferior en todas las pantallas con sesión (AC-018-08).
+- [x] **T-012** Perfil (pantalla completa) y chat (AC-018-06).
+- [x] **T-013** Sorteo completado y resultado del partido (AC-018-07).
+- [x] **T-014** Barra inferior en todas las pantallas con sesión (AC-018-08).
 
 ## Fase 4 · Cierre
 - [ ] **T-015** Verificación en el emulador (Tiza y Noche) contra las maquetas, tests, compilación de iOS, `checkHardcodedStrings`; `docs/brand`, CLAUDE.md y roadmap actualizados (AC-018-09).

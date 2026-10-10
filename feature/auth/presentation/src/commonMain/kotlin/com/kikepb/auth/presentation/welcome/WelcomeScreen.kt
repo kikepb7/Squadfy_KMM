@@ -1,6 +1,5 @@
 package com.kikepb.auth.presentation.welcome
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,8 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -34,6 +31,7 @@ import com.kikepb.core.designsystem.theme.SquadfyTheme
 import com.kikepb.core.designsystem.triangulacion.components.TriButton
 import com.kikepb.core.designsystem.triangulacion.components.TriButtonVariant
 import com.kikepb.core.designsystem.triangulacion.components.TriTextButton
+import com.kikepb.core.designsystem.triangulacion.components.TriangulationArt
 import com.kikepb.core.designsystem.triangulacion.theme.Space
 import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import org.jetbrains.compose.resources.stringResource
@@ -69,7 +67,7 @@ fun WelcomeScreen(
                 .padding(horizontal = Space.s5, vertical = Space.s4)
         ) {
             SquadfyBrandLockup(onDarkBackground = true, markSize = 48.dp)
-            PassTriangle(modifier = Modifier.fillMaxWidth().height(260.dp).padding(vertical = Space.s6))
+            TriangulationArt(modifier = Modifier.fillMaxWidth().height(260.dp).padding(vertical = Space.s6))
             Spacer(Modifier.weight(1f))
             Text(
                 text = buildAnnotatedString {
@@ -102,28 +100,6 @@ fun WelcomeScreen(
                 modifier = Modifier.fillMaxWidth().padding(top = Space.s2)
             )
         }
-    }
-}
-
-/** Three players and the passes between them: the triangulation that names the system. Decorative. */
-@Composable
-private fun PassTriangle(modifier: Modifier = Modifier) {
-    val colors = Triangulacion.colors
-    Canvas(modifier = modifier) {
-        val top = Offset(size.width * 0.5f, size.height * 0.12f)
-        val left = Offset(size.width * 0.12f, size.height * 0.86f)
-        val mid = Offset(size.width * 0.44f, size.height * 0.84f)
-        val right = Offset(size.width * 0.82f, size.height * 0.8f)
-        val dashed = PathEffect.dashPathEffect(floatArrayOf(8f, 10f))
-        val faint = colors.onInverse.copy(alpha = 0.45f)
-        drawLine(faint, top, left, strokeWidth = 2.dp.toPx(), pathEffect = dashed)
-        drawLine(faint, top, right, strokeWidth = 2.dp.toPx(), pathEffect = dashed)
-        drawLine(colors.volt, left, mid, strokeWidth = 3.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 10f)))
-        drawLine(colors.volt, mid, right, strokeWidth = 3.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 10f)))
-        drawCircle(colors.onInverse, radius = 14.dp.toPx(), center = top)
-        drawCircle(colors.volt, radius = 13.dp.toPx(), center = left)
-        drawCircle(colors.volt, radius = 18.dp.toPx(), center = mid)
-        drawCircle(colors.teamB, radius = 13.dp.toPx(), center = right)
     }
 }
 

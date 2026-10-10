@@ -79,6 +79,7 @@ fun GlobalPositionRoot(
     onNavigateToSettings: () -> Unit = {},
     onNavigateToClub: (String) -> Unit = {},
     onNavigateToClubs: () -> Unit = {},
+    onNavigateToMatchResult: (clubId: String, matchId: String) -> Unit = { _, _ -> },
     viewModel: GlobalPositionViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -92,6 +93,7 @@ fun GlobalPositionRoot(
             NavigateToSettings -> onNavigateToSettings()
             is NavigateToClub -> onNavigateToClub(event.clubId)
             GlobalPositionEvent.NavigateToClubs -> onNavigateToClubs()
+            is GlobalPositionEvent.NavigateToMatchResult -> onNavigateToMatchResult(event.clubId, event.matchId)
             GlobalPositionEvent.EnrollFailed -> scope.launch { snackbarHostState.showSnackbar(getString(RString.home_enroll_failed)) }
         }
     }
@@ -188,7 +190,7 @@ fun GlobalPositionScreen(
                         TriSectionTitle(text = stringResource(RString.home_last_matchday), modifier = Modifier.padding(top = Space.s3))
                     }
                     item(key = "last_${matchday.matchId}") {
-                        LastMatchdayCard(matchday = matchday, onClick = { onAction(GlobalPositionAction.OnClubClick(matchday.clubId)) })
+                        LastMatchdayCard(matchday = matchday, onClick = { onAction(GlobalPositionAction.OnLastMatchdayClick(matchday.clubId, matchday.matchId)) })
                     }
                 }
             }

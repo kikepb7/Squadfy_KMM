@@ -1,5 +1,29 @@
 package com.kikepb.chat.presentation.profile
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
+import com.kikepb.core.designsystem.triangulacion.components.TriAvatar
+import com.kikepb.core.designsystem.triangulacion.components.TriButton
+import com.kikepb.core.designsystem.triangulacion.components.TriButtonVariant
+import com.kikepb.core.designsystem.triangulacion.components.TriCard
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriIconView
+import com.kikepb.core.designsystem.triangulacion.components.TriMenuRow
+import com.kikepb.core.designsystem.triangulacion.components.TriNotice
+import com.kikepb.core.designsystem.triangulacion.components.TriNoticeTone
+import com.kikepb.core.designsystem.triangulacion.components.TriRoundIconButton
+import com.kikepb.core.designsystem.triangulacion.theme.Radius
+import com.kikepb.core.designsystem.triangulacion.theme.Space
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import squadfy_app.feature.chat.presentation.generated.resources.profile_change_password
+import squadfy_app.feature.chat.presentation.generated.resources.profile_change_photo
+import squadfy_app.feature.chat.presentation.generated.resources.profile_close
+import squadfy_app.feature.chat.presentation.generated.resources.profile_crash_reports_short
+import squadfy_app.feature.chat.presentation.generated.resources.profile_title
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -138,205 +162,140 @@ fun ProfileRoot(
     }
 }
 
+/**
+ * Perfil (spec 018, screen 13): avatar with «Cambiar foto», then one row per option. Changing the password opens
+ * its form in place; deleting the account still asks for the password (spec 011).
+ */
 @Composable
 fun ProfileScreen(
     state: ProfileState,
     onAction: (ProfileAction) -> Unit,
     showFeatureFlags: Boolean = false
 ) {
-    val deviceConfiguration = currentDeviceConfiguration()
+    val colors = Triangulacion.colors
+    var isPasswordOpen by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .clearFocusOnTap()
             .fillMaxSize()
-            .background(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(size = 16.dp)
-            )
+            .background(color = colors.surface100, shape = RoundedCornerShape(size = Radius.lg))
             .verticalScroll(state = rememberScrollState())
+            .padding(horizontal = Space.s4, vertical = Space.s3),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        ProfileHeaderSection(
-            username = state.username,
-            onCloseClick = { onAction(OnDismiss) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 20.dp)
-        )
-        SquadfyHorizontalDivider()
-        ProfileSectionLayout(
-            headerText = stringResource(resource = RString.profile_image)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            TriRoundIconButton(icon = TriIcon.ChevL, contentDescription = stringResource(RString.profile_close), onClick = { onAction(OnDismiss) }, filled = true)
+            Text(
+                text = stringResource(RString.profile_title),
+                style = Triangulacion.type.displayMd,
+                color = colors.ink,
+                modifier = Modifier.padding(start = Space.s3)
+            )
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = Space.s4)
         ) {
-            Row {
-                SquadfyAvatarPhoto(
-                    displayText = state.userInitials,
-                    size = LARGE,
-                    imageUrl = state.profilePictureUrl,
-                    onClick = { onAction(OnUploadPictureClick) }
+            TriAvatar(name = state.username.ifBlank { state.userInitials }, imageUrl = state.profilePictureUrl, size = 104.dp)
+            Text(text = state.username, style = Triangulacion.type.displayMd, color = colors.ink)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TriButton(
+                    text = stringResource(RString.profile_change_photo),
+                    onClick = { onAction(OnUploadPictureClick) },
+                    variant = TriButtonVariant.Secondary,
+                    icon = TriIcon.Camera,
+                    enabled = !state.isUploadingImage && !state.isDeletingImage,
+                    isLoading = state.isUploadingImage
                 )
-                Spacer(modifier = Modifier.width(width = 20.dp))
-                FlowRow(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(space = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(space = 12.dp)
-                ) {
-                    SquadfyButton(
-                        text = stringResource(resource = RString.upload_image),
-                        onClick = { onAction(OnUploadPictureClick) },
-                        style = SECONDARY,
-                        enabled = !state.isUploadingImage && !state.isDeletingImage,
-                        isLoading = state.isUploadingImage,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = vectorResource(resource = RDrawable.upload_icon),
-                                contentDescription = stringResource(resource = RString.upload_image)
-                            )
-                        }
-                    )
-                    SquadfyButton(
-                        text = stringResource(resource = RString.delete),
+                if (state.profilePictureUrl != null) {
+                    TriButton(
+                        text = stringResource(RString.delete),
                         onClick = { onAction(OnDeletePictureClick) },
-                        style = DESTRUCTIVE_SECONDARY,
-                        enabled = !state.isUploadingImage && !state.isDeletingImage && state.profilePictureUrl != null,
-                        isLoading = state.isDeletingImage,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(resource = RString.delete)
-                            )
-                        }
+                        variant = TriButtonVariant.Danger,
+                        enabled = !state.isUploadingImage && !state.isDeletingImage,
+                        isLoading = state.isDeletingImage
                     )
                 }
             }
-
-            if (state.imageError != null) {
-                Text(
-                    text = state.imageError.asString(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-        }
-        SquadfyHorizontalDivider()
-        ProfileSectionLayout(
-            headerText = stringResource(resource = RString.email)
-        ) {
-            SquadfyTextField(
-                state = state.emailTextState,
-                enabled = false,
-                supportingText = stringResource(resource = RString.contact_squadfy_support_change_email)
-            )
-        }
-        SquadfyHorizontalDivider()
-        ProfileSectionLayout(
-            headerText = stringResource(RString.password)
-        ) {
-            SquadfyPasswordTextField(
-                state = state.currentPasswordTextState,
-                isPasswordVisible = state.isCurrentPasswordVisible,
-                onToggleVisibilityClick = { onAction(OnToggleCurrentPasswordVisibility) },
-                placeholder = stringResource(resource = RString.current_password),
-                isError = state.newPasswordError != null,
-            )
-            SquadfyPasswordTextField(
-                state = state.newPasswordTextState,
-                isPasswordVisible = state.isNewPasswordVisible,
-                onToggleVisibilityClick = { onAction(OnToggleNewPasswordVisibility) },
-                placeholder = stringResource(resource = RString.new_password),
-                isError = state.newPasswordError != null,
-                supportingText = state.newPasswordError?.asString() ?: stringResource(resource = RString.password_hint)
-            )
-
-            if (state.isPasswordChangeSuccessful) {
-                Text(
-                    text = stringResource(RString.password_change_successful),
-                    color = MaterialTheme.colorScheme.extended.success,
-                    style = MaterialTheme.typography.labelSmall,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(space = 16.dp, Alignment.End)
-            ) {
-                SquadfyButton(
-                    text = stringResource(resource = RString.cancel),
-                    style = SECONDARY,
-                    onClick = { onAction(OnDismiss) }
-                )
-                SquadfyButton(
-                    text = stringResource(resource = RString.save),
-                    onClick = { onAction(OnChangePasswordClick) },
-                    enabled = state.canChangePassword,
-                    isLoading = state.isChangingPassword
-                )
-            }
+            state.imageError?.let { Text(text = it.asString(), style = Triangulacion.type.bodySm, color = colors.danger) }
         }
 
-        SquadfyHorizontalDivider()
-        // Spec 011 AC-011-07/08: privacy policy link and, behind ACCOUNT_DELETION, in-app account deletion
-        ProfileSectionLayout(
-            headerText = stringResource(resource = RString.account)
-        ) {
-            // AC-011-13: crash reports are opt-in
-            if (state.isCrashReportingAvailable) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(resource = RString.crash_reports),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.extended.textPrimary
-                        )
-                        Text(
-                            text = stringResource(resource = RString.crash_reports_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.extended.textSecondary
-                        )
+        TriMenuRow(
+            text = stringResource(RString.email),
+            icon = TriIcon.Mail,
+            supportingText = state.emailTextState.text.toString(),
+            onClick = {},
+            trailing = {}
+        )
+        TriMenuRow(
+            text = stringResource(RString.profile_change_password),
+            icon = TriIcon.Lock,
+            onClick = { isPasswordOpen = !isPasswordOpen },
+            trailing = { TriIconView(icon = if (isPasswordOpen) TriIcon.ChevD else TriIcon.ChevR, contentDescription = null, size = 20.dp, tint = colors.inkMuted) }
+        )
+        if (isPasswordOpen) {
+            TriCard(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    SquadfyPasswordTextField(
+                        state = state.currentPasswordTextState,
+                        isPasswordVisible = state.isCurrentPasswordVisible,
+                        onToggleVisibilityClick = { onAction(OnToggleCurrentPasswordVisibility) },
+                        placeholder = stringResource(resource = RString.current_password),
+                        isError = state.newPasswordError != null,
+                    )
+                    SquadfyPasswordTextField(
+                        state = state.newPasswordTextState,
+                        isPasswordVisible = state.isNewPasswordVisible,
+                        onToggleVisibilityClick = { onAction(OnToggleNewPasswordVisibility) },
+                        placeholder = stringResource(resource = RString.new_password),
+                        isError = state.newPasswordError != null,
+                        supportingText = state.newPasswordError?.asString() ?: stringResource(resource = RString.password_hint)
+                    )
+                    if (state.isPasswordChangeSuccessful) {
+                        TriNotice(title = stringResource(RString.password_change_successful), tone = TriNoticeTone.Ok)
                     }
-                    Spacer(modifier = Modifier.width(width = 12.dp))
+                    TriButton(
+                        text = stringResource(resource = RString.save),
+                        onClick = { onAction(OnChangePasswordClick) },
+                        enabled = state.canChangePassword,
+                        isLoading = state.isChangingPassword,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+        // AC-011-13: crash reports are opt-in
+        if (state.isCrashReportingAvailable) {
+            TriMenuRow(
+                text = stringResource(RString.profile_crash_reports_short),
+                icon = TriIcon.Shield,
+                supportingText = stringResource(RString.crash_reports_desc),
+                onClick = { onAction(ProfileAction.OnCrashReportsChanged(enabled = !state.crashReportsEnabled)) },
+                trailing = {
                     Switch(
                         checked = state.crashReportsEnabled,
                         onCheckedChange = { onAction(ProfileAction.OnCrashReportsChanged(enabled = it)) }
                     )
                 }
-            }
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(space = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(space = 12.dp)
-            ) {
-                SquadfyButton(
-                    text = stringResource(resource = RString.privacy_policy),
-                    onClick = { onAction(OnPrivacyPolicyClick) },
-                    style = TEXT
-                )
-                SquadfyButton(
-                    text = stringResource(resource = RString.logout),
-                    onClick = { onAction(ProfileAction.OnLogoutClick) },
-                    style = SECONDARY,
-                    isLoading = state.isSigningOut
-                )
-                if (state.isAccountDeletionEnabled) {
-                    SquadfyButton(
-                        text = stringResource(resource = RString.delete_account),
-                        onClick = { onAction(OnDeleteAccountClick) },
-                        style = DESTRUCTIVE_SECONDARY
-                    )
-                }
-                if (showFeatureFlags) {
-                    SquadfyButton(
-                        text = stringResource(resource = RString.feature_flags),
-                        onClick = { onAction(ProfileAction.OnFeatureFlagsClick) },
-                        style = TEXT
-                    )
-                }
-            }
+            )
         }
-
-        if (deviceConfiguration in listOf(MOBILE_PORTRAIT, MOBILE_LANDSCAPE)) {
-            Spacer(modifier = Modifier.weight(weight = 1f))
+        // Spec 011 AC-011-07/08: privacy policy link and, behind ACCOUNT_DELETION, in-app account deletion
+        TriMenuRow(text = stringResource(RString.privacy_policy), icon = TriIcon.Info, onClick = { onAction(OnPrivacyPolicyClick) })
+        TriMenuRow(
+            text = stringResource(RString.logout),
+            icon = TriIcon.Logout,
+            onClick = { onAction(ProfileAction.OnLogoutClick) },
+            trailing = if (state.isSigningOut) ({ SquadfyLoadingSpinner() }) else null
+        )
+        if (state.isAccountDeletionEnabled) {
+            TriMenuRow(text = stringResource(RString.delete_account), icon = TriIcon.Trash, destructive = true, onClick = { onAction(OnDeleteAccountClick) })
         }
+        if (showFeatureFlags) {
+            TriMenuRow(text = stringResource(RString.feature_flags), icon = TriIcon.Sliders, onClick = { onAction(ProfileAction.OnFeatureFlagsClick) })
+        }
+        Spacer(modifier = Modifier.height(Space.s4))
     }
 
     if (state.showDeleteConfirmationDialog) {
@@ -397,4 +356,9 @@ private fun ProfilePreview() {
             onAction = {}
         )
     }
+}
+
+@Composable
+private fun SquadfyLoadingSpinner() {
+    androidx.compose.material3.CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Triangulacion.colors.brand)
 }

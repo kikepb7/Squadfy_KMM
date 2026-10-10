@@ -50,7 +50,9 @@ sealed class BottomBarItem {
             ClubGraphRoutes.ClubBansRoute::class,
             ClubGraphRoutes.ClubScheduleRoute::class,
             ClubGraphRoutes.ClubAbsencesRoute::class,
-            ClubGraphRoutes.MatchDetailRoute::class
+            ClubGraphRoutes.MatchDetailRoute::class,
+            ClubGraphRoutes.MatchDrawRoute::class,
+            ClubGraphRoutes.MatchResultRoute::class
         )
     }
 

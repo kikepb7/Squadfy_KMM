@@ -109,6 +109,8 @@ class GlobalPositionViewModel(
             is GlobalPositionAction.OnRetryClub -> knownClubs.firstOrNull { it.id == action.clubId }?.let(::loadAnnouncement)
             is GlobalPositionAction.OnEnrollClick -> enroll(action.clubId)
             GlobalPositionAction.OnSeeAllClubsClick -> viewModelScope.launch { eventChannel.send(element = GlobalPositionEvent.NavigateToClubs) }
+            is GlobalPositionAction.OnLastMatchdayClick ->
+                viewModelScope.launch { eventChannel.send(element = GlobalPositionEvent.NavigateToMatchResult(action.clubId, action.matchId)) }
         }
     }
 
@@ -208,6 +210,7 @@ sealed interface GlobalPositionAction {
     data class OnRetryClub(val clubId: String) : GlobalPositionAction
     data class OnEnrollClick(val clubId: String) : GlobalPositionAction
     data object OnSeeAllClubsClick : GlobalPositionAction
+    data class OnLastMatchdayClick(val clubId: String, val matchId: String) : GlobalPositionAction
 }
 
 sealed interface GlobalPositionEvent {
@@ -216,4 +219,5 @@ sealed interface GlobalPositionEvent {
     data object NavigateToSettings : GlobalPositionEvent
     data object EnrollFailed : GlobalPositionEvent
     data object NavigateToClubs : GlobalPositionEvent
+    data class NavigateToMatchResult(val clubId: String, val matchId: String) : GlobalPositionEvent
 }

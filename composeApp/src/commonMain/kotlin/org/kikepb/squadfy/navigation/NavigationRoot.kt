@@ -61,7 +61,9 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
     var isProfileVisible by rememberSaveable { mutableStateOf(false) }
     // Spec 018: the bar is on every signed-in screen (not on the auth flow)
     val isAuthDestination = currentDestination?.hierarchy?.any { it.hasRoute(AuthGraph::class) } == true
-    val showBottomBar = currentDestination != null && !isAuthDestination
+    // The draw result is a full-screen moment (screen 15), without the bar
+    val isFullScreenMoment = currentDestination?.hasRoute(ClubGraphRoutes.MatchDrawRoute::class) == true
+    val showBottomBar = currentDestination != null && !isAuthDestination && !isFullScreenMoment
     val selectedIndex = bottomBarItems.indexOfFirst { it.isSelected(destination = currentDestination) }.coerceAtLeast(minimumValue = 0)
 
     Scaffold(
@@ -115,6 +117,9 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
                     navController.navigate(ClubDetailRoute(clubId = clubId))
                 },
                 onNavigateToSettings = { isProfileVisible = true },
+                onNavigateToMatchResult = { clubId, matchId ->
+                    navController.navigate(ClubGraphRoutes.MatchResultRoute(clubId = clubId, matchId = matchId))
+                },
                 onNavigateToClubs = {
                     navController.navigate(ClubGraphRoutes.SetupGraph) {
                         popUpTo(navController.graph.findStartDestination().id) { saveState = true }

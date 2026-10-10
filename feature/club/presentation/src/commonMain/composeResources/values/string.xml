@@ -439,4 +439,24 @@
     <string name="absences_club_caps">AUSENCIAS DEL CLUB</string>
     <string name="absences_notice_title">Avisa si no vas a estar</string>
     <string name="absences_notice_body">Te desapuntamos de las convocatorias abiertas de esas fechas.</string>
+    <string name="draw_caps">SORTEO COMPLETADO</string>
+    <string name="draw_you_play_in">Juegas en el</string>
+    <string name="draw_published">Equipos publicados</string>
+    <string name="draw_balance">Rating medio %1$d contra %2$d: %3$s.</string>
+    <string name="draw_balance_even">un partido parejo</string>
+    <string name="draw_balance_slight">ligera ventaja</string>
+    <string name="draw_balance_off">un partido descompensado</string>
+    <string name="draw_body_default">Mira con quién juegas y dónde se coloca cada uno.</string>
+    <string name="draw_not_yet">Los equipos aún no están publicados.</string>
+    <string name="draw_view_teams">Ver equipos</string>
+    <string name="result_title">Resultado</string>
+    <string name="result_your_rating">Tu valoración</string>
+    <string name="result_your_change">Cambio en este partido</string>
+    <string name="result_changes">Cambios del partido</string>
+    <string name="result_pending">El resultado aparece al cerrar el partido.</string>
+    <string name="result_win">Ganaste</string>
+    <string name="result_draw">Empate</string>
+    <string name="result_loss">Perdiste</string>
+    <string name="result_view">Ver resultado</string>
+    <string name="result_caps">%1$s · %2$s</string>
 </resources>

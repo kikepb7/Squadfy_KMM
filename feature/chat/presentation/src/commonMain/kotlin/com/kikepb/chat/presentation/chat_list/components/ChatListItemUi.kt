@@ -1,5 +1,11 @@
 package com.kikepb.chat.presentation.chat_list.components
 
+import androidx.compose.ui.Alignment
+import com.kikepb.chat.presentation.util.DateUtils
+import com.kikepb.core.designsystem.components.avatar.SquadfyStackedAvatars
+import com.kikepb.core.designsystem.triangulacion.components.TriAvatar
+import com.kikepb.core.designsystem.triangulacion.components.TriCard
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,58 +42,45 @@ import kotlin.time.Clock
 fun ChatListItemUi(
     chat: ChatModelUi,
     isSelected: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
+    // Spec 018: a card per chat with the avatar, the name, the last message and its time
+    val colors = Triangulacion.colors
     val isGroupChat = chat.otherParticipants.size > 1
-    Row(
-        modifier = modifier
-            .height(IntrinsicSize.Min)
-            .background(
-                color = if (isSelected) MaterialTheme.colorScheme.surface
-                else MaterialTheme.colorScheme.extended.surfaceLower
-            )
-            .fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(all = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            ChatItemHeaderRow(
-                chat = chat,
-                isGroupChat = isGroupChat,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            if (chat.lastMessage != null) {
-                val previewMessage = buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.extended.textSecondary,
-                        )
-                    ) {
-                        if (chat.lastMessageSenderUsername != null) append(chat.lastMessageSenderUsername + ": ")
+    val other = chat.otherParticipants.firstOrNull()
+    TriCard(modifier = modifier, highlighted = isSelected, contentPadding = 14.dp, onClick = onClick) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (isGroupChat) {
+                SquadfyStackedAvatars(avatars = chat.otherParticipants)
+            } else {
+                TriAvatar(name = other?.username ?: chat.localParticipant.username, imageUrl = other?.imageUrl, size = 48.dp)
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = if (isGroupChat) chat.otherParticipants.joinToString { it.username } else other?.username ?: chat.localParticipant.username,
+                        style = Triangulacion.type.title,
+                        color = colors.ink,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    chat.lastMessage?.let {
+                        Text(text = DateUtils.formatMessageTime(it.createdAt).asString(), style = Triangulacion.type.bodySm, color = colors.inkMuted)
                     }
-                    append(chat.lastMessage.content)
                 }
-                Text(
-                    text = previewMessage,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.extended.textSecondary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                if (chat.lastMessage != null) {
+                    val previewMessage = buildAnnotatedString {
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold, color = colors.ink)) {
+                            if (chat.lastMessageSenderUsername != null && isGroupChat) append(chat.lastMessageSenderUsername + ": ")
+                        }
+                        append(chat.lastMessage.content)
+                    }
+                    Text(text = previewMessage, style = Triangulacion.type.body, color = colors.inkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
             }
         }
-        Box(
-            modifier = Modifier
-                .alpha(if (isSelected) 1f else 0f)
-                .background(color = MaterialTheme.colorScheme.primary)
-                .width(4.dp)
-                .fillMaxHeight()
-        )
     }
 }
 

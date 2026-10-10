@@ -1,5 +1,17 @@
 package com.kikepb.chat.presentation.chat_list
 
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import com.kikepb.core.designsystem.components.loading.SquadfyLoadingIndicator
+import com.kikepb.core.designsystem.components.textfields.SquadfyTextField
+import com.kikepb.core.designsystem.components.topbar.SquadfyTopBarIconButton
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.theme.Space
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import squadfy_app.feature.chat.presentation.generated.resources.chat_search
+import squadfy_app.feature.chat.presentation.generated.resources.chat_search_empty
+import squadfy_app.feature.chat.presentation.generated.resources.profile_settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -111,41 +123,35 @@ fun ChatListScreen(
         permissionController.requestPermission(permission = Permission.NOTIFICATIONS)
     }
 
+    val query = rememberTextFieldState()
+    val needle = query.text.toString().trim()
+    val chats = if (needle.isBlank()) state.chats else state.chats.filter { chat ->
+        chat.otherParticipants.any { it.username.contains(needle, ignoreCase = true) } ||
+            chat.lastMessage?.content?.contains(needle, ignoreCase = true) == true
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.extended.surfaceLower,
-        // Spec 017: the same top bar as the rest of the app; the gear opens the profile (sign out lives there)
+        containerColor = Triangulacion.colors.surface100,
+        // Spec 018 (screen 14): title, «+» to create a chat and the profile behind the settings button
         topBar = {
             SquadfyTopBar(
-                title = stringResource(RString.chat_list_title),
-                onSettingsClick = { onAction(OnProfileSettingsClick) }
+                title = { Text(text = stringResource(RString.chat_list_title), style = Triangulacion.type.displayLg, color = Triangulacion.colors.ink) },
+                actions = {
+                    SquadfyTopBarIconButton(onClick = { onAction(OnCreateChatClick) }, icon = TriIcon.Plus, contentDescription = stringResource(RString.create_chat))
+                    SquadfyTopBarIconButton(onClick = { onAction(OnProfileSettingsClick) }, icon = TriIcon.User, contentDescription = stringResource(RString.profile_settings))
+                }
             )
         },
-        snackbarHost = { SnackbarHost(snackBarHostState) },
-        floatingActionButton = {
-            SquadfyFloatingActionButton(
-                onClick = {
-                    onAction(OnCreateChatClick)
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(RString.create_chat)
-                )
-            }
-        }
+        snackbarHost = { SnackbarHost(snackBarHostState) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             when {
-                state.isLoading -> {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                state.isLoading -> SquadfyLoadingIndicator()
                 state.chats.isEmpty() -> {
                     EmptySection(
                         title = stringResource(RString.no_chats),
@@ -157,25 +163,33 @@ fun ChatListScreen(
                     )
                 }
                 else -> {
+                    SquadfyTextField(
+                        state = query,
+                        placeholder = stringResource(RString.chat_search),
+                        singleLine = true,
+                        leadingIcon = TriIcon.Search,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = Space.s4, vertical = Space.s2)
+                    )
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
+                            .weight(1f),
+                        contentPadding = PaddingValues(horizontal = Space.s4, vertical = Space.s2),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
+                        if (chats.isEmpty()) item(key = "no-match") {
+                            Text(text = stringResource(RString.chat_search_empty), style = Triangulacion.type.body, color = Triangulacion.colors.inkMuted)
+                        }
                         items(
-                            items = state.chats,
+                            items = chats,
                             key = { it.id }
                         ) { chatUi ->
                             ChatListItemUi(
                                 chat = chatUi,
                                 isSelected = chatUi.id == state.selectedChatId,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onAction(OnSelectChat(chatUi.id))
-                                    }
+                                onClick = { onAction(OnSelectChat(chatUi.id)) },
+                                modifier = Modifier.fillMaxWidth()
                             )
-                            SquadfyHorizontalDivider()
                         }
                     }
                 }

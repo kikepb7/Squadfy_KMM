@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.match
 
+import squadfy_app.feature.club.presentation.generated.resources.result_view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -187,6 +188,7 @@ import kotlin.math.roundToInt
 @Composable
 fun MatchDetailRoot(
     onBackClick: () -> Unit,
+    onOpenResult: ((clubId: String, matchId: String) -> Unit)? = null,
     viewModel: MatchDetailViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -218,7 +220,13 @@ fun MatchDetailRoot(
         onPauseOrDispose { }
     }
 
-    MatchDetailScreen(state = state, onAction = viewModel::onAction, onBackClick = onBackClick, snackbarHostState = snackbarHostState)
+    MatchDetailScreen(
+        state = state,
+        onAction = viewModel::onAction,
+        onBackClick = onBackClick,
+        snackbarHostState = snackbarHostState,
+        onOpenResult = onOpenResult?.let { open -> { state.match?.let { open(it.clubId, it.id) } } }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -227,7 +235,8 @@ fun MatchDetailScreen(
     state: MatchDetailState,
     onAction: (MatchDetailAction) -> Unit,
     onBackClick: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    onOpenResult: (() -> Unit)? = null
 ) {
     Scaffold(
         containerColor = Triangulacion.colors.surface100,
@@ -261,6 +270,17 @@ fun MatchDetailScreen(
                     return@LazyColumn
                 }
                 item(key = "header") { MatchHeader(state = state) }
+                if (onOpenResult != null && state.match.status == MatchStatus.COMPLETED) {
+                    item(key = "result-link") {
+                        TriButton(
+                            text = stringResource(Res.string.result_view),
+                            onClick = onOpenResult,
+                            variant = TriButtonVariant.Secondary,
+                            icon = TriIcon.Chart,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
                 if (state.match.hasTeams || state.match.status == MatchStatus.COMPLETED) {
                     item(key = "score") { ScoreCard(state = state, onAction = onAction) }
                 }

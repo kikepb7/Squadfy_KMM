@@ -439,4 +439,24 @@
     <string name="absences_club_caps">CLUB ABSENCES</string>
     <string name="absences_notice_title">Tell the club when you are away</string>
     <string name="absences_notice_body">You are taken off open sign-ups on those dates.</string>
+    <string name="draw_caps">DRAW COMPLETED</string>
+    <string name="draw_you_play_in">You play in</string>
+    <string name="draw_published">Teams published</string>
+    <string name="draw_balance">Average rating %1$d against %2$d: %3$s.</string>
+    <string name="draw_balance_even">an even match</string>
+    <string name="draw_balance_slight">a slight edge</string>
+    <string name="draw_balance_off">a lopsided match</string>
+    <string name="draw_body_default">See who you play with and where everyone stands.</string>
+    <string name="draw_not_yet">Teams are not published yet.</string>
+    <string name="draw_view_teams">See teams</string>
+    <string name="result_title">Result</string>
+    <string name="result_your_rating">Your rating</string>
+    <string name="result_your_change">Change in this match</string>
+    <string name="result_changes">Match changes</string>
+    <string name="result_pending">The result shows up when the match is closed.</string>
+    <string name="result_win">You won</string>
+    <string name="result_draw">Draw</string>
+    <string name="result_loss">You lost</string>
+    <string name="result_view">See result</string>
+    <string name="result_caps">%1$s · %2$s</string>
 </resources>

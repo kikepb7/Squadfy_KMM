@@ -66,5 +66,12 @@
     <string name="crash_reports">Enviar informes de errores</string>
     <string name="crash_reports_desc">Si la app falla, envía datos técnicos del fallo (sin tus mensajes) para ayudarnos a corregirlo. Puedes desactivarlo cuando quieras.</string>
     <string name="feature_flags">Feature flags (PRE)</string>
-    <string name="chat_list_title">Mis chats</string>
+    <string name="chat_list_title">Chat</string>
+    <string name="profile_title">Perfil</string>
+    <string name="profile_change_photo">Cambiar foto</string>
+    <string name="profile_change_password">Cambiar contraseña</string>
+    <string name="profile_crash_reports_short">Informes de fallos (opcional)</string>
+    <string name="profile_close">Cerrar</string>
+    <string name="chat_search">Buscar</string>
+    <string name="chat_search_empty">Ningún chat coincide con la búsqueda.</string>
 </resources>
