@@ -22,3 +22,9 @@
 
 ## Fase 4 · Cierre
 - [x] **T-015** Verificación en el emulador (Tiza y Noche) contra las maquetas, tests, compilación de iOS, `checkHardcodedStrings`; `docs/brand`, CLAUDE.md y roadmap actualizados (AC-018-09).
+
+## Fase 5 · Revisión del owner (2026-10-10)
+- [x] **T-016** Previews de todas las pantallas en Tiza y Noche con los datos de las maquetas (`ScreenPreview`, `*Samples`): auth, Inicio, club con cada pestaña, partido y sus estados, campo, acta, tabla, ficha, unirse, crear, horario, ausencias, vetados, mis clubes, sorteo, resultado, chat, perfil y feature flags. Para que se puedan previsualizar, las partes con ViewModel propio exponen su contenido sin estado (`ClubSettingsContent`, `MemberStatsContent`, `tabContent` de `ClubDetailScreen`).
+- [x] **T-017** Pantalla «Campo» (06-campo): alineación por líneas con el reparto del diseño, pases solo entre líneas consecutivas, porteros con anillo, «tú» con anillo discontinuo, proporciones y franjas del campo; abre desde el acta («Ver en el campo») y desde el sorteo («Ver equipos»). La pestaña Equipos sigue el mismo orden (campo y equilibrio, y la lista como alternativa). Tests de `PitchLayout`.
+- [x] **T-018** Icono de app rehecho: la marca cabe en la zona segura del icono adaptativo (antes la máscara circular recortaba el bisel y las esquinas) y el triángulo y los nodos son más gruesos para leerse a tamaño de icono. Regenerados Android (adaptativo, monocromo, PNG), iOS (claro, oscuro, tintado), splash y la marca de la app.
+

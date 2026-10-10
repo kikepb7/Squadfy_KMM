@@ -122,96 +122,22 @@ fun ClubSettingsTab(
         }
     }
 
-    val role = myMembership?.role
-    val isManager = role != null && MemberPermissions.canManageClub(role)
-    val canLeave = role != null && MemberPermissions.canLeave(role)
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item(key = "code") {
-            InvitationCodeCard(
-                code = club.invitationCode,
-                onCopy = {
-                    clipboard.setText(AnnotatedString(club.invitationCode))
-                    scope.launch { snackbarHostState.showSnackbar(getString(Res.string.settings_code_copied)) }
-                },
-                onShare = {
-                    scope.launch { shareText(getString(Res.string.settings_share_text, club.name, club.invitationCode)) }
-                }
-            )
-        }
-        item(key = "club") {
-            SettingsGroup(title = stringResource(Res.string.settings_section_club)) {
-                SettingsRow(label = stringResource(Res.string.settings_schedule), icon = Icons.Outlined.CalendarMonth, onClick = onOpenSchedule)
-                // Spec 014: behind MEMBER_ABSENCES
-                if (state.absencesEnabled) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-                    SettingsRow(label = stringResource(Res.string.settings_absences), icon = Icons.Outlined.EventBusy, onClick = onOpenAbsences)
-                }
-                state.muted?.let { muted ->
-                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-                    SettingsRow(
-                        label = stringResource(Res.string.settings_mute),
-                        icon = Icons.Outlined.NotificationsOff,
-                        onClick = { viewModel.onAction(ClubSettingsAction.OnMutedChanged(!muted)) },
-                        trailing = { Switch(checked = muted, onCheckedChange = { viewModel.onAction(ClubSettingsAction.OnMutedChanged(it)) }) }
-                    )
-                    Text(
-                        text = stringResource(Res.string.settings_mute_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.extended.textPlaceholder,
-                        modifier = Modifier.padding(start = 46.dp, end = 16.dp, bottom = 12.dp)
-                    )
-                }
-            }
-        }
-        if (isManager) {
-            item(key = "management") {
-                SettingsGroup(title = stringResource(Res.string.settings_section_management)) {
-                    SettingsRow(
-                        label = stringResource(Res.string.settings_edit_club),
-                        icon = Icons.Outlined.Edit,
-                        onClick = { viewModel.onAction(ClubSettingsAction.OnEditClubClick(club)) }
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-                    SettingsRow(label = stringResource(Res.string.settings_change_logo), icon = Icons.Outlined.Image, onClick = { logoPicker.launch() })
-                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-                    SettingsRow(
-                        label = stringResource(Res.string.settings_regenerate_code),
-                        icon = Icons.Outlined.Refresh,
-                        onClick = { viewModel.onAction(ClubSettingsAction.OnRegenerateCodeClick) }
-                    )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
-                    SettingsRow(label = stringResource(Res.string.settings_bans), icon = Icons.Outlined.Block, onClick = onOpenBans)
-                }
-            }
-        }
-        item(key = "extra") { extraSections() }
-        if (role != null) {
-            item(key = "membership") {
-                SettingsGroup(title = stringResource(Res.string.settings_section_membership)) {
-                    if (canLeave) {
-                        SettingsRow(
-                            label = stringResource(Res.string.settings_leave),
-                            icon = Icons.AutoMirrored.Filled.ExitToApp,
-                            destructive = true,
-                            onClick = { viewModel.onAction(ClubSettingsAction.OnLeaveClick) }
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(Res.string.settings_owner_cannot_leave),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.extended.textPlaceholder,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
+    ClubSettingsContent(
+        club = club,
+        myMembership = myMembership,
+        state = state,
+        onAction = viewModel::onAction,
+        onCopyCode = {
+            clipboard.setText(AnnotatedString(club.invitationCode))
+            scope.launch { snackbarHostState.showSnackbar(getString(Res.string.settings_code_copied)) }
+        },
+        onShareCode = { scope.launch { shareText(getString(Res.string.settings_share_text, club.name, club.invitationCode)) } },
+        onChangeLogo = { logoPicker.launch() },
+        onOpenBans = onOpenBans,
+        onOpenSchedule = onOpenSchedule,
+        onOpenAbsences = onOpenAbsences,
+        extraSections = extraSections
+    )
 
     when (state.dialog) {
         SettingsDialog.EDIT_CLUB -> EditClubDialog(state = state, onAction = viewModel::onAction)
@@ -235,6 +161,109 @@ fun ClubSettingsTab(
         )
         null -> Unit
     }
+}
+
+/** Club settings (opened from the club header), without ViewModel so it can be previewed (spec 018). */
+@Composable
+fun ClubSettingsContent(
+    club: ClubModel,
+    myMembership: ClubMemberModel?,
+    state: ClubSettingsState,
+    onAction: (ClubSettingsAction) -> Unit,
+    onCopyCode: () -> Unit,
+    onShareCode: () -> Unit,
+    onChangeLogo: () -> Unit,
+    onOpenBans: () -> Unit,
+    onOpenSchedule: () -> Unit,
+    onOpenAbsences: () -> Unit,
+    extraSections: @Composable () -> Unit = {}
+) {
+    val role = myMembership?.role
+    val isManager = role != null && MemberPermissions.canManageClub(role)
+    val canLeave = role != null && MemberPermissions.canLeave(role)
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item(key = "code") {
+            InvitationCodeCard(
+                code = club.invitationCode,
+                onCopy = onCopyCode,
+                onShare = onShareCode
+            )
+        }
+        item(key = "club") {
+            SettingsGroup(title = stringResource(Res.string.settings_section_club)) {
+                SettingsRow(label = stringResource(Res.string.settings_schedule), icon = Icons.Outlined.CalendarMonth, onClick = onOpenSchedule)
+                // Spec 014: behind MEMBER_ABSENCES
+                if (state.absencesEnabled) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+                    SettingsRow(label = stringResource(Res.string.settings_absences), icon = Icons.Outlined.EventBusy, onClick = onOpenAbsences)
+                }
+                state.muted?.let { muted ->
+                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+                    SettingsRow(
+                        label = stringResource(Res.string.settings_mute),
+                        icon = Icons.Outlined.NotificationsOff,
+                        onClick = { onAction(ClubSettingsAction.OnMutedChanged(!muted)) },
+                        trailing = { Switch(checked = muted, onCheckedChange = { onAction(ClubSettingsAction.OnMutedChanged(it)) }) }
+                    )
+                    Text(
+                        text = stringResource(Res.string.settings_mute_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.extended.textPlaceholder,
+                        modifier = Modifier.padding(start = 46.dp, end = 16.dp, bottom = 12.dp)
+                    )
+                }
+            }
+        }
+        if (isManager) {
+            item(key = "management") {
+                SettingsGroup(title = stringResource(Res.string.settings_section_management)) {
+                    SettingsRow(
+                        label = stringResource(Res.string.settings_edit_club),
+                        icon = Icons.Outlined.Edit,
+                        onClick = { onAction(ClubSettingsAction.OnEditClubClick(club)) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+                    SettingsRow(label = stringResource(Res.string.settings_change_logo), icon = Icons.Outlined.Image, onClick = onChangeLogo)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+                    SettingsRow(
+                        label = stringResource(Res.string.settings_regenerate_code),
+                        icon = Icons.Outlined.Refresh,
+                        onClick = { onAction(ClubSettingsAction.OnRegenerateCodeClick) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.extended.surfaceOutline)
+                    SettingsRow(label = stringResource(Res.string.settings_bans), icon = Icons.Outlined.Block, onClick = onOpenBans)
+                }
+            }
+        }
+        item(key = "extra") { extraSections() }
+        if (role != null) {
+            item(key = "membership") {
+                SettingsGroup(title = stringResource(Res.string.settings_section_membership)) {
+                    if (canLeave) {
+                        SettingsRow(
+                            label = stringResource(Res.string.settings_leave),
+                            icon = Icons.AutoMirrored.Filled.ExitToApp,
+                            destructive = true,
+                            onClick = { onAction(ClubSettingsAction.OnLeaveClick) }
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(Res.string.settings_owner_cannot_leave),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.extended.textPlaceholder,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 @Composable

@@ -134,10 +134,13 @@ fun ClubDetailScreen(
     onOpenMatch: (clubId: String, matchId: String) -> Unit,
     onOpenAbsences: (clubId: String) -> Unit = {},
     onLeftClub: () -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    /** Previews draw the tabs themselves (the real ones use their own ViewModels). */
+    tabContent: (@Composable (ClubDetailTabModel) -> Unit)? = null,
+    initialTab: ClubDetailTabModel = ClubDetailTabModel.MATCH
 ) {
     val club = state.club
-    var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
+    var selectedTabIndex by rememberSaveable { mutableStateOf(initialTab.ordinal) }
 
     val inSettings = ClubDetailTabModel.entries[selectedTabIndex] == ClubDetailTabModel.SETTINGS
     // Settings open from the header button; back returns to the match tab
@@ -179,6 +182,7 @@ fun ClubDetailScreen(
                 onOpenAbsences = { onOpenAbsences(club.id) },
                 onLeftClub = onLeftClub,
                 snackbarHostState = snackbarHostState,
+                tabContent = tabContent,
                 modifier = Modifier.padding(padding)
             )
         }
@@ -198,6 +202,7 @@ private fun ClubContent(
     onOpenAbsences: () -> Unit,
     onLeftClub: () -> Unit,
     snackbarHostState: SnackbarHostState,
+    tabContent: (@Composable (ClubDetailTabModel) -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -213,6 +218,10 @@ private fun ClubContent(
             transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
             modifier = Modifier.weight(1f)
         ) { tabIndex ->
+            if (tabContent != null) {
+                tabContent(ClubDetailTabModel.entries[tabIndex])
+                return@AnimatedContent
+            }
             when (ClubDetailTabModel.entries[tabIndex]) {
                 ClubDetailTabModel.MATCH -> AnnouncementTab(
                     snackbarHostState = snackbarHostState,

@@ -459,4 +459,6 @@
     <string name="result_loss">You lost</string>
     <string name="result_view">See result</string>
     <string name="result_caps">%1$s · %2$s</string>
+    <string name="pitch_title">Pitch</string>
+    <string name="match_view_pitch">See on the pitch</string>
 </resources>

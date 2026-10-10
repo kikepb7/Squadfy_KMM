@@ -1,5 +1,7 @@
 package com.kikepb.club.presentation.navigation
 
+import com.kikepb.club.presentation.navigation.ClubGraphRoutes.MatchPitchRoute
+import com.kikepb.club.presentation.match.MatchPitchRoot
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.MatchResultRoute
 import com.kikepb.club.presentation.navigation.ClubGraphRoutes.MatchDrawRoute
 import com.kikepb.club.presentation.match.MatchResultRoot
@@ -58,6 +60,10 @@ sealed interface ClubGraphRoutes {
     @Serializable
     data class MatchDrawRoute(val clubId: String, val matchId: String) : ClubGraphRoutes
 
+    /** Spec 018: both teams on the pitch (screen 06-campo). */
+    @Serializable
+    data class MatchPitchRoute(val clubId: String, val matchId: String) : ClubGraphRoutes
+
     /** Spec 018: the closed match with everyone's rating change. */
     @Serializable
     data class MatchResultRoute(val clubId: String, val matchId: String) : ClubGraphRoutes
@@ -93,16 +99,20 @@ fun NavGraphBuilder.clubGraph(navController: NavController) {
     composable<MatchDetailRoute>(deepLinks = listOf(navDeepLink { uriPattern = "squadfy://match/{matchId}?clubId={clubId}" })) {
         MatchDetailRoot(
             onBackClick = { navController.navigateUp() },
-            onOpenResult = { clubId, matchId -> navController.navigate(route = MatchResultRoute(clubId = clubId, matchId = matchId)) }
+            onOpenResult = { clubId, matchId -> navController.navigate(route = MatchResultRoute(clubId = clubId, matchId = matchId)) },
+            onOpenPitch = { clubId, matchId -> navController.navigate(route = MatchPitchRoute(clubId = clubId, matchId = matchId)) }
         )
     }
     composable<MatchDrawRoute>(deepLinks = listOf(navDeepLink { uriPattern = "squadfy://match/{matchId}/draw?clubId={clubId}" })) {
         MatchDrawRoot(
             onBackClick = { navController.navigateUp() },
             onViewTeams = { clubId, matchId ->
-                navController.navigate(route = MatchDetailRoute(clubId = clubId, matchId = matchId)) { popUpTo<MatchDrawRoute> { inclusive = true } }
+                navController.navigate(route = MatchPitchRoute(clubId = clubId, matchId = matchId)) { popUpTo<MatchDrawRoute> { inclusive = true } }
             }
         )
+    }
+    composable<MatchPitchRoute> {
+        MatchPitchRoot(onBackClick = { navController.navigateUp() })
     }
     composable<MatchResultRoute> {
         MatchResultRoot(onBackClick = { navController.navigateUp() })

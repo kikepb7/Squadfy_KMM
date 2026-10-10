@@ -96,6 +96,11 @@ fun ChatListRoot(
         }
     }
 
+    val permissionController = rememberPermissionController()
+    LaunchedEffect(key1 = true) {
+        permissionController.requestPermission(permission = Permission.NOTIFICATIONS)
+    }
+
     ChatListScreen(
         state = state,
         onAction = { action ->
@@ -117,12 +122,6 @@ fun ChatListScreen(
     onAction: (ChatListAction) -> Unit,
     snackBarHostState: SnackbarHostState
 ) {
-    val permissionController = rememberPermissionController()
-
-    LaunchedEffect(key1 = true) {
-        permissionController.requestPermission(permission = Permission.NOTIFICATIONS)
-    }
-
     val query = rememberTextFieldState()
     val needle = query.text.toString().trim()
     val chats = if (needle.isBlank()) state.chats else state.chats.filter { chat ->

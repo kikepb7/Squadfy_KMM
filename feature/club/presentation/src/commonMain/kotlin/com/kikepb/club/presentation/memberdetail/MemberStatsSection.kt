@@ -58,6 +58,12 @@ import squadfy_app.feature.club.presentation.generated.resources.member_stat_yel
 @Composable
 fun MemberStatsSection(member: ClubMemberModel, viewModel: MemberStatsViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    MemberStatsContent(member = member, state = state)
+}
+
+/** Stateless body of the player card, also used by the previews. */
+@Composable
+fun MemberStatsContent(member: ClubMemberModel, state: MemberStatsState) {
     Column(verticalArrangement = Arrangement.spacedBy(Space.s3)) {
         PlayerHero(member = member, state = state)
         if (state.evolution.size >= 2) {

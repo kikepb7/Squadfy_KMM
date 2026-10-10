@@ -1,5 +1,6 @@
 package com.kikepb.club.presentation.match
 
+import squadfy_app.feature.club.presentation.generated.resources.match_view_pitch
 import squadfy_app.feature.club.presentation.generated.resources.result_view
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -189,6 +190,7 @@ import kotlin.math.roundToInt
 fun MatchDetailRoot(
     onBackClick: () -> Unit,
     onOpenResult: ((clubId: String, matchId: String) -> Unit)? = null,
+    onOpenPitch: ((clubId: String, matchId: String) -> Unit)? = null,
     viewModel: MatchDetailViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -225,7 +227,8 @@ fun MatchDetailRoot(
         onAction = viewModel::onAction,
         onBackClick = onBackClick,
         snackbarHostState = snackbarHostState,
-        onOpenResult = onOpenResult?.let { open -> { state.match?.let { open(it.clubId, it.id) } } }
+        onOpenResult = onOpenResult?.let { open -> { state.match?.let { open(it.clubId, it.id) } } },
+        onOpenPitch = onOpenPitch?.let { open -> { state.match?.let { open(it.clubId, it.id) } } }
     )
 }
 
@@ -236,7 +239,8 @@ fun MatchDetailScreen(
     onAction: (MatchDetailAction) -> Unit,
     onBackClick: () -> Unit,
     snackbarHostState: SnackbarHostState,
-    onOpenResult: (() -> Unit)? = null
+    onOpenResult: (() -> Unit)? = null,
+    onOpenPitch: (() -> Unit)? = null
 ) {
     Scaffold(
         containerColor = Triangulacion.colors.surface100,
@@ -292,6 +296,17 @@ fun MatchDetailScreen(
                             variant = TriButtonVariant.Secondary,
                             icon = if (state.reportMode) TriIcon.Check else TriIcon.Whistle,
                             enabled = state.editing == null,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+                if (onOpenPitch != null && state.match.hasTeams && state.editing == null) {
+                    item(key = "pitch-link") {
+                        TriButton(
+                            text = stringResource(Res.string.match_view_pitch),
+                            onClick = onOpenPitch,
+                            variant = TriButtonVariant.Secondary,
+                            icon = TriIcon.Pitch,
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

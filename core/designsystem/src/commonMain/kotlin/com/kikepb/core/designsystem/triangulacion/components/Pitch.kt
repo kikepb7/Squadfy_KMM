@@ -28,6 +28,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -46,7 +47,7 @@ import squadfy_app.core.designsystem.generated.resources.Res
 import squadfy_app.core.designsystem.generated.resources.tri_pitch_a11y
 import squadfy_app.core.designsystem.generated.resources.tri_team_a_caps
 import squadfy_app.core.designsystem.generated.resources.tri_team_b_caps
-import kotlin.math.hypot
+import kotlin.math.abs
 
 /** A player on the pitch. [number] is the shirt number; without it the disc shows the initials. */
 @Immutable
@@ -59,49 +60,61 @@ data class PitchPlayer(
     val isGuest: Boolean = false
 )
 
-/** Where a player stands, in fractions of the pitch (0..1 from the top-left corner). */
+/** Where a player stands, in fractions of the pitch (0..1 from the top-left corner), and its line from the goal. */
 @Immutable
-data class PitchSlot(val player: PitchPlayer, val team: TriTeam, val x: Float, val y: Float) {
+data class PitchSlot(val player: PitchPlayer, val team: TriTeam, val x: Float, val y: Float, val line: Int = 0) {
     val isGoalkeeper: Boolean get() = player.position == TriPosition.GK
 }
 
 /**
- * Line-up for the pitch view (presentation only, no domain rule): each team in its half, by lines from its own goal
- * (goalkeeper, defenders, midfielders, forwards; no position = midfield). A line of more than four is split in two.
+ * Line-up for the pitch view (presentation only, no domain rule; spec 018, screen 06-campo): each team in its half,
+ * by lines from its own goal (goalkeeper, defenders, midfielders, forwards; no position = midfield). A line spreads
+ * wider the more players it has (2 → the middle third, 3 → 20–80 %), and a line of more than five is split in two.
  */
 object PitchLayout {
-    private val lineDepth = mapOf(TriPosition.GK to 0.055f, TriPosition.DEF to 0.17f, TriPosition.MID to 0.29f, TriPosition.FWD to 0.41f)
+    private val lineDepth = mapOf(TriPosition.GK to 0.09f, TriPosition.DEF to 0.215f, TriPosition.MID to 0.325f, TriPosition.FWD to 0.415f)
 
     fun place(teamA: List<PitchPlayer>, teamB: List<PitchPlayer>): List<PitchSlot> = placeTeam(teamA, TriTeam.A) + placeTeam(teamB, TriTeam.B)
+
+    /** Horizontal positions of a line of [count] players, centred on the pitch. */
+    fun spread(count: Int): List<Float> {
+        if (count <= 1) return listOf(0.5f)
+        val span = minOf(0.8f, 0.34f + 0.26f * (count - 2))
+        return List(count) { i -> 0.5f - span / 2 + span * i / (count - 1) }
+    }
 
     private fun placeTeam(players: List<PitchPlayer>, team: TriTeam): List<PitchSlot> {
         val byLine = players.groupBy { it.position ?: TriPosition.MID }
         val slots = mutableListOf<PitchSlot>()
+        var lineIndex = 0
         TriPosition.entries.forEach { line ->
             val members = byLine[line].orEmpty()
             if (members.isEmpty()) return@forEach
-            val rows = if (members.size > 4 && line != TriPosition.GK) members.chunked((members.size + 1) / 2) else listOf(members)
+            val rows = if (members.size > 5 && line != TriPosition.GK) members.chunked((members.size + 1) / 2) else listOf(members)
             rows.forEachIndexed { rowIndex, row ->
-                val depth = (lineDepth.getValue(line) + if (rows.size > 1) (rowIndex - 0.5f) * 0.06f else 0f).coerceIn(0.05f, 0.46f)
-                row.forEachIndexed { i, player ->
-                    val x = 0.12f + 0.76f * (i + 1) / (row.size + 1)
-                    val y = if (team == TriTeam.A) depth else 1f - depth
-                    slots += PitchSlot(player, team, x, y)
+                val depth = (lineDepth.getValue(line) + if (rows.size > 1) (rowIndex - 0.5f) * 0.07f else 0f).coerceIn(0.05f, 0.45f)
+                spread(row.size).forEachIndexed { i, x ->
+                    slots += PitchSlot(row[i], team, x, if (team == TriTeam.A) depth else 1f - depth, lineIndex)
                 }
+                lineIndex++
             }
         }
         return slots
     }
 
-    /** Pairs of nearby outfield team-mates: the dashed triangulation lines. */
+    /**
+     * The dashed triangulation lines: each outfield player with the close team-mates of the next line (never inside
+     * the same line, never the goalkeeper).
+     */
     fun links(slots: List<PitchSlot>): List<Pair<PitchSlot, PitchSlot>> {
         val out = mutableListOf<Pair<PitchSlot, PitchSlot>>()
         TriTeam.entries.forEach { team ->
             val outfield = slots.filter { it.team == team && !it.isGoalkeeper }
-            for (i in outfield.indices) for (j in i + 1 until outfield.size) {
-                val a = outfield[i]
-                val b = outfield[j]
-                if (hypot((a.x - b.x) * 100f, (a.y - b.y) * 140f) < 34f) out += a to b
+            val lines = outfield.map { it.line }.distinct().sorted()
+            lines.zipWithNext().forEach { (near, far) ->
+                outfield.filter { it.line == near }.forEach { a ->
+                    outfield.filter { it.line == far }.forEach { b -> if (abs(a.x - b.x) <= 0.36f) out += a to b }
+                }
             }
         }
         return out
@@ -116,8 +129,7 @@ object PitchLayout {
 fun Pitch(
     teamA: List<PitchPlayer>,
     teamB: List<PitchPlayer>,
-    modifier: Modifier = Modifier,
-    discSize: Dp = 34.dp
+    modifier: Modifier = Modifier
 ) {
     val colors = Triangulacion.colors
     val slots = remember(teamA, teamB) { PitchLayout.place(teamA, teamB) }
@@ -126,43 +138,50 @@ fun Pitch(
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(90f / 120f)
+            .aspectRatio(0.9f)
             .clip(RoundedCornerShape(Radius.lg))
             .background(colors.surfaceInverse)
             .semantics { contentDescription = description }
     ) {
         val w = maxWidth
         val h = maxHeight
+        val discSize = (w * 0.095f).coerceIn(30.dp, 46.dp)
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val stripe = size.height / 12f
-            for (i in 0 until 12 step 2) drawRect(colors.onInverse.copy(alpha = 0.035f), topLeft = Offset(0f, i * stripe), size = Size(size.width, stripe))
-            val line = colors.onInverse.copy(alpha = 0.35f)
-            val stroke = Stroke(1.2.dp.toPx())
-            val m = 10.dp.toPx()
-            drawRect(line, topLeft = Offset(m, m), size = Size(size.width - 2 * m, size.height - 2 * m), style = stroke)
-            drawLine(line, Offset(m, size.height / 2), Offset(size.width - m, size.height / 2), strokeWidth = stroke.width)
-            drawCircle(line, radius = size.width * 0.11f, center = center, style = stroke)
-            val boxW = size.width * 0.46f
-            val boxH = size.height * 0.13f
-            val smallW = size.width * 0.24f
-            val smallH = size.height * 0.05f
-            drawRect(line, topLeft = Offset((size.width - boxW) / 2, m), size = Size(boxW, boxH), style = stroke)
-            drawRect(line, topLeft = Offset((size.width - smallW) / 2, m), size = Size(smallW, smallH), style = stroke)
-            drawRect(line, topLeft = Offset((size.width - boxW) / 2, size.height - m - boxH), size = Size(boxW, boxH), style = stroke)
-            drawRect(line, topLeft = Offset((size.width - smallW) / 2, size.height - m - smallH), size = Size(smallW, smallH), style = stroke)
+            // Mowing stripes
+            val bands = 10
+            val band = size.height / bands
+            for (i in 0 until bands step 2) drawRect(colors.onInverse.copy(alpha = 0.035f), topLeft = Offset(0f, i * band), size = Size(size.width, band))
+            val line = colors.onInverse.copy(alpha = 0.32f)
+            val stroke = Stroke(1.4.dp.toPx())
+            val mx = size.width * 0.045f
+            val my = size.height * 0.035f
+            val fieldW = size.width - 2 * mx
+            val fieldH = size.height - 2 * my
+            drawRoundRect(line, topLeft = Offset(mx, my), size = Size(fieldW, fieldH), cornerRadius = androidx.compose.ui.geometry.CornerRadius(3.dp.toPx()), style = stroke)
+            drawLine(line, Offset(mx, size.height / 2), Offset(size.width - mx, size.height / 2), strokeWidth = stroke.width)
+            drawCircle(line, radius = size.width * 0.105f, center = center, style = stroke)
+            drawCircle(line, radius = 2.dp.toPx(), center = center)
+            val boxW = fieldW * 0.5f
+            val boxH = fieldH * 0.15f
+            val smallW = fieldW * 0.26f
+            val smallH = fieldH * 0.065f
+            drawRect(line, topLeft = Offset((size.width - boxW) / 2, my), size = Size(boxW, boxH), style = stroke)
+            drawRect(line, topLeft = Offset((size.width - smallW) / 2, my), size = Size(smallW, smallH), style = stroke)
+            drawRect(line, topLeft = Offset((size.width - boxW) / 2, size.height - my - boxH), size = Size(boxW, boxH), style = stroke)
+            drawRect(line, topLeft = Offset((size.width - smallW) / 2, size.height - my - smallH), size = Size(smallW, smallH), style = stroke)
             links.forEach { (a, b) ->
                 drawLine(
-                    color = (if (a.team == TriTeam.A) colors.teamA else colors.teamB).copy(alpha = 0.75f),
+                    color = (if (a.team == TriTeam.A) colors.teamA else colors.teamB).copy(alpha = 0.8f),
                     start = Offset(a.x * size.width, a.y * size.height),
                     end = Offset(b.x * size.width, b.y * size.height),
-                    strokeWidth = 1.5.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f))
+                    strokeWidth = 1.6.dp.toPx(),
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx()))
                 )
             }
         }
-        PitchTeamLabel(stringResource(Res.string.tri_team_a_caps), colors.teamA, colors.onTeamA, Modifier.align(Alignment.TopStart).padding(12.dp))
-        PitchTeamLabel(stringResource(Res.string.tri_team_b_caps), colors.teamB, colors.onTeamB, Modifier.align(Alignment.BottomStart).padding(12.dp))
-        val labelWidth = discSize * 2f
+        PitchTeamLabel(stringResource(Res.string.tri_team_a_caps), colors.teamA, colors.onTeamA, Modifier.align(Alignment.TopStart).padding(start = w * 0.045f + 6.dp, top = h * 0.035f + 6.dp))
+        PitchTeamLabel(stringResource(Res.string.tri_team_b_caps), colors.teamB, colors.onTeamB, Modifier.align(Alignment.BottomStart).padding(start = w * 0.045f + 6.dp, bottom = h * 0.035f + 6.dp))
+        val labelWidth = discSize * 2.2f
         slots.forEach { slot ->
             PlayerDisc(
                 slot = slot,
@@ -185,14 +204,14 @@ private fun PitchTeamLabel(text: String, background: Color, content: Color, modi
     )
 }
 
-/** Ficha: disc with the shirt number. Dashed ring = you, white border = goalkeeper, outline only = guest. */
+/** Ficha: disc with the shirt number. Dashed ring = you, light ring = goalkeeper, outline only = guest. */
 @Composable
 fun PlayerDisc(slot: PitchSlot, discSize: Dp, modifier: Modifier = Modifier) {
     val colors = Triangulacion.colors
     val fill = if (slot.team == TriTeam.A) colors.teamA else colors.teamB
     val content = if (slot.team == TriTeam.A) colors.onTeamA else colors.onTeamB
     val player = slot.player
-    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -201,12 +220,14 @@ fun PlayerDisc(slot: PitchSlot, discSize: Dp, modifier: Modifier = Modifier) {
                     if (player.isMe) drawCircle(
                         color = colors.onInverse,
                         radius = size.minDimension / 2 + 5.dp.toPx(),
-                        style = Stroke(2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 5f)))
+                        style = Stroke(2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 3.dp.toPx())))
                     )
+                    // Soft drop shadow so the disc sits on the grass
+                    drawCircle(Color.Black.copy(alpha = 0.25f), radius = size.minDimension / 2, center = center.copy(y = center.y + 2.dp.toPx()))
                 }
                 .clip(CircleShape)
-                .then(if (player.isGuest) Modifier.border(2.dp, fill, CircleShape) else Modifier.background(fill))
-                .then(if (slot.isGoalkeeper) Modifier.border(2.dp, colors.onInverse, CircleShape) else Modifier)
+                .then(if (player.isGuest) Modifier.background(colors.surfaceInverse).border(2.dp, fill, CircleShape) else Modifier.background(fill))
+                .then(if (slot.isGoalkeeper) Modifier.border(3.dp, colors.onInverse.copy(alpha = 0.9f), CircleShape) else Modifier)
         ) {
             Text(
                 text = player.number?.toString() ?: initialsOf(player.name),
@@ -216,34 +237,51 @@ fun PlayerDisc(slot: PitchSlot, discSize: Dp, modifier: Modifier = Modifier) {
         }
         Text(
             text = player.name,
-            style = Triangulacion.type.bodySm.copy(fontSize = 11.sp, lineHeight = 13.sp),
+            style = Triangulacion.type.label.copy(
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
+                shadow = Shadow(color = Color.Black.copy(alpha = 0.6f), offset = Offset(0f, 1f), blurRadius = 3f)
+            ),
             color = colors.onInverse,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp)
+            modifier = Modifier.fillMaxWidth()
         )
     }
+}
+
+internal object PitchSamples {
+    val teamA = listOf(
+        PitchPlayer("1", "Marcos", 1, TriPosition.GK), PitchPlayer("4", "Iván", 4, TriPosition.DEF),
+        PitchPlayer("5", "Sergio", 5, TriPosition.DEF), PitchPlayer("3", "Hugo", 3, TriPosition.DEF),
+        PitchPlayer("8", "Dani", 8, TriPosition.MID), PitchPlayer("10", "Álvaro", 10, TriPosition.MID, isMe = true),
+        PitchPlayer("9", "Álex", 9, TriPosition.FWD)
+    )
+    val teamB = listOf(
+        PitchPlayer("13", "Nico", 13, TriPosition.GK), PitchPlayer("2", "Jaime", 2, TriPosition.DEF),
+        PitchPlayer("6", "Tomás", 6, TriPosition.DEF), PitchPlayer("15", "Gabi", 15, TriPosition.DEF),
+        PitchPlayer("16", "Pablo", 16, TriPosition.MID), PitchPlayer("14", "Nacho", 14, TriPosition.MID),
+        PitchPlayer("11", "Leo", 11, TriPosition.FWD, isGuest = true)
+    )
 }
 
 @Preview
 @Composable
 private fun PitchPreview() {
     SquadfyTheme {
-        Pitch(
-            teamA = listOf(
-                PitchPlayer("1", "Marcos", 1, TriPosition.GK), PitchPlayer("4", "Iván", 4, TriPosition.DEF),
-                PitchPlayer("3", "Hugo", 3, TriPosition.DEF), PitchPlayer("5", "Sergio", 5, TriPosition.MID),
-                PitchPlayer("8", "Dani", 8, TriPosition.MID), PitchPlayer("10", "Álvaro", 10, TriPosition.MID, isMe = true),
-                PitchPlayer("9", "Álex", 9, TriPosition.FWD)
-            ),
-            teamB = listOf(
-                PitchPlayer("13", "Nico", 13, TriPosition.GK), PitchPlayer("2", "Jaime", 2, TriPosition.DEF),
-                PitchPlayer("15", "Gabi", 15, TriPosition.DEF), PitchPlayer("6", "Tomás", 6, TriPosition.MID),
-                PitchPlayer("16", "Pablo", 16, TriPosition.MID), PitchPlayer("14", "Nacho", 14, TriPosition.MID),
-                PitchPlayer("11", "Leo", 11, TriPosition.FWD, isGuest = true)
-            ),
-            modifier = Modifier.padding(16.dp)
-        )
+        Box(Modifier.background(Triangulacion.colors.surface100).padding(16.dp)) {
+            Pitch(teamA = PitchSamples.teamA, teamB = PitchSamples.teamB)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PitchDarkPreview() {
+    SquadfyTheme(darkTheme = true) {
+        Box(Modifier.background(Triangulacion.colors.surface100).padding(16.dp)) {
+            Pitch(teamA = PitchSamples.teamA, teamB = PitchSamples.teamB)
+        }
     }
 }

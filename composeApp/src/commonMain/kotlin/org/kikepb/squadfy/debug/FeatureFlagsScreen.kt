@@ -123,3 +123,23 @@ private fun FeatureFlagRow(
         Switch(checked = resolved.enabled, onCheckedChange = onToggle)
     }
 }
+
+// Spec 018: the PRE-only feature flags screen in Tiza and Noche
+private val previewState = FeatureFlagsState(
+    environment = com.kikepb.core.domain.featureflag.AppEnvironment.PRE,
+    flags = com.kikepb.core.domain.featureflag.FeatureFlag.entries.mapIndexed { index, flag ->
+        com.kikepb.core.domain.featureflag.ResolvedFeatureFlag(
+            flag = flag,
+            enabled = index % 2 == 0,
+            source = if (index % 3 == 0) com.kikepb.core.domain.featureflag.FlagValueSource.OVERRIDE else com.kikepb.core.domain.featureflag.FlagValueSource.DEFAULT
+        )
+    }
+)
+
+@org.jetbrains.compose.ui.tooling.preview.Preview(name = "Feature flags · Tiza", widthDp = 393, heightDp = 852)
+@Composable
+private fun FeatureFlagsTiza() = com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview { FeatureFlagsScreen(state = previewState, onAction = {}) }
+
+@org.jetbrains.compose.ui.tooling.preview.Preview(name = "Feature flags · Noche", widthDp = 393, heightDp = 852)
+@Composable
+private fun FeatureFlagsNoche() = com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview(darkTheme = true) { FeatureFlagsScreen(state = previewState, onAction = {}) }

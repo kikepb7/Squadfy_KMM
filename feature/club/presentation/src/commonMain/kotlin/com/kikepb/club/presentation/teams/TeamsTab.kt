@@ -30,7 +30,7 @@ import com.kikepb.core.designsystem.triangulacion.components.TeamBalance
 import com.kikepb.core.designsystem.triangulacion.components.TriAvatar
 import com.kikepb.core.designsystem.triangulacion.components.TriCaps
 import com.kikepb.core.designsystem.triangulacion.components.TriCard
-import com.kikepb.core.designsystem.triangulacion.components.TriChip
+import com.kikepb.core.designsystem.triangulacion.components.TriTabs
 import com.kikepb.core.designsystem.triangulacion.components.TriIcon
 import com.kikepb.core.designsystem.triangulacion.components.TriNotice
 import com.kikepb.core.designsystem.triangulacion.components.TriNoticeTone
@@ -110,43 +110,46 @@ fun TeamsContent(state: TeamsState, onAction: (TeamsAction) -> Unit, onOpenMatch
                     )
                 }
                 else -> {
-                    item(key = "published") {
-                        TriNotice(
-                            title = stringResource(Res.string.teams_published_title),
-                            body = myTeam?.let { stringResource(Res.string.teams_you_play_in, teamName(it.toTri())) },
-                            tone = TriNoticeTone.Ok
+                    item(key = "view") {
+                        TriTabs(
+                            items = listOf(stringResource(Res.string.teams_view_pitch), stringResource(Res.string.teams_view_list)),
+                            selectedIndex = if (state.view == TeamsView.PITCH) 0 else 1,
+                            onSelect = { onAction(TeamsAction.OnViewSelected(if (it == 0) TeamsView.PITCH else TeamsView.LIST)) }
                         )
                     }
-                    item(key = "view") {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TriChip(
-                                text = stringResource(Res.string.teams_view_pitch),
-                                selected = state.view == TeamsView.PITCH,
-                                onClick = { onAction(TeamsAction.OnViewSelected(TeamsView.PITCH)) },
-                                icon = TriIcon.Pitch
-                            )
-                            TriChip(
-                                text = stringResource(Res.string.teams_view_list),
-                                selected = state.view == TeamsView.LIST,
-                                onClick = { onAction(TeamsAction.OnViewSelected(TeamsView.LIST)) }
-                            )
-                        }
-                    }
                     if (state.view == TeamsView.PITCH) {
+                        // Equipos B (screen 06-campo): the pitch, then the balance
                         item(key = "pitch") { Pitch(teamA = teamA.map { it.player }, teamB = teamB.map { it.player }) }
-                    }
-                    state.balance?.let { balance ->
-                        item(key = "balance") {
-                            TriCard(modifier = Modifier.fillMaxWidth(), contentPadding = Space.s5) {
+                        state.balance?.let { balance ->
+                            item(key = "balance") {
                                 TeamBalance(
                                     ratingA = balance.teamA.averageRating,
                                     ratingB = balance.teamB.averageRating,
-                                    expectedA = balance.teamAExpectedScore.toFloat()
+                                    expectedA = balance.teamAExpectedScore.toFloat(),
+                                    modifier = Modifier.padding(top = Space.s3)
                                 )
                             }
                         }
-                    }
-                    if (state.view == TeamsView.LIST) {
+                    } else {
+                        // Equipos A (screen 05-equipos): the notice, the balance card and both lists
+                        item(key = "published") {
+                            TriNotice(
+                                title = stringResource(Res.string.teams_published_title),
+                                body = myTeam?.let { stringResource(Res.string.teams_you_play_in, teamName(it.toTri())) },
+                                tone = TriNoticeTone.Ok
+                            )
+                        }
+                        state.balance?.let { balance ->
+                            item(key = "balance-card") {
+                                TriCard(modifier = Modifier.fillMaxWidth(), contentPadding = Space.s5) {
+                                    TeamBalance(
+                                        ratingA = balance.teamA.averageRating,
+                                        ratingB = balance.teamB.averageRating,
+                                        expectedA = balance.teamAExpectedScore.toFloat()
+                                    )
+                                }
+                            }
+                        }
                         item(key = "lists") {
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                                 TeamList(TriTeam.A, teamA, state.myMemberId, Modifier.weight(1f))
