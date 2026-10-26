@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Borrar tu cuenta · Squadfy</title>
+  <meta name="description" content="Borra tu cuenta de Squadfy y tus datos personales sin necesidad de la app.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/delete-account.js"></script>
+</head>
+<body>
+<main>
+  <header class="site"><img src="/assets/logo.svg" alt=""><a href="/">squadfy</a></header>
+  <section class="card">
+    <h1>Borrar tu cuenta de Squadfy</h1>
+    <p>También puedes hacerlo desde la app, en tu perfil. El borrado es <strong>inmediato e irreversible</strong>.</p>
+
+    <h2>Qué se borra</h2>
+    <ul>
+      <li>Tu email, nombre de usuario, contraseña y fotos.</li>
+      <li>Tus mensajes de chat, dispositivos para notificaciones, preferencias y ausencias.</li>
+      <li>Tu sesión en todos los dispositivos.</li>
+    </ul>
+
+    <h2>Qué se conserva, sin datos personales</h2>
+    <ul>
+      <li>Tu participación en partidos pasados (equipos, goles, estadísticas), como «Usuario eliminado», para que los resultados del club sigan cuadrando.</li>
+      <li>Si eras propietario de un club, pasa al administrador o miembro más antiguo. Si eras su único miembro, el club se elimina.</li>
+    </ul>
+    <p>Más información en la <a href="/legal/privacy">política de privacidad</a>.</p>
+  </section>
+
+  <section class="card" id="delete-card">
+    <h2>Confirma que eres tú</h2>
+    <p class="hint">Entra con el mismo método que usas en la app. Al confirmar, la cuenta se borra en ese momento.</p>
+
+    <label class="check" for="confirm">
+      <input id="confirm" type="checkbox">
+      <span>Entiendo que mi cuenta se borrará para siempre y no se puede recuperar.</span>
+    </label>
+
+    <form id="password-form" novalidate>
+      <label for="email">Email de tu cuenta</label>
+      <input id="email" name="email" type="email" autocomplete="email" required>
+      <label for="password">Contraseña</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button id="password-submit" class="danger" type="submit" disabled>Borrar mi cuenta</button>
+    </form>
+
+    <div class="divider">o, si entras con Google o Apple</div>
+    <button id="google" class="secondary" type="button" disabled>Borrar mi cuenta con Google</button>
+    <button id="apple" class="secondary" type="button" disabled>Borrar mi cuenta con Apple</button>
+
+    <p id="message" class="message" role="status" aria-live="polite"></p>
+  </section>
+  <footer class="site"><a href="/">Inicio</a><a href="/legal/privacy">Privacidad</a></footer>
+</main>
+</body>
+</html>

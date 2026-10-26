@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it } from "vitest";
+import { deleteUser } from "firebase/auth";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { callError, newClient } from "./helpers";
 
@@ -45,5 +46,21 @@ describe("AC-019-06 account deletion with the spec 010 rules", () => {
     await lonely.call("deleteAccount");
     const watcher = await user("watch");
     await expect(getDoc(doc(watcher.firestore, `clubs/${club.id}`))).rejects.toThrow();
+  });
+
+  it("deleting the Auth user outside the app (web page, console) erases the same data", async () => {
+    const leaving = await user("web");
+    const keeper = await user("keep");
+    const club = await leaving.call<{ id: string; invitationCode: string }>("createClub", { name: "Web FC" });
+    await keeper.call("joinClub", { invitationCode: club.invitationCode });
+
+    await deleteUser(leaving.auth.currentUser!);
+
+    // The Auth trigger runs asynchronously
+    const memberRef = doc(keeper.firestore, `clubs/${club.id}/members/${club.id}_${leaving.uid}`);
+    for (let i = 0; i < 40 && (await getDoc(memberRef)).get("status") !== "LEFT"; i++) await new Promise((r) => setTimeout(r, 250));
+    expect((await getDoc(memberRef)).get("username")).toMatch(/^Usuario eliminado /);
+    expect((await getDoc(doc(keeper.firestore, `clubs/${club.id}`))).get("ownerId")).toBe(keeper.uid);
+    expect((await getDoc(doc(keeper.firestore, `users/${leaving.uid}`))).exists()).toBe(false);
   });
 });

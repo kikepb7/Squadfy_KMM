@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Squadfy</title>
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="/assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/site.css">
+  <script type="module" src="/assets/auth-action.js"></script>
+</head>
+<body>
+<main>
+  <header class="site"><img src="/assets/logo.svg" alt=""><a href="/">squadfy</a></header>
+  <section class="card">
+    <h1 id="title">Un momento…</h1>
+    <p id="lead"></p>
+
+    <form id="reset-form" class="hidden" novalidate>
+      <label for="new-password">Nueva contraseña</label>
+      <input id="new-password" type="password" autocomplete="new-password" required>
+      <p class="hint">Al menos 9 caracteres, con un número y una mayúscula.</p>
+      <label for="repeat-password">Repítela</label>
+      <input id="repeat-password" type="password" autocomplete="new-password" required>
+      <button id="reset-submit" class="primary" type="submit">Guardar la contraseña</button>
+    </form>
+
+    <a id="open-app" class="button secondary hidden" href="#">Hacerlo en la app</a>
+    <p id="message" class="message" role="status" aria-live="polite"></p>
+  </section>
+  <footer class="site"><a href="/">Inicio</a><a href="/legal/privacy">Privacidad</a></footer>
+</main>
+</body>
+</html>

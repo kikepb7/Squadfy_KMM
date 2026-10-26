@@ -1,7 +1,9 @@
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions/v2";
+import * as v1 from "firebase-functions/v1";
 import { onCall } from "firebase-functions/v2/https";
 import { auth, db, storage } from "../admin";
+import { REGION } from "../config";
 import { membershipEnded, runAfterCommit } from "../clubs/hooks";
 import { MemberDoc } from "../clubs/model";
 import { successor } from "../domain/clubRoles";
@@ -107,4 +109,14 @@ export const deleteAccount = onCall(async (request) => {
   await auth().deleteUser(uid);
   logger.info("[account] account deleted");
   return { ok: true };
+});
+
+/**
+ * The same erasure when the account is deleted anywhere else: the web deletion page (it deletes the Auth user after a
+ * fresh sign-in, so it works with App Check enforced on the callables) or the console. After `deleteAccount` it runs
+ * again on data already erased, which changes nothing.
+ */
+export const onAuthUserDeleted = v1.region(REGION).auth.user().onDelete(async (user) => {
+  await eraseUser(user.uid);
+  logger.info("[account] data erased after the Auth user was deleted");
 });

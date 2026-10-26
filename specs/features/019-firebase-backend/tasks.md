@@ -57,7 +57,7 @@
 - [x] **T-023** Analytics con consentimiento y `screen_view`; Crashlytics en iOS con CrashKiOS (AC-019-18).
 - [ ] **T-024** Remote Config como `RemoteFeatureFlagSource` (AC-019-19, cierra D-10).
 - [x] **T-025** App Check (AC-019-20).
-- [ ] **T-026** Hosting: privacidad, página de borrado de cuenta y página de acción de Auth.
+- [x] **T-026** Hosting: privacidad, página de borrado de cuenta y página de acción de Auth.
 
 ## Fase 6 · Verificación
 - [ ] **T-027** CI: emuladores con los tests de Functions y reglas, y las dos variantes de la app (AC-019-21, 22).

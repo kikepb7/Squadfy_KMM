@@ -1,0 +1,66 @@
+/* Squadfy web pages (spec 019 T-026): brand "Triangulación" tokens, Tiza (light) and Noche (dark) themes.
+   System fonts on purpose: no third-party requests from the legal and account pages. */
+:root {
+  --surface-100: #f6f5ee; --surface-200: #ffffff; --surface-300: #ebe9dc;
+  --ink: #101a14; --ink-muted: #4a5750; --line: #dcd9ca; --line-strong: #7d8a81;
+  --brand: #0f4d36; --on-brand: #f6f5ee; --volt: #c5f65a; --on-volt: #0e1a12; --accent-text: #17623f;
+  --success-soft: #dff5c8; --danger: #b3261e; --danger-soft: #fbe0dc; --focus: #0f4d36;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-100: #0b120e; --surface-200: #121c16; --surface-300: #1a261f;
+    --ink: #f1f2ea; --ink-muted: #a9b4ab; --line: #25332b; --line-strong: #66756b;
+    --brand: #c5f65a; --on-brand: #0b120e; --accent-text: #c5f65a;
+    --success-soft: #22351f; --danger: #ff8f86; --danger-soft: #3d1c19; --focus: #c5f65a;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--surface-100); color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px 56px; }
+header.site { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+header.site img { width: 40px; height: 40px; }
+header.site a { color: var(--ink); text-decoration: none; font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em; }
+.card { background: var(--surface-200); border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+.card + .card { margin-top: 16px; }
+h1 { font-size: 1.75rem; line-height: 1.2; letter-spacing: -0.02em; margin: 0 0 8px; }
+h2 { font-size: 1.15rem; margin: 28px 0 8px; }
+p, li { color: var(--ink-muted); }
+strong { color: var(--ink); }
+ul { padding-left: 20px; margin: 0; }
+li { margin-bottom: 4px; }
+a { color: var(--accent-text); }
+.updated { font-size: .9rem; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: .95rem; }
+th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid var(--line); color: var(--ink-muted); }
+th { color: var(--ink); }
+label { display: block; font-weight: 600; margin: 16px 0 6px; }
+input[type=email], input[type=password] {
+  width: 100%; padding: 12px; border: 1px solid var(--line-strong); border-radius: 10px;
+  background: var(--surface-100); color: var(--ink); font-size: 1rem;
+}
+.check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; }
+.check input { margin-top: 4px; width: 18px; height: 18px; flex: none; }
+input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+button, .button {
+  display: block; width: 100%; margin-top: 12px; padding: 13px 16px; border: 1px solid transparent; border-radius: 12px;
+  font-size: 1rem; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer;
+}
+.primary { background: var(--brand); color: var(--on-brand); }
+.secondary { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.danger { background: var(--danger); color: var(--surface-200); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 20px 0 4px; color: var(--ink-muted); font-size: .9rem; }
+.divider::before, .divider::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+.message { margin: 16px 0 0; padding: 12px; border-radius: 10px; font-weight: 600; }
+.message:empty { display: none; }
+.message.ok { background: var(--success-soft); color: var(--ink); }
+.message.error { background: var(--danger-soft); color: var(--ink); }
+.hint { font-size: .9rem; margin: 6px 0 0; }
+.hidden { display: none !important; }
+footer.site { margin-top: 24px; font-size: .9rem; color: var(--ink-muted); display: flex; gap: 16px; flex-wrap: wrap; }
