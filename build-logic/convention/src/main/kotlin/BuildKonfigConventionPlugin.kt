@@ -2,6 +2,7 @@ import com.codingfeline.buildkonfig.compiler.FieldSpec
 import com.codingfeline.buildkonfig.gradle.BuildKonfigExtension
 import com.kikepb.squadfy.convention.SquadfyBackend
 import com.kikepb.squadfy.convention.isSquadfyReleaseBuild
+import com.kikepb.squadfy.convention.libs
 import com.kikepb.squadfy.convention.pathToPackageName
 import com.kikepb.squadfy.convention.squadfyBackend
 import com.kikepb.squadfy.convention.squadfyEnvironment
@@ -19,8 +20,11 @@ import org.gradle.kotlin.dsl.configure
 private const val DEFAULT_BASE_URL_HTTP = "http://10.0.2.2:8080/api/v1"
 private const val DEFAULT_BASE_URL_WS = "ws://10.0.2.2:8080/ws"
 
-/** Firebase Emulator Suite (spec 019 AC-019-02): the Android emulator reaches the host through 10.0.2.2. */
-private const val DEFAULT_FIREBASE_EMULATOR_HOST = "10.0.2.2"
+/**
+ * Firebase Emulator Suite (spec 019 AC-019-02). Empty means the platform default: 10.0.2.2 from the Android emulator,
+ * localhost from the iOS simulator. Set `squadfy.firebase.emulatorHost` to the Mac's IP for a physical device.
+ */
+private const val DEFAULT_FIREBASE_EMULATOR_HOST = ""
 
 /**
  * Legal pages (spec 011 AC-011-07/08). With the own backend the deletion page is served next to the API (BE spec 010);
@@ -84,6 +88,12 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                     )
 
                     buildConfigField(FieldSpec.Type.STRING, "ENVIRONMENT", squadfyEnvironment.key)
+                    // Crash report keys and device metadata (spec 019)
+                    buildConfigField(
+                        FieldSpec.Type.STRING,
+                        "VERSION_NAME",
+                        libs.findVersion("projectVersionName").get().toString() + providers.gradleProperty("versionNameSuffix").orNull.orEmpty()
+                    )
                     // Spec 019 AC-019-01: Firebase (default) or the frozen own backend (ADR-0010)
                     buildConfigField(FieldSpec.Type.STRING, "BACKEND", squadfyBackend.key)
                     // Spec 019 AC-019-02: the Emulator Suite is only reachable from debug builds

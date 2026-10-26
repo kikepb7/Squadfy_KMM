@@ -15,8 +15,13 @@ interface CrashReportingConsent {
     suspend fun applyStored()
 }
 
-/** Platform crash SDK switch. */
+/** Platform crash SDK. Breadcrumbs, non-fatals, user id and keys are no-ops where the SDK cannot take them. */
 interface CrashReporter {
     val isAvailable: Boolean
     fun setCollectionEnabled(enabled: Boolean)
+    fun log(message: String) = Unit
+    fun recordException(throwable: Throwable, customKeys: Map<String, String> = emptyMap()) = Unit
+    /** Pseudonymous id (the account uid) so a support request can be matched with its reports; null detaches it. */
+    fun setUserId(userId: String?) = Unit
+    fun setCustomKey(key: String, value: String) = Unit
 }
