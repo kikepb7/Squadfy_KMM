@@ -11,7 +11,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     private let socialSignIn = SocialSignInHandler()
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        FirebaseApp.configure()
+        // Firebase is configured in iOSApp.init(), before Koin (FirebaseSetup)
         IosSocialSignIn.shared.bridge = socialSignIn
         
         UNUserNotificationCenter.current().delegate = self

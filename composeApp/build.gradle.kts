@@ -34,6 +34,8 @@ kotlin {
 
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.messaging)
+            // App Check (spec 019 AC-019-20): Play Integrity in release; the debug provider is debugImplementation below
+            implementation(libs.firebase.appcheck.playintegrity)
 
             // Google sign-in through Credential Manager (spec 019 AC-019-23)
             implementation(libs.androidx.credentials)
@@ -95,6 +97,11 @@ kotlin {
         }
     }
 }
+dependencies {
+    "debugImplementation"(platform(libs.firebase.bom))
+    "debugImplementation"(libs.firebase.appcheck.debug)
+}
+
 // AC-011-13: the R8 mapping goes to Crashlytics only from the CI release job (CRASHLYTICS_MAPPING_UPLOAD=true),
 // so local release builds don't publish symbols to the Firebase project.
 val crashlyticsMappingUpload = providers.gradleProperty("CRASHLYTICS_MAPPING_UPLOAD")

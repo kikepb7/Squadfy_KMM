@@ -6,6 +6,8 @@ struct iOSApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     init() {
+        // Before Koin: the shared code expects Firebase (and App Check) to be ready
+        FirebaseSetup.configure()
         InitKoinKt.doInitKoin()
     }
     

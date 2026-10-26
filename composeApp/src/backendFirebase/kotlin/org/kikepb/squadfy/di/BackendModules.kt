@@ -6,6 +6,7 @@ import com.kikepb.chat.domain.repository.presence.PresenceRepository
 import com.kikepb.club.datafirebase.di.clubFirebaseDataModule
 import com.kikepb.core.firebase.di.coreFirebaseModule
 import com.kikepb.core.firebase.init.FirebaseInitializer
+import com.kikepb.core.firebase.init.isAppCheckNeeded
 import org.kikepb.squadfy.auth.platformSocialSignInModule
 import org.koin.core.Koin
 import org.koin.core.module.Module
@@ -27,5 +28,8 @@ internal fun Koin.startBackend() {
     // Presence keeps "online" while signed in; it opens the Realtime Database, so only after the emulators are set
     get<PresenceRepository>()
 }
+
+/** Spec 019 AC-019-20: whether the platform installs Firebase App Check before Firebase starts. */
+internal val needsAppCheck: Boolean get() = isAppCheckNeeded
 
 internal fun Koin.onAppForeground() = get<FirebaseInitializer>().onForeground()

@@ -28,3 +28,6 @@ internal val backendModules: List<Module> = listOf(
 internal fun Koin.startBackend() = Unit
 
 internal fun Koin.onAppForeground() = Unit
+
+/** The own backend does not use Firebase App Check. */
+internal val needsAppCheck: Boolean = false

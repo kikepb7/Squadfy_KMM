@@ -56,7 +56,7 @@
 ## Fase 5 · Telemetría y configuración
 - [x] **T-023** Analytics con consentimiento y `screen_view`; Crashlytics en iOS con CrashKiOS (AC-019-18).
 - [ ] **T-024** Remote Config como `RemoteFeatureFlagSource` (AC-019-19, cierra D-10).
-- [ ] **T-025** App Check (AC-019-20).
+- [x] **T-025** App Check (AC-019-20).
 - [ ] **T-026** Hosting: privacidad, página de borrado de cuenta y página de acción de Auth.
 
 ## Fase 6 · Verificación

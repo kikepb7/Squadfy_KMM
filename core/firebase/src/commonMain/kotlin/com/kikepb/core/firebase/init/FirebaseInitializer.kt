@@ -101,6 +101,13 @@ class FirebaseInitializer(
     }
 }
 
+/**
+ * Spec 019 AC-019-20: App Check attests the app to the real project (debug provider in debug builds, Play Integrity
+ * and App Attest in release). The emulators do not verify it, so it is not installed while using them. The provider
+ * itself is installed natively, before Firebase starts: `SquadfyApplication` on Android, `AppDelegate.swift` on iOS.
+ */
+val isAppCheckNeeded: Boolean get() = !BuildKonfig.FIREBASE_USE_EMULATOR
+
 /** Must match `firebase/firebase.json`. Not the usual defaults, so they never clash with TensoScan or the own backend. */
 object EmulatorPorts {
     const val AUTH = 9098
