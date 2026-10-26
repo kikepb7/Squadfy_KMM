@@ -27,4 +27,8 @@ sealed interface AuthGraphRoutes {
 
     @Serializable
     data class EmailVerification(val token: String): AuthGraphRoutes
+
+    /** Spec 019: the username step of a first Google/Apple sign-in. */
+    @Serializable
+    data class CompleteProfile(val suggestedUsername: String): AuthGraphRoutes
 }

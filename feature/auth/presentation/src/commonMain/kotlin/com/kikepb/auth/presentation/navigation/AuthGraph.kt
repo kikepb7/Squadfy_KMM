@@ -3,6 +3,7 @@ package com.kikepb.auth.presentation.navigation
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import com.kikepb.auth.presentation.email_verification.EmailVerificationRoot
@@ -13,11 +14,13 @@ import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.ForgotPassword
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.AuthGraph
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Login
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Welcome
-import com.kikepb.auth.presentation.welcome.WelcomeScreen
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.Register
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.RegisterSuccess
 import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.ResetPassword
 import com.kikepb.auth.presentation.register.RegisterRoot
+import com.kikepb.auth.presentation.complete_profile.CompleteProfileRoot
+import com.kikepb.auth.presentation.navigation.AuthGraphRoutes.CompleteProfile
+import com.kikepb.auth.presentation.welcome.WelcomeRoot
 import com.kikepb.auth.presentation.register_success.RegisterSuccessRoot
 import com.kikepb.auth.presentation.reset_password.ResetPasswordRoot
 
@@ -29,14 +32,24 @@ fun NavGraphBuilder.authGraph(
         startDestination = Welcome
     ) {
         composable<Welcome> {
-            WelcomeScreen(
+            WelcomeRoot(
                 onCreateAccountClick = { navController.navigate(route = Register) { launchSingleTop = true } },
-                onLoginClick = { navController.navigate(route = Login) { launchSingleTop = true } }
+                onLoginClick = { navController.navigate(route = Login) { launchSingleTop = true } },
+                onSignedIn = onLoginSuccess,
+                onNeedsProfile = { suggested -> navController.navigate(route = CompleteProfile(suggested)) { launchSingleTop = true } }
+            )
+        }
+        composable<CompleteProfile> { entry ->
+            CompleteProfileRoot(
+                suggestedUsername = entry.toRoute<CompleteProfile>().suggestedUsername,
+                onDone = onLoginSuccess,
+                onLeft = { navController.popBackStack() }
             )
         }
         composable<Login> {
             LoginRoot(
                 onLoginSuccess = onLoginSuccess,
+                onNeedsProfile = { suggested -> navController.navigate(route = CompleteProfile(suggested)) { launchSingleTop = true } },
                 onForgotPasswordClick = {
                     navController.navigate(route = ForgotPassword)
                 },

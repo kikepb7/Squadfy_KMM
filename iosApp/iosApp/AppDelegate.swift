@@ -6,9 +6,13 @@ import FirebaseCore
 import FirebaseMessaging
 
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
+
+    /// Google and Apple sign-in sheets for the shared Kotlin code (spec 019 AC-019-23)
+    private let socialSignIn = SocialSignInHandler()
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
+        IosSocialSignIn.shared.bridge = socialSignIn
         
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self

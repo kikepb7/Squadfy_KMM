@@ -1,6 +1,8 @@
 package com.kikepb.chat.domain.usecases.profile
 
 import com.kikepb.chat.domain.repository.chat.ChatRepository
+import com.kikepb.core.domain.auth.model.SignInMethod
+import com.kikepb.core.domain.auth.model.SocialCredential
 import com.kikepb.core.domain.auth.repository.AuthRepository
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.util.DataError
@@ -21,4 +23,14 @@ class DeleteAccountUseCase(
             sessionStorage.set(info = null)
             chatRepository.deleteAllChats()
         }
+
+    /** Spec 019 AC-019-23: accounts created with Google/Apple confirm with the provider instead of a password. */
+    suspend operator fun invoke(credential: SocialCredential): EmptyResult<DataError.Remote> =
+        authRepository.deleteAccount(credential = credential).onSuccess {
+            sessionStorage.set(info = null)
+            chatRepository.deleteAllChats()
+        }
+
+    /** How the signed-in user confirms: null = password. */
+    val signInMethod: SignInMethod? get() = authRepository.currentSignInMethod()
 }

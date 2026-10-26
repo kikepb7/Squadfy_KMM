@@ -26,6 +26,11 @@ import com.kikepb.core.domain.util.DataError.Remote.UNAUTHORIZED
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
 import com.kikepb.core.domain.validation.PasswordValidator
+import com.kikepb.core.domain.auth.model.SignInMethod
+import com.kikepb.core.domain.auth.model.SocialCredentialResult
+import com.kikepb.core.domain.auth.repository.NoSocialCredentialProvider
+import com.kikepb.core.domain.auth.repository.SocialCredentialProvider
+import squadfy_app.feature.chat.presentation.generated.resources.error_delete_account_reauth
 import com.kikepb.core.presentation.mapper.toUiText
 import com.kikepb.core.presentation.util.UiText
 import kotlinx.coroutines.channels.Channel
@@ -55,7 +60,8 @@ class ProfileViewModel(
     private val deleteAccountUseCase: DeleteAccountUseCase,
     private val featureFlags: FeatureFlags,
     private val crashReportingConsent: CrashReportingConsent,
-    private val signOutUseCase: SignOutUseCase
+    private val signOutUseCase: SignOutUseCase,
+    private val socialCredentialProvider: SocialCredentialProvider = NoSocialCredentialProvider
 ): ViewModel() {
 
     private var hasLoadedInitialData = false
@@ -201,7 +207,9 @@ class ProfileViewModel(
         }
     }
 
-    private fun showDeleteAccountDialog() = _state.update { it.copy(showDeleteAccountDialog = true, deleteAccountError = null) }
+    private fun showDeleteAccountDialog() = _state.update {
+        it.copy(showDeleteAccountDialog = true, deleteAccountError = null, deleteAccountWith = deleteAccountUseCase.signInMethod)
+    }
 
     private fun dismissDeleteAccountDialog() {
         if (_state.value.isDeletingAccount) return
@@ -211,6 +219,10 @@ class ProfileViewModel(
 
     /** Spec 011 AC-011-07: the password confirms the deletion; the session is only cleared once the backend deleted it. */
     private fun deleteAccount() {
+        _state.value.deleteAccountWith?.let { method ->
+            deleteAccountWithProvider(method)
+            return
+        }
         val password = _state.value.deleteAccountPasswordState.text.toString()
         // The flag lives in the combined state, not in _state
         if (password.isBlank() || _state.value.isDeletingAccount || !state.value.isAccountDeletionEnabled) return
@@ -230,6 +242,25 @@ class ProfileViewModel(
                     }
                     _state.update { it.copy(isDeletingAccount = false, deleteAccountError = message) }
                 }
+        }
+    }
+
+    /** Spec 019 AC-019-23: accounts without password confirm by signing in again with Google/Apple. */
+    private fun deleteAccountWithProvider(method: SignInMethod) {
+        if (_state.value.isDeletingAccount || !state.value.isAccountDeletionEnabled) return
+        _state.update { it.copy(isDeletingAccount = true, deleteAccountError = null) }
+        viewModelScope.launch {
+            when (val proof = socialCredentialProvider.obtainCredential(method)) {
+                is SocialCredentialResult.Success -> deleteAccountUseCase(credential = proof.credential)
+                    .onSuccess {
+                        socialCredentialProvider.revokeAccess(proof.credential)
+                        _state.update { it.copy(isDeletingAccount = false, showDeleteAccountDialog = false) }
+                        eventChannel.send(ProfileEvent.OnAccountDeleted)
+                    }
+                    .onFailure { error -> _state.update { it.copy(isDeletingAccount = false, deleteAccountError = error.toUiText()) } }
+                SocialCredentialResult.Cancelled -> _state.update { it.copy(isDeletingAccount = false) }
+                else -> _state.update { it.copy(isDeletingAccount = false, deleteAccountError = UiText.Resource(RString.error_delete_account_reauth)) }
+            }
         }
     }
 
@@ -288,6 +319,8 @@ data class ProfileState(
     val isDeleteAccountPasswordVisible: Boolean = false,
     val isDeletingAccount: Boolean = false,
     val deleteAccountError: UiText? = null,
+    /** Spec 019: the provider an account without password confirms the deletion with; null = password. */
+    val deleteAccountWith: SignInMethod? = null,
     val isCrashReportingAvailable: Boolean = false,
     val crashReportsEnabled: Boolean = false,
     val showLogoutConfirmation: Boolean = false,

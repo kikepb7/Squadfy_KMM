@@ -31,6 +31,11 @@ import squadfy_app.feature.auth.presentation.generated.resources.login_subtitle
 import squadfy_app.feature.auth.presentation.generated.resources.no_account_prefix
 import squadfy_app.feature.auth.presentation.generated.resources.register_link
 import com.kikepb.core.presentation.util.ObserveAsEvents
+import com.kikepb.auth.presentation.social.SocialSignInAction
+import com.kikepb.auth.presentation.social.SocialSignInButtons
+import com.kikepb.auth.presentation.social.SocialSignInEvent
+import com.kikepb.auth.presentation.social.SocialSignInState
+import com.kikepb.auth.presentation.social.SocialSignInViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -46,20 +51,31 @@ import squadfy_app.feature.auth.presentation.generated.resources.welcome_back
 @Composable
 fun LoginRoot(
     viewModel: LoginViewModel = koinViewModel(),
+    socialViewModel: SocialSignInViewModel = koinViewModel(),
     onLoginSuccess: () -> Unit,
+    onNeedsProfile: (suggestedUsername: String) -> Unit,
     onForgotPasswordClick: () -> Unit,
     onCreateAccountClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val socialState by socialViewModel.state.collectAsStateWithLifecycle()
 
     ObserveAsEvents(flow = viewModel.events) { event ->
         when (event) {
             LoginEvent.Success -> onLoginSuccess()
         }
     }
+    ObserveAsEvents(flow = socialViewModel.events) { event ->
+        when (event) {
+            SocialSignInEvent.SignedIn -> onLoginSuccess()
+            is SocialSignInEvent.NeedsProfile -> onNeedsProfile(event.suggestedUsername)
+        }
+    }
 
     LoginScreen(
         state = state,
+        socialState = socialState,
+        onSocialAction = socialViewModel::onAction,
         onAction = { action ->
             when (action) {
                 LoginAction.OnForgotPasswordClick -> onForgotPasswordClick()
@@ -74,7 +90,9 @@ fun LoginRoot(
 @Composable
 fun LoginScreen(
     state: LoginState,
-    onAction: (LoginAction) -> Unit
+    onAction: (LoginAction) -> Unit,
+    socialState: SocialSignInState = SocialSignInState(),
+    onSocialAction: (SocialSignInAction) -> Unit = {}
 ) {
     SquadfySnackbarScaffold {
         SquadfyAdaptiveFormLayout(
@@ -126,6 +144,8 @@ fun LoginScreen(
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
             }
+            // Spec 019 AC-019-23: Google and Apple, when the platform offers them
+            SocialSignInButtons(state = socialState, onAction = onSocialAction, modifier = Modifier.padding(top = 16.dp))
             state.info?.let { info ->
                 Spacer(modifier = Modifier.height(8.dp))
                 TriNotice(title = null, body = info.asString(), tone = TriNoticeTone.Ok)

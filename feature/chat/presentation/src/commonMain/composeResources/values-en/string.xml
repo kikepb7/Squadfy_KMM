@@ -74,4 +74,7 @@
     <string name="profile_close">Close</string>
     <string name="chat_search">Search</string>
     <string name="chat_search_empty">No chat matches the search.</string>
+    <string name="delete_account_confirm_google">To confirm, sign in with Google again.</string>
+    <string name="delete_account_confirm_apple">To confirm, sign in with Apple again.</string>
+    <string name="error_delete_account_reauth">We couldn\'t confirm it\'s you. Try again.</string>
 </resources>

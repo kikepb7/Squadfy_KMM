@@ -39,12 +39,18 @@ class FirebaseSessionStorage(
                 } else {
                     firestore.value.userDocument(uid).snapshots
                         .map { snapshot ->
-                            val profile = if (snapshot.exists) snapshot.data(UserProfileDto.serializer()) else null
-                            user.toAuthInfo(profile)
+                            // No profile = an account signed in with Google/Apple whose username step was left
+                            // unfinished: not a session (the next sign-in asks for it again)
+                            when {
+                                snapshot.exists -> user.toAuthInfo(snapshot.data(UserProfileDto.serializer()))
+                                // Offline and not cached yet: keep the session until the server answers
+                                snapshot.metadata.isFromCache -> user.toAuthInfo(profile = null)
+                                else -> null
+                            }
                         }
-                        // Offline or before the profile exists: the session is still valid
+                        // Offline errors keep the session. No provisional value first: a registration in progress
+                        // would look like a session that expired before its profile exists
                         .catch { emit(user.toAuthInfo(profile = null)) }
-                        .onStart { emit(user.toAuthInfo(profile = null)) }
                 }
             }
             .distinctUntilChanged()

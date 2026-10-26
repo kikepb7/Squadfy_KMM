@@ -1,5 +1,14 @@
 package com.kikepb.auth.presentation.welcome
 
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kikepb.auth.presentation.social.SocialSignInAction
+import com.kikepb.auth.presentation.social.SocialSignInButtons
+import com.kikepb.auth.presentation.social.SocialSignInEvent
+import com.kikepb.auth.presentation.social.SocialSignInState
+import com.kikepb.auth.presentation.social.SocialSignInViewModel
+import com.kikepb.core.presentation.util.ObserveAsEvents
+import org.koin.compose.viewmodel.koinViewModel
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -49,9 +58,34 @@ import squadfy_app.feature.auth.presentation.generated.resources.welcome_headlin
  * promise of the product. «Crear cuenta» is the Volt action; «Ya tengo cuenta» goes to the login.
  */
 @Composable
+fun WelcomeRoot(
+    onCreateAccountClick: () -> Unit,
+    onLoginClick: () -> Unit,
+    onSignedIn: () -> Unit,
+    onNeedsProfile: (suggestedUsername: String) -> Unit,
+    socialViewModel: SocialSignInViewModel = koinViewModel()
+) {
+    val socialState by socialViewModel.state.collectAsStateWithLifecycle()
+    ObserveAsEvents(flow = socialViewModel.events) { event ->
+        when (event) {
+            SocialSignInEvent.SignedIn -> onSignedIn()
+            is SocialSignInEvent.NeedsProfile -> onNeedsProfile(event.suggestedUsername)
+        }
+    }
+    WelcomeScreen(
+        onCreateAccountClick = onCreateAccountClick,
+        onLoginClick = onLoginClick,
+        socialState = socialState,
+        onSocialAction = socialViewModel::onAction
+    )
+}
+
+@Composable
 fun WelcomeScreen(
     onCreateAccountClick: () -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
+    socialState: SocialSignInState = SocialSignInState(),
+    onSocialAction: (SocialSignInAction) -> Unit = {}
 ) {
     val colors = Triangulacion.colors
     StatusBarIconsEffect(lightIcons = true)
@@ -99,6 +133,13 @@ fun WelcomeScreen(
                 onClick = onLoginClick,
                 color = colors.onInverse,
                 modifier = Modifier.fillMaxWidth().padding(top = Space.s2)
+            )
+            // Spec 019 AC-019-23: Google and Apple, when the platform offers them
+            SocialSignInButtons(
+                state = socialState,
+                onAction = onSocialAction,
+                onDarkBackground = true,
+                modifier = Modifier.padding(top = Space.s4)
             )
         }
     }

@@ -107,6 +107,9 @@ import squadfy_app.feature.chat.presentation.generated.resources.delete
 import squadfy_app.feature.chat.presentation.generated.resources.delete_account
 import squadfy_app.feature.chat.presentation.generated.resources.delete_account_desc
 import squadfy_app.feature.chat.presentation.generated.resources.delete_account_password
+import squadfy_app.feature.chat.presentation.generated.resources.delete_account_confirm_apple
+import squadfy_app.feature.chat.presentation.generated.resources.delete_account_confirm_google
+import com.kikepb.core.domain.auth.model.SignInMethod
 import squadfy_app.feature.chat.presentation.generated.resources.delete_profile_picture
 import squadfy_app.feature.chat.presentation.generated.resources.delete_profile_picture_desc
 import squadfy_app.feature.chat.presentation.generated.resources.email
@@ -332,9 +335,23 @@ fun ProfileScreen(
             onConfirmClick = { onAction(OnConfirmDeleteAccount) },
             onCancelClick = { onAction(OnDismissDeleteAccountDialog) },
             onDismiss = { onAction(OnDismissDeleteAccountDialog) },
-            isConfirmEnabled = state.deleteAccountPasswordState.text.isNotBlank() && !state.isDeletingAccount,
+            isConfirmEnabled = (state.deleteAccountWith != null || state.deleteAccountPasswordState.text.isNotBlank()) && !state.isDeletingAccount,
             isConfirmLoading = state.isDeletingAccount
         ) {
+            val provider = state.deleteAccountWith
+            if (provider != null) {
+                // Spec 019: no password to type; confirming signs in again with Google/Apple
+                Text(
+                    text = stringResource(
+                        resource = if (provider == SignInMethod.APPLE) RString.delete_account_confirm_apple else RString.delete_account_confirm_google
+                    ),
+                    style = Triangulacion.type.bodySm,
+                    color = Triangulacion.colors.inkMuted
+                )
+                state.deleteAccountError?.let {
+                    Text(text = it.asString(), style = Triangulacion.type.bodySm, color = Triangulacion.colors.danger)
+                }
+            } else {
             SquadfyPasswordTextField(
                 state = state.deleteAccountPasswordState,
                 isPasswordVisible = state.isDeleteAccountPasswordVisible,
@@ -344,6 +361,7 @@ fun ProfileScreen(
                 supportingText = state.deleteAccountError?.asString(),
                 enabled = !state.isDeletingAccount
             )
+            }
         }
     }
 }

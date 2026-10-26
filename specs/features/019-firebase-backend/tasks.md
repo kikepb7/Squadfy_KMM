@@ -10,7 +10,12 @@
 ## Fase 1 · Cuenta
 - [x] **T-006** `AuthRepository` neutral. El contrato se mantiene: Firebase ignora el refresh token, y `verifyEmail` y `resetPassword` reciben el `oobCode` del enlace de acción. `MainViewModel` detecta la sesión caducada por su ausencia, no por el refresh token, con el mismo comportamiento en la variante `api`.
 - [x] **T-007** `FirebaseAuthRepository`: registro con `users/{uid}`, login, logout, verificación, recuperación, cambio de contraseña y sesión (AC-019-04, 05). La callable `completeProfile` reserva el nombre en `usernames/{lower}` (único, sin distinguir mayúsculas, de 3 a 20 caracteres, como BE-001) y crea el perfil sin el email; las reglas de `users` van con sus tests. `FirebaseSessionStorage` une Auth con `users/{uid}`. Verificación: tests de la callable contra el emulador (3/3); registro y login reales desde la app PRE contra el Emulator Suite.
-- [ ] **T-008b** Login con Google y Apple, con la pantalla para completar el perfil (AC-019-23).
+- [x] **T-008b** Login con Google y Apple, con la pantalla para completar el perfil (AC-019-23).
+  - Proveedores: Credential Manager en Android (Google) y un puente Swift en iOS (Apple primero y Google), como en TensoScan.
+  - Pantalla «Elige tu nombre»: el nombre es único y, si se abandona, se borra la cuenta a medio crear.
+  - Para borrar una cuenta sin contraseña se vuelve a iniciar sesión con el proveedor, y en Apple se revoca el acceso.
+  - La variante `api` no ofrece proveedores.
+  - Verificación: 5 tests de ViewModel.
 - [x] **T-008** Callable `deleteAccount` con la anonimización y la sucesión del owner, y la reautenticación en la app (AC-019-06).
   - Mismas reglas que la spec 010 del backend: los clubes pasan al admin más antiguo o al miembro más antiguo, o se borran; las membresías quedan anonimizadas; se borran ausencias, mensajes, chats vacíos, dispositivos, fotos, el nombre y la cuenta.
   - Un token de una cuenta borrada ya no puede crear clubes ni membresías (401).

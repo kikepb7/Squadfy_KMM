@@ -50,4 +50,15 @@
     <string name="have_account_prefix">Already have an account?</string>
     <string name="login_link">Sign in</string>
     <string name="forgot_password_subtitle">We will email you a link to set a new password.</string>
+    <!-- Spec 019: Google and Apple sign-in -->
+    <string name="social_divider">or continue with</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_apple">Continue with Apple</string>
+    <string name="social_sign_in_failed">We couldn\'t sign you in. Try again.</string>
+    <string name="social_sign_in_unavailable">This method isn\'t available on this device.</string>
+    <string name="complete_profile_title">Choose your name</string>
+    <string name="complete_profile_subtitle">It\'s how your teammates will see you in the club and the chat.</string>
+    <string name="complete_profile_continue">Continue</string>
+    <string name="complete_profile_cancel">Cancel and leave</string>
+    <string name="error_username_taken">That name is already taken</string>
 </resources>

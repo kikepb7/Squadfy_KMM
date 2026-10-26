@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo
 import com.kikepb.core.domain.crash.CrashReportingConsent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.kikepb.squadfy.auth.CurrentActivity
 import org.kikepb.squadfy.di.initKoin
 import org.kikepb.squadfy.push.PushNotifier
 import org.koin.android.ext.koin.androidContext
@@ -15,6 +16,8 @@ class SquadfyApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // Credential Manager's sheet is anchored to the activity on screen (spec 019)
+        registerActivityLifecycleCallbacks(CurrentActivity)
         initKoin {
             androidContext(this@SquadfyApplication)
             // AC-011-04: Koin logs only in debuggable builds

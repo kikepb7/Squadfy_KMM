@@ -13,6 +13,8 @@ struct iOSApp: App {
         WindowGroup {
             ContentView()
                 .onOpenURL { url in
+                    // Google sign-in comes back through its URL scheme (spec 019)
+                    if SocialSignInHandler.handle(url: url) { return }
                     ExternalUriHandler.shared.onNewUri(uri: url.absoluteString)
                 }
         }

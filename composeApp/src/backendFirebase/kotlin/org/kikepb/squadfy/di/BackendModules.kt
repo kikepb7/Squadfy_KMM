@@ -5,6 +5,7 @@ import com.kikepb.chat.datafirebase.di.chatFirebaseDataModule
 import com.kikepb.club.datafirebase.di.clubFirebaseDataModule
 import com.kikepb.core.firebase.di.coreFirebaseModule
 import com.kikepb.core.firebase.init.FirebaseInitializer
+import org.kikepb.squadfy.auth.platformSocialSignInModule
 import org.koin.core.Koin
 import org.koin.core.module.Module
 
@@ -14,6 +15,7 @@ import org.koin.core.module.Module
  */
 internal val backendModules: List<Module> = listOf(
     coreFirebaseModule,
+    platformSocialSignInModule,
     platformChatPushModule,
     chatFirebaseDataModule,
     clubFirebaseDataModule
