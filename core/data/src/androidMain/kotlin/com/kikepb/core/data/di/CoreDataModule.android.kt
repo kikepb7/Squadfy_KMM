@@ -13,10 +13,16 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 actual val platformCoreDataModule = module {
-    single<HttpClientEngine> { OkHttp.create() }
     single<DataStore<Preferences>> {
         createDataStore(androidContext())
     }
+}
+
+actual val platformCoreApiDataModule = module {
+    single<HttpClientEngine> { OkHttp.create() }
     single<SessionCipher> { KeystoreSessionCipher() }
+}
+
+actual val platformCoreApiTelemetryModule = module {
     single<CrashReporter> { FirebaseCrashReporter() }
 }

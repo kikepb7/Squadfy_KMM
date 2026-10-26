@@ -1,3 +1,6 @@
+import com.kikepb.squadfy.convention.SquadfyBackend
+import com.kikepb.squadfy.convention.squadfyBackend
+
 plugins {
     alias(libs.plugins.convention.cmp.application)
     alias(libs.plugins.compose.hot.reload)
@@ -13,8 +16,14 @@ ktlint {
     ignoreFailures = true
 }
 
+// Spec 019 AC-019-01: the data layer is chosen at build time (SQUADFY_BACKEND=firebase|api, default firebase)
+val backend = squadfyBackend
+
 kotlin {
     sourceSets {
+        commonMain {
+            kotlin.srcDir(if (backend == SquadfyBackend.FIREBASE) "src/backendFirebase/kotlin" else "src/backendApi/kotlin")
+        }
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
@@ -51,6 +60,11 @@ kotlin {
             // GLOBAL POSITION
             implementation(projects.feature.globalPosition.presentation)
 
+
+            // FIREBASE (spec 019)
+            if (backend == SquadfyBackend.FIREBASE) {
+                implementation(projects.core.firebase)
+            }
 
             // CLUB FEATURE
             implementation(projects.feature.club.data)

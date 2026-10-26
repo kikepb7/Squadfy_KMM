@@ -23,6 +23,8 @@ import com.kikepb.core.domain.featureflag.FeatureFlagOverrides
 import com.kikepb.core.domain.featureflag.FeatureFlags
 import com.kikepb.core.domain.featureflag.RemoteFeatureFlagSource
 import com.kikepb.core.domain.logger.SquadfyLogger
+import com.kikepb.core.domain.analytics.AnalyticsTracker
+import com.kikepb.core.domain.analytics.NoOpAnalyticsTracker
 import org.koin.core.module.Module
 import kotlin.time.Clock
 import org.koin.core.module.dsl.singleOf
@@ -31,15 +33,13 @@ import org.koin.dsl.binds
 import org.koin.dsl.module
 
 expect val platformCoreDataModule: Module
+expect val platformCoreApiDataModule: Module
+expect val platformCoreApiTelemetryModule: Module
 
+/** Shared by both data layers (spec 019 AC-019-01): DataStore, logger, clock, feature flags, consent and push prompt. */
 val coreDataModule = module {
     includes(platformCoreDataModule)
     single<SquadfyLogger> { KermitLogger }
-    single {
-        HttpClientFactory(get(), get()).create(get())
-    }
-    singleOf(::KtorAuthRepositoryImpl) bind AuthRepository::class
-    singleOf(::DataStoreSessionStorage) bind SessionStorage::class
 
     // Wall clock for time-based rules (announcement window countdown, spec 005)
     single<Clock> { Clock.System }
@@ -53,8 +53,25 @@ val coreDataModule = module {
     singleOf(::DataStoreNotificationPromptStore) bind NotificationPromptStore::class
     // Crash reports with consent (spec 011 AC-011-13)
     singleOf(::DataStoreCrashReportingConsent) bind CrashReportingConsent::class
-    singleOf(::NoOpRemoteFeatureFlagSource) bind RemoteFeatureFlagSource::class
     single {
         DefaultFeatureFlags(environment = get(), platform = currentAppPlatform, overrideStore = get(), remoteSource = get(), scope = get())
     } binds arrayOf(FeatureFlags::class, FeatureFlagOverrides::class)
 }
+
+/** The own backend (frozen, ADR-0010): Ktor client with JWT refresh and the encrypted session store. */
+val coreApiNetworkModule = module {
+    includes(platformCoreApiDataModule)
+    single {
+        HttpClientFactory(get(), get()).create(get())
+    }
+    singleOf(::KtorAuthRepositoryImpl) bind AuthRepository::class
+    singleOf(::DataStoreSessionStorage) bind SessionStorage::class
+}
+
+/** What Firebase provides in the other variant: crash reporter, no remote flags (D-10 is Remote Config) and no analytics. */
+val coreApiTelemetryModule = module {
+    includes(platformCoreApiTelemetryModule)
+    singleOf(::NoOpRemoteFeatureFlagSource) bind RemoteFeatureFlagSource::class
+    single<AnalyticsTracker> { NoOpAnalyticsTracker }
+}
+

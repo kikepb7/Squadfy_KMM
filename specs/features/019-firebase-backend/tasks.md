@@ -1,11 +1,11 @@
 # 019 · Tareas
 
 ## Fase 0 · Plataforma
-- [ ] **T-001** `SQUADFY_BACKEND` y las opciones del emulador en BuildKonfig, validados (AC-019-01). PRE usa el sufijo `.dev` en Android e iOS (D-14). Verificación: el build falla con un valor desconocido.
-- [ ] **T-002** Versiones alineadas con GitLive 2.7.0: BoM 34.18.0, plugins, iOS SDK 11.15.0 y productos SPM (D-17). Verificación: `assembleDebug` y `compileKotlinIosSimulatorArm64`.
-- [ ] **T-003** Módulo `core/firebase`: init, emuladores, sesión, `safeFirebaseCall`, mapeo de errores a `BackendErrorCode` y `FunctionsClient` (AC-019-02, 03).
-- [ ] **T-004** Carpeta `firebase/`: `firebase.json` con todos los emuladores, `.firebaserc.example` y el esqueleto de Functions (TypeScript, Jest). Verificación: `firebase emulators:start` arranca.
-- [ ] **T-005** Selección de los módulos Koin en `composeApp` según el backend (AC-019-01).
+- [x] **T-001** `SQUADFY_BACKEND` y las opciones del emulador en BuildKonfig, validados (AC-019-01). PRE usa el sufijo `.dev` en Android e iOS (D-14). Verificación: el build falla con un valor desconocido.
+- [x] **T-002** Versiones alineadas con GitLive 2.7.0: BoM 34.18.0, plugins, iOS SDK 11.15.0 y productos SPM (D-17). Verificación: `assembleDebug` y `compileKotlinIosSimulatorArm64`.
+- [x] **T-003** Módulo `core/firebase`: init, emuladores, sesión, `safeFirebaseCall`, mapeo de errores a `BackendErrorCode` y `FunctionsClient` (AC-019-02, 03).
+- [x] **T-004** Carpeta `firebase/`: `firebase.json` con todos los emuladores, `.firebaserc.example` y el esqueleto de Functions (TypeScript, Jest). Verificación: `firebase emulators:start` arranca.
+- [x] **T-005** Selección de los módulos Koin en `composeApp` según el backend (AC-019-01). Hay un conjunto de fuentes por variante (`src/backendFirebase` y `src/backendApi`). `core/data` se separa en compartido (`coreDataModule`) y backend propio (`coreApiNetworkModule` y `coreApiTelemetryModule`). Mientras la spec está en curso, la variante Firebase usa las implementaciones del backend propio para las features que aún no se han portado. Verificación: las dos variantes compilan y pasan los tests; la app PRE (`com.kikepb.squadfy.dev`) arranca en el emulador.
 
 ## Fase 1 · Cuenta
 - [ ] **T-006** `AuthRepository` neutral: sesión observable, logout sin refresh token, verificación y restablecimiento con los enlaces de cada backend. Se adapta la variante `api` sin cambiar su comportamiento.

@@ -12,11 +12,17 @@ import io.ktor.client.engine.darwin.Darwin
 import org.koin.dsl.module
 
 actual val platformCoreDataModule = module {
-    single<HttpClientEngine> { Darwin.create() }
     single<DataStore<Preferences>> {
         createDataStore()
     }
+}
+
+actual val platformCoreApiDataModule = module {
+    single<HttpClientEngine> { Darwin.create() }
     single<SessionCipher> { DataProtectionSessionCipher() }
-    // Crash reporting is Android-only in the MVP (spec 011 plan §10)
+}
+
+actual val platformCoreApiTelemetryModule = module {
+    // Crash reporting is Android-only with the own backend (spec 011 plan §10); the Firebase variant covers iOS
     single<CrashReporter> { NoOpCrashReporter() }
 }
