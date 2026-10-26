@@ -8,7 +8,7 @@ import { badRequest, conflict, forbidden, notFound } from "../errors";
 import { body, requireAuth, requireString } from "../guards";
 import { memberIdOf, paths } from "../paths";
 import { requireClub, requireManager, requireMember, requireTargetMember } from "./access";
-import { membershipEnded } from "./hooks";
+import { AfterCommit, membershipEnded, runAfterCommit } from "./hooks";
 import { ClubDoc, clubDto, MemberDoc, memberDto } from "./model";
 import * as validate from "./validation";
 
@@ -209,13 +209,15 @@ export const setMyClubPicture = onCall(async (request) => {
 export const leaveClub = onCall(async (request) => {
   const uid = requireAuth(request);
   const clubId = requireString(body(request), "clubId");
-  await db().runTransaction(async (tx) => {
+  const after = await db().runTransaction(async (tx) => {
     const me = await requireMember(clubId, uid, tx);
     if (me.data.role === "OWNER") conflict("The owner cannot leave the club; transfer it first");
-    await membershipEnded(tx, clubId, me.id);
+    const actions = await membershipEnded(tx, clubId, me.id);
     tx.update(db().doc(paths.member(clubId, me.id)), { status: "LEFT", leftAt: Timestamp.now(), role: "PLAYER" });
     tx.update(db().doc(paths.club(clubId)), { membersCount: FieldValue.increment(-1) });
+    return actions;
   });
+  await runAfterCommit(after);
   return { ok: true };
 });
 
@@ -224,19 +226,21 @@ async function endMembership(request: { auth?: { uid: string } | null; data: unk
   const data = body(request as never);
   const clubId = requireString(data, "clubId");
   const memberId = requireString(data, "memberId");
-  await db().runTransaction(async (tx) => {
+  const after: AfterCommit[] = await db().runTransaction(async (tx) => {
     const me = await requireManager(clubId, uid, tx);
     if (memberId === me.id) badRequest("You cannot remove yourself; leave the club instead");
     const target = await requireTargetMember(clubId, memberId, tx);
     if (!canRemove(me.data.role, target.data.role)) forbidden("You cannot remove this member");
-    await membershipEnded(tx, clubId, memberId);
+    const actions = await membershipEnded(tx, clubId, memberId);
     const now = Timestamp.now();
     tx.update(
       db().doc(paths.member(clubId, memberId)),
       ban ? { status: "BANNED", bannedAt: now, leftAt: now, role: "PLAYER" } : { status: "LEFT", leftAt: now, role: "PLAYER" }
     );
     tx.update(db().doc(paths.club(clubId)), { membersCount: FieldValue.increment(-1) });
+    return actions;
   });
+  await runAfterCommit(after);
   return { ok: true };
 }
 

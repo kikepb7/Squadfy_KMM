@@ -21,3 +21,16 @@ export {
   updateClub,
   updateMyMembership
 } from "./clubs/clubs";
+export { createSchedule, getSchedule, updateSchedule, getScheduleExceptions, addScheduleException, deleteScheduleException } from "./match/schedule";
+export {
+  addGuest, enroll, getAnnouncementByMatch, getAnnouncementHistory, getCurrentAnnouncement, removeGuest, withdraw
+} from "./match/announcements";
+export {
+  addMatchEvent, cancelMatch, clearMatchScore, completeMatch, createExtraMatch, deleteMatchEvent, generateTeams, getClubMatches,
+  getMatch, getTeamBalance, reopenMatch, setMatchScore, setPlayerMinutes
+} from "./match/matches";
+export { getMyRating, getMyStats, getRatings, getStats } from "./match/standings";
+export { createAbsence, deleteAbsence, getAbsences } from "./match/absences";
+export { getClubNotificationSettings, setClubMuted } from "./notifications/settings";
+export { closeAnnouncementsAndDraw, planUpcomingMatches, runJobsNow, sendAnnouncementNotifications } from "./match/jobs";
+

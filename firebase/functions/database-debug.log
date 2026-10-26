@@ -1,8 +1,8 @@
-10:54:48.200 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
-10:54:48.265 [main] INFO com.firebase.server.forge.App$ - Listening at 0.0.0.0:9001
-10:54:53.758 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO com.firebase.core.namespace.NamespaceActor - demo-squadfy-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 45ms, init: 0ms
-10:54:53.779 [NamespaceSystem-blocking-namespace-operation-dispatcher-6] INFO com.firebase.core.namespace.StateManager - Namespace demo-squadfy-default-rtdb status Active to Active
-10:55:00.945 [Thread-0] INFO com.firebase.server.forge.App$ - Attempting graceful shutdown.
-10:55:00.950 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO com.firebase.core.namespace.Terminator$Terminator - 1 actors left to terminate: demo-squadfy-default-rtdb
-10:55:00.953 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO com.firebase.core.namespace.NamespaceActor - stopped namespace actor for demo-squadfy-default-rtdb
-10:55:00.955 [Thread-0] INFO com.firebase.server.forge.App$ - Graceful shutdown complete.
+12:45:32.005 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+12:45:32.069 [main] INFO com.firebase.server.forge.App$ - Listening at 0.0.0.0:9001
+12:45:37.633 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO com.firebase.core.namespace.NamespaceActor - demo-squadfy-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 45ms, init: 0ms
+12:45:37.652 [NamespaceSystem-blocking-namespace-operation-dispatcher-6] INFO com.firebase.core.namespace.StateManager - Namespace demo-squadfy-default-rtdb status Active to Active
+12:46:05.391 [Thread-0] INFO com.firebase.server.forge.App$ - Attempting graceful shutdown.
+12:46:05.396 [NamespaceSystem-akka.actor.default-dispatcher-8] INFO com.firebase.core.namespace.Terminator$Terminator - 1 actors left to terminate: demo-squadfy-default-rtdb
+12:46:05.398 [NamespaceSystem-akka.actor.default-dispatcher-8] INFO com.firebase.core.namespace.NamespaceActor - stopped namespace actor for demo-squadfy-default-rtdb
+12:46:05.400 [Thread-0] INFO com.firebase.server.forge.App$ - Graceful shutdown complete.
