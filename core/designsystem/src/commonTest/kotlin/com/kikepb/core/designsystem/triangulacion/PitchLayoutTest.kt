@@ -47,4 +47,23 @@ class PitchLayoutTest {
         val slots = PitchLayout.place(many, emptyList())
         assertEquals(2, slots.map { it.y }.distinct().size)
     }
+
+    @Test
+    fun `AC-018-07 a lone midfielder and a lone forward do not stack on the centre line`() {
+        val fiveASide = listOf(
+            PitchPlayer("1", "GK", 1, TriPosition.GK),
+            PitchPlayer("4", "D1", 4, TriPosition.DEF), PitchPlayer("5", "D2", 5, TriPosition.DEF),
+            PitchPlayer("6", "M", 6, TriPosition.MID), PitchPlayer("10", "F", 10, TriPosition.FWD)
+        )
+        val slots = PitchLayout.place(fiveASide, fiveASide.map { it.copy(id = "b${it.id}") })
+        TriTeam.entries.forEach { team ->
+            val mid = slots.first { it.team == team && it.player.position == TriPosition.MID }
+            val fwd = slots.first { it.team == team && it.player.position == TriPosition.FWD }
+            assertTrue(near(mid.x, 0.5f) && abs(fwd.x - mid.x) >= 0.2f - 0.001f, "$team mid ${mid.x} fwd ${fwd.x}")
+            assertTrue(PitchLayout.links(slots).any { (a, b) -> a == mid && b == fwd }, "$team keeps the pass")
+        }
+        // The goalkeeper stays centred even with a single defender in front
+        val single = PitchLayout.place(listOf(PitchPlayer("g", "GK", 1, TriPosition.GK), PitchPlayer("d", "D", 2, TriPosition.DEF)), emptyList())
+        assertTrue(single.all { near(it.x, 0.5f) })
+    }
 }

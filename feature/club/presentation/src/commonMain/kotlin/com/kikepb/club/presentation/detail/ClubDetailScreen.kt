@@ -31,6 +31,7 @@ import com.kikepb.core.designsystem.triangulacion.theme.CrestTone
 import com.kikepb.core.designsystem.triangulacion.theme.Space
 import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import squadfy_app.feature.club.presentation.generated.resources.club_members_count
+import squadfy_app.feature.club.presentation.generated.resources.club_members_one
 import squadfy_app.feature.club.presentation.generated.resources.club_settings_title
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -333,7 +334,7 @@ private fun ClubHeader(
                     Text(text = club.name, style = Triangulacion.type.displayMd, color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         role?.let { TriTag(text = stringResource(it.label)) }
-                        Text(text = stringResource(Res.string.club_members_count, club.membersCount), style = Triangulacion.type.bodySm, color = colors.inkMuted)
+                        Text(text = if (club.membersCount == 1) stringResource(Res.string.club_members_one) else stringResource(Res.string.club_members_count, club.membersCount), style = Triangulacion.type.bodySm, color = colors.inkMuted)
                     }
                 }
             }

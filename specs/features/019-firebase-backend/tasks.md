@@ -61,5 +61,7 @@
 
 ## Fase 6 · Verificación
 - [x] **T-027** CI: emuladores con los tests de Functions y reglas, y las dos variantes de la app (AC-019-21, 22).
-- [ ] **T-028** E2E en Android e iOS contra el emulador: el ciclo semanal completo con dos usuarios.
+- [~] **T-028** E2E en Android e iOS contra el emulador: el ciclo semanal completo con dos usuarios.
+  - Android (2026-10-26): hecho en la UI contra los emuladores. Se crea el club, otros jugadores se unen con el código, se configura el horario y se apuntan (10/10 en vivo), los equipos se sortean al cierre (`runJobsNow`), se rellena el acta con un gol y se cierra con Elo, se actualiza la clasificación y se planifica el partido siguiente. Arreglados durante la prueba: los jugadores solos de dos líneas seguidas se solapaban en el campo (5v5), y aparecía «1 miembros».
+  - iOS: compila y arranca en el simulador; Firebase se configura antes de Koin (comprobado en los logs). Falta recorrer el ciclo a mano: el teclado del simulador está en español y la herramienta no puede escribir «@».
 - [ ] **T-029** `docs/FIREBASE.md`, `CLAUDE.md` y roadmap. Despliegue a PRE (lo autoriza el owner).

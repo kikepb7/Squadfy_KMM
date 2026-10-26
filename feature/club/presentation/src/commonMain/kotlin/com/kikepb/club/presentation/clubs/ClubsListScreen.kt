@@ -58,6 +58,7 @@ import squadfy_app.feature.club.presentation.generated.resources.clubs_create
 import squadfy_app.feature.club.presentation.generated.resources.clubs_empty_description
 import squadfy_app.feature.club.presentation.generated.resources.clubs_empty_title
 import squadfy_app.feature.club.presentation.generated.resources.clubs_join
+import squadfy_app.feature.club.presentation.generated.resources.club_members_one
 import squadfy_app.feature.club.presentation.generated.resources.clubs_members_count
 import squadfy_app.feature.club.presentation.generated.resources.clubs_members_count_limit
 import squadfy_app.feature.club.presentation.generated.resources.clubs_title
@@ -169,7 +170,7 @@ private fun MyClubCard(myClub: MyClubModel, onClick: () -> Unit) {
                 )
                 val members = club.maxMembers
                     ?.let { stringResource(Res.string.clubs_members_count_limit, club.membersCount, it) }
-                    ?: stringResource(Res.string.clubs_members_count, club.membersCount)
+                    ?: if (club.membersCount == 1) stringResource(Res.string.club_members_one) else stringResource(Res.string.clubs_members_count, club.membersCount)
                 val role = myClub.myRole?.let { " · ${stringResource(it.label)}" }.orEmpty()
                 Text(
                     text = members + role,

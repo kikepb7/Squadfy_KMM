@@ -72,6 +72,7 @@ data class PitchSlot(val player: PitchPlayer, val team: TriTeam, val x: Float, v
  * wider the more players it has (2 → the middle third, 3 → 20–80 %), and a line of more than five is split in two.
  */
 object PitchLayout {
+    private const val STACKED_OFFSET = 0.2f
     private val lineDepth = mapOf(TriPosition.GK to 0.09f, TriPosition.DEF to 0.215f, TriPosition.MID to 0.325f, TriPosition.FWD to 0.415f)
 
     fun place(teamA: List<PitchPlayer>, teamB: List<PitchPlayer>): List<PitchSlot> = placeTeam(teamA, TriTeam.A) + placeTeam(teamB, TriTeam.B)
@@ -93,7 +94,13 @@ object PitchLayout {
             val rows = if (members.size > 5 && line != TriPosition.GK) members.chunked((members.size + 1) / 2) else listOf(members)
             rows.forEachIndexed { rowIndex, row ->
                 val depth = (lineDepth.getValue(line) + if (rows.size > 1) (rowIndex - 0.5f) * 0.07f else 0f).coerceIn(0.05f, 0.45f)
-                spread(row.size).forEachIndexed { i, x ->
+                // Two lone players in consecutive outfield lines (a 5-a-side 1-2-1-1) would stack on the centre line,
+                // the first one's name under the second one's disc: the second steps aside
+                val previous = slots.lastOrNull()
+                val stacked = row.size == 1 && line != TriPosition.GK && previous != null && !previous.isGoalkeeper &&
+                    previous.line == lineIndex - 1 && slots.count { it.line == previous.line } == 1 && previous.x == 0.5f
+                val xs = if (stacked) listOf(0.5f + STACKED_OFFSET) else spread(row.size)
+                xs.forEachIndexed { i, x ->
                     slots += PitchSlot(row[i], team, x, if (team == TriTeam.A) depth else 1f - depth, lineIndex)
                 }
                 lineIndex++
