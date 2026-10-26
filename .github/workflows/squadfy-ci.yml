@@ -20,7 +20,8 @@ permissions:
 # Repository secrets (Settings → Secrets and variables → Actions), all optional for this workflow:
 #   GOOGLE_SERVICES_JSON      → contents of composeApp/google-services.json (gitignored). Without it CI builds
 #                               with .github/ci/google-services.placeholder.json (Firebase disabled in the APK).
-#   GOOGLE_SERVICE_INFO_PLIST → contents of iosApp/iosApp/GoogleService-Info.plist (gitignored; future iOS job)
+#   GOOGLE_SERVICE_INFO_PLIST → contents of iosApp/Firebase/<Configuration>/GoogleService-Info.plist (gitignored;
+#                               only a future Xcode job needs it: the iOS job here compiles the shared Kotlin code)
 # There is no client API key (ADR-0008); production secrets live in the `production` environment (release workflow).
 env:
   # Feature flag environment (spec 013). CI validates PRE; the production release job will set `pro`.
@@ -99,9 +100,14 @@ jobs:
           files: "**/build/test-results/testDebugUnitTest/**/*.xml"
 
   build:
-    name: 🏗️ Assemble debug APK
+    name: 🏗️ Assemble debug APK (${{ matrix.backend }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Spec 019 AC-019-22: the Firebase variant (default) and the frozen own-backend variant both keep building
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [firebase, api]
     steps:
       - uses: actions/checkout@v5
 
@@ -126,9 +132,10 @@ jobs:
           fi
 
       - name: Assemble debug
-        run: ./gradlew :composeApp:assembleDebug
+        run: ./gradlew :composeApp:assembleDebug -PSQUADFY_BACKEND=${{ matrix.backend }}
 
       - name: Upload debug APK
+        if: matrix.backend == 'firebase'
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
@@ -170,10 +177,76 @@ jobs:
       - name: No hardcoded UI strings
         run: ./gradlew checkHardcodedStrings
 
+  firebase-backend:
+    name: 🔥 Firebase backend (Functions, rules, emulators)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: firebase/functions
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: firebase/functions/package-lock.json
+
+      # The Firestore and Database emulators run on the JVM
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Cache the emulator binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ runner.os }}-15.34.1
+
+      - name: Install
+        run: |
+          npm ci
+          npm install -g firebase-tools@15.34.1
+
+      - name: Type check and build
+        run: npm run build
+
+      - name: Unit tests (domain logic)
+        run: npm test
+
+      # Security rules and callables against the Emulator Suite (project demo-squadfy: never a real project)
+      - name: Emulator tests
+        run: npm run test:emulator
+
+  ios-compile:
+    name: 🍎 iOS Kotlin compile
+    # macOS minutes are expensive: pull requests and manual runs only
+    if: github.event_name != 'push'
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile the shared code for the iOS simulator
+        run: ./gradlew :composeApp:compileKotlinIosSimulatorArm64
+
   summary:
     name: "🧾 CI Summary - ${{ github.event.repository.name }}"
     runs-on: ubuntu-latest
-    needs: [branch-policy, static-analysis, unit-tests, build]
+    needs: [branch-policy, static-analysis, unit-tests, build, firebase-backend, ios-compile]
     if: always()
     steps:
       - name: Pipeline Summary
@@ -186,7 +259,9 @@ jobs:
             echo "| 🌿 Branch policy | ${{ needs.branch-policy.result == 'success' && '✅ pass' || (needs.branch-policy.result == 'skipped' && '— (push)' || format('❌ {0}', needs.branch-policy.result)) }} |"
             echo "| 🔍 Static analysis (ktlint, i18n) | ${{ needs.static-analysis.result == 'success' && '✅ pass' || format('❌ {0}', needs.static-analysis.result) }} |"
             echo "| 🧪 Unit tests (all modules) | ${{ needs.unit-tests.result == 'success' && '✅ pass' || format('❌ {0}', needs.unit-tests.result) }} |"
-            echo "| 🏗️ Assemble debug | ${{ needs.build.result == 'success' && '✅ pass' || format('❌ {0}', needs.build.result) }} |"
+            echo "| 🏗️ Assemble debug (firebase, api) | ${{ needs.build.result == 'success' && '✅ pass' || format('❌ {0}', needs.build.result) }} |"
+            echo "| 🔥 Firebase backend | ${{ needs.firebase-backend.result == 'success' && '✅ pass' || format('❌ {0}', needs.firebase-backend.result) }} |"
+            echo "| 🍎 iOS Kotlin compile | ${{ needs.ios-compile.result == 'success' && '✅ pass' || (needs.ios-compile.result == 'skipped' && '— (push)' || format('❌ {0}', needs.ios-compile.result)) }} |"
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Mark in red if something went wrong
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')

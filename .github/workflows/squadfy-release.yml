@@ -25,6 +25,8 @@ permissions:
 # Secrets of the `production` environment (Settings → Environments → production), so a release needs an
 # approval from the required reviewers before the job can read them (ADR-0008):
 #   GOOGLE_SERVICES_JSON         → google-services.json of the production Firebase project
+# Spec 019 (ADR-0010): releases use Firebase. The repository variable SQUADFY_BACKEND=api builds the frozen own-backend
+# variant instead, which also needs the four BASE_URL secrets below.
 #   PRO_BASE_URL_HTTP            → https://<api>/api/v1 of production (backend `master` on Render)
 #   PRO_BASE_URL_WS              → wss://<api>/ws of production
 #   STAGING_BASE_URL_HTTP        → https://<staging-api>/api/v1 (backend `release` on Render, spec 013 of the backend)
@@ -72,6 +74,7 @@ jobs:
     environment: production
     env:
       SQUADFY_ENV: pro
+      SQUADFY_BACKEND: ${{ vars.SQUADFY_BACKEND || 'firebase' }}
       # Spec 015 AC-015-08: tags build against production, release/hotfix candidates against staging
       BASE_URL_HTTP: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.PRO_BASE_URL_HTTP || secrets.STAGING_BASE_URL_HTTP }}
       BASE_URL_WS: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.PRO_BASE_URL_WS || secrets.STAGING_BASE_URL_WS }}
@@ -88,7 +91,9 @@ jobs:
           GOOGLE_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           missing=""
-          for name in BASE_URL_HTTP BASE_URL_WS KEYSTORE PLAY_JSON GOOGLE_JSON; do
+          required="KEYSTORE PLAY_JSON GOOGLE_JSON"
+          [ "$SQUADFY_BACKEND" = "api" ] && required="$required BASE_URL_HTTP BASE_URL_WS"
+          for name in $required; do
             [ -n "${!name}" ] || missing="$missing $name"
           done
           if [ -n "$missing" ]; then

@@ -60,6 +60,6 @@
 - [x] **T-026** Hosting: privacidad, página de borrado de cuenta y página de acción de Auth.
 
 ## Fase 6 · Verificación
-- [ ] **T-027** CI: emuladores con los tests de Functions y reglas, y las dos variantes de la app (AC-019-21, 22).
+- [x] **T-027** CI: emuladores con los tests de Functions y reglas, y las dos variantes de la app (AC-019-21, 22).
 - [ ] **T-028** E2E en Android e iOS contra el emulador: el ciclo semanal completo con dos usuarios.
 - [ ] **T-029** `docs/FIREBASE.md`, `CLAUDE.md` y roadmap. Despliegue a PRE (lo autoriza el owner).
