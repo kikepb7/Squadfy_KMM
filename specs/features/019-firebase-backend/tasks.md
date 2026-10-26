@@ -18,7 +18,7 @@
 - [ ] **T-010** `specs/contracts/firebase.md`: colecciones, callables, errores y jobs.
 
 ## Fase 3 · Dominio en Functions
-- [ ] **T-011** Lógica pura portada con sus tests: calendario, plazos, asignador, equilibrador, Elo, estadísticas y roles.
+- [x] **T-011** Lógica pura portada con sus tests: calendario, plazos, asignador, equilibrador, Elo, estadísticas y roles. Está en `firebase/functions/src/domain`, y la zona horaria del club se calcula con Luxon. Verificación: 51 tests de Vitest en verde, con los mismos casos que los tests del backend (incluido el cambio de hora y el periodo en hora local).
 - [ ] **T-012** Clubes, miembros, roles, vetos, transferencia y código (AC-019-07).
 - [ ] **T-013** Horario, semanas especiales, planificación y partido extra (AC-019-08).
 - [ ] **T-014** Convocatoria, lista de espera, invitados y ausencias (AC-019-09).
