@@ -1,8 +1,48 @@
 rules_version = '2';
 
-// Placeholder until spec 019 T-009: nothing is readable or writable from the apps yet.
+// Images only, up to 5 MB (spec 019 AC-019-17). Keep the paths in sync with FirebaseImageStorage.kt.
 service firebase.storage {
   match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isImage() {
+      return request.resource.size < 5 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+    }
+
+    function membership(clubId) {
+      return firestore.get(/databases/(default)/documents/clubs/$(clubId)/members/$(clubId + '_' + request.auth.uid));
+    }
+
+    function isActiveMember(clubId) {
+      return signedIn() && firestore.exists(/databases/(default)/documents/clubs/$(clubId)/members/$(clubId + '_' + request.auth.uid))
+        && membership(clubId).data.status == 'ACTIVE';
+    }
+
+    function isManager(clubId) {
+      return isActiveMember(clubId) && membership(clubId).data.role in ['OWNER', 'ADMIN'];
+    }
+
+    // Profile picture: everyone signed in sees it (chats, members); only its owner changes it
+    match /users/{uid}/avatar.jpg {
+      allow read: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid && (request.resource == null || isImage());
+    }
+
+    // Club logo: the club managers change it
+    match /clubs/{clubId}/logo.jpg {
+      allow read: if signedIn();
+      allow write: if isManager(clubId) && (request.resource == null || isImage());
+    }
+
+    // A member's own picture for the club (BE-012 RN-C1)
+    match /clubs/{clubId}/members/{file} {
+      allow read: if signedIn();
+      allow write: if isActiveMember(clubId) && file == request.auth.uid + '.jpg' && (request.resource == null || isImage());
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

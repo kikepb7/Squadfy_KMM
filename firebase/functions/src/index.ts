@@ -33,4 +33,4 @@ export { getMyRating, getMyStats, getRatings, getStats } from "./match/standings
 export { createAbsence, deleteAbsence, getAbsences } from "./match/absences";
 export { getClubNotificationSettings, setClubMuted } from "./notifications/settings";
 export { closeAnnouncementsAndDraw, planUpcomingMatches, runJobsNow, sendAnnouncementNotifications } from "./match/jobs";
-
+export { addChatParticipants, createChat, leaveChat, onChatMessageCreated, onChatMessageDeleted, onUserProfileUpdated } from "./chat/chat";

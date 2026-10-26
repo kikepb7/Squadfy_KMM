@@ -90,7 +90,33 @@ service cloud.firestore {
       allow read: if signedIn() && resource.data.userId == request.auth.uid;
     }
 
-    // Until spec 019 T-009 covers them, everything else is closed
+    // Chats: participants read; createChat / addChatParticipants / leaveChat change them (spec 019 AC-019-15)
+    match /chats/{chatId} {
+      function chat() {
+        return get(/databases/$(database)/documents/chats/$(chatId)).data;
+      }
+
+      allow read: if signedIn() && request.auth.uid in resource.data.participantIds;
+      allow write: if false;
+
+      // Messages are written by the app: only participants, as themselves, with the server time; only the author
+      // deletes them and nobody edits them (backend ChatMessageService)
+      match /messages/{messageId} {
+        allow read: if signedIn() && request.auth.uid in chat().participantIds;
+        allow create: if signedIn()
+          && request.auth.uid in chat().participantIds
+          && request.resource.data.keys().hasOnly(['senderId', 'content', 'createdAt'])
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.content is string
+          && request.resource.data.content.size() > 0
+          && request.resource.data.content.size() <= 2000
+          && request.resource.data.createdAt == request.time;
+        allow delete: if signedIn() && resource.data.senderId == request.auth.uid;
+        allow update: if false;
+      }
+    }
+
+    // Everything else (debugPushes of the emulator…) is closed
     match /{document=**} {
       allow read, write: if false;
     }
