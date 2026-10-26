@@ -1,0 +1,55 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "database": {
+    "rules": "database.rules.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "remoteconfig": {
+    "template": "remoteconfig.template.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "squadfy",
+      "runtime": "nodejs22",
+      "ignore": ["node_modules", ".git", "*.log", "test", "coverage"],
+      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+    }
+  ],
+  "hosting": {
+    "public": "hosting",
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "ignore": ["**/.*"],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+          { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+        ]
+      }
+    ]
+  },
+  "emulators": {
+    "auth": { "host": "0.0.0.0", "port": 9098 },
+    "firestore": { "host": "0.0.0.0", "port": 8086 },
+    "database": { "host": "0.0.0.0", "port": 9001 },
+    "functions": { "host": "0.0.0.0", "port": 5003 },
+    "storage": { "host": "0.0.0.0", "port": 9198 },
+    "pubsub": { "host": "0.0.0.0", "port": 8096 },
+    "eventarc": { "host": "0.0.0.0", "port": 9298 },
+    "hosting": { "host": "0.0.0.0", "port": 5006 },
+    "ui": { "enabled": true, "port": 4006 },
+    "hub": { "port": 4406 },
+    "logging": { "port": 4506 },
+    "singleProjectMode": true
+  }
+}

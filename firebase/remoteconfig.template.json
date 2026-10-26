@@ -1,0 +1,61 @@
+{
+  "parameters": {
+    "match_guests": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "valueType": "BOOLEAN",
+      "description": "Members add up to 2 guests to an announcement (specs 005/006). Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
+    },
+    "schedule_exceptions": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "valueType": "BOOLEAN",
+      "description": "Cancel or move one week of the weekly schedule (spec 004). Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
+    },
+    "custom_draw_time": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "valueType": "BOOLEAN",
+      "description": "Configurable announcement close and team draw times (spec 004). Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
+    },
+    "manual_score": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "valueType": "BOOLEAN",
+      "description": "Enter the final score manually instead of from goal events (spec 007). Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
+    },
+    "member_absences": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "valueType": "BOOLEAN",
+      "description": "Members register absence periods that withdraw them from open announcements (spec 014). Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
+    },
+    "chat": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "valueType": "BOOLEAN",
+      "description": "User-to-user chat (hidden on iOS in PRO until report/block exist, D-13). Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
+    },
+    "account_deletion": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "valueType": "BOOLEAN",
+      "description": "Delete the account from Profile with the password (spec 011, backend spec 010). Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
+    },
+    "dev_test_match": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "valueType": "BOOLEAN",
+      "description": "Button to create a test match with an immediate sign-up window. Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
+    }
+  },
+  "conditions": []
+}
