@@ -4,7 +4,7 @@ import { onCall } from "firebase-functions/v2/https";
 import { db } from "../admin";
 import { canAssign, canRemove } from "../domain/clubRoles";
 import { ClubMemberRole } from "../domain/types";
-import { badRequest, conflict, forbidden, notFound } from "../errors";
+import { badRequest, conflict, fail, forbidden, notFound } from "../errors";
 import { body, requireAuth, requireString } from "../guards";
 import { memberIdOf, paths } from "../paths";
 import { requireClub, requireManager, requireMember, requireTargetMember } from "./access";
@@ -36,8 +36,13 @@ async function reserveInvitationCode(tx: Transaction, clubId: string): Promise<s
   throw new Error("Could not generate a unique invitation code");
 }
 
+/**
+ * The caller's public profile. A deleted account has none, so its still-valid ID token cannot create clubs or
+ * memberships (the own backend revoked its access tokens instead): 401, as with an invalid token.
+ */
 async function profileOf(tx: Transaction, uid: string) {
   const user = await tx.get(db().doc(paths.user(uid)));
+  if (!user.exists) fail(401, "INVALID_TOKEN", "The account no longer exists");
   return {
     username: (user.get("username") as string | undefined) ?? "",
     pictureUrl: (user.get("pictureUrl") as string | null | undefined) ?? null

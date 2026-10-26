@@ -6,6 +6,7 @@
 import "./config";
 
 export { completeProfile } from "./account/profile";
+export { deleteAccount } from "./account/deleteAccount";
 export {
   banMember,
   changeMemberRole,
