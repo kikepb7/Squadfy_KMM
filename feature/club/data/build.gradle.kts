@@ -16,6 +16,7 @@ kotlin {
                 implementation(projects.core.domain)
                 implementation(libs.kotlinx.datetime)
                 implementation(projects.feature.club.domain)
+                api(projects.feature.club.dataContract)
                 implementation(projects.feature.club.database)
                 implementation(libs.androidx.room.runtime)
                 implementation(libs.sqlite.bundled)

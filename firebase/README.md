@@ -17,7 +17,11 @@ cd firebase/functions && npm ci && npm run build
 npm test                    # unit tests of the domain logic
 npm run test:emulator       # rules and callables against the Emulator Suite
 npm run serve               # emulators for the app, with the UI at http://localhost:4006
+npm run seed                # (other terminal) demo club, squad, played matches, next match with teams
 ```
+The seed creates `demo.owner@squadfy.test` and `demo.<name>@squadfy.test`, all with the emulator-only password in
+`functions/scripts/seed-emulator.mjs`. Log in with the owner to see every screen with data. In the emulator the
+scheduled jobs do not fire on their own: the `runJobsNow` callable (emulator only) runs them, optionally "at" a time.
 `serve` runs the emulators under the app's project id (`squadfy-5233d`), because the app calls them with the id of its
 Firebase config: a different id answers NOT_FOUND. Everything stays local; the functions never send real pushes from
 the emulator (`FUNCTIONS_EMULATOR`). The tests use the offline `demo-squadfy` project instead.

@@ -67,8 +67,10 @@ kotlin {
                 implementation(projects.feature.club.dataFirebase)
             }
 
-            // CLUB FEATURE
-            implementation(projects.feature.club.data)
+            // CLUB FEATURE (the own-backend data layer only in that variant, spec 019)
+            if (backend == SquadfyBackend.API) {
+                implementation(projects.feature.club.data)
+            }
             implementation(projects.feature.club.domain)
             implementation(projects.feature.club.presentation)
 

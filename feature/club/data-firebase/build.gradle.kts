@@ -10,6 +10,7 @@ kotlin {
                 implementation(projects.core.domain)
                 implementation(projects.core.firebase)
                 implementation(projects.feature.club.domain)
+                implementation(projects.feature.club.dataContract)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.koin.core)
             }

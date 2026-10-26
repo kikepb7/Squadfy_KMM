@@ -23,15 +23,19 @@
   - Callables en `functions/src/clubs`; el id de membresía es `{clubId}_{uid}`. Las reglas dejan leer solo a los miembros activos.
   - En la app, `FirebaseClubRepository` (módulo `feature/club/data-firebase`) lee con listeners y escribe con callables.
   - Verificación: 8 tests de callables y reglas contra el emulador, 3 tests de mappers, y un club creado desde la app PRE.
-- [ ] **T-013** Horario, semanas especiales, planificación y partido extra (AC-019-08).
-- [ ] **T-014** Convocatoria, lista de espera, invitados y ausencias (AC-019-09).
-- [ ] **T-015** Jobs de cierre, sorteo y avisos (AC-019-10).
-- [ ] **T-016** Equipos, acta, Elo y reapertura (AC-019-11).
-- [ ] **T-017** Estadísticas y clasificación (AC-019-12).
-- [ ] **T-018** Push: los 7 tipos, silencio del club y limpieza de tokens (AC-019-13).
+- [x] **T-013** Horario, semanas especiales, planificación y partido extra (AC-019-08).
+- [x] **T-014** Convocatoria, lista de espera, invitados y ausencias (AC-019-09).
+- [x] **T-015** Jobs de cierre, sorteo y avisos (AC-019-10).
+- [x] **T-016** Equipos, acta, Elo y reapertura (AC-019-11).
+- [x] **T-017** Estadísticas y clasificación (AC-019-12).
+- [x] **T-018** Push: los 7 tipos, silencio del club y limpieza de tokens (AC-019-13).
 
 ## Fase 4 · Capa de datos de la app
-- [ ] **T-019** `feature/club/data-firebase`: repositorios con listeners y callables (AC-019-14).
+- [x] **T-019** `feature/club/data-firebase`: repositorios con listeners y callables (AC-019-14).
+  - Las Functions responden el JSON del backend, así que los DTOs y mappers se comparten en `feature/club/data-contract`.
+  - Los avisos en vivo llegan de `clubs/{clubId}/live/changes`.
+  - `npm run seed` carga en el emulador datos de demo: plantilla, partidos jugados con Elo, el próximo con equipos y lista de espera, y ausencias.
+  - Verificación: Inicio, Partido, Equipos (campo), Tabla y Resultado comprobados en la app PRE contra el emulador.
 - [ ] **T-020** `feature/chat/data-firebase`: chat, participantes, búsqueda y fotos (AC-019-15, 17).
 - [ ] **T-021** Presencia y «escribiendo…» en Realtime Database (AC-019-16).
 - [ ] **T-022** Tokens de FCM en `users/{uid}/devices` (Android e iOS).

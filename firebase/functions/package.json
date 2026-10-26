@@ -13,7 +13,8 @@
     "test": "vitest run --project unit",
     "test:unit": "vitest run --project unit",
     "test:emulator": "npm run build && firebase emulators:exec --project demo-squadfy --config ../firebase.json --only auth,firestore,database,storage,functions \"vitest run --project emulator\"",
-    "serve": "npm run build && firebase emulators:start --project squadfy-5233d --config ../firebase.json --only auth,firestore,database,storage,functions --import=../emulator-data --export-on-exit"
+    "serve": "npm run build && firebase emulators:start --project squadfy-5233d --config ../firebase.json --only auth,firestore,database,storage,functions --import=../emulator-data --export-on-exit",
+    "seed": "node scripts/seed-emulator.mjs"
   },
   "dependencies": {
     "firebase-admin": "^14.5.0",
