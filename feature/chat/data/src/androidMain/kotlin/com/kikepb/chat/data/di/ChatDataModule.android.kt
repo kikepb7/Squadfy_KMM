@@ -17,5 +17,10 @@ actual val platformChatDataModule = module {
     singleOf(::ConnectivityObserver)
     singleOf(::ConnectionErrorHandler)
 
+    includes(platformChatPushModule)
+}
+
+/** The FCM token of this device (spec 009), also used by the Firebase variant (spec 019). */
+actual val platformChatPushModule = module {
     singleOf(::FirebasePushNotificationRepositoryImpl) bind PushNotificationService::class
 }

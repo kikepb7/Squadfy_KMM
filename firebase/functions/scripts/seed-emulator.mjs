@@ -18,6 +18,7 @@ import { getFirestore as adminFirestore, Timestamp } from "firebase-admin/firest
 import { deleteApp, initializeApp } from "firebase/app";
 import { connectAuthEmulator, createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { connectFunctionsEmulator, getFunctions, httpsCallable } from "firebase/functions";
+import { connectFirestoreEmulator, doc, getFirestore, serverTimestamp, setDoc } from "firebase/firestore";
 
 const PROJECT_ID = process.env.GCLOUD_PROJECT ?? "squadfy-5233d";
 const HOST = "127.0.0.1";
@@ -61,9 +62,11 @@ async function client(email, password, username) {
     await createUserWithEmailAndPassword(auth, email, password);
     created = true;
   }
+  const firestore = getFirestore(app);
+  connectFirestoreEmulator(firestore, HOST, 8086);
   const call = async (name, data = {}) => (await httpsCallable(functions, name)(data)).data;
   if (created && username) await call("completeProfile", { username });
-  return { app, uid: auth.currentUser.uid, call };
+  return { app, uid: auth.currentUser.uid, call, firestore };
 }
 
 const slug = (name) => name.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, ".");
@@ -138,6 +141,21 @@ async function main() {
   await players["Marcos Peña"].call("createAbsence", { clubId: club.id, fromDate: iso(12), toDate: iso(19), reason: "Vacaciones" });
   await players["Iván Soto"].call("createAbsence", { clubId: club.id, fromDate: iso(20), toDate: iso(34), reason: "Lesión" });
   await players["Leo Vega"].call("setClubMuted", { clubId: club.id, muted: true });
+
+  // 4) Two chats with a few messages, written like the app does
+  for (const [name, lines] of [
+    ["Álex Ruiz", ["¿Alguien lleva petos el jueves?", "Yo llevo los verdes", "Perfecto, nos vemos a las 20:00"]],
+    ["Dani Moreno", ["Me apunto, pero llego justo", "Sin problema, te guardo sitio"]]
+  ]) {
+    const other = players[name];
+    const { id } = await owner.call("createChat", { otherUserIds: [other.uid] });
+    for (const [i, text] of lines.entries()) {
+      const author = i % 2 === 0 ? other : owner;
+      await setDoc(doc(author.firestore, `chats/${id}/messages/seed-${id}-${i}`), { senderId: author.uid, content: text, createdAt: serverTimestamp() });
+      await sleep(50);
+    }
+  }
+  console.log("chats with Álex and Dani");
 
   await sleep(200);
   console.log("done");

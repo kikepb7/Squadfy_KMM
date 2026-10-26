@@ -51,9 +51,11 @@ kotlin {
             implementation(projects.feature.auth.domain)
             implementation(projects.feature.auth.presentation)
 
-            // CHAT FEATURE
+            // CHAT FEATURE (its data module also provides the FCM token in the Firebase variant, spec 019)
             implementation(projects.feature.chat.data)
-            implementation(projects.feature.chat.database)
+            if (backend == SquadfyBackend.API) {
+                implementation(projects.feature.chat.database)
+            }
             implementation(projects.feature.chat.domain)
             implementation(projects.feature.chat.presentation)
 
@@ -65,6 +67,7 @@ kotlin {
             if (backend == SquadfyBackend.FIREBASE) {
                 implementation(projects.core.firebase)
                 implementation(projects.feature.club.dataFirebase)
+                implementation(projects.feature.chat.dataFirebase)
             }
 
             // CLUB FEATURE (the own-backend data layer only in that variant, spec 019)

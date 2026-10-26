@@ -29,6 +29,9 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 expect val platformChatDataModule: Module
+
+/** Only the device token provider (spec 019: the Firebase variant uses it without the rest of this module). */
+expect val platformChatPushModule: Module
 val chatDataModule = module {
     includes(platformChatDataModule)
 

@@ -14,7 +14,7 @@
 - [ ] **T-008** Callable `deleteAccount` con la anonimización y la sucesión del owner, y la reautenticación en la app (AC-019-06).
 
 ## Fase 2 · Reglas y modelo
-- [ ] **T-009** `firestore.rules`, `storage.rules` y `database.rules.json` con sus tests (AC-019-17, 21).
+- [x] **T-009** `firestore.rules`, `storage.rules` y `database.rules.json` con sus tests (AC-019-17, 21). Los tests de reglas usan `@firebase/rules-unit-testing` contra el emulador.
 - [ ] **T-010** `specs/contracts/firebase.md`: colecciones, callables, errores y jobs.
 
 ## Fase 3 · Dominio en Functions
@@ -36,9 +36,14 @@
   - Los avisos en vivo llegan de `clubs/{clubId}/live/changes`.
   - `npm run seed` carga en el emulador datos de demo: plantilla, partidos jugados con Elo, el próximo con equipos y lista de espera, y ausencias.
   - Verificación: Inicio, Partido, Equipos (campo), Tabla y Resultado comprobados en la app PRE contra el emulador.
-- [ ] **T-020** `feature/chat/data-firebase`: chat, participantes, búsqueda y fotos (AC-019-15, 17).
+- [x] **T-020** `feature/chat/data-firebase`: chat, participantes, búsqueda y fotos (AC-019-15, 17).
+  - Firestore con listeners: los mensajes pendientes salen como «enviando» y se pueden reintentar si fallan.
+  - La búsqueda es por prefijo del nombre y la foto de perfil va en Storage.
+  - El estado de conexión sale de `.info/connected` de Realtime Database.
+  - La variante Firebase ya no usa Ktor ni WebSocket.
+  - Verificación: lista de chats, conversación y envío desde la app PRE contra el emulador.
 - [ ] **T-021** Presencia y «escribiendo…» en Realtime Database (AC-019-16).
-- [ ] **T-022** Tokens de FCM en `users/{uid}/devices` (Android e iOS).
+- [x] **T-022** Tokens de FCM en `users/{uid}/devices` (Android e iOS), con plataforma, idioma y zona horaria. El proveedor del token sigue en `chat/data` (`platformChatPushModule`).
 
 ## Fase 5 · Telemetría y configuración
 - [ ] **T-023** Analytics con consentimiento y `screen_view`; Crashlytics en iOS con CrashKiOS (AC-019-18).
