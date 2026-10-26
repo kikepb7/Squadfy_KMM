@@ -31,7 +31,7 @@ composeApp/release/
 GoogleService-Info.plist
 .firebaserc
 firebase/emulator-data/
-firebase/*-debug.log
+firebase/**/*-debug.log
 firebase/functions/lib/
 firebase/functions/node_modules/
 .env
