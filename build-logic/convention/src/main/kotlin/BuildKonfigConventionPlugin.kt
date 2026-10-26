@@ -1,7 +1,11 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 import com.codingfeline.buildkonfig.gradle.BuildKonfigExtension
+import com.kikepb.squadfy.convention.SquadfyBackend
+import com.kikepb.squadfy.convention.isSquadfyReleaseBuild
 import com.kikepb.squadfy.convention.pathToPackageName
+import com.kikepb.squadfy.convention.squadfyBackend
+import com.kikepb.squadfy.convention.squadfyEnvironment
+import com.kikepb.squadfy.convention.squadfyProperty
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -15,18 +19,17 @@ import org.gradle.kotlin.dsl.configure
 private const val DEFAULT_BASE_URL_HTTP = "http://10.0.2.2:8080/api/v1"
 private const val DEFAULT_BASE_URL_WS = "ws://10.0.2.2:8080/ws"
 
-/**
- * Build environment for feature flag defaults (spec 013). Debug builds default to `pre`; release builds (Android
- * `*Release*` tasks or Xcode Release) default to `pro`, so a store build never ships the PRE-only feature flags
- * screen by accident. An explicit `SQUADFY_ENV` still wins (e.g. a PRE release for testers).
- */
-private const val DEFAULT_ENVIRONMENT = "pre"
-private const val DEFAULT_RELEASE_ENVIRONMENT = "pro"
+/** Firebase Emulator Suite (spec 019 AC-019-02): the Android emulator reaches the host through 10.0.2.2. */
+private const val DEFAULT_FIREBASE_EMULATOR_HOST = "10.0.2.2"
 
-/** Legal pages (spec 011 AC-011-07/08). The deletion page is served by the backend (BE spec 010) next to the API. */
+/**
+ * Legal pages (spec 011 AC-011-07/08). With the own backend the deletion page is served next to the API (BE spec 010);
+ * with Firebase both pages live in Firebase Hosting (spec 019 T-026), overridable with `SQUADFY_WEB_URL`.
+ */
 private const val DEFAULT_PRIVACY_POLICY_URL = "https://squadfy.app/privacy"
+private const val DEFAULT_FIREBASE_WEB_URL = "https://squadfy-5233d.web.app"
 private const val ACCOUNT_DELETION_PATH = "/account/delete"
-private val SUPPORTED_ENVIRONMENTS = setOf("pre", "pro")
+private const val PRIVACY_POLICY_PATH = "/legal/privacy"
 
 class BuildKonfigConventionPlugin: Plugin<Project> {
 
@@ -36,14 +39,7 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                 apply("com.codingfeline.buildkonfig")
             }
 
-            val localProperties = gradleLocalProperties(rootDir, rootProject.providers)
-
-            // Lookup order: -Pkey / gradle.properties, then environment (CI secrets), then local.properties.
-            // Blank values count as missing: GitHub expands an unset secret to "", which must not pass as a real key.
-            fun lookup(key: String): String? =
-                providers.gradleProperty(key).orNull?.takeIf { it.isNotBlank() }
-                    ?: providers.environmentVariable(key).orNull?.takeIf { it.isNotBlank() }
-                    ?: localProperties.getProperty(key)?.takeIf { it.isNotBlank() }
+            fun lookup(key: String): String? = squadfyProperty(key)
 
             fun resolve(key: String, default: String): String = lookup(key) ?: default
 
@@ -59,10 +55,10 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
 
                     // Spec 011 AC-011-03: a release (Android *Release* tasks or Xcode Release) must use HTTPS/WSS.
                     // ALLOW_INSECURE_RELEASE=true is only for testing a minified release against a local backend.
-                    val isReleaseBuild = gradle.startParameter.taskNames.any { it.contains("Release") } ||
-                        providers.environmentVariable("CONFIGURATION").orNull == "Release"
+                    val isReleaseBuild = isSquadfyReleaseBuild
                     val allowInsecure = lookup("ALLOW_INSECURE_RELEASE")?.toBoolean() == true
-                    if (isReleaseBuild && !allowInsecure) {
+                    // Only the own backend (frozen, ADR-0010) talks to these URLs; the Firebase variant ignores them
+                    if (isReleaseBuild && !allowInsecure && squadfyBackend == SquadfyBackend.API) {
                         check(baseUrlHttp.startsWith("https://") && baseUrlWs.startsWith("wss://")) {
                             "Release builds need BASE_URL_HTTP=https://… and BASE_URL_WS=wss://… (got $baseUrlHttp / $baseUrlWs)"
                         }
@@ -70,22 +66,34 @@ class BuildKonfigConventionPlugin: Plugin<Project> {
                     // Logging and diagnostics are reduced in release builds (AC-011-04)
                     buildConfigField(FieldSpec.Type.BOOLEAN, "IS_RELEASE", isReleaseBuild.toString())
 
+                    val webUrl = resolve("SQUADFY_WEB_URL", DEFAULT_FIREBASE_WEB_URL).removeSuffix("/")
+                    val onFirebase = squadfyBackend == SquadfyBackend.FIREBASE
                     buildConfigField(
                         FieldSpec.Type.STRING,
                         "PRIVACY_POLICY_URL",
-                        resolve("PRIVACY_POLICY_URL", DEFAULT_PRIVACY_POLICY_URL)
+                        resolve("PRIVACY_POLICY_URL", if (onFirebase) webUrl + PRIVACY_POLICY_PATH else DEFAULT_PRIVACY_POLICY_URL)
                     )
                     buildConfigField(
                         FieldSpec.Type.STRING,
                         "ACCOUNT_DELETION_URL",
-                        resolve("ACCOUNT_DELETION_URL", baseUrlHttp.removeSuffix("/").removeSuffix("/api/v1") + ACCOUNT_DELETION_PATH)
+                        resolve(
+                            "ACCOUNT_DELETION_URL",
+                            if (onFirebase) webUrl + ACCOUNT_DELETION_PATH
+                            else baseUrlHttp.removeSuffix("/").removeSuffix("/api/v1") + ACCOUNT_DELETION_PATH
+                        )
                     )
 
-                    val environment = resolve("SQUADFY_ENV", if (isReleaseBuild) DEFAULT_RELEASE_ENVIRONMENT else DEFAULT_ENVIRONMENT).lowercase()
-                    check(environment in SUPPORTED_ENVIRONMENTS) {
-                        "Invalid SQUADFY_ENV '$environment'. Expected one of $SUPPORTED_ENVIRONMENTS"
-                    }
-                    buildConfigField(FieldSpec.Type.STRING, "ENVIRONMENT", environment)
+                    buildConfigField(FieldSpec.Type.STRING, "ENVIRONMENT", squadfyEnvironment.key)
+                    // Spec 019 AC-019-01: Firebase (default) or the frozen own backend (ADR-0010)
+                    buildConfigField(FieldSpec.Type.STRING, "BACKEND", squadfyBackend.key)
+                    // Spec 019 AC-019-02: the Emulator Suite is only reachable from debug builds
+                    val useEmulator = !isReleaseBuild && lookup("squadfy.firebase.useEmulator")?.toBoolean() == true
+                    buildConfigField(FieldSpec.Type.BOOLEAN, "FIREBASE_USE_EMULATOR", useEmulator.toString())
+                    buildConfigField(
+                        FieldSpec.Type.STRING,
+                        "FIREBASE_EMULATOR_HOST",
+                        resolve("squadfy.firebase.emulatorHost", DEFAULT_FIREBASE_EMULATOR_HOST)
+                    )
                 }
             }
         }

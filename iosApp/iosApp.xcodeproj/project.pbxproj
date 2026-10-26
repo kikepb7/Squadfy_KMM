@@ -10,6 +10,16 @@
 		E4096CFB2F11E56F008D9962 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = E4096CFA2F11E56F008D9962 /* FirebaseCore */; };
 		E4096CFD2F11E56F008D9962 /* FirebaseInAppMessaging-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = E4096CFC2F11E56F008D9962 /* FirebaseInAppMessaging-Beta */; };
 		E4096CFF2F11E56F008D9962 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = E4096CFE2F11E56F008D9962 /* FirebaseMessaging */; };
+		BC338A44D30C54EC4A72063E /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 2480A3F744A550F61FE9D67D /* FirebaseAuth */; };
+		7578DC9A2933083E265364C3 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = DB7AAFD85ACDD11657EADA68 /* FirebaseFirestore */; };
+		3F7A7B42ECE02CE26D248B13 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 94F59FDC1FBD40657660617E /* FirebaseDatabase */; };
+		937F172D3A31A16BA299F6ED /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = 34AFD3231CD8E139143A0743 /* FirebaseFunctions */; };
+		B21A041A73365047222A7AB3 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 34E9B79AE04F3EE81EBD7EF0 /* FirebaseStorage */; };
+		16CC81B3CD83B78BB4EEC110 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = CE963F1BF35509C324300FE0 /* FirebaseRemoteConfig */; };
+		B03848A35F81B7343E02E676 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = C05867C029EDAB00A1A7936D /* FirebaseAnalyticsCore */; };
+		43EBEA55CCF4FD20F2464247 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 6FD01F3F3A476796383B849A /* FirebaseCrashlytics */; };
+		EC7D69308BB94CA670C9F562 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 764CAFF7FE233C49B27CCB40 /* FirebaseAppCheck */; };
+		887117471A93C6704CD7EC80 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 68EDE3B291B49D71D6073108 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +62,16 @@
 				E4096CFF2F11E56F008D9962 /* FirebaseMessaging in Frameworks */,
 				E4096CFB2F11E56F008D9962 /* FirebaseCore in Frameworks */,
 				E4096CFD2F11E56F008D9962 /* FirebaseInAppMessaging-Beta in Frameworks */,
+				BC338A44D30C54EC4A72063E /* FirebaseAuth in Frameworks */,
+				7578DC9A2933083E265364C3 /* FirebaseFirestore in Frameworks */,
+				3F7A7B42ECE02CE26D248B13 /* FirebaseDatabase in Frameworks */,
+				937F172D3A31A16BA299F6ED /* FirebaseFunctions in Frameworks */,
+				B21A041A73365047222A7AB3 /* FirebaseStorage in Frameworks */,
+				16CC81B3CD83B78BB4EEC110 /* FirebaseRemoteConfig in Frameworks */,
+				B03848A35F81B7343E02E676 /* FirebaseAnalyticsCore in Frameworks */,
+				43EBEA55CCF4FD20F2464247 /* FirebaseCrashlytics in Frameworks */,
+				EC7D69308BB94CA670C9F562 /* FirebaseAppCheck in Frameworks */,
+				887117471A93C6704CD7EC80 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +106,9 @@
 				179F991C430ED401AF6CDBF4 /* Sources */,
 				F75DE4BA9AFBE64D46B6FEB3 /* Frameworks */,
 				E07EC3CA0BC286EF76A32730 /* Resources */,
+				E569B0E77A29576F1A12B50A /* Select Firebase config */,
+				EB2C28C0ADADBAD0AABBD087 /* Register Google sign-in URL scheme */,
+				01B336E831ACEA8C1A4B0A6C /* Upload Crashlytics dSYMs */,
 			);
 			buildRules = (
 			);
@@ -99,6 +122,16 @@
 				E4096CFA2F11E56F008D9962 /* FirebaseCore */,
 				E4096CFC2F11E56F008D9962 /* FirebaseInAppMessaging-Beta */,
 				E4096CFE2F11E56F008D9962 /* FirebaseMessaging */,
+				2480A3F744A550F61FE9D67D /* FirebaseAuth */,
+				DB7AAFD85ACDD11657EADA68 /* FirebaseFirestore */,
+				94F59FDC1FBD40657660617E /* FirebaseDatabase */,
+				34AFD3231CD8E139143A0743 /* FirebaseFunctions */,
+				34E9B79AE04F3EE81EBD7EF0 /* FirebaseStorage */,
+				CE963F1BF35509C324300FE0 /* FirebaseRemoteConfig */,
+				C05867C029EDAB00A1A7936D /* FirebaseAnalyticsCore */,
+				6FD01F3F3A476796383B849A /* FirebaseCrashlytics */,
+				764CAFF7FE233C49B27CCB40 /* FirebaseAppCheck */,
+				68EDE3B291B49D71D6073108 /* GoogleSignIn */,
 			);
 			productName = iosApp;
 			productReference = 2AAB5FECD6DCC5C6A7E76797 /* Squadfy_App.app */;
@@ -130,6 +163,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				5950B9641A4B1096D134A542 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7068312050CBB960BFBB33F2 /* Products */;
@@ -170,6 +204,65 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
+		};
+		E569B0E77A29576F1A12B50A /* Select Firebase config */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Select Firebase config";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Copies this build's Firebase config into the app (spec 019 D-14): Debug is the \"Squadfy iOS Dev\" app\n# (com.kikepb.squadfy.dev, PRE) and Release the \"Squadfy iOS Prod\" one (com.kikepb.squadfy, PRO), so development never\n# reports to production. Both files are gitignored (iosApp/Firebase/README.md).\nSOURCE=\"${PROJECT_DIR}/Firebase/${CONFIGURATION}/GoogleService-Info.plist\"\nDEST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist\"\nif [ ! -f \"$SOURCE\" ]; then\n  echo \"warning: $SOURCE not found: this build runs without Firebase (see iosApp/Firebase/README.md)\"\n  rm -f \"$DEST\"\n  exit 0\nfi\nmkdir -p \"$(dirname \"$DEST\")\"\ncp \"$SOURCE\" \"$DEST\"\n";
+		};
+		EB2C28C0ADADBAD0AABBD087 /* Register Google sign-in URL scheme */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Register Google sign-in URL scheme";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Google sign-in comes back to the app through the reversed client id of this build's Firebase config (Debug and\n# Release are different apps), so its URL scheme is added to the built Info.plist instead of being hard-coded (AC-019-23).\nCONFIG=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist\"\nPLIST=\"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nSCHEME=$(/usr/libexec/PlistBuddy -c \"Print :REVERSED_CLIENT_ID\" \"$CONFIG\" 2>/dev/null)\nif [ -z \"$SCHEME\" ]; then\n  echo \"warning: GoogleService-Info.plist has no REVERSED_CLIENT_ID: Google sign-in is off (enable Google in Firebase Auth and download the plist again)\"\n  exit 0\nfi\nif /usr/libexec/PlistBuddy -c \"Print :CFBundleURLTypes\" \"$PLIST\" 2>/dev/null | grep -q \"$SCHEME\"; then\n  exit 0\nfi\nINDEX=$(/usr/libexec/PlistBuddy -c \"Print :CFBundleURLTypes\" \"$PLIST\" 2>/dev/null | grep -c \"Dict {\")\n/usr/libexec/PlistBuddy \\\n  -c \"Add :CFBundleURLTypes:$INDEX dict\" \\\n  -c \"Add :CFBundleURLTypes:$INDEX:CFBundleURLName string google-sign-in\" \\\n  -c \"Add :CFBundleURLTypes:$INDEX:CFBundleURLSchemes array\" \\\n  -c \"Add :CFBundleURLTypes:$INDEX:CFBundleURLSchemes:0 string $SCHEME\" \\\n  \"$PLIST\"\n";
+		};
+		01B336E831ACEA8C1A4B0A6C /* Upload Crashlytics dSYMs */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "Upload Crashlytics dSYMs";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Uploads dSYMs so Crashlytics can symbolicate iOS crashes (spec 019 AC-019-18). Release only, and only once the\n# real GoogleService-Info.plist is in place.\nif [ \"${CONFIGURATION}\" = \"Release\" ] && [ -f \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist\" ]; then\n  \"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -274,7 +367,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.kikepb.squadfy;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kikepb.squadfy.dev;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -400,7 +493,15 @@
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 12.7.0;
+				minimumVersion = 11.15.0;
+			};
+		};
+		5950B9641A4B1096D134A542 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -420,6 +521,56 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
+		};
+		2480A3F744A550F61FE9D67D /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		DB7AAFD85ACDD11657EADA68 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		94F59FDC1FBD40657660617E /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		34AFD3231CD8E139143A0743 /* FirebaseFunctions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFunctions;
+		};
+		34E9B79AE04F3EE81EBD7EF0 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		CE963F1BF35509C324300FE0 /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseRemoteConfig;
+		};
+		C05867C029EDAB00A1A7936D /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+		6FD01F3F3A476796383B849A /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		764CAFF7FE233C49B27CCB40 /* FirebaseAppCheck */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E4096CF92F11E56F008D9962 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAppCheck;
+		};
+		68EDE3B291B49D71D6073108 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5950B9641A4B1096D134A542 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

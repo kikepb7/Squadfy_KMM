@@ -1,6 +1,7 @@
 import com.android.build.api.dsl.ApplicationExtension
 import com.kikepb.squadfy.convention.configureKotlinAndroid
 import com.kikepb.squadfy.convention.libs
+import com.kikepb.squadfy.convention.squadfyEnvironment
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -11,7 +12,8 @@ import java.util.Properties
  * - release signed with `keystore.properties` (root, gitignored) or the `SIGNING_*` environment variables (CI);
  *   without them, local release builds fall back to the debug key so the minified app can be installed for QA;
  * - R8 minify + resource shrinking with `proguard-rules.pro`;
- * - `versionCode` from `-PversionCode` (CI: github.run_number), `versionName` from the version catalog (SemVer).
+ * - `versionCode` from `-PversionCode` (CI: github.run_number), `versionName` from the version catalog (SemVer);
+ * - PRE builds use the `.dev` applicationId suffix (spec 019 D-14).
  */
 class AndroidApplicationConventionPlugin: Plugin<Project> {
 
@@ -33,6 +35,8 @@ class AndroidApplicationConventionPlugin: Plugin<Project> {
 
                 defaultConfig {
                     applicationId = libs.findVersion("projectApplicationId").get().toString()
+                    // Spec 019 D-14: PRE is the "Dev" app of the Firebase project and installs next to PRO
+                    applicationIdSuffix = squadfyEnvironment.applicationIdSuffix
                     targetSdk = libs.findVersion("projectTargetSdkVersion").get().toString().toInt()
                     versionCode = providers.gradleProperty("versionCode").orNull?.toInt()
                         ?: libs.findVersion("projectVersionCode").get().toString().toInt()

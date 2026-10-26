@@ -25,5 +25,12 @@ node_modules/
 *.keystore
 keystore.properties
 google-services.json
+# Firebase configs and local emulator state (spec 019): never committed
+GoogleService-Info.plist
+.firebaserc
+firebase/emulator-data/
+firebase/*-debug.log
+firebase/functions/lib/
+firebase/functions/node_modules/
 .env
 
