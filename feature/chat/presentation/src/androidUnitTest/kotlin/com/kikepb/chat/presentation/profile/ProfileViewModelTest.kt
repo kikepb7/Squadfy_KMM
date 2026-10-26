@@ -10,6 +10,7 @@ import com.kikepb.chat.domain.usecases.profile.UploadProfilePictureUseCase
 import com.kikepb.chat.presentation.fake.FakeAuthRepository
 import com.kikepb.chat.presentation.fake.FakeChatParticipantRepository
 import com.kikepb.chat.presentation.fake.FakeChatRepository
+import com.kikepb.chat.presentation.fake.FakeAnalyticsConsent
 import com.kikepb.chat.presentation.fake.FakeCrashReportingConsent
 import com.kikepb.chat.presentation.fake.fakeSignOutUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -54,6 +55,7 @@ class ProfileViewModelTest {
         deleteAccountUseCase = DeleteAccountUseCase(authRepository, sessionStorage, FakeChatRepository()),
         featureFlags = FakeFeatureFlags(),
         crashReportingConsent = FakeCrashReportingConsent(),
+        analyticsConsent = FakeAnalyticsConsent(),
         signOutUseCase = fakeSignOutUseCase(sessionStorage = sessionStorage, applicationScope = CoroutineScope(mainDispatcherRule.dispatcher))
     )
 

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
  * the choice is stored on the device and can be withdrawn at any time.
  */
 interface CrashReportingConsent {
-    /** False when this platform has no crash reporter (iOS is out of the MVP), so the UI hides the option. */
+    /** False when this build has no crash reporter (the own-backend variant on iOS), so the UI hides the option. */
     val isAvailable: Boolean
     fun observe(): Flow<Boolean>
     suspend fun set(enabled: Boolean)

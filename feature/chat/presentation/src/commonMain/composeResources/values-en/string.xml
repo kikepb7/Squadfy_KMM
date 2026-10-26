@@ -71,6 +71,8 @@
     <string name="profile_change_photo">Change photo</string>
     <string name="profile_change_password">Change password</string>
     <string name="profile_crash_reports_short">Crash reports (optional)</string>
+    <string name="profile_usage_analytics_short">Usage statistics (optional)</string>
+    <string name="usage_analytics_desc">Send anonymous data about which screens you use, never your name, email or messages, to help us improve the app. You can turn it off at any time.</string>
     <string name="profile_close">Close</string>
     <string name="chat_search">Search</string>
     <string name="chat_search_empty">No chat matches the search.</string>

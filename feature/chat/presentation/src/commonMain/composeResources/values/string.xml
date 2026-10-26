@@ -71,6 +71,8 @@
     <string name="profile_change_photo">Cambiar foto</string>
     <string name="profile_change_password">Cambiar contraseña</string>
     <string name="profile_crash_reports_short">Informes de fallos (opcional)</string>
+    <string name="profile_usage_analytics_short">Estadísticas de uso (opcional)</string>
+    <string name="usage_analytics_desc">Envía datos anónimos sobre qué pantallas usas, sin tu nombre, tu email ni tus mensajes, para ayudarnos a mejorar la app. Puedes desactivarlo cuando quieras.</string>
     <string name="profile_close">Cerrar</string>
     <string name="chat_search">Buscar</string>
     <string name="chat_search_empty">Ningún chat coincide con la búsqueda.</string>

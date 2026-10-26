@@ -9,6 +9,8 @@ class FirebaseAnalyticsTracker(
     private val analytics: Lazy<FirebaseAnalytics>
 ) : AnalyticsTracker {
 
+    override val isAvailable: Boolean = true
+
     override fun logEvent(event: AnalyticsEvent) {
         analytics.value.logEvent(name = event.name, parameters = event.params.takeIf { it.isNotEmpty() })
     }

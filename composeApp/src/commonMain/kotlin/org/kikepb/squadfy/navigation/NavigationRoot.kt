@@ -8,6 +8,7 @@ import com.kikepb.core.designsystem.theme.extended
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +44,7 @@ import org.kikepb.squadfy.debug.FeatureFlagsRoute
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.Chat
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import com.kikepb.core.domain.analytics.AnalyticsTracker
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.GlobalPosition
 import org.kikepb.squadfy.navigation.bottomBar.BottomBarItem.Setup
 
@@ -59,6 +61,10 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
     val bottomBarItems = if (isChatEnabled) listOf(GlobalPosition, Setup, Chat) else listOf(GlobalPosition, Setup)
     // Profile (account, privacy, crash reports, sign out) opens from the Home gear on every platform
     var isProfileVisible by rememberSaveable { mutableStateOf(false) }
+    // AC-019-18: screen_view per destination; Profile is an overlay, not a destination, so it is logged here
+    val analyticsTracker = koinInject<AnalyticsTracker>()
+    TrackScreenViews(navController = navController, tracker = analyticsTracker)
+    LaunchedEffect(isProfileVisible) { if (isProfileVisible) analyticsTracker.logScreenView(PROFILE_SCREEN_NAME) }
     // Spec 018: the bar is on every signed-in screen (not on the auth flow)
     val isAuthDestination = currentDestination?.hierarchy?.any { it.hasRoute(AuthGraph::class) } == true
     // The draw result is a full-screen moment (screen 15), without the bar
@@ -168,3 +174,5 @@ fun NavigationRoot(navController: NavHostController, startDestination: Any) {
         )
     }
 }
+
+private const val PROFILE_SCREEN_NAME = "Profile"

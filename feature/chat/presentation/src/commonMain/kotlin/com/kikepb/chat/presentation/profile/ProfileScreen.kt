@@ -24,6 +24,8 @@ import squadfy_app.feature.chat.presentation.generated.resources.profile_change_
 import squadfy_app.feature.chat.presentation.generated.resources.profile_change_photo
 import squadfy_app.feature.chat.presentation.generated.resources.profile_close
 import squadfy_app.feature.chat.presentation.generated.resources.profile_crash_reports_short
+import squadfy_app.feature.chat.presentation.generated.resources.profile_usage_analytics_short
+import squadfy_app.feature.chat.presentation.generated.resources.usage_analytics_desc
 import squadfy_app.feature.chat.presentation.generated.resources.profile_title
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -281,6 +283,21 @@ fun ProfileScreen(
                     Switch(
                         checked = state.crashReportsEnabled,
                         onCheckedChange = { onAction(ProfileAction.OnCrashReportsChanged(enabled = it)) }
+                    )
+                }
+            )
+        }
+        // AC-019-18: usage analytics is opt-in too, with its own switch
+        if (state.isAnalyticsAvailable) {
+            TriMenuRow(
+                text = stringResource(RString.profile_usage_analytics_short),
+                icon = TriIcon.Chart,
+                supportingText = stringResource(RString.usage_analytics_desc),
+                onClick = { onAction(ProfileAction.OnAnalyticsChanged(enabled = !state.analyticsEnabled)) },
+                trailing = {
+                    Switch(
+                        checked = state.analyticsEnabled,
+                        onCheckedChange = { onAction(ProfileAction.OnAnalyticsChanged(enabled = it)) }
                     )
                 }
             )

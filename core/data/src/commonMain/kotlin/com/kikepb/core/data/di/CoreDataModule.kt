@@ -16,6 +16,7 @@ import com.kikepb.core.data.networking.HttpClientFactory
 import com.kikepb.core.domain.auth.repository.AuthRepository
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.config.LegalLinks
+import com.kikepb.core.data.analytics.DataStoreAnalyticsConsent
 import com.kikepb.core.data.crash.DataStoreCrashReportingConsent
 import com.kikepb.core.domain.crash.CrashReportingConsent
 import com.kikepb.core.domain.featureflag.AppEnvironment
@@ -23,6 +24,7 @@ import com.kikepb.core.domain.featureflag.FeatureFlagOverrides
 import com.kikepb.core.domain.featureflag.FeatureFlags
 import com.kikepb.core.domain.featureflag.RemoteFeatureFlagSource
 import com.kikepb.core.domain.logger.SquadfyLogger
+import com.kikepb.core.domain.analytics.AnalyticsConsent
 import com.kikepb.core.domain.analytics.AnalyticsTracker
 import com.kikepb.core.domain.analytics.NoOpAnalyticsTracker
 import org.koin.core.module.Module
@@ -53,6 +55,8 @@ val coreDataModule = module {
     singleOf(::DataStoreNotificationPromptStore) bind NotificationPromptStore::class
     // Crash reports with consent (spec 011 AC-011-13)
     singleOf(::DataStoreCrashReportingConsent) bind CrashReportingConsent::class
+    // Usage analytics with its own consent (spec 019 AC-019-18); the tracker comes from the backend variant
+    singleOf(::DataStoreAnalyticsConsent) bind AnalyticsConsent::class
     single {
         DefaultFeatureFlags(environment = get(), platform = currentAppPlatform, overrideStore = get(), remoteSource = get(), scope = get())
     } binds arrayOf(FeatureFlags::class, FeatureFlagOverrides::class)

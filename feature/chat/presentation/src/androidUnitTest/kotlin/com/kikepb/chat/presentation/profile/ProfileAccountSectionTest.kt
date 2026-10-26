@@ -9,6 +9,7 @@ import com.kikepb.chat.domain.usecases.profile.UploadProfilePictureUseCase
 import com.kikepb.chat.presentation.fake.FakeAuthRepository
 import com.kikepb.chat.presentation.fake.FakeChatParticipantRepository
 import com.kikepb.chat.presentation.fake.FakeChatRepository
+import com.kikepb.chat.presentation.fake.FakeAnalyticsConsent
 import com.kikepb.chat.presentation.fake.FakeCrashReportingConsent
 import com.kikepb.chat.presentation.fake.fakeSignOutUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +46,7 @@ class ProfileAccountSectionTest {
     private lateinit var featureFlags: FakeFeatureFlags
     private lateinit var viewModel: ProfileViewModel
     private val crashReportingConsent = FakeCrashReportingConsent()
+    private val analyticsConsent = FakeAnalyticsConsent()
 
     @Before
     fun setUp() {
@@ -62,6 +64,7 @@ class ProfileAccountSectionTest {
             deleteAccountUseCase = DeleteAccountUseCase(authRepository, sessionStorage, chatRepository),
             featureFlags = featureFlags,
             crashReportingConsent = crashReportingConsent,
+            analyticsConsent = analyticsConsent,
             signOutUseCase = fakeSignOutUseCase(
                 sessionStorage = sessionStorage,
                 chatRepository = chatRepository,
@@ -150,6 +153,19 @@ class ProfileAccountSectionTest {
 
         assertTrue(crashReportingConsent.enabled.value)
         assertTrue(viewModel.state.value.crashReportsEnabled)
+    }
+
+    @Test
+    fun `AC-019-18 the usage statistics switch is separate from crash reports and changes its own consent`() = runTest {
+        collectState()
+        assertTrue(viewModel.state.value.isAnalyticsAvailable)
+        assertFalse(viewModel.state.value.analyticsEnabled)
+
+        viewModel.onAction(ProfileAction.OnAnalyticsChanged(enabled = true))
+
+        assertTrue(analyticsConsent.enabled.value)
+        assertTrue(viewModel.state.value.analyticsEnabled)
+        assertFalse(crashReportingConsent.enabled.value)
     }
 
     @Test

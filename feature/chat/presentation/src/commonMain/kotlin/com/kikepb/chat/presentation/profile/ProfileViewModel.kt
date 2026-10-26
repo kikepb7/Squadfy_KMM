@@ -18,6 +18,7 @@ import com.kikepb.chat.presentation.profile.ProfileAction.OnPictureSelected
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleCurrentPasswordVisibility
 import com.kikepb.chat.presentation.profile.ProfileAction.OnToggleNewPasswordVisibility
 import com.kikepb.core.domain.auth.repository.SessionStorage
+import com.kikepb.core.domain.analytics.AnalyticsConsent
 import com.kikepb.core.domain.crash.CrashReportingConsent
 import com.kikepb.core.domain.featureflag.FeatureFlag
 import com.kikepb.core.domain.featureflag.FeatureFlags
@@ -60,6 +61,7 @@ class ProfileViewModel(
     private val deleteAccountUseCase: DeleteAccountUseCase,
     private val featureFlags: FeatureFlags,
     private val crashReportingConsent: CrashReportingConsent,
+    private val analyticsConsent: AnalyticsConsent,
     private val signOutUseCase: SignOutUseCase,
     private val socialCredentialProvider: SocialCredentialProvider = NoSocialCredentialProvider
 ): ViewModel() {
@@ -74,12 +76,15 @@ class ProfileViewModel(
         _state,
         sessionStorage.observeAuthInfo(),
         featureFlags.observe(FeatureFlag.ACCOUNT_DELETION),
-        crashReportingConsent.observe()
-    ) { stateWithoutFlags, authInfo, isAccountDeletionEnabled, crashReportsEnabled ->
+        crashReportingConsent.observe(),
+        analyticsConsent.observe()
+    ) { stateWithoutFlags, authInfo, isAccountDeletionEnabled, crashReportsEnabled, analyticsEnabled ->
         val currentState = stateWithoutFlags.copy(
             isAccountDeletionEnabled = isAccountDeletionEnabled,
             isCrashReportingAvailable = crashReportingConsent.isAvailable,
-            crashReportsEnabled = crashReportsEnabled
+            crashReportsEnabled = crashReportsEnabled,
+            isAnalyticsAvailable = analyticsConsent.isAvailable,
+            analyticsEnabled = analyticsEnabled
         )
         if (authInfo != null) {
             currentState.copy(
@@ -289,6 +294,7 @@ class ProfileViewModel(
             is ProfileAction.OnDismissLogoutDialog -> _state.update { it.copy(showLogoutConfirmation = false) }
             is ProfileAction.OnConfirmLogout -> signOut()
             is ProfileAction.OnCrashReportsChanged -> viewModelScope.launch { crashReportingConsent.set(action.enabled) }
+            is ProfileAction.OnAnalyticsChanged -> viewModelScope.launch { analyticsConsent.set(action.enabled) }
             is ProfileAction.OnToggleDeleteAccountPasswordVisibility ->
                 _state.update { it.copy(isDeleteAccountPasswordVisible = !it.isDeleteAccountPasswordVisible) }
             else -> Unit
@@ -323,6 +329,8 @@ data class ProfileState(
     val deleteAccountWith: SignInMethod? = null,
     val isCrashReportingAvailable: Boolean = false,
     val crashReportsEnabled: Boolean = false,
+    val isAnalyticsAvailable: Boolean = false,
+    val analyticsEnabled: Boolean = false,
     val showLogoutConfirmation: Boolean = false,
     val isSigningOut: Boolean = false
 )
@@ -343,6 +351,7 @@ sealed interface ProfileAction {
     data object OnConfirmDeleteAccount: ProfileAction
     data object OnToggleDeleteAccountPasswordVisibility: ProfileAction
     data class OnCrashReportsChanged(val enabled: Boolean): ProfileAction
+    data class OnAnalyticsChanged(val enabled: Boolean): ProfileAction
     data object OnLogoutClick: ProfileAction
     data object OnDismissLogoutDialog: ProfileAction
     data object OnConfirmLogout: ProfileAction
