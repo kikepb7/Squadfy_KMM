@@ -1,6 +1,10 @@
 package com.kikepb.core.firebase.di
 
 import com.kikepb.core.domain.analytics.AnalyticsTracker
+import com.kikepb.core.domain.auth.repository.AuthRepository
+import com.kikepb.core.domain.auth.repository.SessionStorage
+import com.kikepb.core.firebase.auth.FirebaseAuthRepository
+import com.kikepb.core.firebase.auth.FirebaseSessionStorage
 import com.kikepb.core.domain.crash.CrashReporter
 import com.kikepb.core.domain.featureflag.RemoteFeatureFlagSource
 import com.kikepb.core.firebase.BuildKonfig
@@ -38,7 +42,11 @@ val coreFirebaseModule = module {
     single { Firebase.analytics }
     single { Firebase.crashlytics }
 
-    single { FunctionsClient(get()) }
+    single { FunctionsClient(functions = get(), logger = get()) }
+
+    // Account and session (spec 019 AC-019-04…06)
+    single<AuthRepository> { FirebaseAuthRepository(auth = get(), firestore = inject(), functions = get()) }
+    single<SessionStorage> { FirebaseSessionStorage(auth = get(), firestore = inject()) }
     single { FirebaseImageStorage(inject()) }
 
     single<CrashReporter> { FirebaseCrashReporter(crashlytics = inject(), isRelease = BuildKonfig.IS_RELEASE) }

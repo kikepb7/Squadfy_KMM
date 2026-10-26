@@ -2,7 +2,7 @@ package org.kikepb.squadfy.di
 
 import com.kikepb.chat.data.di.chatDataModule
 import com.kikepb.club.data.di.clubDataModule
-import com.kikepb.core.data.di.coreApiNetworkModule
+import com.kikepb.core.data.di.coreApiHttpModule
 import com.kikepb.core.firebase.di.coreFirebaseModule
 import com.kikepb.core.firebase.init.FirebaseInitializer
 import org.koin.core.Koin
@@ -14,7 +14,7 @@ import org.koin.core.module.Module
  */
 internal val backendModules: List<Module> = listOf(
     coreFirebaseModule,
-    coreApiNetworkModule,
+    coreApiHttpModule,
     chatDataModule,
     clubDataModule
 )

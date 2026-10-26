@@ -8,8 +8,8 @@
 - [x] **T-005** Selección de los módulos Koin en `composeApp` según el backend (AC-019-01). Hay un conjunto de fuentes por variante (`src/backendFirebase` y `src/backendApi`). `core/data` se separa en compartido (`coreDataModule`) y backend propio (`coreApiNetworkModule` y `coreApiTelemetryModule`). Mientras la spec está en curso, la variante Firebase usa las implementaciones del backend propio para las features que aún no se han portado. Verificación: las dos variantes compilan y pasan los tests; la app PRE (`com.kikepb.squadfy.dev`) arranca en el emulador.
 
 ## Fase 1 · Cuenta
-- [ ] **T-006** `AuthRepository` neutral: sesión observable, logout sin refresh token, verificación y restablecimiento con los enlaces de cada backend. Se adapta la variante `api` sin cambiar su comportamiento.
-- [ ] **T-007** `FirebaseAuthRepository`: registro con `users/{uid}`, login, logout, verificación, recuperación, cambio de contraseña y sesión (AC-019-04, 05).
+- [x] **T-006** `AuthRepository` neutral. El contrato se mantiene: Firebase ignora el refresh token, y `verifyEmail` y `resetPassword` reciben el `oobCode` del enlace de acción. `MainViewModel` detecta la sesión caducada por su ausencia, no por el refresh token, con el mismo comportamiento en la variante `api`.
+- [x] **T-007** `FirebaseAuthRepository`: registro con `users/{uid}`, login, logout, verificación, recuperación, cambio de contraseña y sesión (AC-019-04, 05). La callable `completeProfile` reserva el nombre en `usernames/{lower}` (único, sin distinguir mayúsculas, de 3 a 20 caracteres, como BE-001) y crea el perfil sin el email; las reglas de `users` van con sus tests. `FirebaseSessionStorage` une Auth con `users/{uid}`. Verificación: tests de la callable contra el emulador (3/3); registro y login reales desde la app PRE contra el Emulator Suite.
 - [ ] **T-008b** Login con Google y Apple, con la pantalla para completar el perfil (AC-019-23).
 - [ ] **T-008** Callable `deleteAccount` con la anonimización y la sucesión del owner, y la reautenticación en la app (AC-019-06).
 

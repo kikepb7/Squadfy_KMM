@@ -2,7 +2,9 @@ package com.kikepb.core.firebase.functions
 
 import com.kikepb.core.domain.util.RemoteError
 import com.kikepb.core.domain.util.Result
-import com.kikepb.core.firebase.error.safeRemoteCall
+import com.kikepb.core.domain.logger.SquadfyLogger
+import com.kikepb.core.firebase.error.toRemoteErrorWithCode
+import kotlinx.coroutines.CancellationException
 import dev.gitlive.firebase.functions.FirebaseFunctions
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
@@ -17,17 +19,28 @@ import kotlin.time.Duration.Companion.seconds
  * functions.call<JoinClubRequest, ClubDto>("joinClub", JoinClubRequest(code))
  * ```
  */
-class FunctionsClient(val functions: FirebaseFunctions) {
+class FunctionsClient(
+    val functions: FirebaseFunctions,
+    private val logger: SquadfyLogger? = null
+) {
 
     suspend fun <I, O> call(
         name: String,
         input: I,
         inputSerializer: SerializationStrategy<I>,
         outputDeserializer: DeserializationStrategy<O>
-    ): Result<O, RemoteError> = safeRemoteCall {
-        functions.httpsCallable(name, timeout = TIMEOUT)
-            .invoke(inputSerializer, input)
-            .data(outputDeserializer)
+    ): Result<O, RemoteError> = try {
+        Result.Success(
+            functions.httpsCallable(name, timeout = TIMEOUT)
+                .invoke(inputSerializer, input)
+                .data(outputDeserializer)
+        )
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        // Server messages are technical and carry no personal data; the input is never logged
+        logger?.warn("Callable $name failed: ${e::class.simpleName}: ${e.message}")
+        Result.Failure(e.toRemoteErrorWithCode())
     }
 
     suspend inline fun <reified I, reified O> call(name: String, input: I): Result<O, RemoteError> =

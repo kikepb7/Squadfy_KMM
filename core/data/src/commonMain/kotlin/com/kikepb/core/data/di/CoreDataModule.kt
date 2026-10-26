@@ -58,12 +58,17 @@ val coreDataModule = module {
     } binds arrayOf(FeatureFlags::class, FeatureFlagOverrides::class)
 }
 
-/** The own backend (frozen, ADR-0010): Ktor client with JWT refresh and the encrypted session store. */
-val coreApiNetworkModule = module {
+/** The Ktor client of the own backend. Spec 019 keeps it in the Firebase variant only for features not ported yet. */
+val coreApiHttpModule = module {
     includes(platformCoreApiDataModule)
     single {
         HttpClientFactory(get(), get()).create(get())
     }
+}
+
+/** The own backend (frozen, ADR-0010): Ktor client with JWT refresh and the encrypted session store. */
+val coreApiNetworkModule = module {
+    includes(coreApiHttpModule)
     singleOf(::KtorAuthRepositoryImpl) bind AuthRepository::class
     singleOf(::DataStoreSessionStorage) bind SessionStorage::class
 }

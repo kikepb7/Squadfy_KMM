@@ -16,8 +16,11 @@ Server side of the Firebase variant of Squadfy: the project is **Squadfy** (`squ
 cd firebase/functions && npm ci && npm run build
 npm test                    # unit tests of the domain logic
 npm run test:emulator       # rules and callables against the Emulator Suite
-npm run serve               # emulators with the UI at http://localhost:4006
+npm run serve               # emulators for the app, with the UI at http://localhost:4006
 ```
+`serve` runs the emulators under the app's project id (`squadfy-5233d`), because the app calls them with the id of its
+Firebase config: a different id answers NOT_FOUND. Everything stays local; the functions never send real pushes from
+the emulator (`FUNCTIONS_EMULATOR`). The tests use the offline `demo-squadfy` project instead.
 The app talks to the emulators with `squadfy.firebase.useEmulator=true` in `local.properties` (debug builds only).
 The ports are not the usual defaults, so they never clash with TensoScan or the own backend on 8080.
 

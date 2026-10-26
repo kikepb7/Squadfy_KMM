@@ -1,8 +1,59 @@
 rules_version = '2';
 
-// Placeholder until spec 019 T-009: nothing is readable or writable from the apps yet.
+// Spec 019 (ADR-0010): the domain (clubs, schedules, announcements, matches, ratings, absences) is written only by the
+// Cloud Functions, which use the Admin SDK and skip these rules. The apps read what their membership allows and write
+// directly only their own profile picture, devices and chat messages. Keep in sync with FirestorePaths.kt.
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    function isStringOrNull(value) {
+      return value == null || (value is string && value.size() <= 2048);
+    }
+
+    // Public profile (no email). Any signed-in user can read it (chat participants, user search by prefix).
+    // completeProfile creates it; the owner can only change the picture.
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow update: if isUser(uid)
+        && onlyChanges(['pictureUrl', 'updatedAt'])
+        && isStringOrNull(request.resource.data.pictureUrl)
+        && request.resource.data.updatedAt == request.time;
+      allow create, delete: if false;
+
+      // FCM tokens of the user's devices (document id = token)
+      match /devices/{token} {
+        allow read, delete: if isUser(uid);
+        allow create, update: if isUser(uid)
+          && request.resource.data.keys().hasOnly(['platform', 'locale', 'timeZone', 'appVersion', 'updatedAt'])
+          && request.resource.data.platform in ['android', 'ios']
+          && request.resource.data.updatedAt == request.time;
+      }
+
+      // Per-club settings (mute): written by setClubMuted
+      match /clubSettings/{clubId} {
+        allow read: if isUser(uid);
+        allow write: if false;
+      }
+    }
+
+    // Username reservations: only the Functions read and write them
+    match /usernames/{name} {
+      allow read, write: if false;
+    }
+
+    // Until spec 019 T-009 covers them, everything else is closed
     match /{document=**} {
       allow read, write: if false;
     }

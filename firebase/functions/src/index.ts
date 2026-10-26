@@ -4,3 +4,5 @@
  * read. The pure domain logic in `domain/` is ported from `Squadfy_Backend` with its tests.
  */
 import "./config";
+
+export { completeProfile } from "./account/profile";

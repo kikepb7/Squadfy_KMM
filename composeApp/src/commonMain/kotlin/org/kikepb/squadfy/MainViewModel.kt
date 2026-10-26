@@ -26,7 +26,8 @@ class MainViewModel(
     private val deviceTokenService: DeviceTokenService
 ) : ViewModel() {
 
-    private var previousRefreshToken: String? = null
+    // Spec 019: the session ends when it disappears, with either backend (Firebase keeps no refresh token in the app)
+    private var wasSignedIn = false
     private var currentDeviceToken: String? = null
     private var previousDeviceToken: String? = null
     private var hasLoadedInitialData = false
@@ -59,8 +60,7 @@ class MainViewModel(
         sessionStorage
             .observeAuthInfo()
             .onEach { authInfo ->
-                val currentRefreshToken = authInfo?.refreshToken
-                val isSessionExpired = previousRefreshToken != null && currentRefreshToken == null
+                val isSessionExpired = wasSignedIn && authInfo == null
 
                 if (isSessionExpired) {
                     sessionStorage.set(info = null)
@@ -71,7 +71,7 @@ class MainViewModel(
                     eventChannel.send(OnSessionExpired)
                 }
 
-                previousRefreshToken = authInfo?.refreshToken
+                wasSignedIn = authInfo != null
             }
             .combine(flow = pushNotificationService.observeDeviceToken()) { authInfo, deviceToken ->
                 currentDeviceToken = deviceToken
