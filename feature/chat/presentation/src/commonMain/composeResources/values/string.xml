@@ -77,4 +77,6 @@
     <string name="delete_account_confirm_google">Para confirmarlo, vuelve a iniciar sesión con Google.</string>
     <string name="delete_account_confirm_apple">Para confirmarlo, vuelve a iniciar sesión con Apple.</string>
     <string name="error_delete_account_reauth">No se ha podido confirmar tu identidad. Inténtalo de nuevo.</string>
+    <string name="presence_online">En línea</string>
+    <string name="presence_typing">Escribiendo…</string>
 </resources>

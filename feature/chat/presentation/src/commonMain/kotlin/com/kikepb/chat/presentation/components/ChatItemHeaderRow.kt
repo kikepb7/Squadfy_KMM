@@ -26,7 +26,9 @@ import squadfy_app.feature.chat.presentation.generated.resources.you
 fun ChatItemHeaderRow(
     chat: ChatModelUi,
     isGroupChat: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** Spec 019 AC-019-16: "Online" / "Typing…" under the name; null keeps the participants line. */
+    presenceText: String? = null
 ) {
     Row(
         modifier = modifier,
@@ -50,7 +52,15 @@ fun ChatItemHeaderRow(
                 maxLines = 1,
                 modifier = Modifier.fillMaxWidth()
             )
-            if (isGroupChat) {
+            if (presenceText != null) {
+                Text(
+                    text = presenceText,
+                    color = MaterialTheme.colorScheme.extended.textPlaceholder,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 1
+                )
+            } else if (isGroupChat) {
                 val you = stringResource(RString.you)
                 val formattedUsernames = remember(chat.otherParticipants) {
                     "$you, " + chat.otherParticipants.joinToString {

@@ -2,6 +2,11 @@
 
 package com.kikepb.chat.presentation.chat_detail
 
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.debounce
+import com.kikepb.chat.domain.repository.presence.PresenceRepository
+import com.kikepb.chat.domain.repository.presence.NoPresenceRepository
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
@@ -84,7 +89,8 @@ class ChatDetailViewModel(
     private val retryMessageUseCase: RetryMessageUseCase,
     private val deleteMessageUseCase: DeleteMessageUseCase,
     private val chatConnectionClient: ChatConnectionClient,
-    private val sessionStorage: SessionStorage
+    private val sessionStorage: SessionStorage,
+    private val presenceRepository: PresenceRepository = NoPresenceRepository
 ) : ViewModel() {
 
     private var currentPaginator: Paginator<String?, ChatMessageModel>? = null
@@ -113,6 +119,7 @@ class ChatDetailViewModel(
                 observeConnectionState()
                 observeChatMessages()
                 observeCanSendMessage()
+                observeTyping()
                 hasLoadedInitialData = true
             }
         }
@@ -126,16 +133,44 @@ class ChatDetailViewModel(
         .combine(chatConnectionClient.connectionState) { isMessageBlank, connectionState ->
             !isMessageBlank && connectionState == CONNECTED
         }
+    /**
+     * Spec 019 AC-019-16: who is typing in this chat, and whether the other person of a one-to-one chat is online.
+     * The own-backend variant has no presence: nothing is shown.
+     */
+    private val presenceFlow = _chatId
+        .flatMapLatest { chatId ->
+            if (chatId == null) return@flatMapLatest flowOf(ChatPresence.NONE)
+            // Its own read of the chat: chatInfoFlow also loads the first page, which must happen once
+            getChatInfoByIdUseCase.getChatInfoById(chatId = chatId)
+                .map { info -> info.chat.participants.map { it.userId } }
+                .distinctUntilChanged()
+                .flatMapLatest { participantIds ->
+                    val me = sessionStorage.observeAuthInfo().firstOrNull()?.user?.id
+                    val others = participantIds.filter { it != me }
+                    val online = if (others.size == 1) presenceRepository.observeOnline(others.single()) else flowOf(false)
+                    combine(presenceRepository.observeTyping(chatId), online) { typing, isOnline ->
+                        when {
+                            typing.isNotEmpty() -> ChatPresence.TYPING
+                            isOnline -> ChatPresence.ONLINE
+                            else -> ChatPresence.NONE
+                        }
+                    }
+                }
+        }
+        .onStart { emit(ChatPresence.NONE) }
+
     private val stateWithMessages = combine(
         _state,
         chatInfoFlow,
-        sessionStorage.observeAuthInfo()
-    ) { currentState, chatInfo, authInfo ->
+        sessionStorage.observeAuthInfo(),
+        presenceFlow
+    ) { currentState, chatInfo, authInfo, presence ->
         if (authInfo == null) return@combine ChatDetailState()
 
         currentState.copy(
             chatUi = chatInfo.chat.toUi(localParticipantId = authInfo.user.id),
-            messages = chatInfo.messages.toUiList(localUserId = authInfo.user.id)
+            messages = chatInfo.messages.toUiList(localUserId = authInfo.user.id),
+            presence = presence
         )
     }
 
@@ -215,6 +250,19 @@ class ChatDetailViewModel(
         }.launchIn(scope = viewModelScope)
     }
 
+    /** Tells the others I am typing; it stops a few seconds after the last keystroke or when the message goes. */
+    private fun observeTyping() {
+        snapshotFlow { _state.value.messageTextFieldState.text.toString() }
+            .distinctUntilChanged()
+            .onEach { text ->
+                val chatId = _chatId.value ?: return@onEach
+                presenceRepository.setTyping(chatId = chatId, typing = text.isNotBlank())
+            }
+            .debounce(TYPING_IDLE_MS)
+            .onEach { _chatId.value?.let { presenceRepository.setTyping(chatId = it, typing = false) } }
+            .launchIn(viewModelScope)
+    }
+
     private fun sendMessage() {
         val currentChatId = _chatId.value
         val content = state.value.messageTextFieldState.text.toString().trim()
@@ -228,7 +276,10 @@ class ChatDetailViewModel(
             )
 
             sendMessageUseCase.sendMessage(message = message)
-                .onSuccess { state.value.messageTextFieldState.clearText() }
+                .onSuccess {
+                    state.value.messageTextFieldState.clearText()
+                    presenceRepository.setTyping(chatId = currentChatId, typing = false)
+                }
                 .onFailure { error ->
                     eventChannel.send(element = OnError(error = error.toUiText()))
 
@@ -349,6 +400,8 @@ class ChatDetailViewModel(
     }
 }
 
+private const val TYPING_IDLE_MS = 4_000L
+
 data class ChatDetailState(
     val chatUi: ChatModelUi? = null,
     val isLoading: Boolean = false,
@@ -363,8 +416,12 @@ data class ChatDetailState(
     val bannerState: BannerState = BannerState(),
     val isChatOptionsOpen: Boolean = false,
     val isNearBottom: Boolean = false,
-    val connectionState: ConnectionStateModel = DISCONNECTED
+    val connectionState: ConnectionStateModel = DISCONNECTED,
+    /** Spec 019 AC-019-16 */
+    val presence: ChatPresence = ChatPresence.NONE
 )
+
+enum class ChatPresence { NONE, ONLINE, TYPING }
 
 sealed interface ChatDetailEvent {
     data object OnChatLeft: ChatDetailEvent

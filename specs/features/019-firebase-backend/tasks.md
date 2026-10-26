@@ -50,7 +50,7 @@
   - El estado de conexión sale de `.info/connected` de Realtime Database.
   - La variante Firebase ya no usa Ktor ni WebSocket.
   - Verificación: lista de chats, conversación y envío desde la app PRE contra el emulador.
-- [ ] **T-021** Presencia y «escribiendo…» en Realtime Database (AC-019-16).
+- [x] **T-021** Presencia y «escribiendo…» en Realtime Database (AC-019-16).
 - [x] **T-022** Tokens de FCM en `users/{uid}/devices` (Android e iOS), con plataforma, idioma y zona horaria. El proveedor del token sigue en `chat/data` (`platformChatPushModule`).
 
 ## Fase 5 · Telemetría y configuración

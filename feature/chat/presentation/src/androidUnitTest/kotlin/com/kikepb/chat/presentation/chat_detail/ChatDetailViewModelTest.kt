@@ -1,5 +1,6 @@
 package com.kikepb.chat.presentation.chat_detail
 
+import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.kikepb.chat.domain.models.ChatMessageDeliveryStatus
 import com.kikepb.chat.domain.usecases.FetchChatByIdUseCase
@@ -12,7 +13,9 @@ import com.kikepb.chat.domain.usecases.message.RetryMessageUseCase
 import com.kikepb.chat.domain.usecases.message.SendMessageUseCase
 import com.kikepb.chat.presentation.fake.FakeChatConnectionClient
 import com.kikepb.chat.presentation.fake.FakeChatRepository
+import com.kikepb.chat.presentation.fake.FakeAuthRepository
 import com.kikepb.chat.presentation.fake.FakeMessageRepository
+import com.kikepb.chat.presentation.fake.FakePresenceRepository
 import com.kikepb.chat.presentation.fake.FakeSessionStorage
 import com.kikepb.chat.presentation.model.MessageModelUi.LocalUserMessage
 import com.kikepb.chat.presentation.util.MainDispatcherRule
@@ -35,6 +38,7 @@ class ChatDetailViewModelTest {
     private lateinit var messageRepository: FakeMessageRepository
     private lateinit var sessionStorage: FakeSessionStorage
     private lateinit var connectionClient: FakeChatConnectionClient
+    private lateinit var presenceRepository: FakePresenceRepository
     private lateinit var viewModel: ChatDetailViewModel
 
     @Before
@@ -43,6 +47,7 @@ class ChatDetailViewModelTest {
         messageRepository = FakeMessageRepository()
         sessionStorage = FakeSessionStorage()
         connectionClient = FakeChatConnectionClient()
+        presenceRepository = FakePresenceRepository()
         viewModel = createViewModel()
     }
 
@@ -56,8 +61,49 @@ class ChatDetailViewModelTest {
         retryMessageUseCase = RetryMessageUseCase(messageRepository = messageRepository),
         deleteMessageUseCase = DeleteMessageUseCase(messageRepository = messageRepository),
         chatConnectionClient = connectionClient,
-        sessionStorage = sessionStorage
+        sessionStorage = sessionStorage,
+        presenceRepository = presenceRepository
     )
+
+    // --- Presence (spec 019) ---
+
+    @Test
+    fun `AC-019-16 the other person online and then typing changes the header presence`() = runTest {
+        val me = FakeAuthRepository.defaultAuthInfoModel()
+        sessionStorage.set(me)
+        val oneToOne = FakeChatRepository.defaultChatModel().copy(
+            participants = listOf(FakeChatRepository.defaultParticipant(userId = me.user.id), FakeChatRepository.defaultParticipant())
+        )
+        chatRepository.emitChatInfo(FakeChatRepository.defaultChatInfoModel().copy(chat = oneToOne))
+        viewModel.state.test {
+            viewModel.onAction(ChatDetailAction.OnSelectChat(chatId = "chat-1"))
+            presenceRepository.online.value = true
+            awaitPresence(ChatPresence.ONLINE)
+            presenceRepository.typing.value = setOf("user-1")
+            awaitPresence(ChatPresence.TYPING)
+            presenceRepository.typing.value = emptySet()
+            presenceRepository.online.value = false
+            awaitPresence(ChatPresence.NONE)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `AC-019-16 without a selected chat there is no presence`() = runTest {
+        sessionStorage.set(FakeAuthRepository.defaultAuthInfoModel())
+        presenceRepository.online.value = true
+        viewModel.state.test {
+            assertEquals(ChatPresence.NONE, awaitItem().presence)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    /** Waits for the chat to load and show [expected]; fails on Turbine's timeout otherwise. */
+    private suspend fun ReceiveTurbine<ChatDetailState>.awaitPresence(expected: ChatPresence) {
+        do {
+            val state = awaitItem()
+        } while (state.chatUi == null || state.presence != expected)
+    }
 
     // --- Simple state mutations (no chatId required) ---
 

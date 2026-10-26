@@ -43,6 +43,7 @@ class FakeChatRepository : ChatRepository {
     }
 
     fun emitChats(chats: List<ChatModel>) { chatsFlow.value = chats }
+    fun emitChatInfo(info: ChatInfoModel) { chatInfoFlow.value = info }
 
     companion object {
         fun defaultParticipant(userId: String = "user-1", username: String = "testuser") =

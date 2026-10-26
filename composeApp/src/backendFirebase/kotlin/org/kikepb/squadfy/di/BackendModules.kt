@@ -2,6 +2,7 @@ package org.kikepb.squadfy.di
 
 import com.kikepb.chat.data.di.platformChatPushModule
 import com.kikepb.chat.datafirebase.di.chatFirebaseDataModule
+import com.kikepb.chat.domain.repository.presence.PresenceRepository
 import com.kikepb.club.datafirebase.di.clubFirebaseDataModule
 import com.kikepb.core.firebase.di.coreFirebaseModule
 import com.kikepb.core.firebase.init.FirebaseInitializer
@@ -21,6 +22,10 @@ internal val backendModules: List<Module> = listOf(
     clubFirebaseDataModule
 )
 
-internal fun Koin.startBackend() = get<FirebaseInitializer>().initialize()
+internal fun Koin.startBackend() {
+    get<FirebaseInitializer>().initialize()
+    // Presence keeps "online" while signed in; it opens the Realtime Database, so only after the emulators are set
+    get<PresenceRepository>()
+}
 
 internal fun Koin.onAppForeground() = get<FirebaseInitializer>().onForeground()

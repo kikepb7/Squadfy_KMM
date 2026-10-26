@@ -5,6 +5,8 @@ import com.kikepb.chat.datafirebase.repository.FirebaseChatParticipantRepository
 import com.kikepb.chat.datafirebase.repository.FirebaseChatRepository
 import com.kikepb.chat.datafirebase.repository.FirebaseDeviceTokenService
 import com.kikepb.chat.datafirebase.repository.FirebaseMessageRepository
+import com.kikepb.chat.datafirebase.repository.FirebasePresenceRepository
+import com.kikepb.chat.domain.repository.presence.PresenceRepository
 import com.kikepb.chat.domain.notification.DeviceTokenService
 import com.kikepb.chat.domain.repository.chat.ChatConnectionClient
 import com.kikepb.chat.domain.repository.chat.ChatRepository
@@ -23,4 +25,6 @@ val chatFirebaseDataModule = module {
         arrayOf(ChatParticipantRepository::class, ChatParticipantService::class)
     single<ChatConnectionClient> { FirebaseChatConnectionClient(database = get(), appScope = get()) }
     single<DeviceTokenService> { FirebaseDeviceTokenService(auth = get(), firestore = get()) }
+    // Created at start: marks me online as soon as I am signed in (AC-019-16)
+    single<PresenceRepository> { FirebasePresenceRepository(auth = get(), database = get(), appScope = get()) }
 }

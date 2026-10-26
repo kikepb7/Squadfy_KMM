@@ -77,4 +77,6 @@
     <string name="delete_account_confirm_google">To confirm, sign in with Google again.</string>
     <string name="delete_account_confirm_apple">To confirm, sign in with Apple again.</string>
     <string name="error_delete_account_reauth">We couldn\'t confirm it\'s you. Try again.</string>
+    <string name="presence_online">Online</string>
+    <string name="presence_typing">Typing…</string>
 </resources>

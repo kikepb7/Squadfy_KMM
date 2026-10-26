@@ -48,7 +48,8 @@ fun ChatDetailHeader(
     onManageChatClick: () -> Unit,
     onLeaveChatClick: () -> Unit,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    presenceText: String? = null
 ) {
     // Spec 017: the app's top bar with the chat as its title
     SquadfyTopBar(
@@ -58,6 +59,7 @@ fun ChatDetailHeader(
                 ChatItemHeaderRow(
                     chat = chatUi,
                     isGroupChat = chatUi.otherParticipants.size > 1,
+                    presenceText = presenceText,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onManageChatClick() }

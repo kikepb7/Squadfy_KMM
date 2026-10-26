@@ -2,6 +2,8 @@
 
 package com.kikepb.chat.presentation.chat_detail
 
+import squadfy_app.feature.chat.presentation.generated.resources.presence_online
+import squadfy_app.feature.chat.presentation.generated.resources.presence_typing
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -247,6 +249,11 @@ fun ChatDetailScreen(
                             onManageChatClick = { onAction(OnChatMembersClick) },
                             onLeaveChatClick = { onAction(OnLeaveChatClick) },
                             onBackClick = { onAction(OnBackClick) },
+                            presenceText = when (state.presence) {
+                                ChatPresence.TYPING -> stringResource(RString.presence_typing)
+                                ChatPresence.ONLINE -> stringResource(RString.presence_online)
+                                ChatPresence.NONE -> null
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .onSizeChanged {
