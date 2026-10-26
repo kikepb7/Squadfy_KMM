@@ -39,3 +39,7 @@
 -keep class org.kikepb.squadfy.push.SquadfyMessagingService { *; }
 
 # Koin (no reflection) and Compose need nothing extra
+
+# Google sign-in through Credential Manager (spec 019): the Play Services provider is loaded by reflection
+-if class androidx.credentials.CredentialManager
+-keep class androidx.credentials.playservices.** { *; }
