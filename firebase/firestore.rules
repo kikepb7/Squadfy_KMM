@@ -53,6 +53,43 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Invitation codes: only the Functions read them (joinClub), so they cannot be listed
+    match /invitationCodes/{code} {
+      allow read, write: if false;
+    }
+
+    // Membership ids are `{clubId}_{uid}` (unique across clubs and stable when a member comes back)
+    function myMembership(clubId) {
+      return /databases/$(database)/documents/clubs/$(clubId)/members/$(clubId + '_' + request.auth.uid);
+    }
+
+    function isMember(clubId) {
+      return signedIn() && exists(myMembership(clubId)) && get(myMembership(clubId)).data.status == 'ACTIVE';
+    }
+
+    // Clubs and everything inside (schedule, matches, announcements, ratings, absences): active members read,
+    // the Functions write (spec 019 ADR-0010 §2)
+    match /clubs/{clubId} {
+      allow read: if isMember(clubId);
+      allow write: if false;
+
+      // Members also see their own membership after leaving or being banned (the app drops the club then)
+      match /members/{memberId} {
+        allow read: if isMember(clubId) || (signedIn() && resource.data.userId == request.auth.uid);
+        allow write: if false;
+      }
+
+      match /{collection}/{document=**} {
+        allow read: if collection != 'members' && isMember(clubId);
+        allow write: if false;
+      }
+    }
+
+    // "My clubs": the collection group query `members where userId == me`
+    match /{path=**}/members/{memberId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
     // Until spec 019 T-009 covers them, everything else is closed
     match /{document=**} {
       allow read, write: if false;

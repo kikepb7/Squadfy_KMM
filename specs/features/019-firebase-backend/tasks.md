@@ -19,7 +19,10 @@
 
 ## Fase 3 · Dominio en Functions
 - [x] **T-011** Lógica pura portada con sus tests: calendario, plazos, asignador, equilibrador, Elo, estadísticas y roles. Está en `firebase/functions/src/domain`, y la zona horaria del club se calcula con Luxon. Verificación: 51 tests de Vitest en verde, con los mismos casos que los tests del backend (incluido el cambio de hora y el periodo en hora local).
-- [ ] **T-012** Clubes, miembros, roles, vetos, transferencia y código (AC-019-07).
+- [x] **T-012** Clubes, miembros, roles, vetos, transferencia y código (AC-019-07).
+  - Callables en `functions/src/clubs`; el id de membresía es `{clubId}_{uid}`. Las reglas dejan leer solo a los miembros activos.
+  - En la app, `FirebaseClubRepository` (módulo `feature/club/data-firebase`) lee con listeners y escribe con callables.
+  - Verificación: 8 tests de callables y reglas contra el emulador, 3 tests de mappers, y un club creado desde la app PRE.
 - [ ] **T-013** Horario, semanas especiales, planificación y partido extra (AC-019-08).
 - [ ] **T-014** Convocatoria, lista de espera, invitados y ausencias (AC-019-09).
 - [ ] **T-015** Jobs de cierre, sorteo y avisos (AC-019-10).

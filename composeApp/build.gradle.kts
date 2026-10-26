@@ -64,6 +64,7 @@ kotlin {
             // FIREBASE (spec 019)
             if (backend == SquadfyBackend.FIREBASE) {
                 implementation(projects.core.firebase)
+                implementation(projects.feature.club.dataFirebase)
             }
 
             // CLUB FEATURE

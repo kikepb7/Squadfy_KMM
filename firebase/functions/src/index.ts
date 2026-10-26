@@ -6,3 +6,18 @@
 import "./config";
 
 export { completeProfile } from "./account/profile";
+export {
+  banMember,
+  changeMemberRole,
+  createClub,
+  joinClub,
+  leaveClub,
+  regenerateInvitationCode,
+  removeMember,
+  setClubLogo,
+  setMyClubPicture,
+  transferOwnership,
+  unbanMember,
+  updateClub,
+  updateMyMembership
+} from "./clubs/clubs";
