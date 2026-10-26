@@ -25,6 +25,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 016 | Identidad de marca (kit): iconos, splash, logo, paleta y Poppins | **Done** (7/7) | ✅ | — | ✅ | 011 | — |
 | 017 | Coherencia de la interfaz: estados de carga, barra superior y barra de estado | **Done** (6/6) | ✅ | — | ✅ | 016 | — |
 | 018 | Rediseño «Triangulación»: tokens, fuentes, logo Corte, componentes y pantallas | **Done** (22/22) | ✅ | — | ✅ | 017 | — |
+| 019 | Firebase como backend de lanzamiento; el backend propio queda congelado (ADR-0010) | **Approved** (0/30) | ✅ | ✅ | ✅ | 018 | 8–12 semanas |
 
 \* Días ideales de una persona. Son orientativos, para priorizar, no un compromiso.
 
@@ -117,10 +118,14 @@ BE-008, BE-009, BE-010 (en paralelo en el backend) ──────▶ 012
 | D-7 | ¿Lanzamiento simultáneo Android + iOS o primero Android? | Android (Play Internal) primero; iOS en TestFlight en paralelo | 012 |
 | D-8 | ¿Se acepta el ADR-0006 (ciclo de partido network-first)? | Sí | 005–008 |
 | D-9 | ¿Se muestra el rol `CAPTAIN` con un distintivo? | Sí, solo como etiqueta | 003 |
-| D-10 | Capa remota de flags: ¿Firebase Remote Config o endpoint del backend? | Firebase Remote Config | 013 |
-| D-11 | ¿Instalar PRE junto a PRO (`applicationIdSuffix = ".pre"`)? | Sí, cuando haya backend de PRE | 011, 013 |
+| ~~D-10~~ | **Resuelta el 2026-10-26 (spec 019):** Firebase Remote Config. Antes: capa remota de flags: ¿Firebase Remote Config o endpoint del backend? | Firebase Remote Config | 013, 019 |
+| ~~D-11~~ | **Resuelta el 2026-10-26 (spec 019 D-14):** PRE se instala junto a PRO con el sufijo `.dev`, que son las apps de PRE del proyecto de Firebase. Antes: ¿instalar PRE junto a PRO (`applicationIdSuffix = ".pre"`)? | Sí | 011, 013, 019 |
 | ~~D-12~~ | **Resuelta el 2026-10-08 (spec 015 T-001):** `primary` del tema claro = Brand900. Antes: tema claro: el verde de marca (`primary`, Brand500) se usa como color de texto en ~40 sitios y sobre blanco da 1,70:1 (no cumple AA). ¿Se cambia el texto de marca en claro a Brand900 (6,96:1) o se fija la app en tema oscuro? | Texto de marca en claro con Brand900 (rol propio), sin tocar los botones | 011 |
 | ~~D-13~~ | **Resuelta el 2026-10-08 (spec 015 T-002):** chat oculto en iOS en PRO tras el flag `CHAT`; el Perfil sale del chat. Antes: chat con contenido generado por usuarios: Apple (guideline 1.2) pide denunciar contenido, bloquear usuarios y un contacto publicado. ¿Se añaden denuncia y bloqueo antes de enviar a App Store, o se oculta el chat en la primera versión? | Ocultar el chat tras un flag en la v1 de iOS y añadir denuncia y bloqueo después (necesita una spec del backend) | 012 |
+| ~~D-14~~ | **Resuelta el 2026-10-26:** el proyecto de Firebase es Squadfy (`squadfy-5233d`), con las apps Dev (`com.kikepb.squadfy.dev`, PRE) y Prod (`com.kikepb.squadfy`) en cada plataforma | — | 019 |
+| ~~D-15~~ | **Resuelta el 2026-10-26:** plan Blaze, con alerta de presupuesto | — | 019 |
+| ~~D-16~~ | **Resuelta el 2026-10-26:** login con email, Google y Apple | — | 019 |
+| ~~D-17~~ | **Resuelta el 2026-10-26:** Firebase iOS SDK 11.15.0, la versión de los bindings de GitLive 2.7.0 | — | 019 |
 
 ## Backlog post-MVP
 - Estadísticas por temporada.
