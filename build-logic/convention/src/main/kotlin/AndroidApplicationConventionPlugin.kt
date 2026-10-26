@@ -1,6 +1,7 @@
 import com.android.build.api.dsl.ApplicationExtension
 import com.kikepb.squadfy.convention.configureKotlinAndroid
 import com.kikepb.squadfy.convention.libs
+import com.kikepb.squadfy.convention.squadfyBackend
 import com.kikepb.squadfy.convention.squadfyEnvironment
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -13,7 +14,7 @@ import java.util.Properties
  *   without them, local release builds fall back to the debug key so the minified app can be installed for QA;
  * - R8 minify + resource shrinking with `proguard-rules.pro`;
  * - `versionCode` from `-PversionCode` (CI: github.run_number), `versionName` from the version catalog (SemVer);
- * - PRE builds use the `.dev` applicationId suffix (spec 019 D-14).
+ * - `dev` (PRE, `.dev`) and `prod` (PRO) flavors (spec 019 D-14); every app build prints which one it is.
  */
 class AndroidApplicationConventionPlugin: Plugin<Project> {
 
@@ -35,8 +36,6 @@ class AndroidApplicationConventionPlugin: Plugin<Project> {
 
                 defaultConfig {
                     applicationId = libs.findVersion("projectApplicationId").get().toString()
-                    // Spec 019 D-14: PRE is the "Dev" app of the Firebase project and installs next to PRO
-                    applicationIdSuffix = squadfyEnvironment.applicationIdSuffix
                     targetSdk = libs.findVersion("projectTargetSdkVersion").get().toString().toInt()
                     versionCode = providers.gradleProperty("versionCode").orNull?.toInt()
                         ?: libs.findVersion("projectVersionCode").get().toString().toInt()
@@ -45,6 +44,19 @@ class AndroidApplicationConventionPlugin: Plugin<Project> {
                         providers.gradleProperty("versionNameSuffix").orNull.orEmpty()
                     manifestPlaceholders["networkSecurityConfig"] = "@xml/network_security_config"
                 }
+                // Spec 019 D-14: `dev` is the PRE "Dev" app of the Firebase project (installs next to PRO, «Squadfy Dev»
+                // with a DEV band on the icon), `prod` the store app. Pick them in Android Studio's Build Variants.
+                flavorDimensions += "environment"
+                productFlavors {
+                    create("dev") {
+                        dimension = "environment"
+                        applicationIdSuffix = ".dev"
+                    }
+                    create("prod") {
+                        dimension = "environment"
+                    }
+                }
+
                 packaging {
                     resources {
                         excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -77,6 +89,24 @@ class AndroidApplicationConventionPlugin: Plugin<Project> {
                 }
 
                 configureKotlinAndroid(this)
+            }
+
+            // `./gradlew testDebugUnitTest` (CLAUDE.md, CI) keeps running the app's tests: with flavors they are per variant
+            tasks.register("testDebugUnitTest") {
+                group = "verification"
+                description = "Runs the unit tests of the dev debug build."
+                dependsOn("testDevDebugUnitTest")
+            }
+
+            // One line that says what this build is, so a dev build is never mistaken for the store one
+            if (gradle.startParameter.taskNames.isNotEmpty()) {
+                val environment = squadfyEnvironment
+                val applicationId = libs.findVersion("projectApplicationId").get().toString() +
+                    if (environment.flavor == "dev") ".dev" else ""
+                logger.lifecycle(
+                    "▶ Squadfy ${environment.flavor.uppercase()} · SQUADFY_ENV=${environment.key} · " +
+                        "backend ${squadfyBackend.key} · $applicationId"
+                )
             }
         }
     }

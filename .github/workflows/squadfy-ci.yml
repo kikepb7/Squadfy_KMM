@@ -132,14 +132,14 @@ jobs:
           fi
 
       - name: Assemble debug
-        run: ./gradlew :composeApp:assembleDebug -PSQUADFY_BACKEND=${{ matrix.backend }}
+        run: ./gradlew :composeApp:assembleDevDebug -PSQUADFY_BACKEND=${{ matrix.backend }}
 
       - name: Upload debug APK
         if: matrix.backend == 'firebase'
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
-          path: composeApp/build/outputs/apk/debug/composeApp-debug.apk
+          path: composeApp/build/outputs/apk/dev/debug/composeApp-dev-debug.apk
           retention-days: 7
 
   static-analysis:

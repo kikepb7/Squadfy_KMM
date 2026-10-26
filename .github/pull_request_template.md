@@ -53,7 +53,7 @@ Rellena cada sección; si una no aplica, escribe «No aplica» en vez de borrarl
 **Calidad**
 - [ ] `./gradlew testDebugUnitTest` en verde, y los tests nuevos citan su `AC-NNN-xx`
 - [ ] `./gradlew checkHardcodedStrings` en verde: los textos están en `strings.xml` (ES y EN)
-- [ ] `./gradlew :composeApp:assembleDebug` compila
+- [ ] `./gradlew :composeApp:assembleDevDebug` compila
 - [ ] iOS compila (`./gradlew :composeApp:compileKotlinIosSimulatorArm64`) si se toca código común o UI
 - [ ] Probado en el emulador o en un dispositivo (Android y, si cambia la UI, iOS)
 

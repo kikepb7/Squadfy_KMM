@@ -18,11 +18,11 @@ To build and run the development version of the Android app, use the run configu
 in your IDE’s toolbar or build it directly from the terminal:
 - on macOS/Linux
   ```shell
-  ./gradlew :composeApp:assembleDebug
+  ./gradlew :composeApp:assembleDevDebug     # «Squadfy Dev» (PRE); assembleProdRelease is the store app
   ```
 - on Windows
   ```shell
-  .\gradlew.bat :composeApp:assembleDebug
+  .\gradlew.bat :composeApp:assembleDevDebug
   ```
 
 ### Build and Run iOS Application

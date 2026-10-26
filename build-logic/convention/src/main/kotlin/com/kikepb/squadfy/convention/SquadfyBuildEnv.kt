@@ -4,9 +4,9 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.gradle.api.Project
 
 /** Build environment for feature flag defaults (spec 013) and the Firebase app it talks to (spec 019 D-14). */
-enum class SquadfyEnvironment(val key: String, val applicationIdSuffix: String) {
-    PRE("pre", ".dev"),
-    PRO("pro", "");
+enum class SquadfyEnvironment(val key: String, val flavor: String) {
+    PRE("pre", "dev"),
+    PRO("pro", "prod");
 
     companion object {
         fun fromKey(key: String): SquadfyEnvironment = values().firstOrNull { it.key == key.lowercase() }
@@ -41,12 +41,29 @@ val Project.isSquadfyReleaseBuild: Boolean
     get() = gradle.startParameter.taskNames.any { it.contains("Release") } ||
         providers.environmentVariable("CONFIGURATION").orNull == "Release"
 
+private val devTask = Regex("Dev(Debug|Release)")
+private val prodTask = Regex("Prod(Debug|Release)")
+
 /**
- * Debug builds default to PRE and release builds to PRO, so a store build never ships the PRE-only feature flags
- * screen by accident (spec 018 T-022). An explicit `SQUADFY_ENV` still wins (e.g. a PRE release for testers).
+ * The environment of this Gradle invocation. The Android app has `dev` and `prod` flavors, so a flavored task decides
+ * (`assembleDevDebug` → PRE, `bundleProdRelease` → PRO): what you pick in Android Studio's Build Variants is what you
+ * build. Without a flavored task (shared modules, Xcode, unit tests), an explicit `SQUADFY_ENV` wins, then debug → PRE
+ * and release → PRO, so a store build never ships the PRE-only feature flags screen by accident (spec 018 T-022).
+ *
+ * BuildKonfig constants are shared by every module, so one invocation cannot build both flavors.
  */
 val Project.squadfyEnvironment: SquadfyEnvironment
-    get() = SquadfyEnvironment.fromKey(squadfyProperty("SQUADFY_ENV") ?: if (isSquadfyReleaseBuild) "pro" else "pre")
+    get() {
+        val tasks = gradle.startParameter.taskNames
+        val dev = tasks.any { devTask.containsMatchIn(it) }
+        val prod = tasks.any { prodTask.containsMatchIn(it) }
+        check(!(dev && prod)) { "Build the dev and prod flavors in separate Gradle invocations (they share BuildKonfig)" }
+        return when {
+            dev -> SquadfyEnvironment.PRE
+            prod -> SquadfyEnvironment.PRO
+            else -> SquadfyEnvironment.fromKey(squadfyProperty("SQUADFY_ENV") ?: if (isSquadfyReleaseBuild) "pro" else "pre")
+        }
+    }
 
 val Project.squadfyBackend: SquadfyBackend
     get() = SquadfyBackend.fromKey(squadfyProperty("SQUADFY_BACKEND") ?: SquadfyBackend.FIREBASE.key)

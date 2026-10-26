@@ -55,7 +55,7 @@ The source of truth lives in `specs/`. Read `specs/README.md` once per session f
    ```bash
    ./gradlew :feature:<f>:<layer>:testDebugUnitTest      # fast loop
    ./gradlew testDebugUnitTest                            # before marking done
-   ./gradlew :composeApp:assembleDebug                    # if presentation / DI changed
+   ./gradlew :composeApp:assembleDevDebug                 # if presentation / DI changed
    ```
 5. Mark the task `[x]`.
 6. If the user asks for a commit, use the message format `CLUB | 003 · T-002 SignupWindowPolicy state + tests`.

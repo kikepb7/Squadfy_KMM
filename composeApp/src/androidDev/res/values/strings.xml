@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spec 019 D-14: the PRE build installs next to the store app and must never be mistaken for it -->
+<resources>
+    <string name="app_name">Squadfy Dev</string>
+</resources>

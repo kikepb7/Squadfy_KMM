@@ -21,7 +21,7 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform).
 ```bash
 ./gradlew testDebugUnitTest                         # todos los tests unitarios (debe estar en verde)
 ./gradlew :feature:club:domain:testDebugUnitTest    # bucle rápido de un módulo
-./gradlew :composeApp:assembleDebug                 # APK debug
+./gradlew :composeApp:assembleDevDebug              # APK «Squadfy Dev» (PRE); assembleProdRelease = la de la tienda
 ./gradlew :composeApp:ktlintCheck                   # ktlint (por ahora solo informa)
 ./gradlew checkHardcodedStrings                     # falla si hay textos de UI escritos a mano (bloquea el CI)
 ```
@@ -77,7 +77,12 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform).
 - `ClubMemberDto` v1 **no** trae `email` ni estadísticas, y el `UserDto` no trae foto: las estadísticas salen de `/stats` y `/ratings` (spec 008). Todo DTO nuevo lleva valores por defecto en los campos opcionales.
 - Los equipos, convocatorias, ratings y estadísticas usan `clubMemberId`, no `userId`.
 - **Feature flags** (spec 013): el trabajo sin terminar o pendiente del backend se oculta tras un `FeatureFlag` con valores por defecto para PRE y PRO; no se borra. Invitados, excepciones de calendario, `drawTime`, marcador manual y ausencias ya están en el backend (BE-008) y en la app, pero siguen tras sus flags (on en PRE y off en PRO) hasta que se den por buenos (D-1). La valoración es siempre automática (rating).
-- Entorno: `-PSQUADFY_ENV=pre|pro` (o la variable de entorno, o `local.properties`). Por defecto es `pre` en debug y `pro` en release (tareas `*Release*` o Xcode Release). La pantalla de feature flags y su fila en Perfil solo existen en PRE.
+- Entorno: la app Android tiene los flavors `dev` (PRE, `com.kikepb.squadfy.dev`, «Squadfy Dev» con icono naranja y banda DEV) y `prod` (PRO, la de la tienda). Se eligen en el panel *Build Variants* (`devDebug`, `prodRelease`…) y cada build imprime `▶ Squadfy DEV|PROD · …`.
+  - La tarea con flavor manda (`assembleDevDebug` → PRE).
+  - Sin flavor (módulos compartidos, Xcode, tests), manda `-PSQUADFY_ENV=pre|pro` (o la variable de entorno, o `local.properties`); si no hay, es `pre` en debug y `pro` en release.
+  - No se pueden compilar dev y prod en la misma invocación, porque comparten BuildKonfig.
+  - En iOS, la configuración Debug es la de dev y Release la de prod.
+  - La pantalla de feature flags y su fila en Perfil solo existen en PRE.
 - Inicio (`globalPosition`) solo tiene la capa `presentation`: usa el dominio de `club` y no tiene mocks. Sus módulos `domain` y `data`, que solo servían datos de ejemplo, se retiraron en la spec 015.
 - **Firebase**:
   - Los emuladores de la app corren con el id `squadfy-5233d`: con otro id las callables responden NOT_FOUND.

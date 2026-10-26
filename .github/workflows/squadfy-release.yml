@@ -128,15 +128,15 @@ jobs:
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: ./gradlew :composeApp:bundleRelease -PversionCode=${{ github.run_number }} -PversionNameSuffix="$VERSION_NAME_SUFFIX"
+        run: ./gradlew :composeApp:bundleProdRelease -PversionCode=${{ github.run_number }} -PversionNameSuffix="$VERSION_NAME_SUFFIX"
 
       - name: Upload AAB and mapping
         uses: actions/upload-artifact@v4
         with:
           name: release-aab-${{ needs.verify.outputs.version }}-${{ github.run_number }}
           path: |
-            composeApp/build/outputs/bundle/release/composeApp-release.aab
-            composeApp/build/outputs/mapping/release/mapping.txt
+            composeApp/build/outputs/bundle/prodRelease/composeApp-prod-release.aab
+            composeApp/build/outputs/mapping/prodRelease/mapping.txt
           retention-days: 30
 
       - name: Upload to Play Internal testing
@@ -144,8 +144,8 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.kikepb.squadfy
-          releaseFiles: composeApp/build/outputs/bundle/release/composeApp-release.aab
-          mappingFile: composeApp/build/outputs/mapping/release/mapping.txt
+          releaseFiles: composeApp/build/outputs/bundle/prodRelease/composeApp-prod-release.aab
+          mappingFile: composeApp/build/outputs/mapping/prodRelease/mapping.txt
           track: internal
           status: ${{ github.event.inputs.play_status || 'draft' }}
 

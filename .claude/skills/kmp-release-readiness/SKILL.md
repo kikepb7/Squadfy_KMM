@@ -54,12 +54,12 @@ Tracked as feature `specs/features/011-release-readiness` (app) and `012-go-live
 - Runs on push to `main`, `develop`, `release/**`, `hotfix/**` and on PRs to `main`, `develop`, `release/**` (branch policy, unit tests for all modules, assembleDebug, ktlint report-only, hardcoded strings).
 - CI needs no secrets: without `GOOGLE_SERVICES_JSON` it uses `.github/ci/google-services.placeholder.json`.
 - Release secrets (signing, Play service account, PRO URLs, production `google-services.json`) live in the protected `production` Environment, which needs approval from its required reviewers (`.github/workflows/squadfy-release.yml`).
-- To add a release job: decode the keystore from a base64 secret, then run `./gradlew :composeApp:bundleRelease -PversionCode=${{ github.run_number }}` and upload the AAB.
+- To add a release job: decode the keystore from a base64 secret, then run `./gradlew :composeApp:bundleProdRelease -PversionCode=${{ github.run_number }}` and upload the AAB.
 
 ## Verification commands
 ```bash
 ./gradlew testDebugUnitTest
-./gradlew :composeApp:assembleRelease          # after the signing config exists
-./gradlew :composeApp:lintRelease
+./gradlew :composeApp:assembleProdRelease      # after the signing config exists
+./gradlew :composeApp:lintProdRelease
 unzip -p composeApp/build/outputs/apk/release/*.apk AndroidManifest.xml | strings | grep -i cleartext   # expect nothing
 ```
