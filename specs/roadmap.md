@@ -25,7 +25,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 016 | Identidad de marca (kit): iconos, splash, logo, paleta y Poppins | **Done** (7/7) | ✅ | — | ✅ | 011 | — |
 | 017 | Coherencia de la interfaz: estados de carga, barra superior y barra de estado | **Done** (6/6) | ✅ | — | ✅ | 016 | — |
 | 018 | Rediseño «Triangulación»: tokens, fuentes, logo Corte, componentes y pantallas | **Done** (22/22) | ✅ | — | ✅ | 017 | — |
-| 019 | Firebase como backend de lanzamiento; el backend propio queda congelado (ADR-0010) | **Approved** (0/30) | ✅ | ✅ | ✅ | 018 | 8–12 semanas |
+| 019 | Firebase como backend de lanzamiento; el backend propio queda congelado (ADR-0010) | **Approved** (28/30: queda el E2E de iOS a mano y el despliegue) | ✅ | ✅ | ✅ | 018 | 8–12 semanas |
 
 \* Días ideales de una persona. Son orientativos, para priorizar, no un compromiso.
 

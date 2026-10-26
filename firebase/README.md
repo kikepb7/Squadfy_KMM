@@ -16,7 +16,7 @@ Server side of the Firebase variant of Squadfy: the project is **Squadfy** (`squ
 cd firebase/functions && npm ci && npm run build
 npm test                    # unit tests of the domain logic
 npm run test:emulator       # rules and callables against the Emulator Suite
-npm run serve               # emulators for the app, with the UI at http://localhost:4006
+npm run serve               # emulators for the app: UI at http://localhost:4006, web pages at http://localhost:5006
 npm run seed                # (other terminal) demo club, squad, played matches, next match with teams
 ```
 The seed creates `demo.owner@squadfy.test` and `demo.<name>@squadfy.test`, all with the emulator-only password in

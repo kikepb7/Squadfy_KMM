@@ -6,7 +6,10 @@ Squadfy gestiona clubes de fútbol amateur:
 - se hace un sorteo equilibrado de dos equipos;
 - se registran el resultado, las estadísticas y la clasificación.
 
-Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backend es `../Squadfy_Backend` (Spring Boot, Kotlin, API `/api/v1`, documentado en `../Squadfy_Backend/docs/BACKEND.md`). **El backend es la fuente de verdad del dominio y del contrato** (ADR-0005).
+Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform).
+- **Se lanza con Firebase** (spec 019, ADR-0010): Auth, Firestore, Realtime Database, Storage, Cloud Functions, Hosting, FCM, Crashlytics, Analytics, Remote Config y App Check, en el proyecto `squadfy-5233d`. Es la variante por defecto.
+- El backend propio `../Squadfy_Backend` (Spring Boot, Kotlin, API `/api/v1`, documentado en `../Squadfy_Backend/docs/BACKEND.md`) sigue integrado, pero **congelado**, como variante `api`.
+- **El dominio y el contrato JSON siguen siendo los del backend** (ADR-0005): las Functions aplican sus reglas y responden sus DTOs.
 
 ## Spec-Driven Development (obligatorio)
 - **La fuente de verdad es `specs/`.** Antes de cualquier cambio funcional, carga la skill `sdd-workflow` y lee `specs/roadmap.md`.
@@ -22,12 +25,19 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 ./gradlew :composeApp:ktlintCheck                   # ktlint (por ahora solo informa)
 ./gradlew checkHardcodedStrings                     # falla si hay textos de UI escritos a mano (bloquea el CI)
 ```
+- **Firebase** (spec 019; guía en `docs/FIREBASE.md`, contrato en `specs/contracts/firebase.md`):
+  - emuladores: `cd firebase/functions && npm ci && npm run serve`, y la primera vez `npm run seed` (datos demo);
+  - en la app, `squadfy.firebase.useEmulator=true` en `local.properties` (solo debug);
+  - tests: `npm test` (dominio) y `npm run test:emulator` (reglas y callables, en el proyecto offline `demo-squadfy`);
+  - en el emulador los jobs no se disparan solos: usa la callable `runJobsNow({at})`;
+  - **no despliegues ni toques el proyecto real** sin permiso del owner.
+- Variante: `-PSQUADFY_BACKEND=firebase|api` (por defecto `firebase`). Con `api`, el backend propio congelado.
 - El JDK 17 está fijado en `gradle/gradle-daemon-jvm.properties`. **No lo quites**: el JDK por defecto de esta máquina es un EA (`23-valhalla`) que rompe KSP.
 - `local.properties` admite, de forma opcional, `BASE_URL_HTTP` (tiene que terminar en `/api/v1`) y `BASE_URL_WS` (`…/ws`); por defecto apuntan al emulador, `10.0.2.2:8080`. **No hay API key de cliente** (ADR-0008): no la reintroduzcas, porque cualquier clave compilada en la app se puede extraer.
 - Backend local para E2E: `cd ../Squadfy_Backend && docker compose up -d`, y después `JWT_SECRET_BASE64=$(openssl rand -base64 32) FIREBASE_ENABLED=false ./gradlew :app:bootRun --args='--spring.profiles.active=dev'` (Swagger en `localhost:8080/swagger-ui.html`, emails en Mailpit `localhost:8025`).
 - Datos de demo en el backend local (spec 018): `OWNER_EMAIL=… OWNER_PASSWORD=… DEMO_PASSWORD=… python3 scripts/dev/seed_demo.py <clubId>` crea la plantilla del diseño, tres partidos jugados (resultados, eventos, ratings), el próximo partido con los equipos ya sorteados, lista de espera, ausencias y dos chats. Solo contra el backend local (usa el Postgres de Docker); nunca contra PRE ni PRO.
 - Cada pantalla (`*Screen`, `*Content`) tiene sus previews Tiza y Noche en el mismo archivo, con el estado por defecto. **No hay mocks** (spec 018 T-021): ni `*Samples` ni datos de prueba en la app; todo sale del backend. Para ver datos reales, usa el backend local con `seed_demo.py`.
-- `composeApp/google-services.json` está en `.gitignore` y hace falta para compilar Android. Lo mismo pasa con `iosApp/iosApp/GoogleService-Info.plist` en iOS, que corresponde al bundle `com.kikepb.squadfy`.
+- `composeApp/google-services.json` (con los paquetes `com.kikepb.squadfy` y `.dev`) está en `.gitignore` y hace falta para compilar Android. En iOS van `iosApp/Firebase/Debug/GoogleService-Info.plist` y `iosApp/Firebase/Release/GoogleService-Info.plist`, también ignorados: **nunca se commitean**.
 
 ## Arquitectura
 - `core/{domain,data,presentation,designsystem}` y `feature/<f>/{domain,data,database,presentation}`. Las features son auth, chat, club y globalPosition. (`economy` y `onboarding` se retiraron en la spec 011; están en el historial de git).
@@ -35,6 +45,12 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 - Los convention plugins están en `build-logic/convention`:
   - un módulo nuevo usa `convention.kmp.library`, `convention.cmp.library` o `convention.cmp.feature`;
   - las dependencias de test se añaden solas (`configureKmpTestDependencies`).
+- Firebase:
+  - `core/firebase` lleva el Auth, la sesión, `FunctionsClient`, Storage, Crashlytics, Analytics, Remote Config y `FirebaseInitializer`;
+  - `feature/club/data-firebase` y `feature/chat/data-firebase` son los repositorios Firebase;
+  - `feature/club/data-contract` tiene los DTOs y mappers del contrato, compartidos por las dos variantes;
+  - el lado servidor está en `firebase/` (reglas, Functions en TypeScript, Hosting).
+- Cada variante tiene su código de arranque, con `backendModules` y `startBackend()`: `composeApp/src/backendFirebase` y `src/backendApi`.
 - `Result<T, DataError>` está en `core/domain/util`. `UiText` y el mapeo de errores están en `core/presentation`.
 
 ## Convenciones
@@ -63,4 +79,11 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform). Su backe
 - **Feature flags** (spec 013): el trabajo sin terminar o pendiente del backend se oculta tras un `FeatureFlag` con valores por defecto para PRE y PRO; no se borra. Invitados, excepciones de calendario, `drawTime`, marcador manual y ausencias ya están en el backend (BE-008) y en la app, pero siguen tras sus flags (on en PRE y off en PRO) hasta que se den por buenos (D-1). La valoración es siempre automática (rating).
 - Entorno: `-PSQUADFY_ENV=pre|pro` (o la variable de entorno, o `local.properties`). Por defecto es `pre` en debug y `pro` en release (tareas `*Release*` o Xcode Release). La pantalla de feature flags y su fila en Perfil solo existen en PRE.
 - Inicio (`globalPosition`) solo tiene la capa `presentation`: usa el dominio de `club` y no tiene mocks. Sus módulos `domain` y `data`, que solo servían datos de ejemplo, se retiraron en la spec 015.
+- **Firebase**:
+  - Los emuladores de la app corren con el id `squadfy-5233d`: con otro id las callables responden NOT_FOUND.
+  - Los ids de membresía son `{clubId}_{uid}`.
+  - Las callables fallan con `HttpsError` y `details.code` = `BackendErrorCode`.
+  - En iOS, Firebase y App Check se configuran en `iOSApp.init()` antes de Koin (`FirebaseSetup.swift`).
+  - App Check no se instala con los emuladores.
+  - Los informes de fallos y Analytics solo se activan con el consentimiento del usuario (en Perfil).
 - El backend tiene su propio SDD. No lo modifiques salvo que el usuario lo incluya en el alcance; propón specs del backend en `specs/roadmap.md`.

@@ -23,7 +23,7 @@
 
 ## Fase 2 · Reglas y modelo
 - [x] **T-009** `firestore.rules`, `storage.rules` y `database.rules.json` con sus tests (AC-019-17, 21). Los tests de reglas usan `@firebase/rules-unit-testing` contra el emulador.
-- [ ] **T-010** `specs/contracts/firebase.md`: colecciones, callables, errores y jobs.
+- [x] **T-010** `specs/contracts/firebase.md`: colecciones, callables, errores y jobs.
 
 ## Fase 3 · Dominio en Functions
 - [x] **T-011** Lógica pura portada con sus tests: calendario, plazos, asignador, equilibrador, Elo, estadísticas y roles. Está en `firebase/functions/src/domain`, y la zona horaria del club se calcula con Luxon. Verificación: 51 tests de Vitest en verde, con los mismos casos que los tests del backend (incluido el cambio de hora y el periodo en hora local).
@@ -55,7 +55,7 @@
 
 ## Fase 5 · Telemetría y configuración
 - [x] **T-023** Analytics con consentimiento y `screen_view`; Crashlytics en iOS con CrashKiOS (AC-019-18).
-- [ ] **T-024** Remote Config como `RemoteFeatureFlagSource` (AC-019-19, cierra D-10).
+- [x] **T-024** Remote Config como `RemoteFeatureFlagSource` (AC-019-19, cierra D-10).
 - [x] **T-025** App Check (AC-019-20).
 - [x] **T-026** Hosting: privacidad, página de borrado de cuenta y página de acción de Auth.
 
@@ -64,4 +64,5 @@
 - [~] **T-028** E2E en Android e iOS contra el emulador: el ciclo semanal completo con dos usuarios.
   - Android (2026-10-26): hecho en la UI contra los emuladores. Se crea el club, otros jugadores se unen con el código, se configura el horario y se apuntan (10/10 en vivo), los equipos se sortean al cierre (`runJobsNow`), se rellena el acta con un gol y se cierra con Elo, se actualiza la clasificación y se planifica el partido siguiente. Arreglados durante la prueba: los jugadores solos de dos líneas seguidas se solapaban en el campo (5v5), y aparecía «1 miembros».
   - iOS: compila y arranca en el simulador; Firebase se configura antes de Koin (comprobado en los logs). Falta recorrer el ciclo a mano: el teclado del simulador está en español y la herramienta no puede escribir «@».
-- [ ] **T-029** `docs/FIREBASE.md`, `CLAUDE.md` y roadmap. Despliegue a PRE (lo autoriza el owner).
+- [~] **T-029** `docs/FIREBASE.md`, `CLAUDE.md` y roadmap. Despliegue a PRE (lo autoriza el owner).
+  - Hecho: la documentación. Pendiente: el despliegue y lo de las consolas (`docs/FIREBASE.md` §3), cuando el owner lo decida.
