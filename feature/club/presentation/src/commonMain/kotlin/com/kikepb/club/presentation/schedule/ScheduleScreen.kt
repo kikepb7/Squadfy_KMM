@@ -1,12 +1,14 @@
 package com.kikepb.club.presentation.schedule
 
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import com.kikepb.core.designsystem.triangulacion.preview.LARGEST_FONT_SCALE
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -275,7 +277,9 @@ private fun ScheduleForm(state: ScheduleState, onAction: (ScheduleAction) -> Uni
             }
         }
         Label(text = stringResource(Res.string.schedule_time))
-        ValueBox(icon = TriIcon.Clock, value = form.matchTime.formatted()) { onAction(ScheduleAction.OnOpenTimePicker(TimeTarget.MATCH)) }
+        ValueBox(icon = TriIcon.Clock, label = stringResource(Res.string.schedule_time), value = form.matchTime.formatted()) {
+            onAction(ScheduleAction.OnOpenTimePicker(TimeTarget.MATCH))
+        }
         SquadfyTextField(state = state.timeZone, title = stringResource(Res.string.schedule_time_zone), singleLine = true)
         Label(text = stringResource(Res.string.schedule_format))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -308,9 +312,16 @@ private fun ScheduleForm(state: ScheduleState, onAction: (ScheduleAction) -> Uni
             )
         }
         if (state.schedule != null) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // One toggle with its label for screen readers
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .toggleable(value = form.isActive, role = Role.Switch, onValueChange = { onAction(ScheduleAction.OnActiveChanged(it)) })
+            ) {
                 Text(text = stringResource(Res.string.schedule_active), modifier = Modifier.weight(1f))
-                Switch(checked = form.isActive, onCheckedChange = { onAction(ScheduleAction.OnActiveChanged(it)) })
+                Switch(checked = form.isActive, onCheckedChange = null)
             }
         }
         state.formError?.let { TriNotice(title = it.asString(), tone = TriNoticeTone.Danger) }
@@ -343,7 +354,14 @@ private fun DeadlineEditor(title: String, days: Int, time: LocalTime, onDaysChan
             )
             TriRoundIconButton(icon = TriIcon.Minus, contentDescription = stringResource(Res.string.schedule_decrease_days), onClick = { if (days > 0) onDaysChange(days - 1) }, filled = true)
             TriRoundIconButton(icon = TriIcon.Plus, contentDescription = stringResource(Res.string.schedule_increase_days), onClick = { if (days < 6) onDaysChange(days + 1) }, filled = true)
-            TriChip(text = time.formatted(), selected = false, onClick = onPickTime, icon = TriIcon.Clock)
+            TriChip(
+                text = time.formatted(),
+                selected = false,
+                onClick = onPickTime,
+                icon = TriIcon.Clock,
+                role = Role.Button,
+                contentDescription = "$title: ${time.formatted()}"
+            )
         }
     }
 }
@@ -364,9 +382,9 @@ private fun DayBox(initial: String, description: String, selected: Boolean, onCl
     }
 }
 
-/** Read-only field that opens a picker (time). */
+/** Read-only field that opens a picker (time); read as «Hora: 20:00». */
 @Composable
-private fun ValueBox(icon: TriIcon, value: String, onClick: () -> Unit) {
+private fun ValueBox(icon: TriIcon, label: String, value: String, onClick: () -> Unit) {
     val colors = Triangulacion.colors
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -377,6 +395,7 @@ private fun ValueBox(icon: TriIcon, value: String, onClick: () -> Unit) {
             .background(colors.surface200, RoundedCornerShape(Radius.sm))
             .border(1.5.dp, colors.lineStrong, RoundedCornerShape(Radius.sm))
             .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = "$label: $value" }
             .padding(horizontal = 14.dp)
     ) {
         TriIconView(icon = icon, contentDescription = null, size = 20.dp, tint = colors.inkMuted)
@@ -604,3 +623,7 @@ private fun ScheduleTizaPreview() = ScreenPreview { ScheduleScreen(state = Sched
 @Preview(name = "11 Horario semanal · Noche", widthDp = 393, heightDp = 852)
 @Composable
 private fun ScheduleNochePreview() = ScreenPreview(darkTheme = true) { ScheduleScreen(state = ScheduleState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }
+
+@Preview(name = "11 Horario semanal · Tiza · 200 %", widthDp = 393, heightDp = 852)
+@Composable
+private fun ScheduleLargeFontPreview() = ScreenPreview(fontScale = LARGEST_FONT_SCALE) { ScheduleScreen(state = ScheduleState(), onAction = {}, onBackClick = {}, snackbarHostState = remember { SnackbarHostState() }) }

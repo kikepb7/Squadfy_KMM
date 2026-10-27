@@ -28,6 +28,13 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -102,11 +109,22 @@ fun TriTag(
             .padding(horizontal = 8.dp, vertical = 3.dp)
     ) {
         if (icon != null) TriIconView(icon = icon, contentDescription = null, size = 12.dp, tint = content)
-        Text(text = text.uppercase(), style = Triangulacion.type.labelCaps, color = content, maxLines = 1)
+        // Read as written, not letter by letter as screen readers may do with capitals (accessibility audit 2026-10)
+        Text(
+            text = text.uppercase(),
+            style = Triangulacion.type.labelCaps,
+            color = content,
+            maxLines = 1,
+            modifier = Modifier.semantics { contentDescription = text }
+        )
     }
 }
 
-/** Filter / option chip: selected = ink fill, otherwise outlined with line-strong. */
+/**
+ * Filter / option chip: selected = ink fill, otherwise outlined with line-strong. One choice of a group by default
+ * ([Role.RadioButton] with its selected state); an action chip passes [Role.Button]. 48 dp touch target, and the
+ * text wraps instead of being clipped with large fonts.
+ */
 @Composable
 fun TriChip(
     text: String,
@@ -114,7 +132,9 @@ fun TriChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: TriIcon? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    role: Role = Role.RadioButton,
+    contentDescription: String? = null
 ) {
     val colors = Triangulacion.colors
     val shape = RoundedCornerShape(Radius.sm)
@@ -123,14 +143,18 @@ fun TriChip(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier
-            .heightIn(min = 40.dp)
+            .heightIn(min = 48.dp)
             .background(if (selected) colors.ink else colors.surface200, shape)
             .border(BorderStroke(1.5.dp, if (selected) colors.ink else colors.lineStrong), shape)
-            .clickable(enabled = enabled, role = Role.Tab, onClick = onClick)
+            .clickable(enabled = enabled, role = role, onClick = onClick)
+            .semantics {
+                if (role != Role.Button) this.selected = selected
+                if (contentDescription != null) this.contentDescription = contentDescription
+            }
             .padding(horizontal = 14.dp, vertical = 8.dp)
     ) {
         if (icon != null) TriIconView(icon = icon, contentDescription = null, size = 18.dp, tint = content)
-        Text(text = text, style = Triangulacion.type.label, color = if (enabled) content else colors.inkSubtle, maxLines = 1)
+        Text(text = text, style = Triangulacion.type.label, color = if (enabled) content else colors.inkSubtle)
     }
 }
 
@@ -147,7 +171,8 @@ fun TriTabs(
         modifier = modifier
             .fillMaxWidth()
             .background(colors.surface300, RoundedCornerShape(Radius.md))
-            .padding(4.dp),
+            .padding(4.dp)
+            .selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         items.forEachIndexed { index, item ->
@@ -158,15 +183,18 @@ fun TriTabs(
                 shadowElevation = if (selected && !colors.isDark) 1.dp else 0.dp,
                 modifier = Modifier
                     .weight(1f)
-                    .heightIn(min = 44.dp)
+                    .heightIn(min = 48.dp)
                     .clickable(role = Role.Tab, onClick = { onSelect(index) })
+                    .semantics { this.selected = selected }
             ) {
                 Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                    // Two lines before the ellipsis, so «Miembros» stays readable with the largest font sizes
                     Text(
                         text = item,
                         style = Triangulacion.type.label.copy(fontSize = Triangulacion.type.body.fontSize),
                         color = if (selected) colors.ink else colors.inkMuted,
-                        maxLines = 1,
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp)
                     )
@@ -199,6 +227,7 @@ fun TriNotice(
         modifier = modifier
             .fillMaxWidth()
             .background(background, RoundedCornerShape(Radius.md))
+            .semantics(mergeDescendants = true) { }
             .padding(horizontal = Space.s4, vertical = 14.dp)
     ) {
         TriIconView(icon = icon ?: defaultIcon, contentDescription = null, size = 20.dp, tint = content)
@@ -221,7 +250,12 @@ fun TriSectionTitle(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth()
     ) {
-        Text(text = text, style = Triangulacion.type.displayMd, color = Triangulacion.colors.ink, modifier = Modifier.weight(1f))
+        Text(
+            text = text,
+            style = Triangulacion.type.displayMd,
+            color = Triangulacion.colors.ink,
+            modifier = Modifier.weight(1f).semantics { heading() }
+        )
         if (actionText != null && onAction != null) {
             TriTextButton(text = actionText, onClick = onAction)
         }
@@ -243,11 +277,14 @@ fun TriMenuRow(
     modifier: Modifier = Modifier,
     destructive: Boolean = false,
     supportingText: String? = null,
-    trailing: (@Composable () -> Unit)? = null
+    trailing: (@Composable () -> Unit)? = null,
+    /** A switch row: the whole row is one toggle for screen readers; [trailing] draws the switch without its own click. */
+    checked: Boolean? = null
 ) {
     val colors = Triangulacion.colors
     val content = if (destructive) colors.danger else colors.ink
-    TriCard(modifier = modifier.fillMaxWidth(), onClick = onClick, contentPadding = 0.dp) {
+    val toggle = if (checked != null) Modifier.toggleable(value = checked, role = Role.Switch, onValueChange = { onClick() }) else Modifier
+    TriCard(modifier = modifier.fillMaxWidth().then(toggle), onClick = if (checked != null) null else onClick, contentPadding = 0.dp) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.heightIn(min = 56.dp).padding(horizontal = Space.s4, vertical = 12.dp)

@@ -92,6 +92,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -439,14 +440,17 @@ private fun PlayerRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(Radius.sm))
             .background(if (highlighted) colors.successSoft else Color.Transparent)
-            .then(if (editing) Modifier.clickable(onClick = onClick) else Modifier)
+            .then(
+                if (editing) Modifier.clickable(onClickLabel = stringResource(Res.string.match_minutes_title), role = Role.Button, onClick = onClick)
+                else Modifier
+            )
             .padding(horizontal = 6.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         TriAvatar(name = name, imageUrl = player.profilePictureUrl, size = 36.dp, team = team.toTri().takeIf { player.profilePictureUrl == null }, isMe = highlighted)
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = name, style = Triangulacion.type.label.copy(fontSize = Triangulacion.type.body.fontSize), color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = name, style = Triangulacion.type.label.copy(fontSize = Triangulacion.type.body.fontSize), color = colors.ink, maxLines = 2, overflow = TextOverflow.Ellipsis)
             val details = listOfNotNull(
                 player.shirtNumber?.let { "#$it" },
                 stringResource(Res.string.match_guest).takeIf { player.isGuest }
@@ -557,14 +561,14 @@ private fun ReportChip(text: String, enabled: Boolean, onClick: () -> Unit, icon
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier
-            .heightIn(min = 40.dp)
+            .heightIn(min = 48.dp)
             .clip(RoundedCornerShape(Radius.sm))
             .border(1.5.dp, colors.lineStrong, RoundedCornerShape(Radius.sm))
-            .clickable(enabled = enabled, onClick = onClick)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 6.dp)
     ) {
         icon()
-        Text(text = text, style = Triangulacion.type.label, color = if (enabled) colors.ink else colors.inkSubtle, maxLines = 1)
+        Text(text = text, style = Triangulacion.type.label, color = if (enabled) colors.ink else colors.inkSubtle)
     }
 }
 

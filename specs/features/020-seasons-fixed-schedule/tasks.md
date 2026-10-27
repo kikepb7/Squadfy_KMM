@@ -7,14 +7,14 @@
 - [x] **T-004** Excepciones: motivo obligatorio, mover solo dentro de la semana (D-20), una excepción nueva sustituye a la anterior y el push lleva el motivo; si la convocatoria ya estaba abierta, avisa a todos los miembros (APP-RN-H3). Verificación: `seasons.test.ts` (AC-020-08) y `cycle.test.ts`.
 
 ## Fase 2 · App
-- [~] **T-005** Dominio y datos: `SeasonModel`, `SeasonRepository` (Firebase con `getSeasons`/`updateSeason`; la variante `api` sin temporadas), `seasonId` en clasificación y estadísticas, `ClubDataScope.SEASON`.
-- [~] **T-006** Selector de hora nuevo en el design system (`TriTimePickerSheet`): hora en grande, ± 15 min, rejilla de horas y minutos, horas habituales y un único CTA; accesible con TalkBack y VoiceOver (AC-020-10). Sustituye al reloj de Material en Horario, Partido extra y Excepciones.
-- [~] **T-007** Excepciones siempre visibles para quien gestiona el club (fuera la flag `SCHEDULE_EXCEPTIONS`), con motivo obligatorio y la semana movida dentro de su semana (AC-020-06…09).
-- [~] **T-008** Tabla por temporada: selector de temporada y estado de pretemporada (AC-020-04, 02).
-- [~] **T-009** Ajustes del club: sección «Temporada» con el día de inicio (septiembre) y de fin (junio) (AC-020-03).
-- [~] **T-010** Partido: tarjeta de semana cancelada o movida con el motivo (APP-RN-H3).
+- [x] **T-005** Dominio y datos: `SeasonModel`, `SeasonRepository` (Firebase con `getSeasons`/`updateSeason`; la variante `api` sin temporadas), `seasonId` en clasificación y estadísticas, `ClubDataScope.SEASON`.
+- [x] **T-006** Selector de hora nuevo en el design system (`TriTimePickerSheet`): hora en grande, ± 15 min, rejilla de horas y minutos, horas habituales y un único CTA; accesible con TalkBack y VoiceOver (AC-020-10). Sustituye al reloj de Material en Horario, Partido extra y Excepciones.
+- [x] **T-007** Excepciones siempre visibles para quien gestiona el club (fuera la flag `SCHEDULE_EXCEPTIONS`), con motivo obligatorio y la semana movida dentro de su semana (AC-020-06…09).
+- [x] **T-008** Tabla por temporada: selector de temporada y estado de pretemporada (AC-020-04, 02).
+- [x] **T-009** Ajustes del club: sección «Temporada» con el día de inicio (septiembre) y de fin (junio) (AC-020-03).
+- [x] **T-010** Partido: tarjeta de semana cancelada o movida con el motivo (APP-RN-H3).
 
-> T-005…T-010: código escrito el 2026-10-27; pendiente de compilar y pasar `testDebugUnitTest` (el contenedor no tiene el Android SDK; se verifican con el CI).
+> T-005…T-010: verificadas con el CI del 2026-10-27 (run 10, `workflow_dispatch`): compilación y tests unitarios de todos los módulos, compilación iOS, Functions y emulador en verde. Falta la demo manual (T-011).
 
 ## Fase 3 · Verificación
 - [ ] **T-011** `./gradlew testDebugUnitTest` y demo manual en Android e iOS.

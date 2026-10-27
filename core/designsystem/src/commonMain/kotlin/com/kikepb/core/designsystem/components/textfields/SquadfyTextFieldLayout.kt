@@ -27,6 +27,15 @@ import com.kikepb.core.designsystem.triangulacion.components.TriIconView
 import com.kikepb.core.designsystem.triangulacion.theme.Radius
 import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import com.kikepb.core.designsystem.theme.extended
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import org.jetbrains.compose.resources.stringResource
+import squadfy_app.core.designsystem.generated.resources.Res
+import squadfy_app.core.designsystem.generated.resources.squadfy_condition_met
+import squadfy_app.core.designsystem.generated.resources.squadfy_condition_unmet
 
 @Composable
 fun SquadfyTextFieldLayout(
@@ -61,13 +70,18 @@ fun SquadfyTextFieldLayout(
             shape = shape
         )
         .padding(horizontal = 14.dp, vertical = 14.dp)
+        // Accessibility audit 2026-10: an error is read as such on the field (WCAG 3.3.1). No contentDescription here:
+        // on an editable field it would be read instead of what the user typed
+        .semantics { if (isError && !supportingText.isNullOrEmpty()) error(supportingText) }
 
     Column(modifier = modifier) {
         if (title != null) {
             Text(
                 text = title.uppercase(),
                 style = Triangulacion.type.labelCaps,
-                color = colors.inkMuted
+                color = colors.inkMuted,
+                // The label right before the field, read as written instead of in capitals
+                modifier = Modifier.semantics { contentDescription = title }
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -77,7 +91,11 @@ fun SquadfyTextFieldLayout(
         if (!supportingConditions.isNullOrEmpty()) {
             Spacer(modifier = Modifier.height(6.dp))
             supportingConditions.forEach { (label, ok) ->
-                Row(modifier = Modifier.padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                val spoken = stringResource(if (ok) Res.string.squadfy_condition_met else Res.string.squadfy_condition_unmet, label)
+                Row(
+                    modifier = Modifier.padding(top = 2.dp).semantics(mergeDescendants = true) { contentDescription = spoken },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     TriIconView(
                         icon = if (ok) TriIcon.Check else TriIcon.X,
                         contentDescription = null,
@@ -97,7 +115,11 @@ fun SquadfyTextFieldLayout(
 
         if (!supportingText.isNullOrEmpty()) {
             Spacer(modifier = Modifier.height(6.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // An error that appears is announced without moving the focus (WCAG 4.1.3)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = if (isError) Modifier.semantics { liveRegion = LiveRegionMode.Polite } else Modifier
+            ) {
                 if (isError) {
                     TriIconView(icon = TriIcon.Alert, contentDescription = null, size = 16.dp, tint = colors.danger)
                     Spacer(Modifier.width(6.dp))

@@ -5,6 +5,9 @@ import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -236,7 +239,8 @@ fun ClubSettingsContent(
                         label = stringResource(Res.string.settings_mute),
                         icon = Icons.Outlined.NotificationsOff,
                         onClick = { onAction(ClubSettingsAction.OnMutedChanged(!muted)) },
-                        trailing = { Switch(checked = muted, onCheckedChange = { onAction(ClubSettingsAction.OnMutedChanged(it)) }) }
+                        checked = muted,
+                        trailing = { Switch(checked = muted, onCheckedChange = null) }
                     )
                     Text(
                         text = stringResource(Res.string.settings_mute_hint),
@@ -450,13 +454,19 @@ internal fun SettingsRow(
     icon: ImageVector,
     onClick: () -> Unit,
     destructive: Boolean = false,
-    trailing: (@Composable () -> Unit)? = null
+    trailing: (@Composable () -> Unit)? = null,
+    /** A switch row: one toggle for screen readers, the switch in [trailing] has no click of its own. */
+    checked: Boolean? = null
 ) {
     val contentColor = if (destructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.extended.textPrimary
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .heightIn(min = 48.dp)
+            .then(
+                if (checked != null) Modifier.toggleable(value = checked, role = Role.Switch, onValueChange = { onClick() })
+                else Modifier.clickable(role = Role.Button, onClick = onClick)
+            )
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)

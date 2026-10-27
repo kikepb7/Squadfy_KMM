@@ -44,7 +44,7 @@ import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import squadfy_app.core.designsystem.generated.resources.Res
-import squadfy_app.core.designsystem.generated.resources.tri_pitch_a11y
+import squadfy_app.core.designsystem.generated.resources.tri_pitch_teams_a11y
 import squadfy_app.core.designsystem.generated.resources.tri_team_a_caps
 import squadfy_app.core.designsystem.generated.resources.tri_team_b_caps
 import kotlin.math.abs
@@ -141,7 +141,14 @@ fun Pitch(
     val colors = Triangulacion.colors
     val slots = remember(teamA, teamB) { PitchLayout.place(teamA, teamB) }
     val links = remember(slots) { PitchLayout.links(slots) }
-    val description = stringResource(Res.string.tri_pitch_a11y)
+    // Screen readers get the line-ups, not just «a pitch» (accessibility audit 2026-10)
+    val description = stringResource(
+        Res.string.tri_pitch_teams_a11y,
+        teamName(TriTeam.A),
+        teamA.joinToString(", ") { it.name },
+        teamName(TriTeam.B),
+        teamB.joinToString(", ") { it.name }
+    )
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()

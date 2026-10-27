@@ -28,7 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -53,10 +55,20 @@ import squadfy_app.core.designsystem.generated.resources.tri_event_red
 import squadfy_app.core.designsystem.generated.resources.tri_event_yellow
 import squadfy_app.core.designsystem.generated.resources.tri_provisional_short
 import squadfy_app.core.designsystem.generated.resources.tri_you
+import squadfy_app.core.designsystem.generated.resources.tri_delta_down
+import squadfy_app.core.designsystem.generated.resources.tri_delta_up
+import squadfy_app.core.designsystem.generated.resources.tri_provisional
+import squadfy_app.core.designsystem.generated.resources.tri_rank_a11y
+import squadfy_app.core.designsystem.generated.resources.tri_number_a11y
+import squadfy_app.core.designsystem.generated.resources.tri_rating_a11y
+import squadfy_app.core.designsystem.generated.resources.tri_you_a11y
+import squadfy_app.core.designsystem.generated.resources.tri_minute_a11y
 
 /**
  * FilaRanking: position, avatar, name with «TÚ», shirt number and position, and the value with its delta (or unit).
  * The top three get a distinct position box (Volt, ink, outlined).
+ * Accessibility: one sentence for screen readers («Puesto 1. Ana, tú. Dorsal 10. Delantero. 1040 de rating. Sube 12.»),
+ * and with large fonts the value moves under the name so the name is never cut to a couple of letters.
  */
 @Composable
 fun RankingRow(
@@ -74,17 +86,22 @@ fun RankingRow(
     onClick: (() -> Unit)? = null
 ) {
     val colors = Triangulacion.colors
+    val description = rankingDescription(position, name, value, number, playerPosition, delta, unit, isMe, provisional)
+    val largeText = LocalDensity.current.fontScale >= LARGE_FONT_SCALE
     TriCard(modifier = modifier.fillMaxWidth(), highlighted = isMe, contentPadding = 0.dp, onClick = onClick) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.heightIn(min = 72.dp).padding(horizontal = 14.dp, vertical = 12.dp)
+            modifier = Modifier
+                .heightIn(min = 72.dp)
+                .clearAndSetSemantics { contentDescription = description }
+                .padding(horizontal = 14.dp, vertical = 12.dp)
         ) {
             RankPosition(position)
-            TriAvatar(name = name, size = 44.dp, isMe = isMe, imageUrl = imageUrl)
+            if (!largeText) TriAvatar(name = name, size = 44.dp, isMe = isMe, imageUrl = imageUrl)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(text = name, style = Triangulacion.type.title, color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                    Text(text = name, style = Triangulacion.type.title, color = colors.ink, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     if (isMe) Text(text = stringResource(Res.string.tri_you), style = Triangulacion.type.labelCaps, color = colors.accentText)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -92,17 +109,49 @@ fun RankingRow(
                     if (playerPosition != null) PosChip(playerPosition)
                     if (provisional) TriTag(text = stringResource(Res.string.tri_provisional_short), tone = TriTagTone.Dashed)
                 }
+                if (largeText) RankingValue(value, delta, unit, Alignment.Start)
             }
-            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(text = value, style = Triangulacion.type.displayMd.tabular.copy(fontWeight = FontWeight.Bold), color = colors.ink)
-                when {
-                    delta != null -> RatingDelta(delta)
-                    unit != null -> TriCaps(text = unit)
-                }
-            }
+            if (!largeText) RankingValue(value, delta, unit, Alignment.End)
         }
     }
 }
+
+/** From this font scale on, the ranking rows stack the value under the name. */
+private const val LARGE_FONT_SCALE = 1.3f
+
+@Composable
+private fun RankingValue(value: String, delta: Int?, unit: String?, alignment: Alignment.Horizontal) {
+    Column(horizontalAlignment = alignment, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(text = value, style = Triangulacion.type.displayMd.tabular.copy(fontWeight = FontWeight.Bold), color = Triangulacion.colors.ink)
+        when {
+            delta != null -> RatingDelta(delta)
+            unit != null -> TriCaps(text = unit)
+        }
+    }
+}
+
+@Composable
+private fun rankingDescription(
+    position: Int,
+    name: String,
+    value: String,
+    number: Int?,
+    playerPosition: TriPosition?,
+    delta: Int?,
+    unit: String?,
+    isMe: Boolean,
+    provisional: Boolean
+): String = buildList {
+    add(stringResource(Res.string.tri_rank_a11y, position))
+    add(if (isMe) stringResource(Res.string.tri_you_a11y, name) else name)
+    if (number != null) add(stringResource(Res.string.tri_number_a11y, number))
+    if (playerPosition != null) add(positionLongName(playerPosition))
+    add(if (unit != null) "$value ${unit.lowercase()}" else stringResource(Res.string.tri_rating_a11y, value))
+    val change = delta ?: 0
+    if (change > 0) add(stringResource(Res.string.tri_delta_up, change))
+    if (change < 0) add(stringResource(Res.string.tri_delta_down, -change))
+    if (provisional) add(stringResource(Res.string.tri_provisional))
+}.joinToString(". ")
 
 @Composable
 private fun RankPosition(position: Int) {
@@ -178,7 +227,20 @@ fun Timeline(
     val colors = Triangulacion.colors
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         events.forEach { event ->
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+            // «Minuto 23. Gol. Ana. Equipo A», read once per event
+            val spoken = listOfNotNull(
+                event.minute?.let { stringResource(Res.string.tri_minute_a11y, it) },
+                event.note ?: timelineEventName(event.kind),
+                event.who,
+                event.team?.let { teamName(it) }
+            ).joinToString(". ")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+                    .semantics(mergeDescendants = true) { contentDescription = spoken }
+            ) {
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                     if (event.team != TriTeam.B) TimelineCard(event, alignEnd = false, onClick = onEventClick?.let { { it(event) } })
                 }
@@ -208,9 +270,10 @@ private fun TimelineCard(event: TimelineEvent, alignEnd: Boolean, onClick: (() -
     TriCard(contentPadding = 10.dp, onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             if (!alignEnd) TimelineEventIcon(event.kind)
+            // Two lines each: with large fonts the names wrap instead of being cut
             Column(horizontalAlignment = if (alignEnd) Alignment.End else Alignment.Start, modifier = Modifier.widthIn(max = 120.dp)) {
-                Text(text = event.who, style = Triangulacion.type.label.copy(fontSize = 15.sp), color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(text = event.note ?: timelineEventName(event.kind), style = Triangulacion.type.bodySm, color = colors.inkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(text = event.who, style = Triangulacion.type.label.copy(fontSize = 15.sp), color = colors.ink, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(text = event.note ?: timelineEventName(event.kind), style = Triangulacion.type.bodySm, color = colors.inkMuted, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             if (alignEnd) TimelineEventIcon(event.kind)
         }

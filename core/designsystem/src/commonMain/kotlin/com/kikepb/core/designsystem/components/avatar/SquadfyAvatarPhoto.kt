@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,7 +42,8 @@ fun SquadfyAvatarPhoto(
             .clip(shape = CircleShape)
             .clickable(
                 onClick = { onClick?.invoke() },
-                enabled = onClick != null
+                enabled = onClick != null,
+                role = Role.Button
             )
             // Spec 018 (Avatar): initials on surface-300, no outline
             .background(color = MaterialTheme.colorScheme.surfaceVariant),

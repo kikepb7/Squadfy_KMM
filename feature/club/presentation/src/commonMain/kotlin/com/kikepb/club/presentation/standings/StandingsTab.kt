@@ -1,6 +1,7 @@
 package com.kikepb.club.presentation.standings
 
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
+import com.kikepb.core.designsystem.triangulacion.preview.LARGEST_FONT_SCALE
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import com.kikepb.club.presentation.mapper.toTri
 import com.kikepb.core.designsystem.triangulacion.components.RankingRow
@@ -301,3 +302,7 @@ private fun StandingsGoalsTizaPreview() = ScreenPreview { StandingsContent(club 
 @Preview(name = "Tabla · goles · Noche", widthDp = 393, heightDp = 852)
 @Composable
 private fun StandingsGoalsNochePreview() = ScreenPreview(darkTheme = true) { StandingsContent(club = blankClub, state = StandingsState(mode = StandingsMode.STATS), onAction = {}, onMemberClick = {}) }
+
+@Preview(name = "Tabla · rating · Tiza · 200 %", widthDp = 393, heightDp = 852)
+@Composable
+private fun StandingsLargeFontPreview() = ScreenPreview(fontScale = LARGEST_FONT_SCALE) { StandingsContent(club = blankClub, state = StandingsState(), onAction = {}, onMemberClick = {}) }

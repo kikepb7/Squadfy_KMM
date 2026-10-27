@@ -254,13 +254,15 @@ fun PosChip(
     val colors = Triangulacion.colors
     val (background, content) = if (highlighted) colors.brand to colors.onBrand else colors.surface300 to colors.ink
     val label = if (longName) positionLongName(position) else positionShortName(position)
+    // Screen readers say «Delantero», never the abbreviation «DEL» (accessibility audit 2026-10)
+    val spoken = positionLongName(position)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         modifier = modifier
             .background(background, RoundedCornerShape(Radius.xs))
             .padding(horizontal = 8.dp, vertical = 4.dp)
-            .semantics { contentDescription = positionLongNameForA11y(label) }
+            .semantics { contentDescription = spoken }
     ) {
         PositionGlyph(position = position, color = content, size = 9.dp)
         Text(
@@ -270,8 +272,6 @@ fun PosChip(
         )
     }
 }
-
-private fun positionLongNameForA11y(label: String) = label
 
 @Preview
 @Composable

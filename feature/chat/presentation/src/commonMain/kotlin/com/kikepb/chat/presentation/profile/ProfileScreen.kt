@@ -279,12 +279,9 @@ fun ProfileScreen(
                 icon = TriIcon.Shield,
                 supportingText = stringResource(RString.crash_reports_desc),
                 onClick = { onAction(ProfileAction.OnCrashReportsChanged(enabled = !state.crashReportsEnabled)) },
-                trailing = {
-                    Switch(
-                        checked = state.crashReportsEnabled,
-                        onCheckedChange = { onAction(ProfileAction.OnCrashReportsChanged(enabled = it)) }
-                    )
-                }
+                // One toggle for screen readers: the switch has no click of its own
+                checked = state.crashReportsEnabled,
+                trailing = { Switch(checked = state.crashReportsEnabled, onCheckedChange = null) }
             )
         }
         // AC-019-18: usage analytics is opt-in too, with its own switch
@@ -294,12 +291,8 @@ fun ProfileScreen(
                 icon = TriIcon.Chart,
                 supportingText = stringResource(RString.usage_analytics_desc),
                 onClick = { onAction(ProfileAction.OnAnalyticsChanged(enabled = !state.analyticsEnabled)) },
-                trailing = {
-                    Switch(
-                        checked = state.analyticsEnabled,
-                        onCheckedChange = { onAction(ProfileAction.OnAnalyticsChanged(enabled = it)) }
-                    )
-                }
+                checked = state.analyticsEnabled,
+                trailing = { Switch(checked = state.analyticsEnabled, onCheckedChange = null) }
             )
         }
         // Spec 011 AC-011-07/08: privacy policy link and, behind ACCOUNT_DELETION, in-app account deletion

@@ -53,6 +53,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.material3.Surface
@@ -265,7 +266,7 @@ private fun ClubLogoPickerCard(
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(14.dp)
                     )
-                    .clickable(onClick = onPickLogo),
+                    .clickable(onClickLabel = stringResource(Res.string.create_logo_title), role = Role.Button, onClick = onPickLogo),
                 contentAlignment = Alignment.Center
             ) {
                 if (selectedBytes != null) {

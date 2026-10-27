@@ -18,6 +18,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import squadfy_app.core.designsystem.generated.resources.squadfy_message_options
+import squadfy_app.core.designsystem.generated.resources.Res
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,9 +61,11 @@ fun SquadfyChatBubble(
                             color = MaterialTheme.colorScheme.extended.surfaceOutline
                         ),
                         onLongClick = onLongClick,
+                        // Screen readers offer the long press as a named action (accessibility audit 2026-10)
+                        onLongClickLabel = stringResource(Res.string.squadfy_message_options),
                         onClick = {}
                     )
-                } else Modifier
+                } else Modifier.semantics(mergeDescendants = true) { }
             )
             .clip(
                 shape = ChatBubbleShape(trianglePosition = trianglePosition, triangleSize = triangleSize)

@@ -99,4 +99,14 @@
     <string name="tri_time_minute_value">%1$d minutes</string>
     <string name="tri_time_use">Use %1$s</string>
     <string name="tri_time_cancel">Cancel</string>
+    <!-- Accessibility audit 2026-10: what screen readers say -->
+    <string name="tri_rank_a11y">Rank %1$d</string>
+    <string name="tri_you_a11y">%1$s, you</string>
+    <string name="tri_number_a11y">Shirt %1$d</string>
+    <string name="tri_rating_a11y">%1$s rating</string>
+    <string name="tri_minute_a11y">Minute %1$d</string>
+    <string name="tri_pitch_teams_a11y">Line-up. %1$s: %2$s. %3$s: %4$s.</string>
+    <string name="squadfy_condition_met">%1$s: met</string>
+    <string name="squadfy_condition_unmet">%1$s: not met</string>
+    <string name="squadfy_message_options">Message options</string>
 </resources>

@@ -18,6 +18,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.semantics.Role
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -112,16 +114,19 @@ fun SquadfyPasswordTextField(
                         imageVector = if (isPasswordVisible) vectorResource(Res.drawable.eye_off_icon) else vectorResource(Res.drawable.eye_icon),
                         contentDescription = if (isPasswordVisible) stringResource(Res.string.hide_password) else stringResource(Res.string.show_password),
                         tint = Triangulacion.colors.inkMuted,
+                        // 48 dp touch target around the 24 dp eye, announced as a button (accessibility audit 2026-10)
                         modifier = Modifier
-                            .size(24.dp)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = ripple(
                                     bounded = false,
                                     radius = 24.dp
                                 ),
+                                role = Role.Button,
                                 onClick = onToggleVisibilityClick
                             )
+                            .padding(12.dp)
+                            .size(24.dp)
                     )
                 }
             }
