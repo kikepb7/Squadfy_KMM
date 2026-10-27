@@ -7,11 +7,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.kikepb.core.designsystem.triangulacion.components.TriTimePickerSheet
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import org.jetbrains.compose.resources.stringResource
@@ -21,18 +20,10 @@ import squadfy_app.feature.club.presentation.generated.resources.common_confirm
 
 private const val MILLIS_PER_DAY = 86_400_000L
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** Spec 020 AC-020-10: the brand's time picker (a bottom sheet) instead of Material's clock. */
 @Composable
-internal fun TimePickerDialog(initial: LocalTime, onConfirm: (LocalTime) -> Unit, onDismiss: () -> Unit) {
-    val pickerState = rememberTimePickerState(initialHour = initial.hour, initialMinute = initial.minute, is24Hour = true)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        text = { TimePicker(state = pickerState) },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(LocalTime(pickerState.hour, pickerState.minute)) }) { Text(text = stringResource(Res.string.common_confirm)) }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(text = stringResource(Res.string.common_cancel)) } }
-    )
+internal fun TimePickerDialog(title: String, initial: LocalTime, onConfirm: (LocalTime) -> Unit, onDismiss: () -> Unit) {
+    TriTimePickerSheet(title = title, initial = initial, onConfirm = onConfirm, onDismiss = onDismiss)
 }
 
 /** Date picker in local dates; [isSelectable] decides which days can be picked. */

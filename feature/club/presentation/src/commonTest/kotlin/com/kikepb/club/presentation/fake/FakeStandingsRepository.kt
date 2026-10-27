@@ -22,18 +22,25 @@ class FakeStandingsRepository : StandingsRepository {
     var myStats: PlayerStats? = null
     val calls = mutableListOf<String>()
 
-    override suspend fun getRatings(clubId: String): Result<List<RatingEntry>, ClubError> {
-        calls += "ratings"
+    override suspend fun getRatings(clubId: String, seasonId: String?): Result<List<RatingEntry>, ClubError> {
+        calls += "ratings" + season(seasonId)
         return Result.Success(ratings)
     }
-    override suspend fun getMyRating(clubId: String): Result<MyRating, ClubError> {
-        calls += "ratings/me"
+    override suspend fun getMyRating(clubId: String, seasonId: String?): Result<MyRating, ClubError> {
+        calls += "ratings/me" + season(seasonId)
         return myRating
     }
-    override suspend fun getStats(clubId: String, sortBy: StatsSortBy, period: ClosedRange<LocalDate>?): Result<List<StatsEntry>, ClubError> {
-        calls += if (period == null) "stats:$sortBy" else "stats:$sortBy:${period.start}..${period.endInclusive}"
+    override suspend fun getStats(
+        clubId: String,
+        sortBy: StatsSortBy,
+        period: ClosedRange<LocalDate>?,
+        seasonId: String?
+    ): Result<List<StatsEntry>, ClubError> {
+        calls += (if (period == null) "stats:$sortBy" else "stats:$sortBy:${period.start}..${period.endInclusive}") + season(seasonId)
         return Result.Success(stats)
     }
+
+    private fun season(seasonId: String?) = seasonId?.let { "@$it" }.orEmpty()
     override suspend fun getMyStats(clubId: String): Result<PlayerStats, ClubError> {
         calls += "stats/me"
         return myStats?.let { Result.Success(it) } ?: Result.Failure(ClubError.NotFound)

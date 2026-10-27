@@ -33,7 +33,13 @@ import com.kikepb.club.datafirebase.dto.ScheduleRequest
 import com.kikepb.club.datafirebase.dto.SetMinutesRequest
 import com.kikepb.club.datafirebase.dto.SetMutedRequest
 import com.kikepb.club.datafirebase.dto.SetScoreRequest
+import com.kikepb.club.datafirebase.dto.SeasonDto
+import com.kikepb.club.datafirebase.dto.SeasonRequest
 import com.kikepb.club.datafirebase.dto.StatsRequest
+import com.kikepb.club.datafirebase.dto.UpdateSeasonRequest
+import com.kikepb.club.domain.model.SeasonModel
+import com.kikepb.club.domain.model.SeasonStatus
+import com.kikepb.club.domain.repository.SeasonRepository
 import com.kikepb.club.datafirebase.util.asClubResult
 import com.kikepb.club.datafirebase.util.asEmptyClubResult
 import com.kikepb.club.domain.error.ClubError
@@ -214,17 +220,22 @@ class FirebaseMatchRepository(private val functions: FunctionsClient) : MatchRep
 
 class FirebaseStandingsRepository(private val functions: FunctionsClient) : StandingsRepository {
 
-    override suspend fun getRatings(clubId: String): Result<List<RatingEntry>, ClubError> =
-        functions.call<ClubIdRequest, List<RatingLeaderboardEntryDTO>>("getRatings", ClubIdRequest(clubId))
+    override suspend fun getRatings(clubId: String, seasonId: String?): Result<List<RatingEntry>, ClubError> =
+        functions.call<SeasonRequest, List<RatingLeaderboardEntryDTO>>("getRatings", SeasonRequest(clubId, seasonId))
             .asClubResult().map { list -> list.map { it.toDomain() } }
 
-    override suspend fun getMyRating(clubId: String): Result<MyRating, ClubError> =
-        functions.call<ClubIdRequest, PlayerRatingDTO>("getMyRating", ClubIdRequest(clubId)).asClubResult().map { it.toDomain() }
+    override suspend fun getMyRating(clubId: String, seasonId: String?): Result<MyRating, ClubError> =
+        functions.call<SeasonRequest, PlayerRatingDTO>("getMyRating", SeasonRequest(clubId, seasonId)).asClubResult().map { it.toDomain() }
 
-    override suspend fun getStats(clubId: String, sortBy: StatsSortBy, period: ClosedRange<LocalDate>?): Result<List<StatsEntry>, ClubError> =
+    override suspend fun getStats(
+        clubId: String,
+        sortBy: StatsSortBy,
+        period: ClosedRange<LocalDate>?,
+        seasonId: String?
+    ): Result<List<StatsEntry>, ClubError> =
         functions.call<StatsRequest, List<PlayerStatsDTO>>(
             "getStats",
-            StatsRequest(clubId, sortBy.name, period?.start?.toString(), period?.endInclusive?.toString())
+            StatsRequest(clubId, sortBy.name, period?.start?.toString(), period?.endInclusive?.toString(), seasonId)
         ).asClubResult().map { it.toStatsEntries() }
 
     override suspend fun getMyStats(clubId: String): Result<PlayerStats, ClubError> =
@@ -255,4 +266,29 @@ class FirebaseNotificationSettingsRepository(private val functions: FunctionsCli
     override suspend fun setMuted(clubId: String, muted: Boolean): Result<Boolean, ClubError> =
         functions.call<SetMutedRequest, NotificationSettingsDto>("setClubMuted", SetMutedRequest(clubId, muted))
             .asClubResult().map { it.muted }
+}
+
+/** Seasons of the club (spec 020): `getSeasons` and `updateSeason`. */
+class FirebaseSeasonRepository(private val functions: FunctionsClient) : SeasonRepository {
+
+    override suspend fun getSeasons(clubId: String): Result<List<SeasonModel>, ClubError> =
+        functions.call<ClubIdRequest, List<SeasonDto>>("getSeasons", ClubIdRequest(clubId))
+            .asClubResult().map { list -> list.mapNotNull { it.toDomain() } }
+
+    override suspend fun updateSeason(clubId: String, seasonId: String, startsOn: LocalDate, endsOn: LocalDate): Result<SeasonModel, ClubError> =
+        functions.call<UpdateSeasonRequest, SeasonDto>("updateSeason", UpdateSeasonRequest(clubId, seasonId, startsOn.toString(), endsOn.toString()))
+            .asClubResult().map { it.toDomain() ?: throw IllegalStateException("Invalid season") }
+}
+
+/** A season with unreadable dates is skipped; an unknown status counts as closed (read-only). */
+internal fun SeasonDto.toDomain(): SeasonModel? {
+    val start = runCatching { LocalDate.parse(startsOn) }.getOrNull() ?: return null
+    val end = runCatching { LocalDate.parse(endsOn) }.getOrNull() ?: return null
+    return SeasonModel(
+        id = id,
+        name = name,
+        startsOn = start,
+        endsOn = end,
+        status = SeasonStatus.entries.firstOrNull { it.name == status } ?: SeasonStatus.CLOSED
+    )
 }

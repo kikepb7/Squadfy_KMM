@@ -1,5 +1,10 @@
 package com.kikepb.club.presentation.announcement
 
+import com.kikepb.club.domain.model.ScheduleExceptionModel
+import com.kikepb.club.domain.model.ScheduleExceptionType
+import squadfy_app.feature.club.presentation.generated.resources.announcement_week_cancelled
+import squadfy_app.feature.club.presentation.generated.resources.announcement_week_moved
+import squadfy_app.feature.club.presentation.generated.resources.announcement_week_reason
 import kotlin.time.Clock
 import com.kikepb.core.designsystem.triangulacion.preview.ScreenPreview
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -220,6 +225,10 @@ fun AnnouncementContent(
                     )
                 }
             }
+            // Spec 020 APP-RN-H3: why this week has no match, or when it is played instead
+            state.weekException?.let { exception ->
+                item(key = "week-exception") { WeekExceptionNotice(exception = exception, timeZoneId = state.timeZoneId) }
+            }
             if (current == null) {
                 when {
                     state.hasLoaded -> item(key = "none") { NoMatchCard(isManager = state.isManager, onOpenSchedule = onOpenSchedule) }
@@ -275,6 +284,21 @@ fun AnnouncementContent(
             }
         }
     }
+}
+
+@Composable
+private fun WeekExceptionNotice(exception: ScheduleExceptionModel, timeZoneId: String) {
+    val moved = exception.type == ScheduleExceptionType.RESCHEDULED && exception.newScheduledAt != null
+    TriNotice(
+        title = if (moved) {
+            stringResource(Res.string.announcement_week_moved, formatMatchDate(exception.newScheduledAt!!, timeZoneId))
+        } else {
+            stringResource(Res.string.announcement_week_cancelled)
+        },
+        body = exception.reason?.let { stringResource(Res.string.announcement_week_reason, it) },
+        tone = TriNoticeTone.Warn,
+        icon = if (moved) TriIcon.Calendar else TriIcon.Alert
+    )
 }
 
 @Composable

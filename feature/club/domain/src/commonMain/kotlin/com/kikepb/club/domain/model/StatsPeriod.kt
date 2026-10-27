@@ -7,6 +7,7 @@ import kotlinx.datetime.minus
 /**
  * Period of the stats classification (spec 015 AC-015-07, backend spec 012 RN-B). The backend counts the
  * completed matches between `from` and `to`, both inclusive, in the club time zone; the rating is never filtered.
+ * With seasons (spec 020), [ALL_TIME] is the whole selected season.
  */
 enum class StatsPeriod {
     ALL_TIME,

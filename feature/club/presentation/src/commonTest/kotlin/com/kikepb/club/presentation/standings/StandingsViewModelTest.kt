@@ -1,6 +1,10 @@
 package com.kikepb.club.presentation.standings
 
 import com.kikepb.club.domain.usecase.GetClubMatchesUseCase
+import com.kikepb.club.domain.usecase.GetSeasonsUseCase
+import com.kikepb.club.domain.model.SeasonStatus
+import com.kikepb.club.presentation.fake.FakeSeasonRepository
+import com.kikepb.club.presentation.fake.season
 import kotlin.time.Instant
 import com.kikepb.club.domain.model.StatsPeriod
 import com.kikepb.club.presentation.fake.FixedTestClock
@@ -50,6 +54,7 @@ class StandingsViewModelTest {
     private val repository = FakeStandingsRepository()
     private val clubRepository = FakeClubRepository()
     private val matchRepository = FakeMatchRepository()
+    private val seasonRepository = FakeSeasonRepository()
 
     @BeforeTest
     fun setUp() {
@@ -73,6 +78,7 @@ class StandingsViewModelTest {
         getScheduleUseCase = GetScheduleUseCase(scheduleRepository),
         clock = fixedClock,
         getClubMatchesUseCase = GetClubMatchesUseCase(matchRepository),
+        getSeasonsUseCase = GetSeasonsUseCase(seasonRepository),
         savedStateHandle = SavedStateHandle(mapOf("clubId" to "club-1"))
     )
 
@@ -184,5 +190,43 @@ class StandingsViewModelTest {
         viewModel.state.launchIn(backgroundScope)
 
         assertEquals(mapOf("me" to 12, "m-2" to -3), viewModel.state.value.lastMatchDeltas)
+    }
+
+    @Test
+    fun `AC-020-04 the table opens on the season in progress and a closed one shows its frozen standings`() = runTest(UnconfinedTestDispatcher()) {
+        seasonRepository.seasons = listOf(season(2026, SeasonStatus.ACTIVE), season(2025, SeasonStatus.CLOSED))
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+
+        assertEquals("2026-27", viewModel.state.value.selectedSeasonId)
+        assertTrue("ratings@2026-27" in repository.calls)
+        assertTrue(viewModel.state.value.isCurrentSeason)
+
+        viewModel.onAction(StandingsAction.OnSeasonSelected("2025-26"))
+
+        assertEquals("ratings@2025-26", repository.calls.last { it.startsWith("ratings") && !it.startsWith("ratings/me") })
+        assertEquals("stats:GOALS@2025-26", repository.calls.last())
+        assertFalse(viewModel.state.value.isCurrentSeason)
+        assertTrue(viewModel.state.value.lastMatchDeltas.isEmpty())
+    }
+
+    @Test
+    fun `AC-020-02 in pre-season the table explains when the season starts instead of the empty state`() = runTest(UnconfinedTestDispatcher()) {
+        seasonRepository.seasons = listOf(season(2026, SeasonStatus.UPCOMING))
+        repository.ratings = listOf(RatingEntry(1, "me", 1000, 0, true))
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+
+        assertTrue(viewModel.state.value.isPreSeason)
+        assertFalse(viewModel.state.value.isEmpty)
+    }
+
+    @Test
+    fun `AC-020-04 without seasons (own backend) the table works as before`() = runTest(UnconfinedTestDispatcher()) {
+        val viewModel = viewModel()
+        viewModel.state.launchIn(backgroundScope)
+
+        assertEquals(null, viewModel.state.value.selectedSeasonId)
+        assertTrue("ratings" in repository.calls)
     }
 }

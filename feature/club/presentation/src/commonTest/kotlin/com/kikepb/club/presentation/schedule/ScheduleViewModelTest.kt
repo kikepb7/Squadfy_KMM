@@ -99,15 +99,35 @@ class ScheduleViewModelTest {
     }
 
     @Test
-    fun `AC-013-08 special weeks are not requested while their feature is off`() = runTest(UnconfinedTestDispatcher()) {
-        val flags = FakeFeatureFlags(FeatureFlag.SCHEDULE_EXCEPTIONS to false)
-        val viewModel = viewModel(flags)
+    fun `AC-020-09 special weeks are always loaded, without a feature flag`() = runTest(UnconfinedTestDispatcher()) {
+        val viewModel = viewModel(FakeFeatureFlags())
         viewModel.state.launchIn(backgroundScope)
 
-        assertEquals(0, scheduleRepository.exceptionRequests)
-
-        flags.set(FeatureFlag.SCHEDULE_EXCEPTIONS, true)
         assertEquals(1, scheduleRepository.exceptionRequests)
+    }
+
+    @Test
+    fun `AC-020-08 a special week cannot be saved without a reason`() = runTest(UnconfinedTestDispatcher()) {
+        scheduleRepository.schedule = sampleSchedule()
+        val viewModel = viewModel(FakeFeatureFlags())
+        viewModel.state.launchIn(backgroundScope)
+
+        viewModel.onAction(ScheduleAction.OnOpenExceptionForm)
+        viewModel.onAction(ScheduleAction.OnDatePicked(DateTarget.EXCEPTION, LocalDate(2030, 1, 3)))
+        assertFalse(viewModel.state.value.exceptionForm!!.canSave)
+
+        viewModel.state.value.exceptionForm!!.reason.edit { append("   ") }
+        assertFalse(viewModel.state.value.exceptionForm!!.canSave)
+
+        viewModel.state.value.exceptionForm!!.reason.edit { append("Festivo") }
+        assertTrue(viewModel.state.value.exceptionForm!!.canSave)
+    }
+
+    @Test
+    fun `D-20 a moved week only accepts days of that same week`() {
+        val week = ExceptionForm.weekOf(LocalDate(2026, 11, 5))
+        assertEquals(LocalDate(2026, 11, 2), week.start)
+        assertEquals(LocalDate(2026, 11, 8), week.endInclusive)
     }
 
     @Test

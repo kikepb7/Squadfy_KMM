@@ -59,13 +59,13 @@ class FeatureFlagResolverTest {
 
     @Test
     fun `AC-013-07 app-parity features stay off in PRO until their spec is Done`() {
-        listOf(FeatureFlag.MATCH_GUESTS, FeatureFlag.SCHEDULE_EXCEPTIONS, FeatureFlag.CUSTOM_DRAW_TIME, FeatureFlag.MANUAL_SCORE, FeatureFlag.MEMBER_ABSENCES)
+        listOf(FeatureFlag.MATCH_GUESTS, FeatureFlag.CUSTOM_DRAW_TIME, FeatureFlag.MANUAL_SCORE, FeatureFlag.MEMBER_ABSENCES)
             .forEach { flag -> assertEquals(false, flag.defaultFor(PRO), "${flag.name} in PRO") }
     }
 
     @Test
     fun `AC-013-07 implemented app-parity features are on in PRE for QA`() {
-        listOf(FeatureFlag.SCHEDULE_EXCEPTIONS, FeatureFlag.CUSTOM_DRAW_TIME, FeatureFlag.MATCH_GUESTS, FeatureFlag.MANUAL_SCORE, FeatureFlag.MEMBER_ABSENCES)
+        listOf(FeatureFlag.CUSTOM_DRAW_TIME, FeatureFlag.MATCH_GUESTS, FeatureFlag.MANUAL_SCORE, FeatureFlag.MEMBER_ABSENCES)
             .forEach { flag -> assertEquals(true, flag.defaultFor(PRE), "${flag.name} in PRE") }
     }
 

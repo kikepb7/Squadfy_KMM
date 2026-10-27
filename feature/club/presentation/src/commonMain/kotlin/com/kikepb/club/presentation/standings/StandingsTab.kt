@@ -26,6 +26,16 @@ import squadfy_app.feature.club.presentation.generated.resources.standings_perio
 import squadfy_app.feature.club.presentation.generated.resources.standings_period_all
 import squadfy_app.feature.club.presentation.generated.resources.standings_period_30d
 import com.kikepb.club.domain.model.StatsPeriod
+import com.kikepb.club.domain.model.SeasonModel
+import com.kikepb.club.domain.model.SeasonStatus
+import com.kikepb.core.designsystem.triangulacion.format.formatDayMonth
+import squadfy_app.feature.club.presentation.generated.resources.season_chip
+import squadfy_app.feature.club.presentation.generated.resources.season_closed_note
+import squadfy_app.feature.club.presentation.generated.resources.season_starts_in
+import squadfy_app.feature.club.presentation.generated.resources.season_status_active
+import squadfy_app.feature.club.presentation.generated.resources.season_status_closed
+import squadfy_app.feature.club.presentation.generated.resources.season_status_upcoming
+import squadfy_app.feature.club.presentation.generated.resources.standings_period_season
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -117,13 +127,37 @@ fun StandingsContent(club: ClubModel, state: StandingsState, onAction: (Standing
             contentPadding = PaddingValues(Space.s4),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // Spec 020 APP-RN-S6: one chip per season, the one in progress first
+            if (state.seasons.isNotEmpty()) {
+                item(key = "seasons") {
+                    SeasonChips(seasons = state.seasons, selectedId = state.selectedSeasonId, onSelected = { onAction(StandingsAction.OnSeasonSelected(it)) })
+                }
+            }
             item(key = "filters") { FilterChips(state = state, onAction = onAction) }
-            if (state.mode == StandingsMode.STATS) {
+            if (state.mode == StandingsMode.STATS && state.isCurrentSeason) {
                 // AC-015-07: period of the stats (the rating is cumulative and is never filtered)
-                item(key = "period") { PeriodChips(selected = state.statsPeriod, onSelected = { onAction(StandingsAction.OnStatsPeriodSelected(it)) }) }
+                item(key = "period") {
+                    PeriodChips(
+                        selected = state.statsPeriod,
+                        hasSeasons = state.seasons.isNotEmpty(),
+                        onSelected = { onAction(StandingsAction.OnStatsPeriodSelected(it)) }
+                    )
+                }
             }
             if (state.isStale) item(key = "stale") { TriNotice(title = stringResource(Res.string.standings_offline), tone = TriNoticeTone.Warn, icon = TriIcon.Alert) }
             if (!state.hasLoaded) item(key = "loading") { SquadfyLoadingIndicator() }
+            state.selectedSeason?.let { season ->
+                when (season.status) {
+                    // AC-020-02: «La temporada 2026/27 empieza el 1 sept.»
+                    SeasonStatus.UPCOMING -> item(key = "pre-season") {
+                        TriNotice(title = stringResource(Res.string.season_starts_in, season.name, formatDayMonth(season.startsOn)), icon = TriIcon.Calendar)
+                    }
+                    SeasonStatus.CLOSED -> item(key = "closed-season") {
+                        TriNotice(title = stringResource(Res.string.season_closed_note, season.name), icon = TriIcon.Lock)
+                    }
+                    SeasonStatus.ACTIVE -> Unit
+                }
+            }
             if (state.isEmpty) item(key = "empty") { TriNotice(title = stringResource(Res.string.standings_empty), icon = TriIcon.Trophy) }
             when (state.mode) {
                 StandingsMode.RATING -> items(items = state.ratings, key = { "r-${it.clubMemberId}" }) { entry ->
@@ -186,12 +220,34 @@ private val StatsSortBy.unit: StringResource
         StatsSortBy.WINS -> Res.string.standings_unit_wins
     }
 
-private val StatsPeriod.label: StringResource
+/** With seasons (spec 020), «Todo» is the whole selected season. */
+private fun StatsPeriod.label(hasSeasons: Boolean): StringResource = when (this) {
+    StatsPeriod.ALL_TIME -> if (hasSeasons) Res.string.standings_period_season else Res.string.standings_period_all
+    StatsPeriod.THIS_YEAR -> Res.string.standings_period_year
+    StatsPeriod.LAST_30_DAYS -> Res.string.standings_period_30d
+}
+
+private val SeasonStatus.label: StringResource
     get() = when (this) {
-        StatsPeriod.ALL_TIME -> Res.string.standings_period_all
-        StatsPeriod.THIS_YEAR -> Res.string.standings_period_year
-        StatsPeriod.LAST_30_DAYS -> Res.string.standings_period_30d
+        SeasonStatus.ACTIVE -> Res.string.season_status_active
+        SeasonStatus.UPCOMING -> Res.string.season_status_upcoming
+        SeasonStatus.CLOSED -> Res.string.season_status_closed
     }
+
+/** «2026/27 · en curso», «2025/26 · cerrada». */
+@Composable
+private fun SeasonChips(seasons: List<SeasonModel>, selectedId: String?, onSelected: (String) -> Unit) {
+    Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        seasons.forEach { season ->
+            TriChip(
+                text = stringResource(Res.string.season_chip, season.name, stringResource(season.status.label)),
+                selected = season.id == selectedId,
+                onClick = { onSelected(season.id) },
+                icon = if (season.status == SeasonStatus.ACTIVE) TriIcon.Calendar else null
+            )
+        }
+    }
+}
 
 /** Rating, Goles, Asist., PJ… : the first is the rating table, the others the stats sorted by that column. */
 @Composable
@@ -219,9 +275,9 @@ private fun FilterChips(state: StandingsState, onAction: (StandingsAction) -> Un
 }
 
 @Composable
-private fun PeriodChips(selected: StatsPeriod, onSelected: (StatsPeriod) -> Unit) {
+private fun PeriodChips(selected: StatsPeriod, hasSeasons: Boolean, onSelected: (StatsPeriod) -> Unit) {
     TriTabs(
-        items = StatsPeriod.entries.map { stringResource(it.label) },
+        items = StatsPeriod.entries.map { stringResource(it.label(hasSeasons)) },
         selectedIndex = StatsPeriod.entries.indexOf(selected),
         onSelect = { onSelected(StatsPeriod.entries[it]) }
     )

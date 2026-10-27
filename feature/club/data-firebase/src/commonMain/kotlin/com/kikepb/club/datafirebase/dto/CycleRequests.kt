@@ -36,7 +36,19 @@ internal data class ScheduleRequest(
 @Serializable internal data class SetMinutesRequest(val matchId: String, val clubMemberId: String, val minutes: Int)
 @Serializable internal data class SetScoreRequest(val matchId: String, val teamAScore: Int, val teamBScore: Int)
 
-@Serializable internal data class StatsRequest(val clubId: String, val sortBy: String, val from: String?, val to: String?)
+@Serializable internal data class StatsRequest(val clubId: String, val sortBy: String, val from: String?, val to: String?, val seasonId: String? = null)
+@Serializable internal data class SeasonRequest(val clubId: String, val seasonId: String? = null)
+@Serializable internal data class UpdateSeasonRequest(val clubId: String, val seasonId: String, val startsOn: String, val endsOn: String)
+
+/** Spec 020: a season as `getSeasons` and `updateSeason` answer it. */
+@Serializable
+internal data class SeasonDto(
+    val id: String = "",
+    val name: String = "",
+    val startsOn: String = "",
+    val endsOn: String = "",
+    val status: String? = null
+)
 @Serializable internal data class AbsencesRequest(val clubId: String, val from: String?, val to: String?)
 @Serializable internal data class CreateAbsenceRequest(val clubId: String, val fromDate: String, val toDate: String, val reason: String?)
 @Serializable internal data class DeleteAbsenceRequest(val clubId: String, val absenceId: String)

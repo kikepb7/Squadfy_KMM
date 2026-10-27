@@ -88,4 +88,15 @@
     <string name="tri_mo_12">Dec</string>
     <string name="tri_date_day_month">%2$s %1$d</string>
     <string name="tri_date_full">%1$s %3$s %2$d · %4$s</string>
+    <!-- Spec 020: time picker -->
+    <string name="tri_time_hours">Hours</string>
+    <string name="tri_time_minutes">Minutes</string>
+    <string name="tri_time_minus">Subtract 15 minutes</string>
+    <string name="tri_time_plus">Add 15 minutes</string>
+    <string name="tri_time_common">Usual times</string>
+    <string name="tri_time_selected">Selected time: %1$s</string>
+    <string name="tri_time_hour_value">%1$d hours</string>
+    <string name="tri_time_minute_value">%1$d minutes</string>
+    <string name="tri_time_use">Use %1$s</string>
+    <string name="tri_time_cancel">Cancel</string>
 </resources>

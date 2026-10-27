@@ -7,13 +7,6 @@
       "valueType": "BOOLEAN",
       "description": "Members add up to 2 guests to an announcement (specs 005/006). Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
     },
-    "schedule_exceptions": {
-      "defaultValue": {
-        "useInAppDefault": true
-      },
-      "valueType": "BOOLEAN",
-      "description": "Cancel or move one week of the weekly schedule (spec 004). Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
-    },
     "custom_draw_time": {
       "defaultValue": {
         "useInAppDefault": true

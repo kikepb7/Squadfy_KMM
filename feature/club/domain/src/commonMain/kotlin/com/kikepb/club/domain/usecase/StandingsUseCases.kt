@@ -16,11 +16,13 @@ import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.map
 
 class GetRatingLeaderboardUseCase(private val repository: StandingsRepository) {
-    suspend operator fun invoke(clubId: String): Result<List<RatingEntry>, ClubError> = repository.getRatings(clubId)
+    suspend operator fun invoke(clubId: String, seasonId: String? = null): Result<List<RatingEntry>, ClubError> =
+        repository.getRatings(clubId, seasonId)
 }
 
 class GetMyRatingUseCase(private val repository: StandingsRepository) {
-    suspend operator fun invoke(clubId: String): Result<MyRating, ClubError> = repository.getMyRating(clubId)
+    suspend operator fun invoke(clubId: String, seasonId: String? = null): Result<MyRating, ClubError> =
+        repository.getMyRating(clubId, seasonId)
 }
 
 class GetStatsLeaderboardUseCase(private val repository: StandingsRepository) {
@@ -29,9 +31,10 @@ class GetStatsLeaderboardUseCase(private val repository: StandingsRepository) {
         clubId: String,
         sortBy: StatsSortBy = StatsSortBy.GOALS,
         period: StatsPeriod = StatsPeriod.ALL_TIME,
-        today: LocalDate? = null
+        today: LocalDate? = null,
+        seasonId: String? = null
     ): Result<List<StatsEntry>, ClubError> =
-        repository.getStats(clubId, sortBy, today?.let { period.rangeFor(it) })
+        repository.getStats(clubId, sortBy, today?.let { period.rangeFor(it) }, seasonId)
 }
 
 class GetMyStatsUseCase(private val repository: StandingsRepository) {

@@ -42,6 +42,10 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.isoDayNumber
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.toInstant
 import squadfy_app.feature.club.presentation.generated.resources.Res
 import squadfy_app.feature.club.presentation.generated.resources.exceptions_added
@@ -50,7 +54,10 @@ import squadfy_app.feature.club.presentation.generated.resources.schedule_create
 import squadfy_app.feature.club.presentation.generated.resources.schedule_error_time_zone
 import squadfy_app.feature.club.presentation.generated.resources.schedule_saved
 
-/** Weekly schedule screen (spec 004). Managers edit; everyone sees the summary and the special weeks. */
+/**
+ * Weekly schedule screen (spec 004). Managers edit; everyone sees the summary and the special weeks, which no longer
+ * depend on a feature flag and always carry their reason (spec 020 APP-RN-H2, AC-020-09).
+ */
 class ScheduleViewModel(
     observeMyMembershipUseCase: ObserveMyMembershipUseCase,
     featureFlags: FeatureFlags,
@@ -76,13 +83,11 @@ class ScheduleViewModel(
     val state = combine(
         _state,
         observeMyMembershipUseCase(clubId),
-        featureFlags.observe(FeatureFlag.CUSTOM_DRAW_TIME),
-        featureFlags.observe(FeatureFlag.SCHEDULE_EXCEPTIONS)
-    ) { current, me, customDeadlines, exceptionsEnabled ->
+        featureFlags.observe(FeatureFlag.CUSTOM_DRAW_TIME)
+    ) { current, me, customDeadlines ->
         current.copy(
             canEdit = me != null && MemberPermissions.canManageClub(me.role),
-            customDeadlinesEnabled = customDeadlines,
-            exceptionsEnabled = exceptionsEnabled
+            customDeadlinesEnabled = customDeadlines
         )
     }.stateIn(
         scope = viewModelScope,
@@ -90,22 +95,15 @@ class ScheduleViewModel(
         initialValue = ScheduleState()
     )
 
-    private var exceptionsLoaded = false
-
     init {
         load()
-        // Special weeks are only requested when their feature is on (APP-RN-17)
-        viewModelScope.launch {
-            featureFlags.observe(FeatureFlag.SCHEDULE_EXCEPTIONS).collect { enabled ->
-                if (enabled && !exceptionsLoaded) loadExceptions()
-            }
-        }
+        loadExceptions()
         // AC-015-06: another manager changed the schedule or its special weeks
         viewModelScope.launch {
             clubLiveUpdates.observe(clubId).collect { change ->
                 if (change.scope != ClubDataScope.SCHEDULE) return@collect
                 load()
-                if (exceptionsLoaded) loadExceptions()
+                loadExceptions()
             }
         }
     }
@@ -114,7 +112,7 @@ class ScheduleViewModel(
         when (action) {
             ScheduleAction.OnRefresh -> {
                 load(userInitiated = true)
-                if (state.value.exceptionsEnabled) loadExceptions()
+                loadExceptions()
             }
             is ScheduleAction.OnDaySelected -> updateForm { it.copy(dayOfWeek = action.day) }
             is ScheduleAction.OnFormatSelected -> updateForm { it.copy(format = action.format) }
@@ -179,10 +177,7 @@ class ScheduleViewModel(
     private fun loadExceptions() {
         viewModelScope.launch {
             getScheduleExceptionsUseCase(clubId)
-                .onSuccess { exceptions ->
-                    exceptionsLoaded = true
-                    _state.update { it.copy(exceptions = exceptions) }
-                }
+                .onSuccess { exceptions -> _state.update { it.copy(exceptions = exceptions) } }
                 .onFailure { error -> eventChannel.send(ScheduleEvent.ShowMessage(error.toUiText())) }
         }
     }
@@ -222,6 +217,8 @@ class ScheduleViewModel(
         val form = state.value.exceptionForm ?: return
         val date = form.date ?: return
         val schedule = state.value.schedule ?: return
+        val reason = form.reason.text.toString().trim()
+        if (reason.isEmpty()) return
         val newScheduledAt = if (form.type == ScheduleExceptionType.RESCHEDULED) {
             val newDate = form.newDate ?: return
             val newTime = form.newTime ?: return
@@ -230,9 +227,12 @@ class ScheduleViewModel(
             null
         }
         launchWorking {
-            addScheduleExceptionUseCase(clubId, date, form.type, newScheduledAt, form.reason.text.toString())
+            addScheduleExceptionUseCase(clubId, date, form.type, newScheduledAt, reason)
                 .onSuccess { created ->
-                    _state.update { state -> state.copy(exceptions = (state.exceptions + created).sortedBy { it.date }, exceptionForm = null) }
+                    // A new exception replaces the one its week had (spec 020)
+                    _state.update { state ->
+                        state.copy(exceptions = (state.exceptions.filterNot { it.date == created.date } + created).sortedBy { it.date }, exceptionForm = null)
+                    }
                     eventChannel.send(ScheduleEvent.ShowMessage(UiText.Resource(Res.string.exceptions_added)))
                     eventChannel.send(ScheduleEvent.ScheduleChanged)
                 }
@@ -273,7 +273,10 @@ class ScheduleViewModel(
     private fun onDatePicked(target: DateTarget, date: LocalDate) {
         _state.update { it.copy(dialog = null) }
         when (target) {
-            DateTarget.EXCEPTION -> updateExceptionForm { it.copy(date = date) }
+            // D-20: a week only moves within itself, so a new week clears a moved date of another one
+            DateTarget.EXCEPTION -> updateExceptionForm { form ->
+                form.copy(date = date, newDate = form.newDate?.takeIf { it in ExceptionForm.weekOf(date) })
+            }
             DateTarget.RESCHEDULE -> updateExceptionForm { it.copy(newDate = date) }
         }
     }
@@ -335,7 +338,18 @@ data class ExceptionForm(
     val newTime: LocalTime? = null,
     val reason: TextFieldState = TextFieldState()
 ) {
-    val canSave: Boolean get() = date != null && (type == ScheduleExceptionType.CANCELLED || (newDate != null && newTime != null))
+    /** AC-020-08: the reason is mandatory. */
+    val canSave: Boolean
+        get() = date != null && reason.text.isNotBlank() &&
+            (type == ScheduleExceptionType.CANCELLED || (newDate != null && newTime != null))
+
+    companion object {
+        /** D-20: Monday to Sunday of the week of [date]. */
+        fun weekOf(date: LocalDate): ClosedRange<LocalDate> {
+            val monday = date.minus(DatePeriod(days = date.dayOfWeek.isoDayNumber - 1))
+            return monday..monday.plus(DatePeriod(days = 6))
+        }
+    }
 }
 
 data class ScheduleState(
@@ -347,7 +361,6 @@ data class ScheduleState(
     val isOffline: Boolean = false,
     val canEdit: Boolean = false,
     val customDeadlinesEnabled: Boolean = false,
-    val exceptionsEnabled: Boolean = false,
     val schedule: ClubScheduleModel? = null,
     val form: ScheduleDraft? = null,
     val timeZone: TextFieldState = TextFieldState(initialText = TimeZone.currentSystemDefault().id),

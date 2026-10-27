@@ -25,6 +25,7 @@ import com.kikepb.club.domain.model.MemberAbsenceModel
 import com.kikepb.club.domain.repository.AbsenceRepository
 import com.kikepb.club.domain.repository.AnnouncementRepository
 import com.kikepb.club.domain.usecase.GetAbsencesUseCase
+import com.kikepb.club.domain.usecase.GetScheduleExceptionsUseCase
 import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
 import com.kikepb.club.domain.repository.ScheduleRepository
 import com.kikepb.club.domain.usecase.AddGuestToAnnouncementUseCase
@@ -149,6 +150,7 @@ class AnnouncementViewModelTest {
             getCurrentAnnouncementUseCase = GetCurrentAnnouncementUseCase(repository),
             getAnnouncementHistoryUseCase = GetAnnouncementHistoryUseCase(repository),
             getScheduleUseCase = GetScheduleUseCase(NoScheduleRepository()),
+            getScheduleExceptionsUseCase = GetScheduleExceptionsUseCase(NoScheduleRepository()),
             enrollUseCase = EnrollUseCase(repository),
             withdrawUseCase = WithdrawUseCase(repository),
             addGuestUseCase = AddGuestToAnnouncementUseCase(repository),

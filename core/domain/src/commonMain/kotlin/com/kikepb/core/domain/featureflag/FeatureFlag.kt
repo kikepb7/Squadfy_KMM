@@ -21,12 +21,6 @@ enum class FeatureFlag(
         defaultInPre = true,
         defaultInPro = false
     ),
-    SCHEDULE_EXCEPTIONS(
-        key = "schedule_exceptions",
-        description = "Cancel or move one week of the weekly schedule (spec 004)",
-        defaultInPre = true,
-        defaultInPro = false
-    ),
     CUSTOM_DRAW_TIME(
         key = "custom_draw_time",
         description = "Configurable announcement close and team draw times (spec 004)",

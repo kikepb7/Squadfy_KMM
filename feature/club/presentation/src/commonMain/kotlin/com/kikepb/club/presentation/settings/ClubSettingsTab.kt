@@ -92,6 +92,31 @@ import squadfy_app.feature.club.presentation.generated.resources.settings_sectio
 import squadfy_app.feature.club.presentation.generated.resources.settings_section_membership
 import squadfy_app.feature.club.presentation.generated.resources.settings_share_code
 import squadfy_app.feature.club.presentation.generated.resources.settings_share_text
+import squadfy_app.feature.club.presentation.generated.resources.season_chip
+import squadfy_app.feature.club.presentation.generated.resources.season_end_day
+import squadfy_app.feature.club.presentation.generated.resources.season_end_earlier
+import squadfy_app.feature.club.presentation.generated.resources.season_end_later
+import squadfy_app.feature.club.presentation.generated.resources.season_rule
+import squadfy_app.feature.club.presentation.generated.resources.season_save
+import squadfy_app.feature.club.presentation.generated.resources.season_start_day
+import squadfy_app.feature.club.presentation.generated.resources.season_start_earlier
+import squadfy_app.feature.club.presentation.generated.resources.season_start_later
+import squadfy_app.feature.club.presentation.generated.resources.season_status_active
+import squadfy_app.feature.club.presentation.generated.resources.season_status_upcoming
+import squadfy_app.feature.club.presentation.generated.resources.season_title
+import com.kikepb.club.domain.model.SeasonDatesPolicy
+import com.kikepb.club.domain.model.SeasonModel
+import com.kikepb.club.domain.model.SeasonStatus
+import com.kikepb.core.designsystem.triangulacion.components.TriButton
+import com.kikepb.core.designsystem.triangulacion.components.TriButtonVariant
+import com.kikepb.core.designsystem.triangulacion.components.TriIcon
+import com.kikepb.core.designsystem.triangulacion.components.TriRoundIconButton
+import com.kikepb.core.designsystem.triangulacion.format.formatDayMonth
+import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 
 /**
  * Settings tab of a club (spec 003, AC-003-10…14). [myMembership] decides what is shown (APP-RN-04);
@@ -243,6 +268,15 @@ fun ClubSettingsContent(
                 }
             }
         }
+        // Spec 020 APP-RN-S3: the managers pick the days of September and June
+        val season = state.season
+        if (isManager && season != null) {
+            item(key = "season") {
+                SettingsGroup(title = stringResource(Res.string.season_title)) {
+                    SeasonSettings(season = season, state = state, onAction = onAction)
+                }
+            }
+        }
         item(key = "extra") { extraSections() }
         if (role != null) {
             item(key = "membership") {
@@ -338,6 +372,56 @@ private fun EditClubDialog(state: ClubSettingsState, onAction: (ClubSettingsActi
             }
         }
     )
+}
+
+/** «2026/27 · en curso», the start and end days with − and +, and a save button once they change. */
+@Composable
+private fun SeasonSettings(season: SeasonModel, state: ClubSettingsState, onAction: (ClubSettingsAction) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(16.dp)) {
+        val status = if (season.status == SeasonStatus.ACTIVE) Res.string.season_status_active else Res.string.season_status_upcoming
+        Text(
+            text = stringResource(Res.string.season_chip, season.name, stringResource(status)),
+            style = Triangulacion.type.title,
+            color = Triangulacion.colors.ink,
+            modifier = Modifier.semantics { heading() }
+        )
+        Text(text = stringResource(Res.string.season_rule), style = Triangulacion.type.bodySm, color = Triangulacion.colors.inkMuted)
+        SeasonDayStepper(
+            label = stringResource(Res.string.season_start_day),
+            date = SeasonDatesPolicy.startOn(season.startYear, state.seasonStartDay),
+            earlier = stringResource(Res.string.season_start_earlier),
+            later = stringResource(Res.string.season_start_later),
+            onChange = { onAction(ClubSettingsAction.OnSeasonStartDayChanged(state.seasonStartDay + it)) }
+        )
+        SeasonDayStepper(
+            label = stringResource(Res.string.season_end_day),
+            date = SeasonDatesPolicy.endOn(season.startYear, state.seasonEndDay),
+            earlier = stringResource(Res.string.season_end_earlier),
+            later = stringResource(Res.string.season_end_later),
+            onChange = { onAction(ClubSettingsAction.OnSeasonEndDayChanged(state.seasonEndDay + it)) }
+        )
+        if (state.isSeasonChanged) {
+            TriButton(
+                text = stringResource(Res.string.season_save),
+                onClick = { onAction(ClubSettingsAction.OnSaveSeason) },
+                isLoading = state.isWorking,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+/** «Empieza · 1 sept» with − and + buttons; the date is announced when it changes. */
+@Composable
+private fun SeasonDayStepper(label: String, date: kotlinx.datetime.LocalDate, earlier: String, later: String, onChange: (Int) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(modifier = Modifier.weight(1f).semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }) {
+            Text(text = label, style = Triangulacion.type.bodySm, color = Triangulacion.colors.inkMuted)
+            Text(text = formatDayMonth(date), style = Triangulacion.type.title, color = Triangulacion.colors.ink)
+        }
+        TriRoundIconButton(icon = TriIcon.Minus, contentDescription = earlier, onClick = { onChange(-1) }, filled = true)
+        TriRoundIconButton(icon = TriIcon.Plus, contentDescription = later, onClick = { onChange(1) }, filled = true)
+    }
 }
 
 @Composable

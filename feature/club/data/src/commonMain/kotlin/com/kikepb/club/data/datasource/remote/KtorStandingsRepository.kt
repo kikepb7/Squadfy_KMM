@@ -20,17 +20,25 @@ import com.kikepb.core.domain.util.map
 import com.kikepb.core.domain.util.mapError
 import io.ktor.client.HttpClient
 
-/** Classifications are network-first (ADR-0006): the screen reloads them on open, so a completed match shows up at once. */
+/**
+ * Classifications are network-first (ADR-0006): the screen reloads them on open, so a completed match shows up at once.
+ * The own backend has no seasons (spec 020 gap): `seasonId` is ignored and the classification covers every match.
+ */
 class KtorStandingsRepository(private val httpClient: HttpClient) : StandingsRepository {
 
-    override suspend fun getRatings(clubId: String): Result<List<RatingEntry>, ClubError> =
+    override suspend fun getRatings(clubId: String, seasonId: String?): Result<List<RatingEntry>, ClubError> =
         httpClient.apiGet<List<RatingLeaderboardEntryDTO>>(route = "/clubs/$clubId/ratings")
             .mapError { it.toClubError() }.map { list -> list.map { it.toDomain() } }
 
-    override suspend fun getMyRating(clubId: String): Result<MyRating, ClubError> =
+    override suspend fun getMyRating(clubId: String, seasonId: String?): Result<MyRating, ClubError> =
         httpClient.apiGet<PlayerRatingDTO>(route = "/clubs/$clubId/ratings/me").mapError { it.toClubError() }.map { it.toDomain() }
 
-    override suspend fun getStats(clubId: String, sortBy: StatsSortBy, period: ClosedRange<LocalDate>?): Result<List<StatsEntry>, ClubError> =
+    override suspend fun getStats(
+        clubId: String,
+        sortBy: StatsSortBy,
+        period: ClosedRange<LocalDate>?,
+        seasonId: String?
+    ): Result<List<StatsEntry>, ClubError> =
         httpClient.apiGet<List<PlayerStatsDTO>>(
             route = "/clubs/$clubId/stats",
             // Backend spec 012 RN-B: `YYYY-MM-DD`, inclusive, in the club time zone

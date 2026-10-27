@@ -88,4 +88,15 @@
     <string name="tri_mo_12">dic</string>
     <string name="tri_date_day_month">%1$d %2$s</string>
     <string name="tri_date_full">%1$s %2$d %3$s · %4$s</string>
+    <!-- Spec 020: time picker -->
+    <string name="tri_time_hours">Horas</string>
+    <string name="tri_time_minutes">Minutos</string>
+    <string name="tri_time_minus">Restar 15 minutos</string>
+    <string name="tri_time_plus">Sumar 15 minutos</string>
+    <string name="tri_time_common">Horas habituales</string>
+    <string name="tri_time_selected">Hora elegida: %1$s</string>
+    <string name="tri_time_hour_value">%1$d horas</string>
+    <string name="tri_time_minute_value">%1$d minutos</string>
+    <string name="tri_time_use">Usar %1$s</string>
+    <string name="tri_time_cancel">Cancelar</string>
 </resources>

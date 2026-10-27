@@ -13,6 +13,18 @@ import com.kikepb.club.domain.usecase.LeaveClubUseCase
 import com.kikepb.club.domain.usecase.SetClubMutedUseCase
 import com.kikepb.club.domain.usecase.RegenerateInvitationCodeUseCase
 import com.kikepb.club.domain.usecase.UploadClubLogoUseCase
+import com.kikepb.club.domain.error.ClubError
+import com.kikepb.club.domain.model.SeasonDatesPolicy
+import com.kikepb.club.domain.model.SeasonModel
+import com.kikepb.club.domain.model.current
+import com.kikepb.club.domain.usecase.GetSeasonsUseCase
+import com.kikepb.club.domain.usecase.UpdateSeasonError
+import com.kikepb.club.domain.usecase.UpdateSeasonUseCase
+import com.kikepb.core.domain.util.DataError
+import squadfy_app.feature.club.presentation.generated.resources.season_closed
+import squadfy_app.feature.club.presentation.generated.resources.season_conflict
+import squadfy_app.feature.club.presentation.generated.resources.season_invalid
+import squadfy_app.feature.club.presentation.generated.resources.season_saved
 import com.kikepb.club.presentation.mapper.toUiText
 import com.kikepb.core.domain.util.onFailure
 import com.kikepb.core.domain.util.onSuccess
@@ -36,6 +48,8 @@ class ClubSettingsViewModel(
     private val leaveClubUseCase: LeaveClubUseCase,
     private val getClubMutedUseCase: GetClubMutedUseCase,
     private val setClubMutedUseCase: SetClubMutedUseCase,
+    private val getSeasonsUseCase: GetSeasonsUseCase,
+    private val updateSeasonUseCase: UpdateSeasonUseCase,
     featureFlags: FeatureFlags,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -56,6 +70,17 @@ class ClubSettingsViewModel(
         viewModelScope.launch {
             getClubMutedUseCase(clubId).onSuccess { muted -> _state.update { it.copy(muted = muted) } }
         }
+        loadSeason()
+    }
+
+    /** Spec 020: the season in progress, or the next one in pre-season; none with the own backend. */
+    private fun loadSeason() {
+        viewModelScope.launch {
+            getSeasonsUseCase(clubId).onSuccess { seasons ->
+                val season = seasons.current()?.takeIf { it.isEditable }
+                _state.update { it.copy(season = season, seasonStartDay = season?.startsOn?.day ?: 1, seasonEndDay = season?.endsOn?.day ?: SeasonDatesPolicy.LAST_DAY) }
+            }
+        }
     }
 
     fun onAction(action: ClubSettingsAction) {
@@ -69,7 +94,37 @@ class ClubSettingsViewModel(
             is ClubSettingsAction.OnLogoPicked -> uploadLogo(action.bytes, action.mimeType)
             ClubSettingsAction.OnDismissDialog -> _state.update { it.copy(dialog = null, editError = null) }
             is ClubSettingsAction.OnMutedChanged -> setMuted(action.muted)
+            is ClubSettingsAction.OnSeasonStartDayChanged ->
+                _state.update { it.copy(seasonStartDay = action.day.coerceIn(1, SeasonDatesPolicy.LAST_DAY)) }
+            is ClubSettingsAction.OnSeasonEndDayChanged ->
+                _state.update { it.copy(seasonEndDay = action.day.coerceIn(1, SeasonDatesPolicy.LAST_DAY)) }
+            ClubSettingsAction.OnSaveSeason -> saveSeason()
         }
+    }
+
+    /** AC-020-03: the days of September and June the season starts and ends on. */
+    private fun saveSeason() = launchWorking {
+        val current = _state.value
+        val season = current.season ?: return@launchWorking
+        val startsOn = SeasonDatesPolicy.startOn(season.startYear, current.seasonStartDay)
+        val endsOn = SeasonDatesPolicy.endOn(season.startYear, current.seasonEndDay)
+        updateSeasonUseCase(clubId, season, startsOn, endsOn)
+            .onSuccess { saved ->
+                _state.update { it.copy(season = saved.takeIf { s -> s.isEditable }, seasonStartDay = saved.startsOn.day, seasonEndDay = saved.endsOn.day) }
+                eventChannel.send(ClubSettingsEvent.ShowMessage(UiText.Resource(Res.string.season_saved)))
+            }
+            .onFailure { error ->
+                val message = when (error) {
+                    UpdateSeasonError.InvalidDates -> UiText.Resource(Res.string.season_invalid)
+                    UpdateSeasonError.Closed -> UiText.Resource(Res.string.season_closed)
+                    is UpdateSeasonError.Remote -> {
+                        val remote = error.error
+                        if (remote is ClubError.Remote && remote.error.status == DataError.Remote.CONFLICT) UiText.Resource(Res.string.season_conflict)
+                        else remote.toUiText()
+                    }
+                }
+                eventChannel.send(ClubSettingsEvent.ShowMessage(message))
+            }
     }
 
     /** AC-009-05: optimistic switch, reverted if the backend rejects it. */
@@ -157,8 +212,15 @@ data class ClubSettingsState(
     val editError: UiText? = null,
     /** Null until loaded: the switch is hidden. */
     val muted: Boolean? = null,
-    val absencesEnabled: Boolean = false
-)
+    val absencesEnabled: Boolean = false,
+    /** Spec 020: the editable season (in progress or next); null with the own backend or for players. */
+    val season: SeasonModel? = null,
+    val seasonStartDay: Int = 1,
+    val seasonEndDay: Int = SeasonDatesPolicy.LAST_DAY
+) {
+    val isSeasonChanged: Boolean
+        get() = season != null && (season.startsOn.day != seasonStartDay || season.endsOn.day != seasonEndDay)
+}
 
 sealed interface ClubSettingsAction {
     data class OnEditClubClick(val club: ClubModel) : ClubSettingsAction
@@ -170,6 +232,9 @@ sealed interface ClubSettingsAction {
     data class OnLogoPicked(val bytes: ByteArray, val mimeType: String?) : ClubSettingsAction
     data object OnDismissDialog : ClubSettingsAction
     data class OnMutedChanged(val muted: Boolean) : ClubSettingsAction
+    data class OnSeasonStartDayChanged(val day: Int) : ClubSettingsAction
+    data class OnSeasonEndDayChanged(val day: Int) : ClubSettingsAction
+    data object OnSaveSeason : ClubSettingsAction
 }
 
 sealed interface ClubSettingsEvent {

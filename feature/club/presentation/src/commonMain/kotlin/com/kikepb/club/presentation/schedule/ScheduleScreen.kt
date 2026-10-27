@@ -22,6 +22,7 @@ import com.kikepb.core.designsystem.triangulacion.components.TriIconView
 import com.kikepb.core.designsystem.triangulacion.components.TriNotice
 import com.kikepb.core.designsystem.triangulacion.components.TriNoticeTone
 import com.kikepb.core.designsystem.triangulacion.components.TriRoundIconButton
+import com.kikepb.core.designsystem.triangulacion.components.TriTimePickerSheet
 import com.kikepb.core.designsystem.triangulacion.theme.Radius
 import com.kikepb.core.designsystem.triangulacion.theme.Space
 import com.kikepb.core.designsystem.triangulacion.theme.Triangulacion
@@ -69,10 +70,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -148,6 +147,11 @@ import squadfy_app.feature.club.presentation.generated.resources.schedule_summar
 import squadfy_app.feature.club.presentation.generated.resources.schedule_time
 import squadfy_app.feature.club.presentation.generated.resources.schedule_time_zone
 import squadfy_app.feature.club.presentation.generated.resources.schedule_title
+import squadfy_app.feature.club.presentation.generated.resources.exceptions_reason_hint
+import squadfy_app.feature.club.presentation.generated.resources.time_picker_close
+import squadfy_app.feature.club.presentation.generated.resources.time_picker_draw
+import squadfy_app.feature.club.presentation.generated.resources.time_picker_match
+import squadfy_app.feature.club.presentation.generated.resources.time_picker_reschedule
 import kotlin.time.Clock
 
 @Composable
@@ -194,7 +198,7 @@ fun ScheduleScreen(
                 if (state.isOffline) Hint(text = stringResource(Res.string.schedule_offline))
                 ScheduleSummaryCard(state = state)
                 if (state.canEdit) ScheduleForm(state = state, onAction = onAction)
-                if (state.exceptionsEnabled && state.schedule != null) ExceptionsSection(state = state, onAction = onAction)
+                if (state.schedule != null) ExceptionsSection(state = state, onAction = onAction)
             }
         }
     }
@@ -469,7 +473,13 @@ private fun ExceptionFormContent(form: ExceptionForm, isWorking: Boolean, onActi
             TriButton(text = form.newTime?.formatted() ?: stringResource(Res.string.exceptions_new_time), onClick = { onAction(ScheduleAction.OnOpenTimePicker(TimeTarget.RESCHEDULE)) }, variant = TriButtonVariant.Secondary, modifier = Modifier.weight(1f))
         }
     }
-    SquadfyTextField(state = form.reason, title = stringResource(Res.string.exceptions_reason), singleLine = true)
+    // AC-020-08: the reason is mandatory; members read it in the Match tab and in the push
+    SquadfyTextField(
+        state = form.reason,
+        title = stringResource(Res.string.exceptions_reason),
+        placeholder = stringResource(Res.string.exceptions_reason_hint),
+        singleLine = true
+    )
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         TextButton(onClick = { onAction(ScheduleAction.OnCloseExceptionForm) }) { Text(text = stringResource(Res.string.common_cancel)) }
         SquadfyButton(
@@ -495,27 +505,34 @@ private fun ScheduleDialogs(state: ScheduleState, onAction: (ScheduleAction) -> 
                 TimeTarget.DRAW -> form?.drawTime
                 TimeTarget.RESCHEDULE -> state.exceptionForm?.newTime ?: form?.matchTime
             } ?: LocalTime(20, 0)
-            val pickerState = rememberTimePickerState(initialHour = initial.hour, initialMinute = initial.minute, is24Hour = true)
-            AlertDialog(
-                onDismissRequest = dismiss,
-                text = { TimePicker(state = pickerState) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        onAction(ScheduleAction.OnTimePicked(dialog.target, LocalTime(pickerState.hour, pickerState.minute)))
-                    }) { Text(text = stringResource(Res.string.common_confirm)) }
-                },
-                dismissButton = { TextButton(onClick = dismiss) { Text(text = stringResource(Res.string.common_cancel)) } }
+            // Spec 020 AC-020-10: the brand's time picker instead of Material's clock
+            TriTimePickerSheet(
+                title = stringResource(
+                    when (dialog.target) {
+                        TimeTarget.MATCH -> Res.string.time_picker_match
+                        TimeTarget.CLOSE -> Res.string.time_picker_close
+                        TimeTarget.DRAW -> Res.string.time_picker_draw
+                        TimeTarget.RESCHEDULE -> Res.string.time_picker_reschedule
+                    }
+                ),
+                initial = initial,
+                onConfirm = { onAction(ScheduleAction.OnTimePicked(dialog.target, it)) },
+                onDismiss = dismiss
             )
         }
         is ScheduleDialog.DatePicker -> {
             val matchDay = state.schedule?.dayOfWeek
             val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-            val selectable = remember(dialog.target, matchDay, today) {
+            val week = state.exceptionForm?.date?.let { ExceptionForm.weekOf(it) }
+            val selectable = remember(dialog.target, matchDay, today, week) {
                 object : SelectableDates {
                     override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                         val date = LocalDate.fromEpochDays((utcTimeMillis / MILLIS_PER_DAY).toInt())
-                        // BE-008 RN-B1: the excepted week is a future match day; the new date is any future day
-                        return date > today && (dialog.target == DateTarget.RESCHEDULE || date.dayOfWeek == matchDay)
+                        // BE-008 RN-B1: the excepted week is a future match day; D-20: the new date is in that same week
+                        return date >= today && when (dialog.target) {
+                            DateTarget.EXCEPTION -> date > today && date.dayOfWeek == matchDay
+                            DateTarget.RESCHEDULE -> week == null || date in week
+                        }
                     }
                 }
             }

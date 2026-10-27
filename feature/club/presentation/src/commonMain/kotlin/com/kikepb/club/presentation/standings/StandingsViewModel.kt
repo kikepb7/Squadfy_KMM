@@ -2,6 +2,10 @@ package com.kikepb.club.presentation.standings
 
 import com.kikepb.club.domain.model.MatchStatus
 import com.kikepb.club.domain.usecase.GetClubMatchesUseCase
+import com.kikepb.club.domain.usecase.GetSeasonsUseCase
+import com.kikepb.club.domain.model.SeasonModel
+import com.kikepb.club.domain.model.SeasonStatus
+import com.kikepb.club.domain.model.current
 import kotlinx.coroutines.Job
 import kotlin.time.Clock
 import kotlinx.datetime.toLocalDateTime
@@ -35,7 +39,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Rating and stats classifications of a club (spec 008). Network-first: reloaded on open and on resume (ADR-0006). */
+/**
+ * Rating and stats classifications of a club (spec 008). Network-first: reloaded on open and on resume (ADR-0006).
+ * Per season (spec 020 APP-RN-S4/S6): the current one first, and the closed ones with their final standings.
+ */
 class StandingsViewModel(
     private val getClubMembersUseCase: GetClubMembersUseCase,
     observeMyMembershipUseCase: ObserveMyMembershipUseCase,
@@ -46,6 +53,7 @@ class StandingsViewModel(
     private val getScheduleUseCase: GetScheduleUseCase,
     private val clock: Clock,
     private val getClubMatchesUseCase: GetClubMatchesUseCase,
+    private val getSeasonsUseCase: GetSeasonsUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -89,6 +97,11 @@ class StandingsViewModel(
                 _state.update { it.copy(statsPeriod = action.period) }
                 loadStats()
             }
+            is StandingsAction.OnSeasonSelected -> {
+                if (action.seasonId == _state.value.selectedSeasonId) return
+                _state.update { it.copy(selectedSeasonId = action.seasonId, statsPeriod = StatsPeriod.ALL_TIME, ratings = emptyList(), myRating = null) }
+                refresh()
+            }
         }
     }
 
@@ -98,7 +111,17 @@ class StandingsViewModel(
         if (userInitiated) _state.update { it.copy(isLoading = true) }
         refreshJob = viewModelScope.launch {
             try {
-                getRatingLeaderboardUseCase(clubId)
+                // Spec 020: the seasons first; the own backend has none and everything works as before
+                getSeasonsUseCase(clubId).onSuccess { seasons ->
+                    _state.update { state ->
+                        state.copy(
+                            seasons = seasons,
+                            selectedSeasonId = state.selectedSeasonId?.takeIf { id -> seasons.any { it.id == id } } ?: seasons.current()?.id
+                        )
+                    }
+                }
+                val seasonId = _state.value.selectedSeasonId
+                getRatingLeaderboardUseCase(clubId, seasonId)
                     .onSuccess { ratings ->
                         _state.update { it.copy(ratings = ratings, isStale = false) }
                         // APP-RN-06: rows of members who joined after the last members sync
@@ -107,11 +130,15 @@ class StandingsViewModel(
                     }
                     .onFailure(::onError)
                 // 404 when I am not rated yet: the "your position" card is simply hidden
-                getMyRatingUseCase(clubId).onSuccess { mine -> _state.update { it.copy(myRating = mine) } }
-                // Spec 018: each row shows the change of the last completed match (BE-008 RN-F1)
-                getClubMatchesUseCase(clubId, MatchStatus.COMPLETED).onSuccess { matches ->
-                    val last = matches.maxByOrNull { it.scheduledAt }
-                    _state.update { it.copy(lastMatchDeltas = last?.ratingChanges.orEmpty()) }
+                getMyRatingUseCase(clubId, seasonId).onSuccess { mine -> _state.update { it.copy(myRating = mine) } }
+                // Spec 018: each row shows the change of the last completed match (BE-008 RN-F1), only in the season in progress
+                if (_state.value.isCurrentSeason) {
+                    getClubMatchesUseCase(clubId, MatchStatus.COMPLETED).onSuccess { matches ->
+                        val last = matches.maxByOrNull { it.scheduledAt }
+                        _state.update { it.copy(lastMatchDeltas = last?.ratingChanges.orEmpty()) }
+                    }
+                } else {
+                    _state.update { it.copy(lastMatchDeltas = emptyMap()) }
                 }
                 loadStatsNow()
             } finally {
@@ -128,7 +155,7 @@ class StandingsViewModel(
 
     private suspend fun loadStatsNow() {
         val today = clock.now().toLocalDateTime(clubTimeZone).date
-        getStatsLeaderboardUseCase(clubId, _state.value.sortBy, _state.value.statsPeriod, today)
+        getStatsLeaderboardUseCase(clubId, _state.value.sortBy, _state.value.statsPeriod, today, _state.value.selectedSeasonId)
             .onSuccess { stats -> _state.update { it.copy(stats = stats) } }
             .onFailure(::onError)
     }
@@ -153,10 +180,21 @@ data class StandingsState(
     val members: Map<String, ClubMemberModel> = emptyMap(),
     val myMemberId: String? = null,
     /** Rating change of each member in the last completed match (spec 018, the ▲/▼ of the table). */
-    val lastMatchDeltas: Map<String, Int> = emptyMap()
+    val lastMatchDeltas: Map<String, Int> = emptyMap(),
+    /** Spec 020: newest first; empty with the own backend, which has no seasons. */
+    val seasons: List<SeasonModel> = emptyList(),
+    val selectedSeasonId: String? = null
 ) {
+    val selectedSeason: SeasonModel? get() = seasons.firstOrNull { it.id == selectedSeasonId }
+
+    /** The season in progress (or the pre-season one), the default selection. */
+    val isCurrentSeason: Boolean get() = selectedSeasonId == null || selectedSeasonId == seasons.current()?.id
+
+    /** AC-020-02: the selected season has not started yet. */
+    val isPreSeason: Boolean get() = selectedSeason?.status == SeasonStatus.UPCOMING
+
     /** AC-008-06 */
-    val isEmpty: Boolean get() = hasLoaded && ratings.noCompletedMatches()
+    val isEmpty: Boolean get() = hasLoaded && !isPreSeason && ratings.noCompletedMatches()
 }
 
 sealed interface StandingsAction {
@@ -164,4 +202,5 @@ sealed interface StandingsAction {
     data class OnModeSelected(val mode: StandingsMode) : StandingsAction
     data class OnSortSelected(val sortBy: StatsSortBy) : StandingsAction
     data class OnStatsPeriodSelected(val period: StatsPeriod) : StandingsAction
+    data class OnSeasonSelected(val seasonId: String) : StandingsAction
 }

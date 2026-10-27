@@ -25,6 +25,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import squadfy_app.feature.club.presentation.generated.resources.Res
+import squadfy_app.feature.club.presentation.generated.resources.time_picker_extra
 import squadfy_app.feature.club.presentation.generated.resources.common_cancel
 import squadfy_app.feature.club.presentation.generated.resources.common_save
 import squadfy_app.feature.club.presentation.generated.resources.extra_match
@@ -69,6 +70,7 @@ private fun ExtraMatchForm(state: ExtraMatchState, onAction: (ExtraMatchAction) 
         }
         ExtraMatchPicker.TIME -> {
             TimePickerDialog(
+                title = stringResource(Res.string.time_picker_extra),
                 initial = state.time ?: LocalTime(20, 0),
                 onConfirm = { onAction(ExtraMatchAction.OnTimePicked(it)) },
                 onDismiss = { onAction(ExtraMatchAction.OnDismissPicker) }

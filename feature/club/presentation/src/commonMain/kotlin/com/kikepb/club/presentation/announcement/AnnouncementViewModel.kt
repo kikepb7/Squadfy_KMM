@@ -27,6 +27,10 @@ import com.kikepb.club.domain.usecase.GetAnnouncementHistoryUseCase
 import com.kikepb.club.domain.usecase.GetClubMembersUseCase
 import com.kikepb.club.domain.usecase.GetCurrentAnnouncementUseCase
 import com.kikepb.club.domain.usecase.GetScheduleUseCase
+import com.kikepb.club.domain.usecase.GetScheduleExceptionsUseCase
+import com.kikepb.club.domain.model.ScheduleExceptionModel
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.plus
 import com.kikepb.club.domain.usecase.ObserveMyMembershipUseCase
 import com.kikepb.club.domain.usecase.RemoveGuestFromAnnouncementUseCase
 import com.kikepb.club.domain.usecase.SyncClubDetailUseCase
@@ -75,6 +79,7 @@ class AnnouncementViewModel(
     private val getCurrentAnnouncementUseCase: GetCurrentAnnouncementUseCase,
     private val getAnnouncementHistoryUseCase: GetAnnouncementHistoryUseCase,
     private val getScheduleUseCase: GetScheduleUseCase,
+    private val getScheduleExceptionsUseCase: GetScheduleExceptionsUseCase,
     private val enrollUseCase: EnrollUseCase,
     private val withdrawUseCase: WithdrawUseCase,
     private val addGuestUseCase: AddGuestToAnnouncementUseCase,
@@ -188,6 +193,12 @@ class AnnouncementViewModel(
                 if (featureFlags.isEnabled(FeatureFlag.MEMBER_ABSENCES)) {
                     val today = clock.now().toLocalDateTime(_state.value.zone).date
                     getAbsencesUseCase(clubId, from = today).onSuccess { absences -> _state.update { it.copy(absences = absences) } }
+                }
+                // Spec 020 APP-RN-H3: a cancelled or moved week of the next seven days, with its reason
+                getScheduleExceptionsUseCase(clubId).onSuccess { exceptions ->
+                    val today = clock.now().toLocalDateTime(_state.value.zone).date
+                    val nextWeek = today..today.plus(DatePeriod(days = 6))
+                    _state.update { it.copy(weekException = exceptions.filter { e -> e.date in nextWeek }.minByOrNull { e -> e.date }) }
                 }
                 getAnnouncementHistoryUseCase(clubId).onSuccess { history ->
                     // The current one is shown on top, the rest are past announcements (AC-005-10)
@@ -366,6 +377,8 @@ data class AnnouncementState(
     val me: ClubMemberModel? = null,
     val guestsEnabled: Boolean = false,
     val absences: List<MemberAbsenceModel> = emptyList(),
+    /** Spec 020: this week's match is cancelled or moved, with its reason. */
+    val weekException: ScheduleExceptionModel? = null,
     val acting: Set<AnnouncementOperation> = emptySet(),
     val dialog: AnnouncementDialog? = null
 ) {
