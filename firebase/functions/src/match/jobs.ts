@@ -9,7 +9,7 @@ import { isEmulator, sendToUsers } from "../notifications/push";
 import { paths } from "../paths";
 import { absentMemberIds } from "./absences";
 import { publishTeamsAtDrawTime } from "./matches";
-import { AnnouncementDoc, DEFAULT_TIME_ZONE, MatchDoc, ScheduleDoc } from "./model";
+import { AnnouncementDoc, DEFAULT_TIME_ZONE, MatchDoc, ScheduleDoc, uidOfMember } from "./model";
 import { planNextMatch } from "./planning";
 import { runSeasonRollover } from "./seasons";
 import { activeMembers, clubName, readSchedule } from "./store";
@@ -17,6 +17,8 @@ import { activeMembers, clubName, readSchedule } from "./store";
 /** Time-based work of the match cycle (backend MatchSchedulerService; spec 019 AC-019-08, AC-019-10). */
 
 const CLOSING_REMINDER_HOURS = 24;
+/** Spec 021 APP-RN-P3: the match-day reminder goes out this long before kickoff. */
+const MATCH_REMINDER_HOURS = 2;
 
 /** Plans the next match of every active schedule; idempotent, so a missed run is caught up. */
 export async function runPlanning(at: Date = new Date()) {
@@ -109,6 +111,38 @@ export async function runAnnouncementNotifications(at: Date = new Date()) {
     const enrolled = new Set(a.entries.map((e) => e.clubMemberId).filter(Boolean));
     const recipients = (await activeMembers(a.clubId)).filter((m) => !absent.has(m.id) && !enrolled.has(m.id)).map((m) => m.data.userId);
     await sendToUsers(messages.closingSoon(ctx, recipients, a.matchId, a.closesAt.toDate(), freePlacesOf(a)));
+    sent++;
+  }
+  return sent + await runMatchReminders(at);
+}
+
+/** Two hours before kickoff, once per match, to the called-up members (spec 021 APP-RN-P3). */
+export async function runMatchReminders(at: Date = new Date()) {
+  const now = Timestamp.fromDate(at);
+  const soon = await db().collectionGroup("matches")
+    .where("status", "==", "SCHEDULED")
+    .where("scheduledAt", ">", now)
+    .where("scheduledAt", "<=", Timestamp.fromMillis(at.getTime() + MATCH_REMINDER_HOURS * 3600_000))
+    .get();
+  let sent = 0;
+  for (const doc of soon.docs) {
+    const claimed = await db().runTransaction(async (tx) => {
+      const match = (await tx.get(doc.ref)).data() as MatchDoc | undefined;
+      if (!match || match.reminderSentAt) return null;
+      tx.update(doc.ref, { reminderSentAt: now });
+      return match;
+    });
+    if (!claimed) continue;
+    const announcement = (await db().doc(paths.announcement(claimed.clubId, doc.id)).get()).data() as AnnouncementDoc | undefined;
+    const confirmed = (announcement?.entries ?? [])
+      .filter((e) => e.status === "CONFIRMED" && e.participantType === "MEMBER" && e.clubMemberId)
+      .map((e) => uidOfMember(e.clubMemberId as string));
+    if (confirmed.length === 0) continue;
+    const [schedule, name] = await Promise.all([readSchedule(claimed.clubId), clubName(claimed.clubId)]);
+    await sendToUsers(messages.reminder({
+      type: "match.reminder", clubId: claimed.clubId, clubName: name, matchId: doc.id,
+      zone: schedule?.timeZone ?? DEFAULT_TIME_ZONE, matchAt: claimed.scheduledAt.toDate()
+    }, confirmed));
     sent++;
   }
   return sent;

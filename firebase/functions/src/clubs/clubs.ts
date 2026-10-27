@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto";
+import { logger } from "firebase-functions/v2";
 import { FieldValue, Timestamp, Transaction } from "firebase-admin/firestore";
 import { onCall } from "firebase-functions/v2/https";
 import { db } from "../admin";
@@ -11,6 +12,22 @@ import { requireClub, requireManager, requireMember, requireTargetMember } from 
 import { AfterCommit, membershipEnded, runAfterCommit } from "./hooks";
 import { ClubDoc, clubDto, MemberDoc, memberDto } from "./model";
 import { ensureSeasons } from "../match/seasons";
+import { clubMessages } from "../notifications/messages";
+import { sendToUsers } from "../notifications/push";
+
+/** Pushes are sent after the transaction commits; a failed push never undoes the change (spec 021). */
+async function notify(work: () => Promise<void>) {
+  try {
+    await work();
+  } catch (e) {
+    logger.error("[push] club notice failed", e);
+  }
+}
+
+async function managerIds(clubId: string): Promise<string[]> {
+  const snapshot = await db().collection(paths.members(clubId)).where("status", "==", "ACTIVE").get();
+  return snapshot.docs.map((d) => d.data() as MemberDoc).filter((m) => m.role === "OWNER" || m.role === "ADMIN").map((m) => m.userId);
+}
 import * as validate from "./validation";
 
 /**
@@ -87,7 +104,7 @@ export const joinClub = onCall(async (request) => {
   const shirtNumber = validate.shirtNumber(data.shirtNumber);
   const position = validate.position(data.position);
 
-  return db().runTransaction(async (tx) => {
+  const joined = await db().runTransaction(async (tx) => {
     const codeDoc = await tx.get(db().doc(paths.invitationCode(code)));
     if (!codeDoc.exists) notFound("Invalid invitation code", "INVALID_INVITATION_CODE");
     const clubId = codeDoc.get("clubId") as string;
@@ -114,8 +131,11 @@ export const joinClub = onCall(async (request) => {
     };
     tx.set(memberRef, member);
     tx.update(clubRef, { membersCount: FieldValue.increment(1) });
-    return clubDto(clubId, { ...club!, membersCount: club!.membersCount + 1 });
+    return { clubId, name: club!.name, username: profile.username, dto: clubDto(clubId, { ...club!, membersCount: club!.membersCount + 1 }) };
   });
+  // APP-RN-P6: the managers learn who joined
+  await notify(async () => sendToUsers(clubMessages.memberJoined(joined.clubId, joined.name, await managerIds(joined.clubId), joined.username)));
+  return joined.dto;
 });
 
 /** Edits the name, description and member limit (managers, BE-001 RN-13). */
@@ -173,7 +193,7 @@ export const transferOwnership = onCall(async (request) => {
   const data = body(request);
   const clubId = requireString(data, "clubId");
   const memberId = requireString(data, "memberId");
-  return db().runTransaction(async (tx) => {
+  const result = await db().runTransaction(async (tx) => {
     const club = await requireClub(clubId, tx);
     const me = await requireMember(clubId, uid, tx);
     if (me.data.role !== "OWNER") forbidden("Only the owner can transfer the club");
@@ -182,8 +202,10 @@ export const transferOwnership = onCall(async (request) => {
     tx.update(db().doc(paths.member(clubId, me.id)), { role: "ADMIN" });
     tx.update(db().doc(paths.member(clubId, memberId)), { role: "OWNER" });
     tx.update(db().doc(paths.club(clubId)), { ownerId: target.data.userId });
-    return clubDto(clubId, { ...club, ownerId: target.data.userId });
+    return { userId: target.data.userId, name: club.name, dto: clubDto(clubId, { ...club, ownerId: target.data.userId }) };
   });
+  await notify(() => sendToUsers(clubMessages.ownershipTransferred(clubId, result.name, result.userId)));
+  return result.dto;
 });
 
 export const updateMyMembership = onCall(async (request) => {
@@ -279,12 +301,16 @@ export const changeMemberRole = onCall(async (request) => {
   const memberId = requireString(data, "memberId");
   const role = data.role as ClubMemberRole;
   if (!ROLES.includes(role)) badRequest("Invalid role", "VALIDATION_ERROR");
-  return db().runTransaction(async (tx) => {
+  const changed = await db().runTransaction(async (tx) => {
     const me = await requireManager(clubId, uid, tx);
     if (memberId === me.id) badRequest("You cannot change your own role");
     const target = await requireTargetMember(clubId, memberId, tx);
     if (!canAssign(me.data.role, target.data.role, role)) forbidden("You cannot assign this role");
     tx.update(db().doc(paths.member(clubId, memberId)), { role });
-    return memberDto(memberId, { ...target.data, role });
+    return { previous: target.data.role, userId: target.data.userId, dto: memberDto(memberId, { ...target.data, role }) };
   });
+  if (changed.previous !== role) {
+    await notify(async () => sendToUsers(clubMessages.roleChanged(clubId, (await requireClub(clubId)).name, changed.userId, role)));
+  }
+  return changed.dto;
 });

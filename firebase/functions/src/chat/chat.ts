@@ -111,13 +111,8 @@ export const onChatMessageCreated = onDocumentCreated("chats/{chatId}/messages/{
     updatedAt: createdAt
   });
   const recipients = (chat.participantIds ?? []).filter((id) => id !== message.senderId);
-  await sendToUsers({
-    userIds: recipients,
-    title: chat.participants?.[message.senderId]?.username ?? "Squadfy",
-    body: String(message.content).slice(0, 240),
-    data: { type: "new_message", chatId },
-    collapseKey: chatId
-  });
+  const text = { title: chat.participants?.[message.senderId]?.username ?? "Squadfy", body: String(message.content).slice(0, 240) };
+  await sendToUsers({ userIds: recipients, text: { es: text, en: text }, data: { type: "new_message", chatId }, collapseKey: chatId, muteClubId: null });
 });
 
 /** A deleted last message is replaced by the previous one. */

@@ -14,6 +14,9 @@ import { badRequest, conflict, notFound } from "../errors";
 import { body, requireAuth, requireString } from "../guards";
 import { publishChange } from "../live";
 import { paths } from "../paths";
+import { MemberDoc } from "../clubs/model";
+import { clubMessages } from "../notifications/messages";
+import { sendToUsers } from "../notifications/push";
 import { MatchDoc, RatingDoc } from "./model";
 import { zoneOf } from "./store";
 
@@ -95,9 +98,17 @@ export async function ensureSeasons(clubId: string, at: Date = new Date()): Prom
     if (season.data.status === "CLOSED") continue;
     const status = statusOn(season.data, today);
     if (status !== season.data.status) {
-      await db().doc(paths.season(clubId, season.id)).update({ status, updatedAt: Timestamp.now() });
+      // In a transaction, so only the caller that makes the change announces it (spec 021 APP-RN-P5)
+      const ref = db().doc(paths.season(clubId, season.id));
+      const won = await db().runTransaction(async (tx) => {
+        if ((await tx.get(ref)).get("status") !== season.data.status) return false;
+        tx.update(ref, { status, updatedAt: Timestamp.now() });
+        return true;
+      });
+      const previous = season.data.status;
       season.data = { ...season.data, status };
       changed = true;
+      if (won) await announceSeason(clubId, season, previous);
     }
   }
   for (let i = 0; i < MAX_ROLLS && seasons[0].data.status === "CLOSED"; i++) {
@@ -106,6 +117,29 @@ export async function ensureSeasons(clubId: string, at: Date = new Date()): Prom
   }
   if (changed) await publishChange(clubId, "SEASON");
   return seasons;
+}
+
+/** Spec 021 APP-RN-P5: a season that starts or closes is announced to the members; a closed one names its leader. */
+async function announceSeason(clubId: string, season: Season, previous: SeasonStatus) {
+  try {
+    const started = previous === "UPCOMING" && season.data.status === "ACTIVE";
+    const closed = season.data.status === "CLOSED";
+    if (!started && !closed) return;
+    const members = (await db().collection(paths.members(clubId)).where("status", "==", "ACTIVE").get()).docs
+      .map((d) => ({ id: d.id, data: d.data() as MemberDoc }));
+    const userIds = members.map((m) => m.data.userId);
+    const name = ((await db().doc(paths.club(clubId)).get()).get("name") as string | undefined) ?? "";
+    if (started) {
+      await sendToUsers(clubMessages.seasonStarted(clubId, name, userIds, season.data.name));
+      return;
+    }
+    const top = await db().collection(paths.ratings(clubId, season.id)).orderBy("rating", "desc").limit(5).get();
+    const leaderId = top.docs.find((d) => ((d.data() as RatingDoc).matchesRated ?? 0) > 0)?.id;
+    const leader = members.find((m) => m.id === leaderId)?.data.username ?? null;
+    await sendToUsers(clubMessages.seasonClosed(clubId, name, userIds, season.data.name, leader));
+  } catch (e) {
+    logger.error("[push] season notice failed", clubId, season.id, e);
+  }
 }
 
 /** The season the standings show by default: the one in progress, else the next one (pre-season), else the latest. */

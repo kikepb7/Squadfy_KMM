@@ -61,6 +61,9 @@ describe("AC-019-06 account deletion with the spec 010 rules", () => {
     for (let i = 0; i < 40 && (await getDoc(memberRef)).get("status") !== "LEFT"; i++) await new Promise((r) => setTimeout(r, 250));
     expect((await getDoc(memberRef)).get("username")).toMatch(/^Usuario eliminado /);
     expect((await getDoc(doc(keeper.firestore, `clubs/${club.id}`))).get("ownerId")).toBe(keeper.uid);
-    expect((await getDoc(doc(keeper.firestore, `users/${leaving.uid}`))).exists()).toBe(false);
+    // The profile is deleted at the end of the same trigger: wait for it too
+    const profileRef = doc(keeper.firestore, `users/${leaving.uid}`);
+    for (let i = 0; i < 40 && (await getDoc(profileRef)).exists(); i++) await new Promise((r) => setTimeout(r, 250));
+    expect((await getDoc(profileRef)).exists()).toBe(false);
   });
 });

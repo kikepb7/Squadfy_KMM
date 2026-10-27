@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { FieldValue, Timestamp, Transaction } from "firebase-admin/firestore";
+import { logger } from "firebase-functions/v2";
 import { onCall } from "firebase-functions/v2/https";
 import { db } from "../admin";
 import { requireManager, requireMember } from "../clubs/access";
@@ -143,8 +144,29 @@ export const completeMatch = onCall(async (request) => {
       status: "COMPLETED", ratingChanges: Object.fromEntries(deltas), seasonId: season.id, updatedAt: FieldValue.serverTimestamp()
     });
   });
+  await resultPushes(clubId, matchId);
   return loadAfter(clubId, matchId);
 });
+
+/** Spec 021 APP-RN-P4: every member who played gets the score and, in a season, their rating change. */
+async function resultPushes(clubId: string, matchId: string) {
+  try {
+    const match = await readMatch(matchId);
+    const score = scoreOf(match);
+    const schedule = await readSchedule(clubId);
+    const ctx = {
+      type: "match.completed" as const, clubId, clubName: await clubName(clubId), matchId,
+      zone: schedule?.timeZone ?? DEFAULT_TIME_ZONE, matchAt: match.scheduledAt.toDate()
+    };
+    const players = [...match.teamA, ...match.teamB].filter((p) => !p.isGuest).map((p) => p.participantId);
+    for (const memberId of players) {
+      const change = match.seasonId ? Math.round(match.ratingChanges?.[memberId] ?? 0) : null;
+      await sendToUsers(messages.completed(ctx, uidOfMember(memberId), score.teamAScore, score.teamBScore, change));
+    }
+  } catch (e) {
+    logger.error("[push] result failed", matchId, e);
+  }
+}
 
 /**
  * Reopens the club's latest completed match to fix it; its rating changes are reverted. Not for a match of a closed

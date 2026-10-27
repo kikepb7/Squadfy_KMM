@@ -95,6 +95,8 @@ export interface MatchDoc {
   ratingChanges: Record<string, number>;
   /** The season the match counted in once completed; null for a friendly, missing before spec 020 or while open. */
   seasonId?: string | null;
+  /** Spec 021 APP-RN-P3: when the match-day reminder went out (missing until then). */
+  reminderSentAt?: Timestamp | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
