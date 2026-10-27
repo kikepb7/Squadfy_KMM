@@ -26,6 +26,7 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 017 | Coherencia de la interfaz: estados de carga, barra superior y barra de estado | **Done** (6/6) | ✅ | — | ✅ | 016 | — |
 | 018 | Rediseño «Triangulación»: tokens, fuentes, logo Corte, componentes y pantallas | **Done** (22/22) | ✅ | — | ✅ | 017 | — |
 | 019 | Firebase como backend de lanzamiento; el backend propio queda congelado (ADR-0010) | **Approved** (28/30: queda el E2E de iOS a mano y el resto del despliegue: Hosting y consolas, `docs/FIREBASE.md` §4) | ✅ | ✅ | ✅ | 018 | 8–12 semanas |
+| — | Auditoría de accesibilidad (fuente al 200 %, TalkBack y VoiceOver; WCAG 2.2 AA): `docs/ACCESIBILIDAD.md` | **Hecha en el código** (14 correcciones); falta la verificación en dispositivo | — | — | — | 018 | — |
 | 020 | Temporadas (de septiembre a junio), horario fijo con semanas especiales con motivo y selector de hora nuevo | **In progress** (servidor 4/4; app 6 tareas a falta de compilar y verificar) | ✅ | — | ✅ | 019 | — |
 
 \* Días ideales de una persona. Son orientativos, para priorizar, no un compromiso.

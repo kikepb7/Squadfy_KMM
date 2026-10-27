@@ -1,3 +1,5 @@
+> **Actualizado en `docs/store/` (2026-10-27)**: textos para la variante Firebase (temporadas, semanas especiales con motivo, Google y Apple), privacidad con Firebase y el generador de capturas. Este documento queda como histórico.
+
 # Kit de tienda
 
 Complementa a `specs/features/012-go-live/` del repositorio (`store-listing.md`, `privacy-data.md`, `release-checklist.md`), que ya cubre secretos, Firebase, cuenta de demo y smoke test. Aquí están los textos pulidos, los gráficos y las medidas.
