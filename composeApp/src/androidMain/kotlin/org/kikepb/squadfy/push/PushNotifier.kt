@@ -8,27 +8,33 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.kikepb.core.domain.notification.PushChannel
 import com.kikepb.core.domain.notification.PushMessage
 import com.kikepb.core.domain.notification.PushRouter
 import org.kikepb.squadfy.MainActivity
 import org.kikepb.squadfy.R
 
-/** Android notification channels and foreground notifications (AC-009-02). */
+/**
+ * Android notification channels and foreground notifications (AC-009-02). Spec 021 adds «Club y temporada» and
+ * «Novedades de Squadfy», so the user can silence them without losing the match ones; the Functions pick the same
+ * channel for background pushes (`channelOf`).
+ */
 object PushNotifier {
-
-    const val CHANNEL_MATCH_UPDATES = "match_updates"
-    const val CHANNEL_CHAT = "chat"
 
     fun createChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val manager = context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannels(
-            listOf(
-                NotificationChannel(CHANNEL_MATCH_UPDATES, context.getString(R.string.channel_match_updates), NotificationManager.IMPORTANCE_HIGH)
-                    .apply { description = context.getString(R.string.channel_match_updates_description) },
-                NotificationChannel(CHANNEL_CHAT, context.getString(R.string.channel_chat), NotificationManager.IMPORTANCE_HIGH)
-                    .apply { description = context.getString(R.string.channel_chat_description) }
-            )
+            PushChannel.entries.map { channel ->
+                val (name, description, importance) = when (channel) {
+                    PushChannel.MATCH_UPDATES ->
+                        Triple(R.string.channel_match_updates, R.string.channel_match_updates_description, NotificationManager.IMPORTANCE_HIGH)
+                    PushChannel.CHAT -> Triple(R.string.channel_chat, R.string.channel_chat_description, NotificationManager.IMPORTANCE_HIGH)
+                    PushChannel.CLUB -> Triple(R.string.channel_club, R.string.channel_club_description, NotificationManager.IMPORTANCE_DEFAULT)
+                    PushChannel.APP -> Triple(R.string.channel_app, R.string.channel_app_description, NotificationManager.IMPORTANCE_DEFAULT)
+                }
+                NotificationChannel(channel.id, context.getString(name), importance).apply { this.description = context.getString(description) }
+            }
         )
     }
 
@@ -42,13 +48,13 @@ object PushNotifier {
         }
         val id = (message.data.values.joinToString() + message.title).hashCode()
         val pendingIntent = PendingIntent.getActivity(context, id, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        val channel = if (PushRouter.isChat(message.data)) CHANNEL_CHAT else CHANNEL_MATCH_UPDATES
-        val notification = NotificationCompat.Builder(context, channel)
+        val channel = PushRouter.channelOf(message.data)
+        val notification = NotificationCompat.Builder(context, channel.id)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(message.title)
             .setContentText(message.body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message.body))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(if (channel == PushChannel.MATCH_UPDATES || channel == PushChannel.CHAT) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .build()

@@ -7,6 +7,7 @@ import com.kikepb.core.firebase.auth.FirebaseAuthRepository
 import com.kikepb.core.firebase.auth.FirebaseSessionStorage
 import com.kikepb.core.domain.crash.CrashReporter
 import com.kikepb.core.domain.featureflag.RemoteFeatureFlagSource
+import com.kikepb.core.domain.update.AppVersionSource
 import com.kikepb.core.firebase.BuildKonfig
 import com.kikepb.core.firebase.analytics.FirebaseAnalyticsTracker
 import com.kikepb.core.firebase.config.RemoteConfigFeatureFlagSource
@@ -23,7 +24,7 @@ import dev.gitlive.firebase.firestore.firestore
 import dev.gitlive.firebase.functions.functions
 import dev.gitlive.firebase.remoteconfig.remoteConfig
 import dev.gitlive.firebase.storage.storage
-import org.koin.dsl.bind
+import org.koin.dsl.binds
 import org.koin.dsl.module
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -58,7 +59,7 @@ val coreFirebaseModule = module {
             minimumFetchInterval = if (BuildKonfig.IS_RELEASE) 12.hours else 1.minutes,
             logger = get()
         )
-    } bind RemoteFeatureFlagSource::class
+    } binds arrayOf(RemoteFeatureFlagSource::class, AppVersionSource::class)
 
     single {
         FirebaseInitializer(

@@ -8,9 +8,16 @@ import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.Result.Failure
 import com.kikepb.core.domain.util.Result.Success
 import com.kikepb.core.domain.util.mapError
+import com.kikepb.core.domain.analytics.AnalyticsTracker
+import com.kikepb.core.domain.analytics.AnalyticsEvents
+import com.kikepb.core.domain.analytics.NoOpAnalyticsTracker
+import com.kikepb.core.domain.util.onSuccess
 
 /** BE-001 RN-3/RN-6: alphanumeric code (case-insensitive), optional shirt 1-999 and a position from the enum. */
-class JoinClubUseCase(private val clubRepository: ClubRepository) {
+class JoinClubUseCase(
+    private val clubRepository: ClubRepository,
+    private val analytics: AnalyticsTracker = NoOpAnalyticsTracker
+) {
 
     suspend operator fun invoke(invitationCode: String, shirtNumber: String?, position: PlayerPosition?): Result<ClubModel, JoinClubError> {
         val code = invitationCode.trim().uppercase()
@@ -23,6 +30,7 @@ class JoinClubUseCase(private val clubRepository: ClubRepository) {
         }
 
         return clubRepository.joinClub(invitationCode = code, shirtNumber = parsedShirtNumber, position = position)
+            .onSuccess { analytics.logEvent(AnalyticsEvents.clubJoined()) }
             .mapError { JoinClubError.Remote(it) }
     }
 

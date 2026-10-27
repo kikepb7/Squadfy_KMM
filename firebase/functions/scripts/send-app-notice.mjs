@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * Spec 021 APP-RN-P7: sends an app-wide notice to the FCM topics the app subscribes to (`app_<platform>_<lang>`).
- * Only the owner runs it, with admin credentials; the app can never send these.
+ * Spec 021 APP-RN-P7: sends an app-wide notice to the FCM topics the app subscribes to (`app_<platform>_<lang>`, and
+ * `pre_app_<platform>_<lang>` for the Dev builds with `--env pre`). Only the owner runs it, with admin credentials; the
+ * app can never send these. Try it first with `--env pre` on a Dev build.
  *
  *   # New version (opens the store):
- *   GOOGLE_APPLICATION_CREDENTIALS=key.json node scripts/send-app-notice.mjs update --version 1.1.0 [--platform android|ios] [--dry-run]
+ *   GOOGLE_APPLICATION_CREDENTIALS=key.json node scripts/send-app-notice.mjs update --version 1.1.0 [--platform android|ios] [--env pre|pro] [--dry-run]
  *   # General announcement:
  *   GOOGLE_APPLICATION_CREDENTIALS=key.json node scripts/send-app-notice.mjs announcement \
  *     --es-title "…" --es-body "…" --en-title "…" --en-body "…" [--url https://…] [--platform …] [--dry-run]
@@ -32,6 +33,10 @@ const STORE = {
   ios: opt("ios-store-url", "https://apps.apple.com/app/squadfy")
 };
 const platforms = opt("platform") ? [opt("platform")] : ["android", "ios"];
+const env = opt("env", "pro");
+if (env !== "pre" && env !== "pro") throw new Error("--env must be pre or pro");
+const prefix = env === "pre" ? "pre_" : "";
+if (kind === "announcement" && opt("url") && !opt("url").startsWith("https://")) throw new Error("--url must start with https:// (the app opens nothing else)");
 const version = opt("version");
 
 function textFor(lang) {
@@ -53,7 +58,7 @@ for (const platform of platforms) {
   for (const lang of ["es", "en"]) {
     const url = kind === "update" ? STORE[platform] : opt("url", "");
     messages.push({
-      topic: `app_${platform}_${lang}`,
+      topic: `${prefix}app_${platform}_${lang}`,
       notification: textFor(lang),
       data: { type: kind === "update" ? "app.update" : "app.announcement", url, ...(version ? { version } : {}) },
       android: { priority: "high", notification: { channelId: "app" } },

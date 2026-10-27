@@ -13,6 +13,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Firebase is configured in iOSApp.init(), before Koin (FirebaseSetup)
         IosSocialSignIn.shared.bridge = socialSignIn
+        // Spec 021 AC-021-07: app-wide notices by FCM topic, subscribed from the shared code once there is a token
+        IosPushTopics.shared.bridge = self
         
         UNUserNotificationCenter.current().delegate = self
         Messaging.messaging().delegate = self
@@ -75,6 +77,21 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                 print("iOS: Error getting FCM token: \(error.localizedDescription)")
                 #endif
             }
+        }
+    }
+}
+
+/// Spec 021: FCM topics need the Firebase Messaging SDK, so the shared code asks Swift (PushTopicBridge).
+extension AppDelegate: PushTopicBridge {
+    func subscribe(topic: String, onDone: @escaping (KotlinBoolean) -> Void) {
+        Messaging.messaging().subscribe(toTopic: topic) { error in
+            onDone(KotlinBoolean(value: error == nil))
+        }
+    }
+
+    func unsubscribe(topic: String, onDone: @escaping (KotlinBoolean) -> Void) {
+        Messaging.messaging().unsubscribe(fromTopic: topic) { error in
+            onDone(KotlinBoolean(value: error == nil))
         }
     }
 }

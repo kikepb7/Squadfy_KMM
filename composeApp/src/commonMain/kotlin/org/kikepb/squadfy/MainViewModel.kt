@@ -6,10 +6,13 @@ import com.kikepb.chat.domain.notification.DeviceTokenService
 import com.kikepb.chat.domain.notification.PushNotificationService
 import com.kikepb.core.data.util.PlatformUtils
 import com.kikepb.core.domain.auth.repository.SessionStorage
+import com.kikepb.core.domain.notification.SyncPushTopicsUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -23,7 +26,8 @@ import org.kikepb.squadfy.MainEvent.OnSessionExpired
 class MainViewModel(
     private val sessionStorage: SessionStorage,
     private val pushNotificationService: PushNotificationService,
-    private val deviceTokenService: DeviceTokenService
+    private val deviceTokenService: DeviceTokenService,
+    private val syncPushTopics: SyncPushTopicsUseCase
 ) : ViewModel() {
 
     // Spec 019: the session ends when it disappears, with either backend (Firebase keeps no refresh token in the app)
@@ -54,6 +58,13 @@ class MainViewModel(
 
             _state.update { it.copy(isCheckingAuth = false, isLoggedIn = authInfo != null) }
         }
+        // Spec 021 AC-021-07: app-wide notices reach every install, signed in or not, once FCM has a token (on iOS
+        // that needs the APNs token first)
+        pushNotificationService.observeDeviceToken()
+            .filterNotNull()
+            .distinctUntilChanged()
+            .onEach { syncPushTopics() }
+            .launchIn(viewModelScope)
     }
 
     private fun observeSession() {

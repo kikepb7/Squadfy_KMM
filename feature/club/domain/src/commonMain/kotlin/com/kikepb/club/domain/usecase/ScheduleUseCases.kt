@@ -14,6 +14,10 @@ import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.mapError
 import kotlinx.datetime.LocalDate
 import kotlin.time.Instant
+import com.kikepb.core.domain.analytics.AnalyticsTracker
+import com.kikepb.core.domain.analytics.AnalyticsEvents
+import com.kikepb.core.domain.analytics.NoOpAnalyticsTracker
+import com.kikepb.core.domain.util.onSuccess
 
 sealed interface SaveScheduleError : Error {
     data class Invalid(val reason: ScheduleValidationError) : SaveScheduleError
@@ -50,7 +54,10 @@ class GetScheduleExceptionsUseCase(private val scheduleRepository: ScheduleRepos
         scheduleRepository.getExceptions(clubId)
 }
 
-class AddScheduleExceptionUseCase(private val scheduleRepository: ScheduleRepository) {
+class AddScheduleExceptionUseCase(
+    private val scheduleRepository: ScheduleRepository,
+    private val analytics: AnalyticsTracker = NoOpAnalyticsTracker
+) {
     suspend operator fun invoke(
         clubId: String,
         date: LocalDate,
@@ -63,7 +70,7 @@ class AddScheduleExceptionUseCase(private val scheduleRepository: ScheduleReposi
         type = type,
         newScheduledAt = newScheduledAt.takeIf { type == ScheduleExceptionType.RESCHEDULED },
         reason = reason?.trim()?.ifBlank { null }
-    )
+    ).onSuccess { analytics.logEvent(AnalyticsEvents.scheduleExceptionAdded(type.name.lowercase())) }
 }
 
 class DeleteScheduleExceptionUseCase(private val scheduleRepository: ScheduleRepository) {

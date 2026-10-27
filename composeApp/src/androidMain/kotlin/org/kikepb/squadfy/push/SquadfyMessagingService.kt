@@ -6,6 +6,8 @@ import com.kikepb.chat.domain.notification.DeviceTokenService
 import com.kikepb.core.domain.auth.repository.SessionStorage
 import com.kikepb.core.domain.notification.InAppPushCenter
 import com.kikepb.core.domain.notification.PushMessage
+import com.kikepb.core.domain.notification.PushRouter
+import com.kikepb.core.domain.update.AppInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -18,6 +20,7 @@ class SquadfyMessagingService : FirebaseMessagingService() {
     private val sessionStorage by inject<SessionStorage>()
     private val applicationScope by inject<CoroutineScope>()
     private val inAppPushCenter by inject<InAppPushCenter>()
+    private val appInfo by inject<AppInfo>()
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
@@ -36,6 +39,8 @@ class SquadfyMessagingService : FirebaseMessagingService() {
         )
         // AC-009-04: the visible club screen refreshes and shows a snackbar instead
         if (inAppPushCenter.onForegroundMessage(push)) return
+        // Spec 021: this install already has the announced version
+        if (PushRouter.isStaleUpdate(push.data, appInfo.versionName)) return
         PushNotifier.show(this, push)
     }
 }

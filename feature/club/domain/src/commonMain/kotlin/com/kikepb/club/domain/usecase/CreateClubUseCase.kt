@@ -6,9 +6,15 @@ import com.kikepb.club.domain.repository.ClubRepository
 import com.kikepb.core.domain.util.Result
 import com.kikepb.core.domain.util.Result.Failure
 import com.kikepb.core.domain.util.Result.Success
+import com.kikepb.core.domain.analytics.AnalyticsTracker
+import com.kikepb.core.domain.analytics.AnalyticsEvents
+import com.kikepb.core.domain.analytics.NoOpAnalyticsTracker
 
 /** BE-001 validation (name ≤ 120, description ≤ 2000, maxMembers > 0) plus the optional logo (AC-003-03). */
-class CreateClubUseCase(private val clubRepository: ClubRepository) {
+class CreateClubUseCase(
+    private val clubRepository: ClubRepository,
+    private val analytics: AnalyticsTracker = NoOpAnalyticsTracker
+) {
 
     suspend operator fun invoke(
         name: String,
@@ -34,6 +40,7 @@ class CreateClubUseCase(private val clubRepository: ClubRepository) {
             is Success -> result.data
             is Failure -> return Failure(CreateClubError.Remote(result.error))
         }
+        analytics.logEvent(AnalyticsEvents.clubCreated())
 
         if (logoBytes == null || logoMimeType == null) return Success(CreatedClub(club = club, logoUploadFailed = false))
 

@@ -6,6 +6,10 @@ import com.kikepb.club.domain.model.MatchAnnouncementModel
 import com.kikepb.club.domain.model.PlayerPosition
 import com.kikepb.club.domain.repository.AnnouncementRepository
 import com.kikepb.core.domain.util.Result
+import com.kikepb.core.domain.analytics.AnalyticsTracker
+import com.kikepb.core.domain.analytics.AnalyticsEvents
+import com.kikepb.core.domain.analytics.NoOpAnalyticsTracker
+import com.kikepb.core.domain.util.onSuccess
 
 class GetCurrentAnnouncementUseCase(private val repository: AnnouncementRepository) {
     suspend operator fun invoke(clubId: String): Result<CurrentAnnouncementModel?, ClubError> = repository.getCurrent(clubId)
@@ -15,8 +19,12 @@ class GetAnnouncementHistoryUseCase(private val repository: AnnouncementReposito
     suspend operator fun invoke(clubId: String): Result<List<MatchAnnouncementModel>, ClubError> = repository.getHistory(clubId)
 }
 
-class EnrollUseCase(private val repository: AnnouncementRepository) {
-    suspend operator fun invoke(announcementId: String): Result<MatchAnnouncementModel, ClubError> = repository.enroll(announcementId)
+class EnrollUseCase(
+    private val repository: AnnouncementRepository,
+    private val analytics: AnalyticsTracker = NoOpAnalyticsTracker
+) {
+    suspend operator fun invoke(announcementId: String): Result<MatchAnnouncementModel, ClubError> =
+        repository.enroll(announcementId).onSuccess { analytics.logEvent(AnalyticsEvents.matchEnrolled()) }
 }
 
 class WithdrawUseCase(private val repository: AnnouncementRepository) {

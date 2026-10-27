@@ -10,4 +10,10 @@
     <string name="tab_home">Home</string>
     <string name="tab_clubs">Clubs</string>
     <string name="tab_chat">Chat</string>
+    <string name="update_required_title">Update Squadfy</string>
+    <string name="update_required_body">This version no longer works with the server. Install version %1$s to keep using the app.</string>
+    <string name="update_optional_title">A new version is out</string>
+    <string name="update_optional_body">Squadfy %1$s is available, with improvements and fixes.</string>
+    <string name="update_now">Update</string>
+    <string name="update_later">Not now</string>
 </resources>

@@ -27,6 +27,13 @@ import com.kikepb.core.domain.logger.SquadfyLogger
 import com.kikepb.core.domain.analytics.AnalyticsConsent
 import com.kikepb.core.domain.analytics.AnalyticsTracker
 import com.kikepb.core.domain.analytics.NoOpAnalyticsTracker
+import com.kikepb.core.data.update.DataStoreUpdatePromptStore
+import com.kikepb.core.domain.notification.SyncPushTopicsUseCase
+import com.kikepb.core.domain.update.AppInfo
+import com.kikepb.core.domain.update.AppVersionSource
+import com.kikepb.core.domain.update.NoAppVersionSource
+import com.kikepb.core.domain.update.UpdatePromptStore
+import com.kikepb.core.data.util.currentLocaleTag
 import org.koin.core.module.Module
 import kotlin.time.Clock
 import org.koin.core.module.dsl.singleOf
@@ -53,6 +60,11 @@ val coreDataModule = module {
     // Push notifications (spec 009)
     single { InAppPushCenter() }
     singleOf(::DataStoreNotificationPromptStore) bind NotificationPromptStore::class
+    // App-wide notices by FCM topic (spec 021 AC-021-07); the subscriber is native and comes from the app module
+    single { SyncPushTopicsUseCase(subscriber = get(), environment = get(), platform = currentAppPlatform, localeTag = ::currentLocaleTag) }
+    // New version notice (spec 021 APP-RN-P8); the versions come from Remote Config in the Firebase variant
+    single { AppInfo(versionName = BuildKonfig.VERSION_NAME) }
+    singleOf(::DataStoreUpdatePromptStore) bind UpdatePromptStore::class
     // Crash reports with consent (spec 011 AC-011-13)
     singleOf(::DataStoreCrashReportingConsent) bind CrashReportingConsent::class
     // Usage analytics with its own consent (spec 019 AC-019-18); the tracker comes from the backend variant
@@ -77,10 +89,14 @@ val coreApiNetworkModule = module {
     singleOf(::DataStoreSessionStorage) bind SessionStorage::class
 }
 
-/** What Firebase provides in the other variant: crash reporter, no remote flags (D-10 is Remote Config) and no analytics. */
+/**
+ * What Firebase provides in the other variant: crash reporter, no remote flags (D-10 is Remote Config), no version
+ * notice and no analytics.
+ */
 val coreApiTelemetryModule = module {
     includes(platformCoreApiTelemetryModule)
     singleOf(::NoOpRemoteFeatureFlagSource) bind RemoteFeatureFlagSource::class
+    single<AppVersionSource> { NoAppVersionSource }
     single<AnalyticsTracker> { NoOpAnalyticsTracker }
 }
 

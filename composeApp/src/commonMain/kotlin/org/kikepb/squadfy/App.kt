@@ -15,6 +15,7 @@ import org.kikepb.squadfy.MainEvent.OnSessionExpired
 import org.kikepb.squadfy.navigation.DeepLinkListener
 import org.kikepb.squadfy.navigation.NavigationRoot
 import org.kikepb.squadfy.di.onAppForeground
+import org.kikepb.squadfy.update.AppUpdateRoot
 import org.koin.compose.getKoin
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -55,6 +56,8 @@ fun App(
                 startDestination = if (state.isLoggedIn) GlobalPositionGraph else AuthGraph
             )
             DeepLinkListener(navController = navController)
+            // Spec 021 APP-RN-P8: a new version, over any screen (signed in or not)
+            AppUpdateRoot()
         }
     }
 }

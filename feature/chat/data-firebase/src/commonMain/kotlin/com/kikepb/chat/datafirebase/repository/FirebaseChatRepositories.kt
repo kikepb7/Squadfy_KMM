@@ -349,7 +349,9 @@ class FirebaseChatConnectionClient(
 /** FCM tokens in `users/{uid}/devices/{token}` (spec 019 T-022), read by the Functions to send pushes. */
 class FirebaseDeviceTokenService(
     private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    // Spec 021: lets the owner see which versions are still in use before raising `min_version`
+    private val appVersion: String
 ) : DeviceTokenService {
 
     override suspend fun registerToken(token: String, platform: String): EmptyResult<DataError.Remote> {
@@ -361,7 +363,7 @@ class FirebaseDeviceTokenService(
                     platform = platform.lowercase().let { if (it.startsWith("ios")) "ios" else "android" },
                     locale = currentLocaleTag(),
                     timeZone = TimeZone.currentSystemDefault().id,
-                    appVersion = "",
+                    appVersion = appVersion,
                     updatedAt = Timestamp.ServerTimestamp
                 )
             )

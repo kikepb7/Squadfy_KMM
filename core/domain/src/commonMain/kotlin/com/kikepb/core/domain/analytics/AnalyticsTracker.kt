@@ -38,3 +38,19 @@ interface AnalyticsConsent {
     /** Pushes the stored choice to the analytics SDK. Called once at startup. */
     suspend fun applyStored()
 }
+
+/**
+ * Product events (spec 021 AC-021-09). Their parameters are categories only (format, mode, kind): never an id, a name or
+ * free text. Logging is a no-op until the user agrees in Profile.
+ */
+object AnalyticsEvents {
+    fun clubCreated() = AnalyticsEvent("club_created")
+    fun clubJoined() = AnalyticsEvent("club_joined")
+    fun matchEnrolled() = AnalyticsEvent("match_enrolled")
+    fun teamsGenerated(mode: String) = AnalyticsEvent("teams_generated", mapOf("mode" to mode))
+    fun matchCompleted() = AnalyticsEvent("match_completed")
+    fun scheduleExceptionAdded(kind: String) = AnalyticsEvent("schedule_exception_added", mapOf("kind" to kind))
+    fun seasonUpdated() = AnalyticsEvent("season_updated")
+    fun updatePromptShown(required: Boolean) = AnalyticsEvent("update_prompt_shown", mapOf("required" to required.toString()))
+    fun updatePromptAccepted() = AnalyticsEvent("update_prompt_accepted")
+}

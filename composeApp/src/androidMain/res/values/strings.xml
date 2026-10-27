@@ -5,4 +5,8 @@
     <string name="channel_match_updates_description">Convocatorias, equipos y cambios de partido</string>
     <string name="channel_chat">Mensajes</string>
     <string name="channel_chat_description">Mensajes del chat</string>
+    <string name="channel_club">Club y temporada</string>
+    <string name="channel_club_description">Nuevos miembros, cambios de rol y temporadas</string>
+    <string name="channel_app">Novedades de Squadfy</string>
+    <string name="channel_app_description">Nuevas versiones y avisos de la app</string>
 </resources>

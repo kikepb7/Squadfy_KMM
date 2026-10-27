@@ -9,6 +9,10 @@ import com.kikepb.club.domain.model.TeamBalanceModel
 import com.kikepb.club.domain.repository.MatchRepository
 import com.kikepb.core.domain.util.Result
 import kotlin.time.Instant
+import com.kikepb.core.domain.analytics.AnalyticsTracker
+import com.kikepb.core.domain.analytics.AnalyticsEvents
+import com.kikepb.core.domain.analytics.NoOpAnalyticsTracker
+import com.kikepb.core.domain.util.onSuccess
 
 class GetMatchUseCase(private val repository: MatchRepository) {
     suspend operator fun invoke(matchId: String): Result<MatchModel, ClubError> = repository.getMatch(matchId)
@@ -24,11 +28,15 @@ class GetTeamBalanceUseCase(private val repository: MatchRepository) {
 }
 
 /** BE-003 RN-7/8: AUTO re-draws; MANUAL needs two disjoint, non-empty teams whose sizes differ by at most 1. */
-class GenerateTeamsUseCase(private val repository: MatchRepository) {
-    suspend fun auto(matchId: String): Result<MatchModel, ClubError> = repository.generateTeams(matchId, teamA = null, teamB = null)
+class GenerateTeamsUseCase(
+    private val repository: MatchRepository,
+    private val analytics: AnalyticsTracker = NoOpAnalyticsTracker
+) {
+    suspend fun auto(matchId: String): Result<MatchModel, ClubError> =
+        repository.generateTeams(matchId, teamA = null, teamB = null).onSuccess { analytics.logEvent(AnalyticsEvents.teamsGenerated("auto")) }
 
     suspend fun manual(matchId: String, teamA: List<String>, teamB: List<String>): Result<MatchModel, ClubError> =
-        repository.generateTeams(matchId, teamA = teamA, teamB = teamB)
+        repository.generateTeams(matchId, teamA = teamA, teamB = teamB).onSuccess { analytics.logEvent(AnalyticsEvents.teamsGenerated("manual")) }
 
     companion object {
         fun isValidManualSplit(teamA: Collection<String>, teamB: Collection<String>): Boolean =
@@ -59,8 +67,12 @@ class CancelMatchUseCase(private val repository: MatchRepository) {
     suspend operator fun invoke(matchId: String): Result<MatchModel, ClubError> = repository.cancel(matchId)
 }
 
-class CompleteMatchUseCase(private val repository: MatchRepository) {
-    suspend operator fun invoke(matchId: String): Result<MatchModel, ClubError> = repository.complete(matchId)
+class CompleteMatchUseCase(
+    private val repository: MatchRepository,
+    private val analytics: AnalyticsTracker = NoOpAnalyticsTracker
+) {
+    suspend operator fun invoke(matchId: String): Result<MatchModel, ClubError> =
+        repository.complete(matchId).onSuccess { analytics.logEvent(AnalyticsEvents.matchCompleted()) }
 }
 
 class ReopenMatchUseCase(private val repository: MatchRepository) {

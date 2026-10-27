@@ -15,6 +15,7 @@ import com.kikepb.chat.domain.repository.participant.ChatParticipantRepository
 import com.kikepb.chat.domain.repository.participant.ChatParticipantService
 import org.koin.dsl.binds
 import org.koin.dsl.module
+import com.kikepb.core.domain.update.AppInfo
 
 /** Spec 019: chat, participants, connection state and device tokens on Firebase. */
 val chatFirebaseDataModule = module {
@@ -24,7 +25,7 @@ val chatFirebaseDataModule = module {
     single { FirebaseChatParticipantRepository(auth = get(), firestore = get(), images = get()) } binds
         arrayOf(ChatParticipantRepository::class, ChatParticipantService::class)
     single<ChatConnectionClient> { FirebaseChatConnectionClient(database = get(), appScope = get()) }
-    single<DeviceTokenService> { FirebaseDeviceTokenService(auth = get(), firestore = get()) }
+    single<DeviceTokenService> { FirebaseDeviceTokenService(auth = get(), firestore = get(), appVersion = get<AppInfo>().versionName) }
     // Created at start: marks me online as soon as I am signed in (AC-019-16)
     single<PresenceRepository> { FirebasePresenceRepository(auth = get(), database = get(), appScope = get()) }
 }
