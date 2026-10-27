@@ -40,13 +40,13 @@ Firebase (proyecto `squadfy-5233d`):
   - plantillas de email (verificación, cambio de contraseña y de email): *Customize action URL* → `https://squadfy-5233d.web.app/auth/action`;
   - dominios autorizados: el de Hosting y, si lo hay, el dominio propio.
 - [ ] **App web** registrada en el proyecto. Hosting la necesita para servir `/__/firebase/init.json` a las páginas de borrado de cuenta y de acción.
-- [ ] **Cloud Messaging**: la clave APNs (`.p8`) subida a las dos apps de iOS.
+- [ ] **Cloud Messaging**: la clave APNs (`.p8`) subida a las dos apps de iOS. Sin ella, iOS no recibe ningún aviso (ni de partido ni de la app) y la suscripción a los *topics* falla.
 - [ ] **App Check**:
   - Play Integrity en las apps de Android y App Attest en las de iOS;
   - registrar los tokens de depuración que imprimen las builds debug (`Enter this debug secret…` en Android; `App Check debug token` en el log de Xcode).
   - Después, `ENFORCE_APP_CHECK=true` en `firebase/functions/.env.squadfy-5233d`, y la exigencia en Firestore, Storage y RTDB desde la consola.
 - [ ] **Analytics**: retención de datos (2 meses) y sin señales de anuncios.
-- [ ] **Crashlytics**: activado. Solo recibe informes de builds release con el consentimiento del usuario.
+- [ ] **Crashlytics**: activado. Solo recibe informes de builds release con el consentimiento del usuario. En iOS, la fase de compilación que sube los dSYM (`upload-symbols` de FirebaseCrashlytics) en las dos configuraciones; en Android el plugin ya sube el mapping de R8.
 - [ ] **Sign in with Apple en Android y en la web**: un *Services ID* de Apple con el dominio `squadfy-5233d.firebaseapp.com` y la URL de retorno de Firebase, configurado en el proveedor Apple de Firebase.
 
 Apple:
@@ -65,9 +65,11 @@ Contraseñas:
 |---|---|
 | Apps | Android Dev y Prod, iOS Dev y Prod. Falta la app web (§3) |
 | Firestore | `(default)` en `eur3`. Protección contra el borrado, PITR (7 días) y backup diario (se guarda 14 días), activados el 2026-10-27 |
-| Functions | 61 en `europe-west1` (Node 22), desplegadas el 2026-10-26. **Las de la spec 020** (temporadas, motivo obligatorio) **no están desplegadas todavía** |
+| Functions | 61 en `europe-west1` (Node 22), desplegadas el 2026-10-26. **Las de las specs 020 y 021** (temporadas, motivo obligatorio, silencio por club, idioma, recordatorio, resultado y avisos de club) **no están desplegadas todavía** |
 | Reglas | Firestore y Storage, iguales que las del repo. Realtime Database existe en `europe-west1` y deniega la raíz |
-| Remote Config | Plantilla v1 desplegada el 2026-10-27; todas las flags usan el valor por defecto de la app |
+| Remote Config | Plantilla v2 desplegada el 2026-10-27: condiciones `pro_android`, `pro_ios`, `pre_android` y `pre_ios`; versión 1.0.0 en las cuatro y `store_url` solo en Android (iOS no tiene id de App Store aún); las flags usan el valor por defecto de la app |
+| Analytics | Enlazado a la propiedad 560777788, con un flujo por app (las cuatro). Eventos de la spec 021 en §7 |
+| Índices | El de grupo de colección de `matches` (`status`, `scheduledAt`) para el recordatorio **no está desplegado** |
 | Hosting | Sin desplegar |
 | App Check | Sin configurar: las callables reciben tokens no válidos y los aceptan porque `ENFORCE_APP_CHECK` está apagado |
 
@@ -84,6 +86,26 @@ firebase deploy --only firestore,database,storage,functions,remoteconfig,hosting
 ## 6. Privacidad (RGPD)
 - Los informes de fallos (Crashlytics) y las estadísticas de uso (Analytics) están **apagados por defecto**, tanto en el manifest como en el Info.plist.
 - Cada uno tiene su interruptor en Perfil. La elección se guarda en el dispositivo y se aplica al arrancar.
-- Analytics registra el `screen_view` con el nombre de la clase de la ruta. Nunca lleva ids, nombres ni texto.
+- Analytics registra el `screen_view` con el nombre de la clase de la ruta y los eventos de §7. Nunca lleva ids, nombres ni texto.
 - Sin id de usuario, sin identificador publicitario y sin personalización de anuncios.
 - La política está en `firebase/hosting/legal/privacy.html`. Si cambian los proveedores o los datos, actualízala.
+
+## 7. Avisos, versión y eventos (spec 021)
+**Avisos push.** Los manda el servidor (tabla en `specs/contracts/firebase.md` §6), en el idioma del dispositivo y sin los del club silenciado. En Android hay cuatro canales, que el usuario puede silenciar por separado: Partidos, Mensajes, Club y temporada, y Novedades de Squadfy.
+
+**Avisos de la app** (nueva versión o anuncio). La app se suscribe sola al *topic* de su plataforma e idioma. Los manda el owner con credenciales de administrador:
+```bash
+cd firebase/functions
+# primero en una build Dev:
+node scripts/send-app-notice.mjs update --version 1.1.0 --platform android --env pre
+node scripts/send-app-notice.mjs announcement --es-title "…" --es-body "…" --en-title "…" --en-body "…" [--url https://…] --env pro
+```
+Añade `--dry-run` para validar sin enviar. El aviso de versión abre la tienda; con la app abierta, no se muestra si ya tiene esa versión.
+
+**Aviso de nueva versión dentro de la app.** Lo controla Remote Config, por app:
+- `latest_version`: por debajo, la app la ofrece una vez (se puede descartar hasta la siguiente);
+- `min_version`: por debajo, la app no deja seguir hasta actualizar. Súbela solo con cambios incompatibles, y mira antes `appVersion` en `users/{uid}/devices`;
+- `store_url`: la ficha de la tienda. **En iOS, ponla antes de subir las otras dos**: sin ella el botón queda desactivado.
+
+**Eventos de Analytics** (solo con el consentimiento, sin ids ni nombres): `club_created`, `club_joined`, `match_enrolled`, `teams_generated` (`mode` auto o manual), `match_completed`, `schedule_exception_added` (`kind`), `season_updated`, `update_prompt_shown` (`required`), `update_prompt_accepted` y `screen_view`. Para verlos al momento en DebugView: `adb shell setprop debug.firebase.analytics.app com.kikepb.squadfy.dev` en Android, o `-FIRDebugEnabled` en el esquema de Xcode.
+

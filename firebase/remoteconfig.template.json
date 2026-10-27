@@ -48,7 +48,85 @@
       },
       "valueType": "BOOLEAN",
       "description": "Button to create a test match with an immediate sign-up window. Leave the in-app default to keep the spec 013 PRE/PRO default; add a conditional value per app (Squadfy * Dev / Prod) to switch it remotely."
+    },
+    "latest_version": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "conditionalValues": {
+        "pro_android": {
+          "value": "1.0.0"
+        },
+        "pro_ios": {
+          "value": "1.0.0"
+        },
+        "pre_android": {
+          "value": "1.0.0"
+        },
+        "pre_ios": {
+          "value": "1.0.0"
+        }
+      },
+      "valueType": "STRING",
+      "description": "Spec 021 APP-RN-P8: newest version in the store per app. Below it the app offers the update once (dismissible). Raise it when a release is live; on iOS set store_url first."
+    },
+    "min_version": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "conditionalValues": {
+        "pro_android": {
+          "value": "1.0.0"
+        },
+        "pro_ios": {
+          "value": "1.0.0"
+        },
+        "pre_android": {
+          "value": "1.0.0"
+        },
+        "pre_ios": {
+          "value": "1.0.0"
+        }
+      },
+      "valueType": "STRING",
+      "description": "Spec 021 APP-RN-P8: oldest version that still works per app. Below it the app blocks until updated. Raise it only for breaking changes, and never above latest_version; on iOS only with store_url set."
+    },
+    "store_url": {
+      "defaultValue": {
+        "useInAppDefault": true
+      },
+      "conditionalValues": {
+        "pro_android": {
+          "value": "https://play.google.com/store/apps/details?id=com.kikepb.squadfy"
+        },
+        "pre_android": {
+          "value": "https://play.google.com/store/apps/details?id=com.kikepb.squadfy"
+        }
+      },
+      "valueType": "STRING",
+      "description": "Spec 021: the store page the update notice opens. iOS stays unset until the app has its App Store id (https://apps.apple.com/app/id<ID>)."
     }
   },
-  "conditions": []
+  "conditions": [
+    {
+      "name": "pro_android",
+      "expression": "app.id == '1:745020400462:android:98c7fbe78415c4ab75f41f'",
+      "tagColor": "GREEN"
+    },
+    {
+      "name": "pro_ios",
+      "expression": "app.id == '1:745020400462:ios:4ac1d4471077708375f41f'",
+      "tagColor": "GREEN"
+    },
+    {
+      "name": "pre_android",
+      "expression": "app.id == '1:745020400462:android:c251e5852761ebce75f41f'",
+      "tagColor": "ORANGE"
+    },
+    {
+      "name": "pre_ios",
+      "expression": "app.id == '1:745020400462:ios:77e5e73673e70eae75f41f'",
+      "tagColor": "ORANGE"
+    }
+  ]
 }

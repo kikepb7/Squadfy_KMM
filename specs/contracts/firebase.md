@@ -93,13 +93,24 @@ Una callable falla con un `HttpsError` cuyo código equivale al estado HTTP del 
 |---|---|---|
 | `planUpcomingMatches` | Cada hora, en el minuto 5 | Planifica el partido de la semana siguiente de cada horario activo, con sus excepciones (BE-008 RN-B2) |
 | `closeAnnouncementsAndDraw` | Cada 5 min | Cierra las convocatorias vencidas y, a la hora de sorteo, publica los equipos (BE-003 y BE-008) |
-| `sendAnnouncementNotifications` | Cada 5 min | Avisa de que la convocatoria está abierta y recuerda el cierre, una vez cada cosa (marcas en la convocatoria) |
-| `rollSeasons` | Cada día a las 00:15 UTC | Cierra las temporadas terminadas, crea la siguiente con los mismos días y la activa en su inicio (spec 020). Es idempotente |
+| `sendAnnouncementNotifications` | Cada 5 min | Avisa de que la convocatoria está abierta y recuerda el cierre, una vez cada cosa (marcas en la convocatoria). También manda el recordatorio de 2 h antes a los convocados (`reminderSentAt` en el partido, spec 021) |
+| `rollSeasons` | Cada día a las 00:15 UTC | Cierra las temporadas terminadas, crea la siguiente con los mismos días y la activa en su inicio (spec 020). Es idempotente. Avisa a los miembros de cada cambio, una vez (spec 021) |
 | `onChatMessageCreated` y `onChatMessageDeleted` | Al crear o borrar un mensaje | Último mensaje del chat y push `new_message` |
 | `onUserProfileUpdated` | Al cambiar `users/{uid}` | Copia el nombre y la foto a las membresías y a los chats |
 | `onAuthUserDeleted` | Al borrar el usuario de Auth (web, consola) | El mismo borrado que `deleteAccount`. Es idempotente |
 
-Los pushes usan los mismos `type` que el backend (`BACKEND.md` §13) y respetan el silencio por club.
+Los pushes usan los mismos `type` que el backend (`BACKEND.md` §13) y respetan el silencio por club. La spec 021 añade:
+
+| `type` | A quién | Abre | Canal Android |
+|---|---|---|---|
+| `match.reminder` | Convocados, 2 h antes | Pestaña Partido del club | `match_updates` |
+| `match.completed` | Jugadores del partido, con su cambio de rating | El partido | `match_updates` |
+| `club.member_joined` | Owner y admins | El club | `club` |
+| `club.role_changed`, `club.ownership_transferred` | El miembro (aunque tenga el club silenciado) | El club | `club` |
+| `season.started`, `season.closed` | Los miembros | El club | `club` |
+| `app.update`, `app.announcement` | *Topic* `app_<plataforma>_<idioma>` (`pre_…` en Dev), con `url` | La tienda o la web | `app` |
+
+Cada aviso va en el idioma del dispositivo (`locale`: inglés si empieza por `en`; si no, español).
 
 ## 7. Hosting
 - `/legal/privacy`: política de privacidad.
