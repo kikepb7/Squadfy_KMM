@@ -30,7 +30,8 @@ Es una app Kotlin Multiplatform (Android + iOS, Compose Multiplatform).
   - en la app, `squadfy.firebase.useEmulator=true` en `local.properties` (solo debug);
   - tests: `npm test` (dominio) y `npm run test:emulator` (reglas y callables, en el proyecto offline `demo-squadfy`);
   - en el emulador los jobs no se disparan solos: usa la callable `runJobsNow({at})`;
-  - **no despliegues ni toques el proyecto real** sin permiso del owner.
+  - **no despliegues ni toques el proyecto real** sin permiso del owner. Lo que ya está desplegado y lo que falta: `docs/FIREBASE.md` §4;
+  - en un contenedor con proxy, `firebase emulators:exec` falla al registrar los triggers de Firestore («request blocked»): el CLI manda por el proxy hasta las llamadas a `127.0.0.1`.
 - Variante: `-PSQUADFY_BACKEND=firebase|api` (por defecto `firebase`). Con `api`, el backend propio congelado.
 - El JDK 17 está fijado en `gradle/gradle-daemon-jvm.properties`. **No lo quites**: el JDK por defecto de esta máquina es un EA (`23-valhalla`) que rompe KSP.
 - `local.properties` admite, de forma opcional, `BASE_URL_HTTP` (tiene que terminar en `/api/v1`) y `BASE_URL_WS` (`…/ws`); por defecto apuntan al emulador, `10.0.2.2:8080`. **No hay API key de cliente** (ADR-0008): no la reintroduzcas, porque cualquier clave compilada en la app se puede extraer.

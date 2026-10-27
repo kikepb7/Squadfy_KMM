@@ -65,4 +65,8 @@
   - Android (2026-10-26): hecho en la UI contra los emuladores. Se crea el club, otros jugadores se unen con el código, se configura el horario y se apuntan (10/10 en vivo), los equipos se sortean al cierre (`runJobsNow`), se rellena el acta con un gol y se cierra con Elo, se actualiza la clasificación y se planifica el partido siguiente. Arreglados durante la prueba: los jugadores solos de dos líneas seguidas se solapaban en el campo (5v5), y aparecía «1 miembros».
   - iOS: compila y arranca en el simulador; Firebase se configura antes de Koin (comprobado en los logs). Falta recorrer el ciclo a mano: el teclado del simulador está en español y la herramienta no puede escribir «@».
 - [~] **T-029** `docs/FIREBASE.md`, `CLAUDE.md` y roadmap. Despliegue a PRE (lo autoriza el owner).
-  - Hecho: la documentación. Pendiente: el despliegue y lo de las consolas (`docs/FIREBASE.md` §3), cuando el owner lo decida.
+  - Hecho: la documentación.
+  - Desplegado en `squadfy-5233d` (estado comprobado el 2026-10-27, `docs/FIREBASE.md` §4):
+    - 2026-10-26 (owner): las 61 Functions en `europe-west1`, y las reglas de Firestore y Storage. La app Dev ya ha usado el proyecto real.
+    - 2026-10-27 (con permiso del owner): la plantilla de Remote Config (v1) y la protección de Firestore (protección contra el borrado, PITR de 7 días y un backup diario que se guarda 14 días).
+  - Pendiente: Hosting (sin desplegar: «Site Not Found»), las Functions de la spec 020 y lo de las consolas (`docs/FIREBASE.md` §3), que el owner deja para cuando se publique la app.

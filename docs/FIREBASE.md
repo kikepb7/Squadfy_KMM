@@ -60,7 +60,20 @@ Google Play:
 Contraseñas:
 - [ ] Las contraseñas del keystore en `keystore.properties`, o en los secretos del entorno `production` del repositorio.
 
-## 4. Desplegar (solo cuando lo decida el owner)
+## 4. Estado del proyecto real (comprobado el 2026-10-27)
+| Pieza | Estado |
+|---|---|
+| Apps | Android Dev y Prod, iOS Dev y Prod. Falta la app web (§3) |
+| Firestore | `(default)` en `eur3`. Protección contra el borrado, PITR (7 días) y backup diario (se guarda 14 días), activados el 2026-10-27 |
+| Functions | 61 en `europe-west1` (Node 22), desplegadas el 2026-10-26. **Las de la spec 020** (temporadas, motivo obligatorio) **no están desplegadas todavía** |
+| Reglas | Firestore y Storage, iguales que las del repo. Realtime Database existe en `europe-west1` y deniega la raíz |
+| Remote Config | Plantilla v1 desplegada el 2026-10-27; todas las flags usan el valor por defecto de la app |
+| Hosting | Sin desplegar |
+| App Check | Sin configurar: las callables reciben tokens no válidos y los aceptan porque `ENFORCE_APP_CHECK` está apagado |
+
+⚠️ Dev y Prod comparten proyecto: las pruebas de la app Dev escriben en la base de datos de producción.
+
+## 5. Desplegar (solo cuando lo decida el owner)
 ```bash
 cd firebase && cp .firebaserc.example .firebaserc
 firebase deploy --only firestore,database,storage,functions,remoteconfig,hosting
@@ -68,7 +81,7 @@ firebase deploy --only firestore,database,storage,functions,remoteconfig,hosting
 1. Primero, con `ENFORCE_APP_CHECK` sin definir o a `false`.
 2. Cuando las builds release se atestigüen y los tokens de depuración estén registrados, pásalo a `true` y vuelve a desplegar las Functions.
 
-## 5. Privacidad (RGPD)
+## 6. Privacidad (RGPD)
 - Los informes de fallos (Crashlytics) y las estadísticas de uso (Analytics) están **apagados por defecto**, tanto en el manifest como en el Info.plist.
 - Cada uno tiene su interruptor en Perfil. La elección se guarda en el dispositivo y se aplica al arrancar.
 - Analytics registra el `screen_view` con el nombre de la clase de la ruta. Nunca lleva ids, nombres ni texto.

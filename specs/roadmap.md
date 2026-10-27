@@ -25,7 +25,8 @@ Fases de cada spec: `Draft → Approved → In progress → Done`. Solo el owner
 | 016 | Identidad de marca (kit): iconos, splash, logo, paleta y Poppins | **Done** (7/7) | ✅ | — | ✅ | 011 | — |
 | 017 | Coherencia de la interfaz: estados de carga, barra superior y barra de estado | **Done** (6/6) | ✅ | — | ✅ | 016 | — |
 | 018 | Rediseño «Triangulación»: tokens, fuentes, logo Corte, componentes y pantallas | **Done** (22/22) | ✅ | — | ✅ | 017 | — |
-| 019 | Firebase como backend de lanzamiento; el backend propio queda congelado (ADR-0010) | **Approved** (28/30: queda el E2E de iOS a mano y el despliegue) | ✅ | ✅ | ✅ | 018 | 8–12 semanas |
+| 019 | Firebase como backend de lanzamiento; el backend propio queda congelado (ADR-0010) | **Approved** (28/30: queda el E2E de iOS a mano y el resto del despliegue: Hosting y consolas, `docs/FIREBASE.md` §4) | ✅ | ✅ | ✅ | 018 | 8–12 semanas |
+| 020 | Temporadas (de septiembre a junio), horario fijo con semanas especiales con motivo y selector de hora nuevo | **In progress** (servidor 4/4; app 6 tareas a falta de compilar y verificar) | ✅ | — | ✅ | 019 | — |
 
 \* Días ideales de una persona. Son orientativos, para priorizar, no un compromiso.
 
@@ -61,6 +62,8 @@ BE-008, BE-009, BE-010 (en paralelo en el backend) ──────▶ 012
 ```
 
 ## Plan hasta la 1.0.0 (revisado el 2026-10-08)
+> **Nota del 2026-10-27:** con la spec 019 (ADR-0010) el backend de lanzamiento es Firebase. El bloque B (despliegue del backend propio) queda sustituido por el despliegue de Firebase y el trabajo de consolas de `docs/FIREBASE.md` §3–§4.
+
 **Estado:** el código del MVP está completo en `main`, con el CI en verde: specs 002–010, 013 y 014, más la 011 salvo su tarea manual T-013. Lo que falta es cerrar la calidad, tomar unas pocas decisiones, que el backend esté en producción y hacer el trabajo de consolas y tiendas. Las ramas siguen el ADR-0009, y la 1.0.0 se corta con `scripts/start-release.sh release 1.0.0` cuando el bloque A esté hecho.
 
 **A · Código en `develop`** (ramas `feature/*`, `fix/*` y `chore/*`)
@@ -126,6 +129,10 @@ BE-008, BE-009, BE-010 (en paralelo en el backend) ──────▶ 012
 | ~~D-15~~ | **Resuelta el 2026-10-26:** plan Blaze, con alerta de presupuesto | — | 019 |
 | ~~D-16~~ | **Resuelta el 2026-10-26:** login con email, Google y Apple | — | 019 |
 | ~~D-17~~ | **Resuelta el 2026-10-26:** Firebase iOS SDK 11.15.0, la versión de los bindings de GitLive 2.7.0 | — | 019 |
+| ~~D-18~~ | **Resuelta el 2026-10-27:** el sorteo usa el Elo de la temporada y, hasta 3 partidos, el final de la anterior | — | 020 |
+| ~~D-19~~ | **Resuelta el 2026-10-27:** los partidos de julio y agosto son amistosos y no cuentan en la clasificación | — | 020 |
+| ~~D-20~~ | **Resuelta el 2026-10-27:** se puede mover una semana, con motivo, solo dentro de esa semana | — | 020 |
+| ~~D-21~~ | **Resuelta el 2026-10-27:** la temporada empieza siempre en septiembre y termina en junio; el admin elige el día | — | 020 |
 
 ## Backlog post-MVP
 - Estadísticas por temporada.
