@@ -83,9 +83,10 @@ describe("AC-019-08…12 the weekly cycle on Firebase", () => {
     expect((await owner.call<Match>("getMatch", { matchId: before.announcement.id })).status).toBe("SCHEDULED");
   });
 
-  it("AC-019-11/12 an extra match goes from teams to result, Elo, standings and reopen", async () => {
-    const kickoff = new Date(Date.now() + 6000).toISOString();
-    const extra = await owner.call<Match>("createExtraMatch", { clubId: club.id, scheduledAt: kickoff, format: "FIVE_A_SIDE" });
+  it("AC-019-11/12 an extra match goes from teams to result, Elo, standings and reopen", { timeout: 60_000 }, async () => {
+    // Far enough for the steps before kickoff on a slow emulator; then wait until it has started
+    const kickoffAt = Date.now() + 20_000;
+    const extra = await owner.call<Match>("createExtraMatch", { clubId: club.id, scheduledAt: new Date(kickoffAt).toISOString(), format: "FIVE_A_SIDE" });
     for (const p of [owner, ...players]) await p.call("enroll", { announcementId: extra.id });
     await owner.call("addGuest", { announcementId: extra.id, name: "Invitado" });
     expect((await callError(() => players[0].call("generateTeams", { matchId: extra.id, mode: "AUTO" }))).code).toBe("functions/permission-denied");
@@ -100,7 +101,7 @@ describe("AC-019-08…12 the weekly cycle on Firebase", () => {
     expect(withEvents.teamAScore).toBe(2);
     await owner.call("setPlayerMinutes", { matchId: extra.id, clubMemberId: scorer, minutes: 45 });
     expect((await callError(() => owner.call("completeMatch", { matchId: extra.id }))).code).toBe("functions/failed-precondition");
-    await sleep(7000);
+    await sleep(Math.max(0, kickoffAt - Date.now()) + 1000);
     const completed = await owner.call<Match>("completeMatch", { matchId: extra.id });
     expect(completed.status).toBe("COMPLETED");
     expect(completed.ratingChanges[scorer]).toBeGreaterThan(0);

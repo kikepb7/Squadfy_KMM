@@ -9,7 +9,9 @@ enum class ClubDataScope {
     /** The weekly schedule or its exceptions. */
     SCHEDULE,
     /** Member absences. */
-    ABSENCES
+    ABSENCES,
+    /** The club's seasons: dates or roll-over (spec 020). */
+    SEASON
 }
 
 data class ClubDataChange(

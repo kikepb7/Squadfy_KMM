@@ -11,6 +11,7 @@ import { absentMemberIds } from "./absences";
 import { publishTeamsAtDrawTime } from "./matches";
 import { AnnouncementDoc, DEFAULT_TIME_ZONE, MatchDoc, ScheduleDoc } from "./model";
 import { planNextMatch } from "./planning";
+import { runSeasonRollover } from "./seasons";
 import { activeMembers, clubName, readSchedule } from "./store";
 
 /** Time-based work of the match cycle (backend MatchSchedulerService; spec 019 AC-019-08, AC-019-10). */
@@ -133,6 +134,7 @@ export const runJobsNow = onCall(async (request) => {
   if (!isEmulator()) throw new HttpsError("not-found", "Not available");
   const at = typeof request.data?.at === "string" ? new Date(request.data.at) : new Date();
   return {
+    seasons: await runSeasonRollover(at),
     planned: await runPlanning(at),
     ...(await runCloseAndDraw(at)),
     notified: await runAnnouncementNotifications(at)

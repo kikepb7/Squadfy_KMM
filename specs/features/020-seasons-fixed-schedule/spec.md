@@ -1,6 +1,6 @@
 # 020 · Temporadas, horario fijo con excepciones y nuevo selector de hora
 
-- **Estado:** Draft
+- **Estado:** Approved (2026-10-27, el owner fija el inicio en septiembre y resuelve D-18…D-21)
 - **Owner:** Enrique Palma
 - **Reglas:** BE-002 (horario), BE-008 RN-B2 (excepciones), BE-005 (ratings y estadísticas); nuevas `APP-RN-S1…S6` (temporadas) y `APP-RN-H1…H3` (horario)
 - **ADRs:** ADR-0010 (Firebase es el backend de lanzamiento)
@@ -25,14 +25,14 @@
 
 ## Reglas
 **Temporadas**
-- **APP-RN-S1** Cada club tiene temporadas. Por defecto van del **1 de septiembre al 30 de junio** del año siguiente, y se nombran «2026/27». Solo una puede estar en curso (`ACTIVE`).
+- **APP-RN-S1** Cada club tiene temporadas. **Siempre empiezan en septiembre y terminan en junio** del año siguiente; por defecto, del **1 de septiembre al 30 de junio**. Se nombran por el año de inicio («2026/27»). Solo una puede estar en curso (`ACTIVE`).
 - **APP-RN-S2** Al crear un club se crea su temporada:
   - entre septiembre y junio, la que está en curso;
   - en julio y agosto, la siguiente, que empezará el 1 de septiembre.
-- **APP-RN-S3** El owner y los admins pueden cambiar el inicio y el fin de la temporada en curso o de la siguiente. Condiciones:
-  - el inicio va antes que el fin, y dura como mucho 12 meses;
-  - no se solapa con otra temporada;
-  - las temporadas cerradas no se tocan.
+- **APP-RN-S3** El owner y los admins eligen **el día** de inicio y de fin de la temporada en curso o de la siguiente (D-21). Condiciones:
+  - el inicio es un día de **septiembre** del año de la temporada y el fin, un día de **junio** del año siguiente; así nunca se solapan ni duran más de 12 meses;
+  - las temporadas cerradas no se tocan;
+  - no se permite si algún partido completado cambiaría de temporada.
 - **APP-RN-S4** La clasificación es **por temporada**:
   - el rating Elo empieza en 1000 en cada temporada;
   - las estadísticas (PJ, goles, asistencias, victorias, minutos…) cuentan solo los partidos completados dentro de las fechas de la temporada.
@@ -49,7 +49,7 @@
 ## Criterios de aceptación
 - **AC-020-01** *Given* un club nuevo creado en octubre *When* se crea *Then* tiene la temporada «2026/27», del 1/9/2026 al 30/6/2027, en curso.
 - **AC-020-02** *Given* un club nuevo creado en julio *When* se crea *Then* su temporada es la siguiente, aún no empezada, y la Tabla dice «La temporada empieza el 1 de septiembre».
-- **AC-020-03** *Given* el owner *When* cambia el fin de la temporada en curso a una fecha válida *Then* se guarda; con fechas solapadas o al revés, ve el error y no se guarda. Un jugador no puede cambiarlas.
+- **AC-020-03** *Given* el owner *When* elige otro día de septiembre para el inicio o de junio para el fin *Then* se guarda; con un mes distinto, ve el error y no se guarda (`VALIDATION_ERROR`). Un jugador no puede cambiarlas.
 - **AC-020-04** *Given* partidos completados en dos temporadas *When* un miembro abre la Tabla *Then*:
   - ve la clasificación de la temporada en curso;
   - el Elo de esa temporada parte de 1000;
@@ -108,15 +108,14 @@
 - **Migración:** los ratings y estadísticas actuales pasan a la temporada 2026/27, porque todos los partidos jugados son de este curso.
 - **Gap:** el backend propio no tiene temporadas. La variante `api` sigue mostrando la clasificación histórica completa.
 
-## Preguntas abiertas
-- ❓ **D-18** Si el Elo vuelve a 1000 cada temporada, los primeros sorteos de septiembre quedan desequilibrados.
-  - **Propuesta:** el sorteo usa el Elo de la temporada en curso. Mientras un jugador tenga menos de 3 partidos en ella, usa su Elo final de la temporada anterior.
-- ❓ **D-19** Los partidos jugados fuera de temporada (julio y agosto), ¿cuentan?
-  - **Propuesta:** son amistosos. Salen en el historial pero no en la clasificación.
-- ❓ **D-20** Al mover una semana, ¿puede pasar a otra semana o solo a otro día de la misma?
-  - **Propuesta:** solo dentro de la misma semana (de lunes a domingo), para no pisar la siguiente.
+## Decisiones (resueltas por el owner el 2026-10-27)
+- ✅ **D-18** El sorteo y el equilibrio de equipos usan el Elo de la temporada en curso; mientras un jugador tenga menos de 3 partidos en ella, usan su Elo final de la temporada anterior. La Tabla siempre parte de 1000.
+- ✅ **D-19** Los partidos de julio y agosto son amistosos: salen en el historial, pero no cuentan en ninguna clasificación (se completan sin cambios de Elo).
+- ✅ **D-20** Se mantiene **mover** una semana, con motivo obligatorio y solo dentro de la misma semana (de lunes a domingo).
+- ✅ **D-21** La temporada empieza siempre en septiembre y termina en junio; el admin elige el día de cada uno (por defecto, 1 de septiembre y 30 de junio).
+- Un partido de la temporada cuya acta se completa después del cierre (por ejemplo, el del 28 de junio cerrado el 2 de julio) cuenta en esa temporada; reabrirlo ya no se permite.
 
 ## Checklist de verificación
 - [ ] Todos los AC tienen un test que los cita (Functions con Vitest y emulador; la app con kotlin.test)
-- [ ] `./gradlew testDebugUnitTest`, `npm test` y `npm run test:emulator` en verde
+- [ ] `./gradlew testDebugUnitTest`, `npm test` y `npm run test:emulator` en verde (Functions: ✅ 58 unitarios y 35 de emulador, 2026-10-27)
 - [ ] Demo manual en Android e iOS: temporada, Tabla por temporada, cancelar y mover una semana, y el selector de hora

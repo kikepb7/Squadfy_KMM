@@ -93,6 +93,8 @@ export interface MatchDoc {
   events: MatchEventDoc[];
   /** Rating delta of each member, stored when the match is completed (BE-008 RN-F1). */
   ratingChanges: Record<string, number>;
+  /** The season the match counted in once completed; null for a friendly, missing before spec 020 or while open. */
+  seasonId?: string | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

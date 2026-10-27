@@ -36,7 +36,8 @@ Las fuentes ejecutables son estas, y si algo no cuadra mandan ellas:
 | `clubs/{clubId}/scheduleExceptions/{id}` | Semanas canceladas o movidas (BE-008) | Miembros | Functions |
 | `clubs/{clubId}/matches/{matchId}` | Partido: equipos, invitados, eventos, minutos, marcador, `ratingChanges` y estado | Miembros | Functions |
 | `clubs/{clubId}/announcements/{matchId}` | Convocatoria: ventana, plazas, lista de espera y marcas de los jobs | Miembros | Functions |
-| `clubs/{clubId}/ratings/{memberId}` | Elo y estadísticas acumuladas | Miembros | Functions |
+| `clubs/{clubId}/seasons/{seasonId}` | Temporada (spec 020): `{startYear, name, startsOn, endsOn, status}`, id `2026-27`; empieza en septiembre y acaba en junio | Miembros | Functions |
+| `clubs/{clubId}/seasons/{seasonId}/ratings/{memberId}` | Elo de la temporada (`rating`, `matchesRated`); antes de la spec 020 estaba en `clubs/{clubId}/ratings`, y `ensureSeasons` lo mueve a la primera temporada | Miembros | Functions |
 | `clubs/{clubId}/absences/{id}` | Ausencias | Miembros | Functions |
 | `clubs/{clubId}/live/changes` | Señal de cambios (`version`, `kind`) para refrescar en vivo (ADR-0006) | Miembros | Functions |
 | `chats/{chatId}` | `participantIds`, `participants.{uid}` (nombre y foto) y el último mensaje | Participantes | Functions (`createChat`, `addChatParticipants`, `leaveChat` y triggers) |
@@ -64,10 +65,11 @@ Todas exigen sesión. Si `ENFORCE_APP_CHECK=true`, también App Check.
 |---|---|
 | Cuenta | `completeProfile`, `deleteAccount` |
 | Clubes | `createClub`, `updateClub`, `joinClub`, `leaveClub`, `regenerateInvitationCode`, `changeMemberRole`, `transferOwnership`, `removeMember`, `banMember`, `unbanMember`, `updateMyMembership`, `setClubLogo`, `setMyClubPicture` |
-| Horario | `createSchedule`, `getSchedule`, `updateSchedule`, `getScheduleExceptions`, `addScheduleException`, `deleteScheduleException` |
+| Horario | `createSchedule`, `getSchedule`, `updateSchedule`, `getScheduleExceptions`, `addScheduleException` (`reason` obligatorio; mover solo dentro de la semana; sustituye a la excepción anterior de esa semana), `deleteScheduleException` |
 | Convocatoria | `getCurrentAnnouncement`, `getAnnouncementByMatch`, `getAnnouncementHistory`, `enroll`, `withdraw`, `addGuest`, `removeGuest` |
 | Partidos | `getMatch`, `getClubMatches`, `createExtraMatch`, `cancelMatch`, `generateTeams`, `getTeamBalance`, `addMatchEvent`, `deleteMatchEvent`, `setPlayerMinutes`, `setMatchScore`, `clearMatchScore`, `completeMatch`, `reopenMatch` |
-| Clasificación | `getRatings`, `getStats`, `getMyRating`, `getMyStats` |
+| Clasificación | `getRatings`, `getStats`, `getMyRating`, `getMyStats` (con `seasonId` opcional; por defecto, la temporada en curso o la siguiente en pretemporada; `getStats` sigue aceptando `from`/`to`) |
+| Temporadas | `getSeasons({clubId})` (la más nueva primero), `updateSeason({clubId, seasonId, startsOn, endsOn})` (managers; día de septiembre y de junio) |
 | Ausencias y avisos | `createAbsence`, `deleteAbsence`, `getAbsences`, `getClubNotificationSettings`, `setClubMuted` |
 | Chat | `createChat`, `addChatParticipants`, `leaveChat` |
 | Solo emulador | `runJobsNow({at?})`: ejecuta los jobs como si fuera `at` |
@@ -92,6 +94,7 @@ Una callable falla con un `HttpsError` cuyo código equivale al estado HTTP del 
 | `planUpcomingMatches` | Cada hora, en el minuto 5 | Planifica el partido de la semana siguiente de cada horario activo, con sus excepciones (BE-008 RN-B2) |
 | `closeAnnouncementsAndDraw` | Cada 5 min | Cierra las convocatorias vencidas y, a la hora de sorteo, publica los equipos (BE-003 y BE-008) |
 | `sendAnnouncementNotifications` | Cada 5 min | Avisa de que la convocatoria está abierta y recuerda el cierre, una vez cada cosa (marcas en la convocatoria) |
+| `rollSeasons` | Cada día a las 00:15 UTC | Cierra las temporadas terminadas, crea la siguiente con los mismos días y la activa en su inicio (spec 020). Es idempotente |
 | `onChatMessageCreated` y `onChatMessageDeleted` | Al crear o borrar un mensaje | Último mensaje del chat y push `new_message` |
 | `onUserProfileUpdated` | Al cambiar `users/{uid}` | Copia el nombre y la foto a las membresías y a los chats |
 | `onAuthUserDeleted` | Al borrar el usuario de Auth (web, consola) | El mismo borrado que `deleteAccount`. Es idempotente |

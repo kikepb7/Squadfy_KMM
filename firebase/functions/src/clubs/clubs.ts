@@ -10,6 +10,7 @@ import { memberIdOf, paths } from "../paths";
 import { requireClub, requireManager, requireMember, requireTargetMember } from "./access";
 import { AfterCommit, membershipEnded, runAfterCommit } from "./hooks";
 import { ClubDoc, clubDto, MemberDoc, memberDto } from "./model";
+import { ensureSeasons } from "../match/seasons";
 import * as validate from "./validation";
 
 /**
@@ -73,6 +74,8 @@ export const createClub = onCall(async (request) => {
     tx.set(db().doc(paths.member(clubRef.id, memberIdOf(clubRef.id, uid))), owner);
     return club;
   });
+  // Spec 020 APP-RN-S2: the club starts with its season
+  await ensureSeasons(clubRef.id);
   return clubDto(clubRef.id, club);
 });
 

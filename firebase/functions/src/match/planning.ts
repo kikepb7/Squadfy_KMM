@@ -143,7 +143,7 @@ export async function createMatchWithAnnouncement(params: {
  * Moves a scheduled match keeping its enrollments: close and draw are recalculated for the new date, a closed
  * announcement opens again if the new close is in the future, and every member is notified (BE-008 RN-B3).
  */
-export async function moveMatch(clubId: string, matchId: string, newScheduledAt: Date) {
+export async function moveMatch(clubId: string, matchId: string, newScheduledAt: Date, reason: string | null = null) {
   const schedule = await readSchedule(clubId);
   const zone = schedule?.timeZone ?? DEFAULT_TIME_ZONE;
   const now = new Date();
@@ -176,25 +176,30 @@ export async function moveMatch(clubId: string, matchId: string, newScheduledAt:
   const members = await activeMembers(clubId);
   await sendToUsers(messages.rescheduled(
     { type: "match.rescheduled", clubId, clubName: await clubName(clubId), matchId, zone, matchAt: newScheduledAt },
-    members.map((m) => m.data.userId), previousAt
+    members.map((m) => m.data.userId), previousAt, reason
   ));
 }
 
-/** Cancels the match and its announcement and notifies the enrolled members (no permission check). */
-export async function cancelMatchInternal(clubId: string, matchId: string) {
+/**
+ * Cancels the match and its announcement (no permission check) and notifies the enrolled members. A week cancelled by
+ * a schedule exception ([reason]) notifies every member if its announcement was already open (spec 020 APP-RN-H3).
+ */
+export async function cancelMatchInternal(clubId: string, matchId: string, reason: string | null = null) {
   const announcementDocRef = db().doc(paths.announcement(clubId, matchId));
-  const { match, enrolled } = await db().runTransaction(async (tx) => {
+  const { match, enrolled, wasOpen } = await db().runTransaction(async (tx) => {
     const match = (await tx.get(db().doc(paths.match(clubId, matchId)))).data() as MatchDoc;
     const announcement = (await tx.get(announcementDocRef)).data() as AnnouncementDoc | undefined;
     tx.update(db().doc(paths.match(clubId, matchId)), { status: "CANCELLED", updatedAt: FieldValue.serverTimestamp() });
     if (announcement) tx.update(announcementDocRef, { status: "CANCELLED", updatedAt: FieldValue.serverTimestamp() });
     const enrolled = (announcement?.entries ?? []).filter((e) => e.clubMemberId).map((e) => uidOfMember(e.clubMemberId as string));
-    return { match, enrolled };
+    const wasOpen = announcement?.status === "OPEN" && announcement.opensAt.toDate() <= new Date();
+    return { match, enrolled, wasOpen };
   });
   await publishChange(clubId, "MATCH", matchId);
+  const recipients = reason && wasOpen ? (await activeMembers(clubId)).map((m) => m.data.userId) : enrolled;
   await sendToUsers(messages.cancelled(
     { type: "match.cancelled", clubId, clubName: await clubName(clubId), matchId, zone: (await readSchedule(clubId))?.timeZone ?? DEFAULT_TIME_ZONE, matchAt: match.scheduledAt.toDate() },
-    enrolled
+    recipients, reason
   ));
 }
 

@@ -15,6 +15,9 @@ const matchDate = (at: Date, zone: string) =>
 const closingDay = (at: Date, zone: string) => DateTime.fromJSDate(at, { zone }).setLocale("es-ES").toFormat("cccc d");
 const hour = (at: Date, zone: string) => DateTime.fromJSDate(at, { zone }).toFormat("HH:mm");
 
+/** The reason of a cancelled or moved week (spec 020 APP-RN-H3). */
+const because = (reason: string | null) => (reason ? ` Motivo: ${reason}.` : "");
+
 interface Context {
   type: MatchPushType;
   clubId: string;
@@ -52,11 +55,11 @@ export const messages = {
     push(ctx, teamB, "equipos publicados", `Juegas en el equipo B · ${matchDate(ctx.matchAt, ctx.zone)}`, { team: "B" })
   ],
 
-  cancelled: (ctx: Context, userIds: string[]) =>
-    push(ctx, userIds, "partido cancelado", `Se ha cancelado el partido del ${matchDate(ctx.matchAt, ctx.zone)}.`),
+  cancelled: (ctx: Context, userIds: string[], reason: string | null = null) =>
+    push(ctx, userIds, "partido cancelado", `Se ha cancelado el partido del ${matchDate(ctx.matchAt, ctx.zone)}.${because(reason)}`),
 
-  rescheduled: (ctx: Context, userIds: string[], previousAt: Date) =>
-    push(ctx, userIds, "partido cambiado", `El partido del ${matchDate(previousAt, ctx.zone)} pasa al ${matchDate(ctx.matchAt, ctx.zone)}.`),
+  rescheduled: (ctx: Context, userIds: string[], previousAt: Date, reason: string | null = null) =>
+    push(ctx, userIds, "partido cambiado", `El partido del ${matchDate(previousAt, ctx.zone)} pasa al ${matchDate(ctx.matchAt, ctx.zone)}.${because(reason)}`),
 
   promoted: (ctx: Context, userId: string, announcementId: string) =>
     push(ctx, [userId], "¡tienes plaza!", `Has pasado de la lista de espera a convocado para el partido del ${matchDate(ctx.matchAt, ctx.zone)}.`, { announcementId })

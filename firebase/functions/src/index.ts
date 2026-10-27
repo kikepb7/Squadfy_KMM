@@ -31,6 +31,7 @@ export {
   getMatch, getTeamBalance, reopenMatch, setMatchScore, setPlayerMinutes
 } from "./match/matches";
 export { getMyRating, getMyStats, getRatings, getStats } from "./match/standings";
+export { getSeasons, rollSeasons, updateSeason } from "./match/seasons";
 export { createAbsence, deleteAbsence, getAbsences } from "./match/absences";
 export { getClubNotificationSettings, setClubMuted } from "./notifications/settings";
 export { closeAnnouncementsAndDraw, planUpcomingMatches, runJobsNow, sendAnnouncementNotifications } from "./match/jobs";

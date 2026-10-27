@@ -144,7 +144,10 @@ async function weekMatch(clubId: string, date: string): Promise<{ id: string; da
   return latest ? { id: latest.id, data: latest.data() as MatchDoc } : null;
 }
 
-/** Cancels or moves a future week of the schedule (BE-008 RN-B1…B3). */
+/**
+ * Cancels or moves a future week of the schedule (BE-008 RN-B1…B3) with a mandatory reason (spec 020 APP-RN-H2). A moved
+ * match stays within its week, Monday to Sunday (D-20); a new exception for a week replaces the previous one.
+ */
 export const addScheduleException = onCall(async (request) => {
   const uid = requireAuth(request);
   const data = body(request);
@@ -160,18 +163,24 @@ export const addScheduleException = onCall(async (request) => {
   const type = data.type as "CANCELLED" | "RESCHEDULED";
   const newScheduledAt = typeof data.newScheduledAt === "string" ? new Date(data.newScheduledAt) : null;
   if (newScheduledAt && Number.isNaN(newScheduledAt.getTime())) badRequest("Invalid newScheduledAt", "VALIDATION_ERROR");
-  const reason = typeof data.reason === "string" && data.reason.trim() ? data.reason.trim().slice(0, 500) : null;
+  const reason = requireString(data, "reason", 1, 500);
   const now = new Date();
 
   if (DAYS_OF_WEEK[day.weekday - 1] !== s.matchDayOfWeek) badRequest(`date must be a ${s.matchDayOfWeek}, the club's match day`);
-  const match = await weekMatch(clubId, date);
+  let match = await weekMatch(clubId, date);
   const currentMatchAt = match?.data.scheduledAt.toDate() ?? regularMatchTime(s, date);
   if (currentMatchAt <= now) badRequest("Only future weeks can have an exception");
   if (type === "CANCELLED" && newScheduledAt) badRequest("newScheduledAt is only allowed for RESCHEDULED");
   if (type === "RESCHEDULED" && (!newScheduledAt || newScheduledAt <= now)) badRequest("RESCHEDULED requires a future newScheduledAt");
-  const existing = await db().collection(paths.scheduleExceptions(clubId)).where("date", "==", date).limit(1).get();
-  if (!existing.empty) conflict("This week already has an exception");
+  if (type === "RESCHEDULED" && !sameWeek(day, DateTime.fromJSDate(newScheduledAt as Date, { zone: s.timeZone }))) {
+    badRequest("A week can only move within that week, Monday to Sunday", "VALIDATION_ERROR");
+  }
   if (match?.data.status === "COMPLETED") conflict("The match of that week is already completed");
+  const existing = await db().collection(paths.scheduleExceptions(clubId)).where("date", "==", date).limit(1).get();
+  if (!existing.empty) {
+    await undoException(clubId, s, existing.docs[0].ref, existing.docs[0].data() as ScheduleExceptionDoc);
+    match = await weekMatch(clubId, date);
+  }
   if (type === "RESCHEDULED" && match?.data.status === "CANCELLED") conflict("The match of that week is cancelled");
 
   const planned = match && match.data.status === "SCHEDULED" ? match : null;
@@ -181,8 +190,8 @@ export const addScheduleException = onCall(async (request) => {
   };
   const ref = await db().collection(paths.scheduleExceptions(clubId)).add(exception);
   if (planned) {
-    if (type === "CANCELLED") await cancelMatchInternal(clubId, planned.id);
-    else await moveMatch(clubId, planned.id, newScheduledAt as Date);
+    if (type === "CANCELLED") await cancelMatchInternal(clubId, planned.id, reason);
+    else await moveMatch(clubId, planned.id, newScheduledAt as Date, reason);
   }
   // A cancelled week lets the following one be planned right away
   await planNextMatch(clubId);
@@ -209,16 +218,25 @@ export const deleteScheduleException = onCall(async (request) => {
   if (regularAt <= now || (match && match.data.scheduledAt.toDate() <= now) || match?.data.status === "COMPLETED") {
     conflict("The exception can no longer be undone: its week has already been played");
   }
-  await ref.delete();
+  await undoException(clubId, schedule as ScheduleDoc, ref, exception);
   await publishChange(clubId, "SCHEDULE");
+  return { ok: true };
+});
+
+const sameWeek = (a: DateTime, b: DateTime) => a.weekYear === b.weekYear && a.weekNumber === b.weekNumber;
+
+/** Removes an exception and brings its week back to the regular schedule (RN-B4). */
+async function undoException(clubId: string, schedule: ScheduleDoc, ref: FirebaseFirestore.DocumentReference, exception: ScheduleExceptionDoc) {
+  const regularAt = regularMatchTime(schedule, exception.date);
+  const match = await weekMatch(clubId, exception.date);
+  await ref.delete();
   if (exception.type === "CANCELLED") {
-    if (!match) await restoreWeek(clubId, schedule as ScheduleDoc, exception.date, regularAt);
+    if (!match) await restoreWeek(clubId, schedule, exception.date, regularAt);
     else if (match.data.status === "CANCELLED" && match.id === exception.affectedMatchId) await reactivateMatch(clubId, match.id);
   } else if (match?.data.status === "SCHEDULED") {
     await moveMatch(clubId, match.id, regularAt);
   }
-  return { ok: true };
-});
+}
 
 /** Plans a week whose cancellation was undone before its match existed, if it comes before every upcoming match. */
 async function restoreWeek(clubId: string, schedule: ScheduleDoc, date: string, regularAt: Date) {

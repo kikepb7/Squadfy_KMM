@@ -1,7 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "./admin";
 
-export type LiveScope = "MATCH" | "SCHEDULE" | "ABSENCES";
+export type LiveScope = "MATCH" | "SCHEDULE" | "ABSENCES" | "SEASON";
 
 /**
  * Tells the app what changed in a club (backend LiveUpdatePublisher, BE-012 RN-A1): the app listens to

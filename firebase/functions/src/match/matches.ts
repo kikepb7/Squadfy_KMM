@@ -18,6 +18,7 @@ import {
   RatingDoc, scoreOf, TeamPlayer, uidOfMember
 } from "./model";
 import { cancelMatchInternal, createMatchWithAnnouncement } from "./planning";
+import { drawRatings, ensureSeasons, seasonRatings, seasonsAround } from "./seasons";
 import { clubName, findAnnouncement, matchRef, readMatch, readSchedule } from "./store";
 
 /** Matches: teams, result and rating (BE-003, BE-004, BE-007, BE-008; spec 019 AC-019-11). */
@@ -100,18 +101,16 @@ export const cancelMatch = onCall(async (request) => {
   return load(matchId);
 });
 
-async function ratingsOf(tx: Transaction, clubId: string, memberIds: string[]): Promise<Map<string, RatingDoc>> {
-  if (memberIds.length === 0) return new Map();
-  const docs = await tx.getAll(...memberIds.map((id) => db().doc(paths.rating(clubId, id))));
-  return new Map(memberIds.map((id, i) => [id, (docs[i].data() as RatingDoc | undefined) ?? { clubMemberId: id, rating: INITIAL_RATING, matchesRated: 0 }]));
-}
-
-/** Closes the match with its score and updates the players' ratings (BE-003, BE-004). */
+/**
+ * Closes the match with its score and updates the players' ratings in the season of its date (BE-003, BE-004; spec 020
+ * APP-RN-S4). A match outside every season is a friendly: it is completed without rating changes (D-19).
+ */
 export const completeMatch = onCall(async (request) => {
   const uid = requireAuth(request);
   const matchId = requireString(body(request), "matchId");
   const clubId = clubOf(matchId);
   await requireManager(clubId, uid);
+  await ensureSeasons(clubId);
   await db().runTransaction(async (tx) => {
     const match = await readMatch(matchId, tx);
     if (match.status !== "SCHEDULED") conflict("Only scheduled matches can be completed");
@@ -119,7 +118,12 @@ export const completeMatch = onCall(async (request) => {
     if (match.teamA.length === 0 || match.teamB.length === 0) conflict("Teams must be generated before completing the match");
     const membersA = match.teamA.filter((p) => !p.isGuest).map((p) => p.participantId);
     const membersB = match.teamB.filter((p) => !p.isGuest).map((p) => p.participantId);
-    const ratings = await ratingsOf(tx, clubId, [...membersA, ...membersB]);
+    const { current: season } = await seasonsAround(clubId, match.scheduledAt.toDate(), tx);
+    if (!season) {
+      tx.update(matchRef(matchId), { status: "COMPLETED", ratingChanges: {}, seasonId: null, updatedAt: FieldValue.serverTimestamp() });
+      return;
+    }
+    const ratings = await seasonRatings(clubId, season.id, [...membersA, ...membersB], tx);
     const rated = (memberId: string): RatedPlayer => {
       const own = match.events.filter((e) => e.clubMemberId === memberId);
       const count = (type: MatchEventType) => own.filter((e) => e.type === type).length;
@@ -133,14 +137,19 @@ export const completeMatch = onCall(async (request) => {
     });
     deltas.forEach((delta, memberId) => {
       const r = ratings.get(memberId) as RatingDoc;
-      tx.set(db().doc(paths.rating(clubId, memberId)), { clubMemberId: memberId, rating: r.rating + delta, matchesRated: r.matchesRated + 1 });
+      tx.set(db().doc(paths.rating(clubId, season.id, memberId)), { clubMemberId: memberId, rating: r.rating + delta, matchesRated: r.matchesRated + 1 });
     });
-    tx.update(matchRef(matchId), { status: "COMPLETED", ratingChanges: Object.fromEntries(deltas), updatedAt: FieldValue.serverTimestamp() });
+    tx.update(matchRef(matchId), {
+      status: "COMPLETED", ratingChanges: Object.fromEntries(deltas), seasonId: season.id, updatedAt: FieldValue.serverTimestamp()
+    });
   });
   return loadAfter(clubId, matchId);
 });
 
-/** Reopens the club's latest completed match to fix it; its rating changes are reverted. */
+/**
+ * Reopens the club's latest completed match to fix it; its rating changes are reverted. Not for a match of a closed
+ * season, whose standings are frozen (spec 020).
+ */
 export const reopenMatch = onCall(async (request) => {
   const uid = requireAuth(request);
   const matchId = requireString(body(request), "matchId");
@@ -152,13 +161,21 @@ export const reopenMatch = onCall(async (request) => {
     );
     if (latest.empty || latest.docs[0].id !== matchId) conflict("Only the latest completed match can be reopened");
     const match = latest.docs[0].data() as MatchDoc;
+    // Matches completed before spec 020 have no seasonId: their season is the one of their date
+    const seasonId = match.seasonId === undefined
+      ? (await seasonsAround(clubId, match.scheduledAt.toDate(), tx)).current?.id ?? null
+      : match.seasonId;
+    const season = seasonId ? { id: seasonId, status: (await tx.get(db().doc(paths.season(clubId, seasonId)))).get("status") } : null;
+    if (season?.status === "CLOSED") conflict("The season of this match is closed");
     const changes = Object.entries(match.ratingChanges ?? {});
-    const ratings = await ratingsOf(tx, clubId, changes.map(([id]) => id));
-    for (const [memberId, delta] of changes) {
-      const r = ratings.get(memberId) as RatingDoc;
-      tx.set(db().doc(paths.rating(clubId, memberId)), { clubMemberId: memberId, rating: r.rating - delta, matchesRated: Math.max(0, r.matchesRated - 1) });
+    if (season) {
+      const ratings = await seasonRatings(clubId, season.id, changes.map(([id]) => id), tx);
+      for (const [memberId, delta] of changes) {
+        const r = ratings.get(memberId) as RatingDoc;
+        tx.set(db().doc(paths.rating(clubId, season.id, memberId)), { clubMemberId: memberId, rating: r.rating - delta, matchesRated: Math.max(0, r.matchesRated - 1) });
+      }
     }
-    tx.update(matchRef(matchId), { status: "SCHEDULED", ratingChanges: {}, updatedAt: FieldValue.serverTimestamp() });
+    tx.update(matchRef(matchId), { status: "SCHEDULED", ratingChanges: {}, seasonId: FieldValue.delete(), updatedAt: FieldValue.serverTimestamp() });
   });
   return loadAfter(clubId, matchId);
 });
@@ -177,16 +194,17 @@ function participantsOf(announcement: AnnouncementDoc | null) {
 
 type Participants = ReturnType<typeof participantsOf>;
 
-async function autoTeams(tx: Transaction, clubId: string, participants: Participants): Promise<[string[], string[]]> {
+/** Balanced teams with the draw ratings of the match's season (D-18). */
+async function autoTeams(tx: Transaction, clubId: string, matchAt: Date, participants: Participants): Promise<[string[], string[]]> {
   const memberDocs = participants.members.length
     ? await tx.getAll(...participants.members.map((id) => db().doc(paths.member(clubId, id))))
     : [];
-  const ratings = await ratingsOf(tx, clubId, participants.members);
+  const ratings = await drawRatings(clubId, matchAt, participants.members, tx);
   const players: PlayerProfile[] = [
     ...participants.members.map((id, i) => ({
       memberId: id,
       position: ((memberDocs[i].data() as MemberDoc | undefined)?.position) ?? null,
-      rating: (ratings.get(id) as RatingDoc).rating
+      rating: ratings.get(id) as number
     })),
     ...participants.guests.map((g: EntryDoc) => ({ memberId: g.id, position: g.guestPosition, rating: INITIAL_RATING }))
   ];
@@ -237,7 +255,7 @@ export const generateTeams = onCall(async (request) => {
     if (match.status !== "SCHEDULED") badRequest("Teams can only be generated for scheduled matches");
     const announcement = await findAnnouncement(matchId, tx);
     const participants = participantsOf(announcement);
-    const [teamA, teamB] = mode === "AUTO" ? await autoTeams(tx, clubId, participants) : manualTeams(data.manualTeamA, data.manualTeamB, participants);
+    const [teamA, teamB] = mode === "AUTO" ? await autoTeams(tx, clubId, match.scheduledAt.toDate(), participants) : manualTeams(data.manualTeamA, data.manualTeamB, participants);
     tx.update(matchRef(matchId), {
       teamA: toTeam(teamA, participants.guestIds, match.teamA),
       teamB: toTeam(teamB, participants.guestIds, match.teamB),
@@ -264,7 +282,7 @@ export async function publishTeamsAtDrawTime(clubId: string, matchId: string): P
     if (participants.ids.length < 2) { markPublished(); return null; }
     const current = new Set([...match.teamA, ...match.teamB].map((p) => p.participantId));
     if (current.size === participants.ids.length && participants.ids.every((id) => current.has(id))) { markPublished(); return null; }
-    const [teamA, teamB] = await autoTeams(tx, clubId, participants);
+    const [teamA, teamB] = await autoTeams(tx, clubId, match.scheduledAt.toDate(), participants);
     markPublished();
     tx.update(matchRef(matchId), {
       teamA: toTeam(teamA, participants.guestIds, match.teamA), teamB: toTeam(teamB, participants.guestIds, match.teamB),
@@ -287,8 +305,7 @@ export const getTeamBalance = onCall(async (request) => {
   const match = await readMatch(matchId);
   if (match.teamA.length === 0 || match.teamB.length === 0) conflict("Teams have not been generated for this match yet");
   const memberIds = [...match.teamA, ...match.teamB].filter((p) => !p.isGuest).map((p) => p.participantId);
-  const docs = memberIds.length ? await db().getAll(...memberIds.map((id) => db().doc(paths.rating(clubId, id)))) : [];
-  const ratingOf = new Map(memberIds.map((id, i) => [id, (docs[i].data() as RatingDoc | undefined)?.rating ?? INITIAL_RATING]));
+  const ratingOf = await drawRatings(clubId, match.scheduledAt.toDate(), memberIds);
   const strength = (team: TeamPlayer[]) => team.map((p) => ({
     clubMemberId: p.participantId, rating: p.isGuest ? INITIAL_RATING : (ratingOf.get(p.participantId) as number), isGuest: p.isGuest
   }));
